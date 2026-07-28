@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Base de datos principal de MOICA
+  postgres:
+    image: postgres:15-alpine
+    container_name: moica_db
+    environment:
+      POSTGRES_USER: moica_user
+      POSTGRES_PASSWORD: moica_password
+      POSTGRES_DB: moica_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # PgAdmin para gestionar la BD visualmente (opcional pero muy útil)
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: moica_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@moica.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:

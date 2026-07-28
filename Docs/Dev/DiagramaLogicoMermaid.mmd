@@ -1,0 +1,262 @@
+erDiagram
+    %% EstadoCasoModeracion:
+    %% ABIERTO, EN_REVISION, CERRADO, REABIERTO.
+    %% ResultadoCasoModeracion:
+    %% PROCEDENTE, DESESTIMADO.
+    %% TipoActorHistorial:
+    %% USUARIO, ADMINISTRADOR, SISTEMA.
+    %% TipoEventoHistorial:
+    %% CASO_ABIERTO, RESPONSABLE_ASIGNADO, ESTADO_CASO_CAMBIADO,
+    %% RESOLUCION_REGISTRADA, MEDIDA_APLICADA, MEDIDA_REVOCADA,
+    %% MEDIDA_EXPIRADA, ESTADO_CUENTA_CAMBIADO, APELACION_PRESENTADA,
+    %% APELACION_ACEPTADA, APELACION_RECHAZADA, CASO_REABIERTO.
+
+    Usuario {
+        bigint idUsuario PK
+        varchar nombreCompleto
+        varchar correoElectronico UK
+        varchar claveHash
+        EstadoCuenta estadoCuenta
+        timestamptz fechaFinEstadoCuenta "opcional"
+        timestamptz fechaRegistro
+        timestamptz fechaActualizacion
+    }
+
+    Administrador {
+        bigint idAdministrador PK,FK
+        timestamptz fechaAsignacion
+    }
+
+    Departamento {
+        smallint idDepartamento PK
+        varchar nombre UK
+        boolean habilitado
+    }
+
+    Municipio {
+        integer idMunicipio PK
+        smallint idDepartamento FK
+        varchar nombre
+    }
+
+    PerfilPrestador {
+        bigint idPrestador PK,FK
+        varchar nombrePublico
+        varchar urlImagenPerfil "opcional"
+        text descripcion
+        TipoPrestador tipoPrestador
+        integer idMunicipioPrincipal FK
+        text descripcionCobertura
+        EstadoDisponibilidad disponibilidad
+        timestamptz fechaCreacion
+        timestamptz fechaActualizacion
+    }
+
+    MedioContactoPrestador {
+        bigint idMedioContacto PK
+        bigint idPrestador FK
+        varchar contenido
+        smallint ordenVisualizacion
+        timestamptz fechaCreacion
+    }
+
+    TrabajoPortafolio {
+        bigint idTrabajo PK
+        bigint idPrestador FK
+        varchar titulo
+        text descripcion
+        date fechaRealizacion "opcional"
+        smallint ordenVisualizacion
+        timestamptz fechaCreacion
+        timestamptz fechaActualizacion
+    }
+
+    ImagenTrabajoPortafolio {
+        bigint idImagenTrabajoPortafolio PK
+        bigint idTrabajo FK
+        varchar urlImagen
+        varchar textoAlternativo "opcional"
+        smallint ordenVisualizacion
+        timestamptz fechaCreacion
+    }
+
+    CategoriaServicio {
+        smallint idCategoriaServicio PK
+        varchar nombre UK
+        text descripcion "opcional"
+    }
+
+    SubcategoriaServicio {
+        integer idSubcategoriaServicio PK
+        smallint idCategoriaServicio FK
+        varchar nombre
+        text descripcion "opcional"
+    }
+
+    ServicioPublicado {
+        bigint idServicioPublicado PK
+        bigint idPrestador FK
+        integer idSubcategoriaServicio FK
+        varchar nombre
+        text descripcion
+        numeric precioReferencia "opcional numeric(12,2)"
+        EstadoServicio estado
+        timestamptz fechaCreacion
+        timestamptz fechaActualizacion
+    }
+
+    ImagenServicioPublicado {
+        bigint idImagenServicioPublicado PK
+        bigint idServicioPublicado FK
+        varchar urlImagen
+        varchar textoAlternativo "opcional"
+        smallint ordenVisualizacion
+        timestamptz fechaCreacion
+    }
+
+    SolicitudServicio {
+        bigint idSolicitudServicio PK
+        bigint idCliente FK
+        bigint idServicioPublicado FK
+        integer idMunicipio FK
+        text descripcionNecesidad
+        text indicacionUbicacion
+        date fechaPreferida "opcional"
+        text mensajeAdicional "opcional"
+        EstadoSolicitud estadoActual
+        timestamptz fechaCreacion
+        timestamptz fechaActualizacion
+    }
+
+    CambioEstadoSolicitud {
+        bigint idCambioEstadoSolicitud PK
+        bigint idSolicitudServicio FK
+        EstadoSolicitud estadoAnterior "opcional solo al inicio"
+        EstadoSolicitud estadoNuevo
+        bigint idActor FK
+        text motivo "opcional"
+        timestamptz fechaCambio
+    }
+
+    MensajeSolicitud {
+        bigint idMensajeSolicitud PK
+        bigint idSolicitudServicio FK
+        bigint idRemitente FK
+        text contenido
+        timestamptz fechaEnvio
+    }
+
+    CalificacionUsuario {
+        bigint idCalificacionUsuario PK
+        bigint idSolicitudServicio FK
+        bigint idCalificador FK
+        bigint idCalificado FK
+        RolCalificado rolCalificado
+        smallint puntuacion
+        text comentario "opcional"
+        timestamptz fechaCreacion
+    }
+
+    MedidaAdministrativa {
+        smallint idMedidaAdministrativa PK
+        varchar codigo UK
+        varchar nombre UK
+        text descripcion "opcional"
+        smallint nivelSeveridad
+        EstadoCuenta estadoCuentaResultante "opcional"
+        boolean requiereFechaFin
+        boolean habilitada
+    }
+
+    CasoModeracion {
+        bigint idCasoModeracion PK
+        bigint idSolicitudServicio FK
+        bigint idReportante FK
+        bigint idReportado FK
+        bigint idAdministradorResponsable FK "opcional"
+        smallint idMedidaAdministrativaActual FK "opcional"
+        varchar motivo
+        text descripcion
+        EstadoCasoModeracion estadoActual
+        ResultadoCasoModeracion resultadoActual "opcional"
+        text resolucionActual "opcional"
+        timestamptz fechaFinMedidaActual "opcional"
+        timestamptz fechaApertura
+        timestamptz fechaCierreActual "opcional"
+        timestamptz fechaActualizacion
+    }
+
+    HistorialCaso {
+        bigint idHistorialCaso PK
+        bigint idCasoModeracion FK
+        bigint idUsuarioAfectado FK
+        bigint idActor FK "opcional para eventos del sistema"
+        bigint idAdministradorResponsable FK "opcional"
+        smallint idMedidaAdministrativa FK "opcional"
+        integer numeroVersion
+        TipoActorHistorial tipoActor
+        TipoEventoHistorial tipoEvento
+        EstadoCasoModeracion estadoCaso
+        ResultadoCasoModeracion resultadoCaso "opcional"
+        EstadoCuenta estadoCuenta
+        text resolucion "opcional"
+        timestamptz fechaFinMedida "opcional"
+        text detalleCambio
+        timestamptz fechaInicioVigencia
+        timestamptz fechaFinVigencia "opcional"
+        boolean esVersionActual
+        timestamptz fechaRegistro
+    }
+
+    Usuario ||--o| Administrador : usuarioAdministrador
+    Usuario ||--o| PerfilPrestador : usuarioPerfilPrestador
+
+    Departamento ||--o{ Municipio : departamentoMunicipios
+    Municipio ||--o{ PerfilPrestador : municipioPerfilesPrestador
+    Municipio ||--o{ SolicitudServicio : municipioSolicitudesServicio
+
+    PerfilPrestador ||--o{ MedioContactoPrestador : prestadorMediosContacto
+    PerfilPrestador ||--o{ TrabajoPortafolio : prestadorTrabajosPortafolio
+    TrabajoPortafolio ||--o{ ImagenTrabajoPortafolio : trabajoImagenesPortafolio
+
+    CategoriaServicio ||--o{ SubcategoriaServicio : categoriaSubcategoriasServicio
+    SubcategoriaServicio ||--o{ ServicioPublicado : subcategoriaServiciosPublicados
+    PerfilPrestador ||--o{ ServicioPublicado : prestadorServiciosPublicados
+    ServicioPublicado ||--o{ ImagenServicioPublicado : servicioPublicadoImagenes
+
+    Usuario ||--o{ SolicitudServicio : clienteSolicitudesServicio
+    ServicioPublicado ||--o{ SolicitudServicio : servicioPublicadoSolicitudes
+    SolicitudServicio ||--o{ CambioEstadoSolicitud : solicitudCambiosEstado
+    Usuario ||--o{ CambioEstadoSolicitud : actorCambiosEstado
+    SolicitudServicio ||--o{ MensajeSolicitud : solicitudMensajes
+    Usuario ||--o{ MensajeSolicitud : remitenteMensajes
+
+    SolicitudServicio ||--o{ CalificacionUsuario : solicitudCalificaciones
+    Usuario ||--o{ CalificacionUsuario : calificadorCalificaciones
+    Usuario ||--o{ CalificacionUsuario : calificadoCalificaciones
+
+    SolicitudServicio ||--o{ CasoModeracion : solicitudCasosModeracion
+    Usuario ||--o{ CasoModeracion : reportanteCasosModeracion
+    Usuario ||--o{ CasoModeracion : reportadoCasosModeracion
+    Administrador o|--o{ CasoModeracion : administradorCasosModeracion
+    MedidaAdministrativa o|--o{ CasoModeracion : medidaActualCasos
+
+    CasoModeracion ||--|{ HistorialCaso : casoVersiones
+    Usuario ||--o{ HistorialCaso : usuarioAfectadoVersiones
+    Usuario o|--o{ HistorialCaso : actorVersiones
+    Administrador o|--o{ HistorialCaso : responsableVersiones
+    MedidaAdministrativa o|--o{ HistorialCaso : medidaVersiones
+
+    classDef acceso fill:#E8F5E9,stroke:#2E7D32,color:#1B1B1B
+    classDef ubicacion fill:#E3F2FD,stroke:#1565C0,color:#1B1B1B
+    classDef prestador fill:#E0F2F1,stroke:#00897B,color:#1B1B1B
+    classDef catalogo fill:#EDE7F6,stroke:#5E35B1,color:#1B1B1B
+    classDef contratacion fill:#FFF3E0,stroke:#EF6C00,color:#1B1B1B
+    classDef moderacion fill:#FFEBEE,stroke:#C62828,color:#1B1B1B
+
+    class Usuario,Administrador acceso
+    class Departamento,Municipio ubicacion
+    class PerfilPrestador,MedioContactoPrestador,TrabajoPortafolio,ImagenTrabajoPortafolio prestador
+    class CategoriaServicio,SubcategoriaServicio,ServicioPublicado,ImagenServicioPublicado catalogo
+    class SolicitudServicio,CambioEstadoSolicitud,MensajeSolicitud contratacion
+    class CalificacionUsuario,CasoModeracion,MedidaAdministrativa,HistorialCaso moderacion

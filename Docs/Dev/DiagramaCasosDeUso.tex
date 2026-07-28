@@ -1,0 +1,146 @@
+\documentclass[tikz, border=20pt]{standalone}
+\usepackage[utf8]{inputenc}
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usetikzlibrary{positioning, shapes.geometric, arrows.meta, calc, fit, backgrounds}
+
+\begin{document}
+\begin{tikzpicture}[
+    actor/.style={
+        align=center, font=\bfseries\sffamily,
+        execute at begin node={
+            \tikz[scale=0.45, line width=1.2pt, baseline=1.8cm, color=black!80]{
+                \draw (0,1.5) circle (0.5);
+                \draw (0,1) -- (0,-0.2);
+                \draw (-0.7,0.7) -- (0.7,0.7);
+                \draw (0,-0.2) -- (-0.5,-1.2);
+                \draw (0,-0.2) -- (0.5,-1.2);
+            }\\[0.5ex]
+        }
+    },
+    usecase/.style={
+        ellipse, draw=blue!60!black, thick, fill=blue!4,
+        minimum width=4.8cm, minimum height=1.4cm,
+        align=center, font=\small\sffamily, text width=3.8cm,
+        inner sep=1pt
+    },
+    system/.style={
+        rectangle, draw=black!30, thick, fill=gray!3,
+        rounded corners=20pt, inner sep=0pt
+    },
+    assoc/.style={thick, draw=black!70},
+    inherit/.style={thick, draw=black!70, -{Triangle[open, scale=1.5]}},
+    include/.style={dashed, thick, draw=blue!70!black, -{Stealth[scale=1.2]}},
+    extend/.style={dashed, thick, draw=purple!70!black, -{Stealth[scale=1.2]}}
+]
+
+% ====================
+% LÍMITE DEL SISTEMA
+% ====================
+\draw[system] (1.5, -16) rectangle (24.5, 26);
+\node[below right, font=\Large\bfseries\sffamily, text=black!70] at (2.5, 25.5) {MOICA - MVP};
+
+% ====================
+% ACTORES
+% ====================
+\node[actor] (V) at (-2, 22.5) {Visitante};
+\node[actor] (C) at (-2, 11) {Cliente};
+\node[actor] (P) at (-2, -6) {Prestador};
+\node[actor] (A) at (28, 3.5) {Administrador};
+
+% Herencia de actores
+\draw[inherit] (C) -- (V);
+\draw[inherit] (P) -- (C);
+
+% ====================
+% CASOS DE USO
+% ====================
+
+% --- Columna Central (Visitante, Cliente, Prestador) ---
+\node[usecase] (UC_Exp) at (7, 24) {Explorar perfiles\\y servicios};
+\node[usecase] (UC_Con) at (7, 21.5) {Consultar portafolio\\y reputación};
+
+\node[usecase] (UC_Cha) at (7, 18.5) {Conversar por chat};
+\node[usecase] (UC_ConEx) at (7, 16) {Acceder a\\contactos externos};
+\node[usecase] (UC_Log) at (7, 13.5) {Registrarse /\\Iniciar Sesión};
+\node[usecase] (UC_Env) at (7, 11) {Enviar solicitud\\de servicio};
+\node[usecase] (UC_Can) at (7, 8.5) {Cancelar solicitud};
+\node[usecase] (UC_CalP) at (7, 6) {Calificar al\\prestador};
+\node[usecase] (UC_Rep) at (7, 3.5) {Reportar a la\\contraparte};
+
+\node[usecase] (UC_GP) at (7, -1.5) {Gestionar perfil\\profesional};
+\node[usecase] (UC_GS) at (7, -4) {Administrar servicios\\(Activar/Desactivar)};
+\node[usecase] (UC_GPo) at (7, -6.5) {Gestionar portafolio};
+\node[usecase] (UC_Disp) at (7, -9) {Cambiar disponibilidad\\(Disponible / No Disp.)};
+\node[usecase] (UC_AR) at (7, -11.5) {Gestionar solicitudes\\(Aceptar/Rechazar)};
+\node[usecase] (UC_Comp) at (7, -14) {Marcar solicitud\\como completada};
+
+% --- Columna Derecha (Calificar al cliente y Administrador) ---
+\node[usecase] (UC_CalC) at (19, -14) {Calificar al\\cliente};
+
+\node[usecase] (UC_CRep) at (19, 8.5) {Consultar reportes\\recibidos};
+\node[usecase] (UC_RevE) at (19, 5.5) {Revisar evidencias\\del caso};
+\node[usecase] (UC_ResR) at (19, 2.5) {Resolver reporte\\(Aceptar/Rechazar)};
+\node[usecase] (UC_EmiM) at (19, -0.5) {Emitir medida\\administrativa};
+
+
+% ====================
+% ASOCIACIONES
+% ====================
+
+% Visitante
+\draw[assoc] (V) -- (UC_Exp);
+\draw[assoc] (V) -- (UC_Con);
+
+% Cliente
+\draw[assoc] (C) -- (UC_Cha);
+\draw[assoc] (C) -- (UC_ConEx);
+\draw[assoc] (C) -- (UC_Log);
+\draw[assoc] (C) -- (UC_Env);
+\draw[assoc] (C) -- (UC_Can);
+\draw[assoc] (C) -- (UC_CalP);
+\draw[assoc] (C) -- (UC_Rep);
+
+% Prestador
+\draw[assoc] (P) -- (UC_GP);
+\draw[assoc] (P) -- (UC_GS);
+\draw[assoc] (P) -- (UC_GPo);
+\draw[assoc] (P) -- (UC_Disp);
+\draw[assoc] (P) -- (UC_AR);
+\draw[assoc] (P) -- (UC_Comp);
+\draw[assoc] (P) to[out=-15, in=180] (UC_CalC.west);
+
+% Administrador
+\draw[assoc] (A) -- (UC_CRep);
+\draw[assoc] (A) -- (UC_RevE);
+\draw[assoc] (A) -- (UC_ResR);
+\draw[assoc] (A) -- (UC_EmiM);
+
+
+% ====================
+% INCLUDES / EXTENDS
+% ====================
+
+% UC_AR includes UC_ConEx
+\coordinate (R3) at ($(UC_AR.east) + (4.0, 0)$);
+\coordinate (R4) at (R3 |- UC_ConEx.east);
+\draw[include, rounded corners] (UC_AR.east) -- (R3) -- (R4) node[pos=0.5, fill=gray!3, font=\scriptsize\sffamily, text=blue!70!black, inner sep=2pt] {$\ll$\textsf{includes}$\gg$} -- (UC_ConEx.east);
+
+% UC_AR includes UC_Cha
+\coordinate (R1) at ($(UC_AR.east) + (6.0, 0)$);
+\coordinate (R2) at (R1 |- UC_Cha.east);
+\draw[include, rounded corners] (UC_AR.east) -- (R1) -- (R2) node[pos=0.5, fill=gray!3, font=\scriptsize\sffamily, text=blue!70!black, inner sep=2pt] {$\ll$\textsf{includes}$\gg$} -- (UC_Cha.east);
+
+% UC_Comp extends UC_CalP
+\coordinate (R5) at ($(UC_Comp.east) + (8.0, 0)$);
+\coordinate (R6) at (R5 |- UC_CalP.east);
+\draw[extend, rounded corners] (UC_Comp.east) -- (R5) -- (R6) node[pos=0.5, fill=gray!3, font=\scriptsize\sffamily, text=purple!70!black, inner sep=2pt] {$\ll$\textsf{extends}$\gg$} -- (UC_CalP.east);
+
+% UC_Comp extends UC_CalC
+\draw[extend] (UC_Comp.east) -- node[pos=0.5, fill=gray!3, font=\scriptsize\sffamily, text=purple!70!black, inner sep=2pt] {$\ll$\textsf{extends}$\gg$} (UC_CalC.west);
+
+% UC_ResR extends UC_EmiM
+\draw[extend] (UC_ResR.south) -- node[pos=0.5, fill=gray!3, font=\scriptsize\sffamily, text=purple!70!black, inner sep=2pt] {$\ll$\textsf{extends}$\gg$} (UC_EmiM.north);
+
+\end{tikzpicture}
+\end{document}

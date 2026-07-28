@@ -1,0 +1,134 @@
+erDiagram
+	direction TB
+	Usuario {
+
+	}
+
+	Administrador {
+
+	}
+
+	PerfilPrestador {
+
+	}
+
+	Departamento {
+
+	}
+
+	Municipio {
+
+	}
+
+	SolicitudServicio {
+
+	}
+
+	MedioContactoPrestador {
+
+	}
+
+	TrabajoPortafolio {
+
+	}
+
+	ImagenTrabajoPortafolio {
+
+	}
+
+	CategoriaServicio {
+
+	}
+
+	SubcategoriaServicio {
+
+	}
+
+	ServicioPublicado {
+
+	}
+
+	ImagenServicioPublicado {
+
+	}
+
+	CambioEstadoSolicitud {
+
+	}
+
+	MensajeSolicitud {
+
+	}
+
+	CalificacionUsuario {
+
+	}
+
+	CasoModeracion {
+
+	}
+
+	MedidaAdministrativa {
+
+	}
+
+	HistorialCaso {
+
+	}
+
+	Untitled-Entity {
+
+	}
+
+	Usuario||--o|Administrador:"usuarioAdministrador"
+	Usuario||--o|PerfilPrestador:"usuarioPerfilPrestador"
+	Departamento||--o{Municipio:"departamentoMunicipio"
+	Municipio||--o{PerfilPrestador:"municipioPerfilPrestador"
+	Municipio||--o{SolicitudServicio:"municipioSolicitudServicio"
+	PerfilPrestador||--o{MedioContactoPrestador:"perfilMedioContacto"
+	PerfilPrestador||--o{TrabajoPortafolio:"perfilTrabajoPortafolio"
+	TrabajoPortafolio||--o{ImagenTrabajoPortafolio:"trabajoImagenPortafolio"
+	CategoriaServicio||--o{SubcategoriaServicio:"categoriaSubcategoria"
+	SubcategoriaServicio||--o{ServicioPublicado:"subcategoriaServicioPublicado"
+	PerfilPrestador||--o{ServicioPublicado:"perfilServicioPublicado"
+	ServicioPublicado||--o{ImagenServicioPublicado:"servicioImagenPublicada"
+	Usuario||--o{SolicitudServicio:"usuarioSolicitudServicio"
+	ServicioPublicado||--o{SolicitudServicio:"servicioSolicitudServicio"
+	SolicitudServicio||--|{CambioEstadoSolicitud:"solicitudCambioEstado"
+	Usuario||--o{CambioEstadoSolicitud:"usuarioCambioEstado"
+	SolicitudServicio||--o{MensajeSolicitud:"solicitudMensaje"
+	Usuario||--o{MensajeSolicitud:"usuarioMensaje"
+	SolicitudServicio||--o{CalificacionUsuario:"solicitudCalificacion"
+	Usuario||--o{CalificacionUsuario:"calificacionEmitida"
+	Usuario||--o{CalificacionUsuario:"calificacionRecibida"
+	SolicitudServicio||--o{CasoModeracion:"solicitudCasoModeracion"
+	Usuario||--o{CasoModeracion:"casoPresentado"
+	Usuario||--o{CasoModeracion:"casoRecibido"
+	Administrador|o--o{CasoModeracion:"casoAsignado"
+	MedidaAdministrativa|o--o{CasoModeracion:"medidaActual"
+	CasoModeracion||--|{HistorialCaso:"versionesCaso"
+	Usuario||--o{HistorialCaso:"cuentaAfectada"
+	Usuario|o--o{HistorialCaso:"actorEvento"
+	Administrador|o--o{HistorialCaso:"responsableVersion"
+	MedidaAdministrativa|o--o{HistorialCaso:"medidaVersion"
+	Usuario}|--|{Untitled-Entity:"  "
+
+	Usuario:::usuarios
+	Administrador:::usuarios
+	PerfilPrestador:::prestadores
+	Departamento:::ubicaciones
+	Municipio:::ubicaciones
+	SolicitudServicio:::contratacion
+	MedioContactoPrestador:::prestadores
+	TrabajoPortafolio:::prestadores
+	ImagenTrabajoPortafolio:::prestadores
+	CategoriaServicio:::servicios
+	SubcategoriaServicio:::servicios
+	ServicioPublicado:::servicios
+	ImagenServicioPublicado:::servicios
+	CambioEstadoSolicitud:::contratacion
+	MensajeSolicitud:::contratacion
+	CalificacionUsuario:::confianza
+	CasoModeracion:::confianza
+	MedidaAdministrativa:::confianza
+	HistorialCaso:::confianza

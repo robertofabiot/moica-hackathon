@@ -8,7 +8,7 @@
 | Proyecto | Hackathon UAM 2026 — categoría Avanzado |
 | Reto | Conecta Emprende |
 | Equipo | Nova Studios |
-| Última actualización | 21 de julio de 2026 |
+| Última actualización | 5 de agosto de 2026 |
 
 ---
 
@@ -324,49 +324,65 @@ No se requiere una entidad `Reputacion`: los promedios y cantidades podrán calc
 
 El cliente y el prestador podrán reportar a la contraparte desde que la solicitud haya sido aceptada. También podrán hacerlo posteriormente si la solicitud termina cancelada o completada. No se podrá reportar a alguien con quien no exista una solicitud aceptada.
 
-Cada participante podrá crear como máximo un reporte por solicitud. Cada reporte incluirá:
+Cada reporte abrirá un caso de moderación, que funcionará como el expediente de la investigación. Cada participante podrá abrir como máximo un caso por solicitud. Cada caso incluirá:
 
 - Solicitud relacionada.
 - Usuario que reporta.
 - Usuario reportado.
 - Motivo.
 - Descripción.
-- Fecha de creación.
+- Administrador responsable, cuando esté asignado.
 - Estado actual.
-- Resolución administrativa, cuando exista.
-- Administrador responsable.
-- Medida vigente, cuando corresponda.
+- Resultado y resolución vigentes, cuando el caso esté cerrado.
+- Medida administrativa vigente y su fecha de finalización, cuando corresponda.
+- Fecha de apertura, fecha del cierre vigente y fecha de última actualización.
 
-### 11.1 Flujo del reporte
+### 11.1 Estados del caso de moderación
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Pendiente: Participante reporta
-    Pendiente --> En_revision: Administrador inicia revisión
-    En_revision --> Rechazado: No procede
-    En_revision --> Aceptado: Procede
-    Aceptado --> Resuelto: Registra decisión
-    Rechazado --> [*]
-    Resuelto --> [*]
+    [*] --> Abierto: Participante reporta
+    Abierto --> En_revision: Administrador toma el caso
+    En_revision --> Cerrado: Registra resultado y resolución
+    Cerrado --> Reabierto: Apelación aceptada
+    Reabierto --> En_revision: Administrador retoma el caso
+    Cerrado --> [*]
 ```
 
 | Estado actual | Acción administrativa | Estado resultante | Significado |
 |---|---|---|---|
-| `PENDIENTE` | Iniciar revisión | `EN_REVISION` | El caso fue asignado o comenzó a analizarse. |
-| `EN_REVISION` | Determinar que no procede | `RECHAZADO` | El reporte se cierra sin medida. |
-| `EN_REVISION` | Determinar que procede | `ACEPTADO` | El caso requiere una decisión administrativa. |
-| `ACEPTADO` | Registrar resolución | `RESUELTO` | Se deja registrada la decisión y, si corresponde, la medida vigente. |
+| `ABIERTO` | Asignar responsable e iniciar la revisión | `EN_REVISION` | Un administrador analiza los hechos y antecedentes del caso. |
+| `EN_REVISION` | Registrar el resultado y la resolución | `CERRADO` | El caso posee un resultado, una resolución y una fecha de cierre vigentes. |
+| `CERRADO` | Aceptar una apelación | `REABIERTO` | La decisión previa deja de ser definitiva. |
+| `REABIERTO` | Retomar la revisión | `EN_REVISION` | El caso vuelve al análisis dentro del mismo expediente. |
 
-La existencia de un reporte no cambiará el estado de la solicitud. Tampoco ocasionará una sanción automática.
+### 11.2 Resultado de la investigación
 
-La resolución y la única medida vigente se almacenarán en el mismo reporte durante el MVP. Una revisión o apelación podrá modificar o revertir la medida y sobrescribirá la anterior; no se conservará un historial independiente de medidas administrativas en esta versión.
+El estado expresa la etapa del proceso y el resultado expresa la decisión. Al cerrar un caso, el administrador registrará uno de estos dos resultados:
 
-Las medidas consideradas incluyen:
+| Resultado | Significado |
+|---|---|
+| `PROCEDENTE` | La investigación confirmó que el caso amerita una decisión administrativa. |
+| `DESESTIMADO` | La investigación concluyó que el caso no amerita una medida administrativa. |
+
+### 11.3 Medidas administrativas
+
+Las medidas formarán un catálogo con código estable, nivel de severidad, estado de cuenta resultante y la indicación de si exigen fecha de finalización. Las medidas consideradas incluyen:
 
 - Advertencia.
 - Restricción temporal de funciones.
 - Suspensión temporal de la cuenta.
 - Suspensión permanente ante conductas graves o reiteradas.
+
+El caso conservará la medida vigente y la fecha en que termina, cuando sea temporal. Una revisión o una apelación podrá revocarla o sustituirla.
+
+### 11.4 Historial del caso
+
+Cada caso conservará un historial de versiones. Cada evento administrativo cerrará la versión anterior y creará una nueva con la fotografía completa del caso y del estado de la cuenta afectada, de modo que las decisiones anteriores no se pierdan.
+
+Los eventos registrados serán `CASO_ABIERTO`, `RESPONSABLE_ASIGNADO`, `ESTADO_CASO_CAMBIADO`, `RESOLUCION_REGISTRADA`, `MEDIDA_APLICADA`, `MEDIDA_REVOCADA`, `MEDIDA_EXPIRADA`, `ESTADO_CUENTA_CAMBIADO`, `APELACION_PRESENTADA`, `APELACION_ACEPTADA`, `APELACION_RECHAZADA` y `CASO_REABIERTO`. Cada versión indicará si el evento lo originó un usuario, un administrador o el sistema.
+
+La existencia de un caso no cambiará el estado de la solicitud. Tampoco ocasionará una sanción automática.
 
 ## 12. Estructura funcional del dominio
 
@@ -383,9 +399,9 @@ El siguiente inventario orientará el modelo entidad-relación, sin sustituir to
 | Contratación | `SolicitudServicio`, `HistorialEstadoSolicitud` | Se conserva el estado actual y cada transición. |
 | Comunicación | `Mensaje` | Cada mensaje pertenece directamente a una solicitud aceptada. |
 | Reputación | `Calificacion` | Las reputaciones se calculan por rol; no se almacenan como entidad separada. |
-| Moderación | `Reporte` | Incluye resolución y una única medida vigente; no necesita entidades separadas para ellas. |
+| Moderación | `CasoModeracion`, `MedidaAdministrativa`, `HistorialCaso` | El caso concentra lo vigente, las medidas forman un catálogo y el historial conserva cada versión. |
 
-No se crearán tablas independientes `Cliente`, `Portafolio`, `Conversacion`, `Reputacion`, `ResolucionReporte` ni `MedidaAdministrativa` mientras no posean información o multiplicidad propias que lo justifiquen.
+No se crearán tablas independientes `Cliente`, `Portafolio`, `Conversacion` ni `Reputacion` mientras no posean información o multiplicidad propias que lo justifiquen.
 
 ## 13. Módulos funcionales del MVP
 
@@ -399,8 +415,8 @@ No se crearán tablas independientes `Cliente`, `Portafolio`, `Conversacion`, `R
 | Solicitudes | Envío, aceptación, rechazo, cancelación, finalización e historial. |
 | Chat | Mensajes de texto persistentes asociados con solicitudes aceptadas. |
 | Calificaciones | Evaluación bilateral y opcional después de completar el servicio. |
-| Reportes | Registro y seguimiento de problemas entre participantes. |
-| Administración externa | Revisión de reportes y aplicación de la medida vigente. |
+| Moderación | Apertura de casos, seguimiento de estados, resoluciones y medidas. |
+| Área administrativa `/admin` | Revisión y resolución de casos e historial, dentro del mismo frontend. |
 
 ## 14. Recorrido demostrable del MVP
 
@@ -414,8 +430,8 @@ El MVP deberá permitir demostrar el siguiente ciclo:
 6. Si la acepta, se habilitan el chat y los contactos externos.
 7. Las partes coordinan el trabajo y el prestador lo marca como completado.
 8. Ambas partes pueden calificarse de forma opcional.
-9. Desde la aceptación, cualquiera de los participantes puede registrar un reporte.
-10. Un administrador puede revisar el reporte y registrar su resolución.
+9. Desde la aceptación, cualquiera de los participantes puede abrir un caso de moderación.
+10. Un administrador revisa el caso, registra su resultado y su resolución y, si corresponde, aplica una medida administrativa.
 
 ## 15. Fuera del alcance del MVP
 
@@ -433,7 +449,6 @@ Las siguientes funciones no se consideran necesarias para la primera versión:
 - Imágenes, audios, documentos o llamadas dentro del chat.
 - Cifrado de extremo a extremo.
 - Notificaciones avanzadas basadas en ubicación.
-- Historial independiente de medidas administrativas.
 - Sanciones completamente automatizadas.
 - Aplicación móvil nativa.
 
@@ -468,9 +483,9 @@ Estas funciones podrán evaluarse para versiones futuras sin comprometer el alca
 25. Cada parte puede emitir como máximo una calificación por solicitud completada.
 26. Las calificaciones son opcionales y la reputación se calcula por separado como cliente y como prestador.
 27. Solo se puede reportar a la contraparte desde que la solicitud haya sido aceptada.
-28. Cada participante puede crear como máximo un reporte por solicitud.
-29. Los reportes no generan sanciones automáticas ni alteran el estado de la solicitud.
-30. La resolución y la única medida vigente pertenecen al reporte; una modificación posterior sobrescribe la medida anterior.
+28. Cada participante puede abrir como máximo un caso de moderación por solicitud.
+29. Los casos de moderación no generan sanciones automáticas ni alteran el estado de la solicitud.
+30. El caso conserva su resultado, su resolución y su medida vigentes, y cada cambio queda registrado como una nueva versión de su historial.
 31. Cada inicio de sesión crea una sesión registrada, con fecha de expiración propia.
 32. Una sesión puede revocarse antes de expirar al cerrar sesión, al cambiar las credenciales o al aplicarse una medida administrativa a la cuenta.
 33. El segundo factor TOTP es obligatorio para las cuentas con rol administrativo y opcional para el resto; `/admin` solo admite sesiones que lo hayan verificado.
@@ -504,7 +519,7 @@ El chat almacenará los mensajes en PostgreSQL y protegerá su tránsito mediant
 
 ## 19. Criterio de éxito del MVP
 
-Moica tendrá un MVP demostrable cuando una cuenta pueda crear su perfil de prestador y publicar un servicio, y otra pueda descubrirlo, solicitarlo, comunicarse después de la aceptación y completar el ciclo con una calificación opcional. Además, deberá existir un mecanismo funcional para registrar reportes y permitir que un administrador los revise en un entorno seguro.
+Moica tendrá un MVP demostrable cuando una cuenta pueda crear su perfil de prestador y publicar un servicio, y otra pueda descubrirlo, solicitarlo, comunicarse después de la aceptación y completar el ciclo con una calificación opcional. Además, deberá existir un mecanismo funcional para abrir casos de moderación y permitir que un administrador los revise y los resuelva desde el área `/admin`.
 
 ---
 

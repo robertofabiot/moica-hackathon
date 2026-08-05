@@ -84,19 +84,35 @@ Un prestador podrá contratar a otro, incluso si ambos ofrecen servicios similar
 
 ### 4.4 Administrador
 
-El administrador será una cuenta del mismo sistema de identidad con un rol administrativo, aunque utilice una interfaz separada y restringida. Esto permitirá registrar qué administrador revisó y resolvió cada reporte.
+El administrador será una cuenta del mismo sistema de identidad con un rol administrativo. Esto permitirá registrar qué administrador revisó y resolvió cada caso de moderación.
 
-La administración podrá implementarse mediante un sitio separado —por ejemplo, una aplicación construida con OpenXava— conectado de forma segura con el backend o la base de datos de Moica.
+Las funciones administrativas se ubicarán en el área `/admin` del mismo frontend React de Moica. El acceso a esa área exigirá dos condiciones simultáneas: que la cuenta posea el rol administrativo y que su sesión haya verificado el segundo factor.
 
 El administrador podrá:
 
-- Consultar los reportes recibidos.
+- Consultar los casos de moderación recibidos.
 - Revisar la solicitud, los participantes, el historial de estados y los mensajes relacionados.
-- Colocar un reporte en revisión.
-- Aceptar o rechazar un reporte.
-- Registrar la resolución del caso.
-- Emitir advertencias, restricciones o suspensiones.
-- Modificar o revertir la medida vigente cuando corresponda.
+- Asignarse un caso o reasignarlo a otro administrador.
+- Cambiar el estado del caso entre `ABIERTO`, `EN_REVISION`, `CERRADO` y `REABIERTO`.
+- Registrar la resolución indicando si el caso resultó `PROCEDENTE` o `DESESTIMADO`.
+- Aplicar una medida administrativa del catálogo y revocarla cuando corresponda.
+- Atender apelaciones y reabrir un caso ya cerrado.
+
+### 4.5 Autenticación, sesiones y segundo factor
+
+El inicio de sesión se realizará con correo y contraseña. La contraseña se guardará únicamente como hash.
+
+Cada inicio de sesión creará una sesión registrada por Moica. El token entregado al navegador llevará el identificador de esa sesión, de modo que la plataforma pueda comprobar en cada petición si sigue siendo válida. Esto permite dos cosas que un token autónomo no permitiría:
+
+- **Expiración.** Toda sesión nace con una fecha de expiración; al alcanzarla deja de ser válida aunque el token no haya cambiado.
+- **Revocación.** Una sesión puede invalidarse antes de expirar cuando la persona cierra sesión, cuando cambia sus credenciales o cuando una medida administrativa afecta a la cuenta. La sesión conservará el instante y el motivo de la revocación.
+
+El segundo factor será de tipo TOTP: la persona registrará un secreto en una aplicación autenticadora que genera códigos temporales.
+
+- Será obligatorio para toda cuenta con rol administrativo.
+- Será opcional para el resto de las cuentas, que podrán activarlo o desactivarlo cuando lo deseen.
+- Cada cuenta podrá registrar como máximo un segundo factor, que pasará por los estados `PENDIENTE_ACTIVACION`, `ACTIVO` y `DESACTIVADO`.
+- Cada sesión registrará si superó la verificación del segundo factor; el área `/admin` solo aceptará sesiones que la hayan superado.
 
 ## 5. Perfil del prestador
 
@@ -358,7 +374,8 @@ El siguiente inventario orientará el modelo entidad-relación, sin sustituir to
 
 | Área | Elementos principales | Decisión |
 |---|---|---|
-| Identidad | `Usuario`, `PerfilPrestador` | Toda cuenta actúa como cliente; el perfil añade la capacidad de ofrecer servicios. |
+| Identidad | `Usuario`, `Administrador`, `PerfilPrestador` | Toda cuenta actúa como cliente; el perfil añade la capacidad de ofrecer servicios y el rol administrativo habilita `/admin`. |
+| Acceso | `Sesion`, `SegundoFactorUsuario` | Las sesiones expiran y pueden revocarse; el segundo factor es obligatorio para el rol administrativo. |
 | Territorio | `Departamento`, `Municipio` | El MVP filtra Managua, pero conserva una estructura ampliable. |
 | Perfil | `MedioContacto`, `TrabajoPortafolio`, `ImagenTrabajo` | Contactos libres y trabajos vinculados directamente al perfil. |
 | Clasificación | `Categoria`, `Subcategoria` | Un servicio elige una subcategoría principal. |
@@ -374,7 +391,7 @@ No se crearán tablas independientes `Cliente`, `Portafolio`, `Conversacion`, `R
 
 | Módulo | Responsabilidad principal |
 |---|---|
-| Autenticación y usuarios | Registro, inicio de sesión, identidad, autorización y estado de cuenta. |
+| Autenticación y usuarios | Registro, inicio de sesión, segundo factor, sesiones, identidad, autorización y estado de cuenta. |
 | Perfiles de prestadores | Información profesional, tipo, municipio, cobertura, disponibilidad y contactos. |
 | Portafolio | Gestión de trabajos e imágenes como sección del perfil. |
 | Servicios y categorías | Publicación, edición, consulta y clasificación jerárquica. |
@@ -454,6 +471,9 @@ Estas funciones podrán evaluarse para versiones futuras sin comprometer el alca
 28. Cada participante puede crear como máximo un reporte por solicitud.
 29. Los reportes no generan sanciones automáticas ni alteran el estado de la solicitud.
 30. La resolución y la única medida vigente pertenecen al reporte; una modificación posterior sobrescribe la medida anterior.
+31. Cada inicio de sesión crea una sesión registrada, con fecha de expiración propia.
+32. Una sesión puede revocarse antes de expirar al cerrar sesión, al cambiar las credenciales o al aplicarse una medida administrativa a la cuenta.
+33. El segundo factor TOTP es obligatorio para las cuentas con rol administrativo y opcional para el resto; `/admin` solo admite sesiones que lo hayan verificado.
 
 ## 17. Dirección técnica preliminar
 
@@ -463,11 +483,11 @@ Estas funciones podrán evaluarse para versiones futuras sin comprometer el alca
 | Backend y API REST | Spring Boot con Java |
 | Persistencia | PostgreSQL |
 | Contenedores | Docker |
-| Administración | Aplicación separada, posiblemente OpenXava |
+| Área administrativa | Ruta `/admin` dentro del mismo frontend React |
 
 El MVP se desarrollará como un backend modular con una sola base de datos. Por el tamaño del equipo y el plazo de la hackathon, no se recomienda dividirlo en microservicios.
 
-El chat almacenará los mensajes en PostgreSQL y protegerá su tránsito mediante HTTPS/TLS y controles de autorización. El administrador accederá únicamente mediante una ruta o aplicación protegida.
+El chat almacenará los mensajes en PostgreSQL y protegerá su tránsito mediante HTTPS/TLS y controles de autorización. El administrador accederá únicamente mediante el área `/admin`, protegida por el rol administrativo y por el segundo factor.
 
 ## 18. Próximos pasos de análisis y diseño
 

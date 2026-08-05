@@ -10,7 +10,7 @@ Este documento contiene las reglas estrictas de arquitectura y desarrollo para l
 
 ## 2. Convenciones de Backend (Spring Boot)
 - **Patrón Arquitectónico:** Arquitectura por Capas Clásica (Controller, Service, Repository, Entity). No usar Arquitectura Hexagonal en el MVP.
-- **Autenticación:** JWT (JSON Web Tokens) sin estado (Stateless).
+- **Autenticación:** JWT (JSON Web Tokens) asociados a una sesión registrada en la base de datos. El token transporta el identificador de su sesión, de modo que esta pueda expirar y revocarse; la autenticación no es puramente stateless.
 - **Tipos de Datos Críticos:** 
   - IDs siempre en `BIGINT` (en Java, usar `Long`).
   - Fechas siempre en `TIMESTAMPTZ` (en Java, usar `OffsetDateTime` o `Instant` para manejar UTC).

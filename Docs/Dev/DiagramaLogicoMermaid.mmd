@@ -1,4 +1,8 @@
 erDiagram
+    %% EstadoSegundoFactor:
+    %% PENDIENTE_ACTIVACION, ACTIVO, DESACTIVADO.
+    %% MotivoRevocacionSesion:
+    %% CIERRE_VOLUNTARIO, CAMBIO_CREDENCIALES, MEDIDA_ADMINISTRATIVA.
     %% EstadoCasoModeracion:
     %% ABIERTO, EN_REVISION, CERRADO, REABIERTO.
     %% ResultadoCasoModeracion:
@@ -25,6 +29,27 @@ erDiagram
     Administrador {
         bigint idAdministrador PK,FK
         timestamptz fechaAsignacion
+    }
+
+    SegundoFactorUsuario {
+        bigint idUsuario PK,FK
+        varchar secretoTotp
+        EstadoSegundoFactor estadoSegundoFactor
+        timestamptz fechaActivacion "opcional"
+        timestamptz fechaUltimaVerificacion "opcional"
+        timestamptz fechaCreacion
+        timestamptz fechaActualizacion
+    }
+
+    Sesion {
+        bigint idSesion PK
+        bigint idUsuario FK
+        varchar identificadorToken UK
+        boolean segundoFactorVerificado
+        timestamptz fechaInicio
+        timestamptz fechaExpiracion
+        timestamptz fechaRevocacion "opcional"
+        MotivoRevocacionSesion motivoRevocacion "opcional"
     }
 
     Departamento {
@@ -209,6 +234,8 @@ erDiagram
     }
 
     Usuario ||--o| Administrador : usuarioAdministrador
+    Usuario ||--o| SegundoFactorUsuario : usuarioSegundoFactor
+    Usuario ||--o{ Sesion : usuarioSesiones
     Usuario ||--o| PerfilPrestador : usuarioPerfilPrestador
 
     Departamento ||--o{ Municipio : departamentoMunicipios
@@ -254,7 +281,7 @@ erDiagram
     classDef contratacion fill:#FFF3E0,stroke:#EF6C00,color:#1B1B1B
     classDef moderacion fill:#FFEBEE,stroke:#C62828,color:#1B1B1B
 
-    class Usuario,Administrador acceso
+    class Usuario,Administrador,SegundoFactorUsuario,Sesion acceso
     class Departamento,Municipio ubicacion
     class PerfilPrestador,MedioContactoPrestador,TrabajoPortafolio,ImagenTrabajoPortafolio prestador
     class CategoriaServicio,SubcategoriaServicio,ServicioPublicado,ImagenServicioPublicado catalogo

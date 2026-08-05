@@ -78,6 +78,9 @@
 % --- Columna Derecha (Calificar al cliente y Administrador) ---
 \node[usecase] (UC_CalC) at (19, -14) {Calificar al\\cliente};
 
+\node[usecase] (UC_Adm) at (19, 21.5) {Acceder al área\\administrativa /admin};
+\node[usecase] (UC_2FA) at (19, 18.5) {Verificar segundo\\factor (TOTP)};
+
 \node[usecase] (UC_CRep) at (19, 8.5) {Consultar reportes\\recibidos};
 \node[usecase] (UC_RevE) at (19, 5.5) {Revisar evidencias\\del caso};
 \node[usecase] (UC_ResR) at (19, 2.5) {Resolver reporte\\(Aceptar/Rechazar)};
@@ -111,6 +114,7 @@
 \draw[assoc] (P) to[out=-15, in=180] (UC_CalC.west);
 
 % Administrador
+\draw[assoc] (A) to[out=90, in=0] (UC_Adm.east);
 \draw[assoc] (A) -- (UC_CRep);
 \draw[assoc] (A) -- (UC_RevE);
 \draw[assoc] (A) -- (UC_ResR);
@@ -120,6 +124,12 @@
 % ====================
 % INCLUDES / EXTENDS
 % ====================
+
+% UC_Adm includes UC_2FA
+\draw[include] (UC_Adm.south) -- node[pos=0.5, fill=gray!3, font=\scriptsize\sffamily, text=blue!70!black, inner sep=2pt] {$\ll$\textsf{includes}$\gg$} (UC_2FA.north);
+
+% UC_2FA extends UC_Log
+\draw[extend] (UC_2FA.west) -- node[pos=0.5, fill=gray!3, font=\scriptsize\sffamily, text=purple!70!black, inner sep=2pt] {$\ll$\textsf{extends}$\gg$} (UC_Log.east);
 
 % UC_AR includes UC_ConEx
 \coordinate (R3) at ($(UC_AR.east) + (4.0, 0)$);

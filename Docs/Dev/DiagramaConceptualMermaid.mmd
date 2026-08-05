@@ -8,6 +8,14 @@ erDiagram
 
 	}
 
+	SegundoFactorUsuario {
+
+	}
+
+	Sesion {
+
+	}
+
 	PerfilPrestador {
 
 	}
@@ -77,6 +85,8 @@ erDiagram
 	}
 
 	Usuario||--o|Administrador:"usuarioAdministrador"
+	Usuario||--o|SegundoFactorUsuario:"usuarioSegundoFactor"
+	Usuario||--o{Sesion:"usuarioSesion"
 	Usuario||--o|PerfilPrestador:"usuarioPerfilPrestador"
 	Departamento||--o{Municipio:"departamentoMunicipio"
 	Municipio||--o{PerfilPrestador:"municipioPerfilPrestador"
@@ -110,6 +120,8 @@ erDiagram
 
 	Usuario:::usuarios
 	Administrador:::usuarios
+	SegundoFactorUsuario:::usuarios
+	Sesion:::usuarios
 	PerfilPrestador:::prestadores
 	Departamento:::ubicaciones
 	Municipio:::ubicaciones

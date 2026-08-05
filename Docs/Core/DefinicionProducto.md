@@ -385,19 +385,19 @@ La existencia de un caso no cambiará el estado de la solicitud. Tampoco ocasion
 
 ## 12. Estructura funcional del dominio
 
-El siguiente inventario orientará el modelo entidad-relación, sin sustituir todavía su normalización formal:
+El siguiente inventario resume, por área funcional, las entidades del modelo lógico normalizado:
 
 | Área | Elementos principales | Decisión |
 |---|---|---|
 | Identidad | `Usuario`, `Administrador`, `PerfilPrestador` | Toda cuenta actúa como cliente; el perfil añade la capacidad de ofrecer servicios y el rol administrativo habilita `/admin`. |
 | Acceso | `Sesion`, `SegundoFactorUsuario` | Las sesiones expiran y pueden revocarse; el segundo factor es obligatorio para el rol administrativo. |
 | Territorio | `Departamento`, `Municipio` | El MVP filtra Managua, pero conserva una estructura ampliable. |
-| Perfil | `MedioContacto`, `TrabajoPortafolio`, `ImagenTrabajo` | Contactos libres y trabajos vinculados directamente al perfil. |
-| Clasificación | `Categoria`, `Subcategoria` | Un servicio elige una subcategoría principal. |
-| Oferta | `Servicio`, `ImagenServicio` | Imágenes opcionales y múltiples; publicación activa o inactiva. |
-| Contratación | `SolicitudServicio`, `HistorialEstadoSolicitud` | Se conserva el estado actual y cada transición. |
-| Comunicación | `Mensaje` | Cada mensaje pertenece directamente a una solicitud aceptada. |
-| Reputación | `Calificacion` | Las reputaciones se calculan por rol; no se almacenan como entidad separada. |
+| Perfil | `MedioContactoPrestador`, `TrabajoPortafolio`, `ImagenTrabajoPortafolio` | Contactos libres y trabajos vinculados directamente al perfil. |
+| Clasificación | `CategoriaServicio`, `SubcategoriaServicio` | Un servicio elige una subcategoría principal. |
+| Oferta | `ServicioPublicado`, `ImagenServicioPublicado` | Imágenes opcionales y múltiples; publicación activa o inactiva. |
+| Contratación | `SolicitudServicio`, `CambioEstadoSolicitud` | Se conserva el estado actual y cada transición. |
+| Comunicación | `MensajeSolicitud` | Cada mensaje pertenece directamente a una solicitud aceptada. |
+| Reputación | `CalificacionUsuario` | Las reputaciones se calculan por rol; no se almacenan como entidad separada. |
 | Moderación | `CasoModeracion`, `MedidaAdministrativa`, `HistorialCaso` | El caso concentra lo vigente, las medidas forman un catálogo y el historial conserva cada versión. |
 
 No se crearán tablas independientes `Cliente`, `Portafolio`, `Conversacion` ni `Reputacion` mientras no posean información o multiplicidad propias que lo justifiquen.

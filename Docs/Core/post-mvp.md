@@ -11,7 +11,7 @@ Este documento recopila las decisiones arquitectónicas, refactorizaciones y nue
 - **Proveedores de Insumos:** Permitir la conexión no solo para contratación de servicios, sino para proveedores de materia prima y equipos.
 - **Geolocalización Automática:** Integrar mapas (Google Maps o Mapbox) y coordenadas reales para reemplazar la descripción libre de cobertura.
 - **Pasarela de Pagos / Transacciones:** Implementar pagos dentro de MOICA, retenciones o comisiones.
-- **Expiración de Solicitudes:** Lógica en servidor (ej. un *Cron Job*) que cancele automáticamente solicitudes pendientes que el prestador ignore por mucho tiempo.
+- **Expiración automática de Solicitudes:** Lógica en servidor (ej. un *Cron Job*) que cancele automáticamente solicitudes pendientes que el prestador ignore por mucho tiempo. No debe confundirse con la expiración de sesiones, que sí forma parte del MVP.
 - **App Móvil Nativa:** Escalar la experiencia de la PWA actual a una aplicación nativa en tiendas de aplicaciones.
 - **Archivos Multimedia en Chat:** Soporte para subir imágenes, audios o documentos en la conversación.
 

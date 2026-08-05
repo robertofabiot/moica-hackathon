@@ -76,10 +76,6 @@ erDiagram
 
 	}
 
-	Untitled-Entity {
-
-	}
-
 	Usuario||--o|Administrador:"usuarioAdministrador"
 	Usuario||--o|PerfilPrestador:"usuarioPerfilPrestador"
 	Departamento||--o{Municipio:"departamentoMunicipio"
@@ -111,7 +107,6 @@ erDiagram
 	Usuario|o--o{HistorialCaso:"actorEvento"
 	Administrador|o--o{HistorialCaso:"responsableVersion"
 	MedidaAdministrativa|o--o{HistorialCaso:"medidaVersion"
-	Usuario}|--|{Untitled-Entity:"  "
 
 	Usuario:::usuarios
 	Administrador:::usuarios

@@ -222,7 +222,6 @@ La solicitud registrará el interés de un cliente en un servicio publicado. Con
 - Municipio donde se requiere el servicio.
 - Dirección, sector o referencia escrita libremente.
 - Fecha preferida opcional.
-- Mensaje adicional opcional.
 - Estado actual.
 - Fecha de creación y última actualización.
 

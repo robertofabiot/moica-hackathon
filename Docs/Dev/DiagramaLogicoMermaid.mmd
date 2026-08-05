@@ -147,7 +147,6 @@ erDiagram
         text descripcionNecesidad
         text indicacionUbicacion
         date fechaPreferida "opcional"
-        text mensajeAdicional "opcional"
         EstadoSolicitud estadoActual
         timestamptz fechaCreacion
         timestamptz fechaActualizacion
@@ -253,7 +252,7 @@ erDiagram
 
     Usuario ||--o{ SolicitudServicio : clienteSolicitudesServicio
     ServicioPublicado ||--o{ SolicitudServicio : servicioPublicadoSolicitudes
-    SolicitudServicio ||--o{ CambioEstadoSolicitud : solicitudCambiosEstado
+    SolicitudServicio ||--|{ CambioEstadoSolicitud : solicitudCambiosEstado
     Usuario ||--o{ CambioEstadoSolicitud : actorCambiosEstado
     SolicitudServicio ||--o{ MensajeSolicitud : solicitudMensajes
     Usuario ||--o{ MensajeSolicitud : remitenteMensajes

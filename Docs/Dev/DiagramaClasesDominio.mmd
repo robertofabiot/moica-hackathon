@@ -1,91 +1,320 @@
-flowchart TD
-    %% Estilos
-    classDef startEnd fill:#1B1B1B,stroke:#333,stroke-width:2px,color:#fff;
-    classDef decision fill:#FFEBEE,stroke:#C62828,stroke-width:2px;
-    classDef action fill:#E3F2FD,stroke:#1565C0,stroke-width:1px;
+---
+config:
+  theme: base
+  themeVariables:
+    primaryColor: '#FFFFFF'
+    primaryBorderColor: '#28253C'
+    primaryTextColor: '#28253C'
+    secondaryColor: '#FFFFFF'
+    tertiaryColor: '#FFFFFF'
+    lineColor: '#000000'
+---
+classDiagram
+    %% ==========================================
+    %% Identidad y Acceso
+    %% ==========================================
+    class Usuario {
+        +Long id
+        +String nombreCompleto
+        +String correoElectronico
+        +String claveHash
+        +EstadoCuenta estadoCuenta
+        +OffsetDateTime fechaFinEstadoCuenta
+        +registrarse()
+        +iniciarSesion() Sesion
+        +crearPerfilPrestador() PerfilPrestador
+        +solicitarServicio(ServicioPublicado, Detalles) SolicitudServicio
+    }
 
-    %% Nodos de inicio y fin
-    StartNode((Inicio))
-    EndNode((Fin))
+    class Administrador {
+        +OffsetDateTime fechaAsignacion
+        +tomarSolicitudVerificacion(SolicitudVerificacionPrestador)
+        +resolverVerificacion(SolicitudVerificacionPrestador, boolean, String)
+        +revocarVerificacion(SolicitudVerificacionPrestador, String)
+        +asignarCaso(CasoModeracion)
+        +resolverCaso(CasoModeracion, Resultado)
+        +aplicarMedida(CasoModeracion, MedidaAdministrativa)
+        +revocarMedida(CasoModeracion)
+        +atenderApelacion(CasoModeracion)
+    }
+
+    class SegundoFactorUsuario {
+        +String secretoTotp
+        +EstadoSegundoFactor estado
+        +activar()
+        +desactivar()
+        +verificar(String codigo) boolean
+    }
+
+    class Sesion {
+        +Long id
+        +String identificadorToken
+        +boolean segundoFactorVerificado
+        +OffsetDateTime fechaExpiracion
+        +MotivoRevocacionSesion motivoRevocacion
+        +revocar(MotivoRevocacionSesion)
+        +estaVigente() boolean
+        +verificarSegundoFactor()
+    }
 
     %% ==========================================
-    %% Carriles (Swimlanes) simulados con Subgraphs
+    %% Territorio
     %% ==========================================
+    class Departamento {
+        +String nombre
+        +boolean habilitado
+    }
 
-    subgraph Cliente [Carril: Cliente]
-        direction TB
-        C1[Explorar servicios y perfil del prestador]
-        C2[Enviar solicitud de servicio]
-        C3[Coordinar trabajo vía Chat]
-        C4[Calificar al Prestador\nOpcional]
-        C5[Cancelar Solicitud]
-    end
-
-    subgraph Sistema [Carril: Sistema MOICA]
-        direction TB
-        S1{¿Prestador Disponible\ny Servicio Activo?}
-        S2[Registrar Solicitud:\nEstado PENDIENTE]
-        S3[Habilitar Chat y\nContactos Externos]
-        S4[Registrar Estado:\nACEPTADA]
-        S5[Registrar Estado:\nCANCELADA / RECHAZADA]
-        S6[Registrar Estado:\nCOMPLETADA]
-        S7[Habilitar módulo\nde calificaciones]
-    end
-
-    subgraph Prestador [Carril: Prestador]
-        direction TB
-        P1{¿Acepta el\nservicio?}
-        P2[Coordinar trabajo vía Chat]
-        P3[Realizar el trabajo físico]
-        P4[Marcar solicitud\ncomo Completada]
-        P5[Calificar al Cliente\nOpcional]
-        P6[Cancelar Solicitud\ncon motivo]
-    end
+    class Municipio {
+        +String nombre
+    }
 
     %% ==========================================
-    %% Flujo de Actividades
+    %% Perfil del Prestador
     %% ==========================================
+    class PerfilPrestador {
+        +Long id
+        +String nombrePublico
+        +String urlImagenPerfil
+        +String descripcion
+        +TipoPrestador tipo
+        +String descripcionCobertura
+        +EstadoDisponibilidad disponibilidad
+        +NivelVerificacionPrestador nivelVerificacion
+        +actualizarPerfil()
+        +cambiarDisponibilidad(EstadoDisponibilidad)
+        +solicitarVerificacion(NivelVerificacionSolicitado) SolicitudVerificacionPrestador
+        +esVisiblePublicamente() boolean
+        +publicarServicio(Detalles) ServicioPublicado
+    }
 
-    StartNode --> C1
-    C1 --> S1
-    S1 -- "No" --> C1
-    S1 -- "Sí" --> C2
+    class MedioContactoPrestador {
+        +Long id
+        +String contenido
+        +int ordenVisualizacion
+    }
 
-    C2 --> S2
-    S2 --> P1
+    class TrabajoPortafolio {
+        +Long id
+        +String titulo
+        +String descripcion
+        +Date fechaRealizacion
+        +int ordenVisualizacion
+    }
 
-    %% Decisión del Prestador
-    P1 -- "Rechaza" --> S5
-    P1 -- "Acepta" --> S4
-    
-    S4 --> S3
-    S3 --> C3
-    S3 --> P2
-
-    %% Fase de coordinación y cancelación
-    C3 <--> P2
-    C3 -.->|"Decide cancelar"| C5
-    P2 -.->|"Decide cancelar"| P6
-    
-    C5 --> S5
-    P6 --> S5
-    S5 --> EndNode
-
-    %% Finalización
-    P2 --> P3
-    P3 --> P4
-    P4 --> S6
-    S6 --> S7
-    
-    S7 --> C4
-    S7 --> P5
-    
-    C4 --> EndNode
-    P5 --> EndNode
+    class ImagenTrabajoPortafolio {
+        +Long id
+        +String urlImagen
+        +String textoAlternativo
+        +int ordenVisualizacion
+    }
 
     %% ==========================================
-    %% Asignación de Clases (Alta Compatibilidad)
+    %% Verificación del Prestador
     %% ==========================================
-    class StartNode,EndNode startEnd;
-    class C1,C2,C3,C4,C5,S2,S3,S4,S5,S6,S7,P2,P3,P4,P5,P6 action;
-    class S1,P1 decision;
+    class SolicitudVerificacionPrestador {
+        +Long id
+        +NivelVerificacionSolicitado nivelSolicitado
+        +EstadoSolicitudVerificacion estadoSolicitud
+        +String observacionResolucion
+        +OffsetDateTime fechaSolicitud
+        +OffsetDateTime fechaInicioRevision
+        +OffsetDateTime fechaResolucion
+        +adjuntarDocumento(TipoDocumentoVerificacion, Archivo) DocumentoVerificacionPrestador
+        +iniciarRevision(Administrador)
+        +aprobar(Administrador)
+        +rechazar(Administrador, String motivo)
+        +revocar(Administrador, String motivo)
+        +estaAbierta() boolean
+    }
+
+    class DocumentoVerificacionPrestador {
+        +Long id
+        +TipoDocumentoVerificacion tipoDocumento
+        +String claveAlmacenamiento
+        +String nombreOriginal
+        +String tipoMime
+        +int tamanoBytes
+        +OffsetDateTime fechaCarga
+    }
+
+    %% ==========================================
+    %% Catálogo y Servicios
+    %% ==========================================
+    class CategoriaServicio {
+        +String nombre
+        +String descripcion
+    }
+
+    class SubcategoriaServicio {
+        +String nombre
+        +String descripcion
+    }
+
+    class ServicioPublicado {
+        +Long id
+        +String nombre
+        +String descripcion
+        +BigDecimal precioReferencia
+        +EstadoServicio estado
+        +activar()
+        +desactivar()
+    }
+
+    class ImagenServicioPublicado {
+        +Long id
+        +String urlImagen
+        +String textoAlternativo
+        +int ordenVisualizacion
+    }
+
+    %% ==========================================
+    %% Contratación
+    %% ==========================================
+    class SolicitudServicio {
+        +Long id
+        +String descripcionNecesidad
+        +String indicacionUbicacion
+        +Date fechaPreferida
+        +EstadoSolicitud estadoActual
+        +aceptar()
+        +rechazar()
+        +cancelar(String motivo, Usuario actor)
+        +completar()
+        +enviarMensaje(String contenido, Usuario remitente)
+    }
+
+    class CambioEstadoSolicitud {
+        +Long id
+        +EstadoSolicitud estadoAnterior
+        +EstadoSolicitud estadoNuevo
+        +String motivo
+        +OffsetDateTime fechaCambio
+    }
+
+    %% ==========================================
+    %% Comunicación
+    %% ==========================================
+    class MensajeSolicitud {
+        +Long id
+        +String contenido
+        +OffsetDateTime fechaEnvio
+    }
+
+    %% ==========================================
+    %% Reputación
+    %% ==========================================
+    class CalificacionUsuario {
+        +Long id
+        +int puntuacion
+        +String comentario
+        +RolCalificado rolCalificado
+    }
+
+    %% ==========================================
+    %% Moderación
+    %% ==========================================
+    class CasoModeracion {
+        +Long id
+        +String motivo
+        +String descripcion
+        +EstadoCasoModeracion estadoActual
+        +ResultadoCasoModeracion resultadoActual
+        +String resolucionActual
+        +OffsetDateTime fechaFinMedidaActual
+        +iniciarRevision()
+        +registrarResolucion(Resultado, String)
+        +aplicarMedida(MedidaAdministrativa)
+        +revocarMedida()
+        +reabrirCaso()
+    }
+
+    class MedidaAdministrativa {
+        +String codigo
+        +String nombre
+        +int nivelSeveridad
+        +EstadoCuenta estadoCuentaResultante
+        +boolean requiereFechaFin
+    }
+
+    class HistorialCaso {
+        +Long id
+        +int numeroVersion
+        +TipoActorHistorial tipoActor
+        +TipoEventoHistorial tipoEvento
+        +EstadoCasoModeracion estadoCaso
+        +EstadoCuenta estadoCuenta
+        +String detalleCambio
+        +boolean esVersionActual
+    }
+
+    %% ==========================================
+    %% Relaciones — Identidad y Acceso
+    %% ==========================================
+    Usuario <|-- Administrador : es un
+    Usuario "1" *-- "0..1" SegundoFactorUsuario : configura
+    Usuario "1" *-- "0..*" Sesion : inicia
+
+    %% ==========================================
+    %% Relaciones — Perfil del Prestador
+    %% ==========================================
+    Usuario "1" *-- "0..1" PerfilPrestador : tiene
+    PerfilPrestador "1" *-- "0..*" MedioContactoPrestador : expone
+    PerfilPrestador "1" *-- "0..*" TrabajoPortafolio : muestra
+    TrabajoPortafolio "1" *-- "0..*" ImagenTrabajoPortafolio : ilustra
+
+    %% ==========================================
+    %% Relaciones — Verificación del Prestador
+    %% ==========================================
+    PerfilPrestador "1" *-- "0..*" SolicitudVerificacionPrestador : presenta
+    SolicitudVerificacionPrestador "1" *-- "0..*" DocumentoVerificacionPrestador : adjunta
+    Administrador "0..1" --> "0..*" SolicitudVerificacionPrestador : resuelve
+
+    %% ==========================================
+    %% Relaciones — Territorio
+    %% ==========================================
+    Departamento "1" *-- "1..*" Municipio : contiene
+    Municipio "1" o-- "0..*" PerfilPrestador : ubica
+    Municipio "1" o-- "0..*" SolicitudServicio : localiza
+
+    %% ==========================================
+    %% Relaciones — Catálogo y Servicios
+    %% ==========================================
+    PerfilPrestador "1" *-- "0..*" ServicioPublicado : ofrece
+    CategoriaServicio "1" *-- "1..*" SubcategoriaServicio : agrupa
+    SubcategoriaServicio "1" o-- "0..*" ServicioPublicado : clasifica
+    ServicioPublicado "1" *-- "0..*" ImagenServicioPublicado : ilustra
+
+    %% ==========================================
+    %% Relaciones — Contratación
+    %% ==========================================
+    Usuario "1" --> "0..*" SolicitudServicio : es cliente de
+    ServicioPublicado "1" <-- "0..*" SolicitudServicio : solicita
+    SolicitudServicio "1" *-- "1..*" CambioEstadoSolicitud : registra
+    Usuario "1" --> "0..*" CambioEstadoSolicitud : ejecuta
+
+    %% ==========================================
+    %% Relaciones — Comunicación
+    %% ==========================================
+    SolicitudServicio "1" *-- "0..*" MensajeSolicitud : contiene
+    Usuario "1" --> "0..*" MensajeSolicitud : envía
+
+    %% ==========================================
+    %% Relaciones — Reputación
+    %% ==========================================
+    SolicitudServicio "1" *-- "0..2" CalificacionUsuario : genera
+    Usuario "1" --> "0..*" CalificacionUsuario : emite
+    Usuario "1" --> "0..*" CalificacionUsuario : recibe
+
+    %% ==========================================
+    %% Relaciones — Moderación
+    %% ==========================================
+    SolicitudServicio "1" <-- "0..*" CasoModeracion : originado por
+    Usuario "1" --> "0..*" CasoModeracion : reporta
+    Usuario "1" --> "0..*" CasoModeracion : es reportado en
+    Administrador "0..1" --> "0..*" CasoModeracion : asignado a
+    CasoModeracion "0..*" --> "0..1" MedidaAdministrativa : aplica
+    CasoModeracion "1" *-- "1..*" HistorialCaso : versiona
+    Usuario "1" --> "0..*" HistorialCaso : afectado en
+    Administrador "0..1" --> "0..*" HistorialCaso : responsable de
+    MedidaAdministrativa "0..1" --> "0..*" HistorialCaso : registrada en

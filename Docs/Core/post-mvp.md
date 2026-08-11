@@ -11,9 +11,26 @@ Este documento recopila las decisiones arquitectónicas, refactorizaciones y nue
 - **Proveedores de Insumos:** Permitir la conexión no solo para contratación de servicios, sino para proveedores de materia prima y equipos.
 - **Geolocalización Automática:** Integrar mapas (Google Maps o Mapbox) y coordenadas reales para reemplazar la descripción libre de cobertura.
 - **Pasarela de Pagos / Transacciones:** Implementar pagos dentro de MOICA, retenciones o comisiones.
-- **Expiración de Solicitudes:** Lógica en servidor (ej. un *Cron Job*) que cancele automáticamente solicitudes pendientes que el prestador ignore por mucho tiempo.
+- **Expiración automática de Solicitudes:** Lógica en servidor (ej. un *Cron Job*) que cancele automáticamente solicitudes pendientes que el prestador ignore por mucho tiempo. No debe confundirse con la expiración de sesiones, que sí forma parte del MVP.
 - **App Móvil Nativa:** Escalar la experiencia de la PWA actual a una aplicación nativa en tiendas de aplicaciones.
 - **Archivos Multimedia en Chat:** Soporte para subir imágenes, audios o documentos en la conversación.
 
 ## 3. Seguridad
 - Cifrado de extremo a extremo (E2E) para la mensajería del chat.
+
+## 4. Moderación y Cumplimiento Normativo
+En el MVP, una persona administradora revisa cada caso y decide manualmente cada medida. Las capacidades siguientes quedan excluidas y **sus reglas todavía no están definidas**: deberán diseñarse y aprobarse antes de implementarlas.
+
+- **Automatización del cumplimiento normativo:** Comprobaciones y reportes automáticos de cumplimiento sobre las cuentas y los casos de moderación.
+- **Detección y reglas de reincidencia:** Identificación automática de conductas repetidas y las reglas que se derivarían de ellas.
+- **Umbrales de severidad:** Criterios cuantitativos que asocien un nivel de severidad con una consecuencia determinada. En el MVP, el nivel de severidad del catálogo es únicamente descriptivo.
+- **Recomendación, selección o escalamiento automático de medidas:** Que Moica proponga, elija o agrave una medida sin la decisión de una persona administradora. No debe confundirse con la expiración automática de una medida temporal ya elegida por una persona, que sí forma parte del MVP.
+
+## 5. Automatización de la Verificación de Prestadores
+La verificación manual de dos niveles (básica y profesional) **sí forma parte del MVP**; lo que se pospone es su automatización. Ninguna de las siguientes mejoras ha sido aprobada todavía: quedan registradas como candidatas y deberán evaluarse por su costo, su fiabilidad y sus implicaciones legales antes de adoptarse.
+
+- **OCR y extracción automática de datos:** Leer los campos del documento para prellenar la revisión en lugar de transcribirlos a mano.
+- **Prueba de vida y biometría:** Comparación facial entre el documento y la persona, o detección de presencia real durante la carga.
+- **Integraciones externas:** Consulta a bases de datos gubernamentales, gremiales o de terceros para contrastar la documentación presentada.
+- **Proveedor externo de verificación de identidad:** Delegar total o parcialmente el proceso en un servicio especializado.
+- **Renovación y caducidad automática de niveles:** Revalidar periódicamente una verificación vigente sin intervención humana.

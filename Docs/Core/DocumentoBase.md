@@ -34,6 +34,13 @@ MOICA actúa como el puente digital que conecta a ambos segmentos al sustituir l
 
 El alcance inicial (MVP) comprende: registro diferenciado en dos etapas que cuente la historia laboral del prestador, perfil-portafolio con historial de trabajos, calificaciones que generen confianza y una verificación básica de identidad.
 
+Las dos etapas de la verificación son:
+
+1. **Verificación básica de identidad:** una persona administradora revisa la documentación oficial de identidad de la persona responsable del perfil. Es obligatoria para que el perfil aparezca públicamente, active servicios y reciba solicitudes.
+2. **Verificación profesional (opcional):** posterior a la básica, respalda la actividad declarada mediante certificados, constancias de experiencia o documentos comerciales, y concede una insignia superior.
+
+El acceso es inmediato y la validación posterior: el prestador puede registrarse y armar su perfil desde el primer momento, y la publicación se habilita cuando obtiene la verificación básica. Toda la revisión es manual y se apoya en un expediente documental privado.
+
 ## Valor diferencial
 
 Mientras Facebook y el boca a boca dependen de la suerte y de a quién conocés, MOICA convierte la confianza en algo que se puede ver: perfiles verificados, evidencia real y calificaciones, reduciendo la asimetría de información entre las partes.

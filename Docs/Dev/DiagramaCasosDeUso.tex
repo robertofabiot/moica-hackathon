@@ -37,8 +37,8 @@
 % ====================
 % LÍMITE DEL SISTEMA
 % ====================
-\draw[system] (1.5, -19.5) rectangle (24.5, 26);
-\node[below right, font=\Large\bfseries\sffamily, text=black!70] at (2.5, 25.5) {MOICA - MVP};
+\draw[system] (1.5, -24.5) rectangle (24.5, 28.5);
+\node[below right, font=\Large\bfseries\sffamily, text=black!70] at (2.5, 28) {MOICA - MVP};
 
 % ====================
 % ACTORES
@@ -57,6 +57,7 @@
 % ====================
 
 % --- Columna Central (Visitante, Cliente, Prestador) ---
+\node[usecase] (UC_VerIns) at (7, 26.5) {Ver insignia de\\verificación del perfil};
 \node[usecase] (UC_Exp) at (7, 24) {Explorar perfiles\\y servicios};
 \node[usecase] (UC_Con) at (7, 21.5) {Consultar portafolio\\y reputación};
 
@@ -75,6 +76,8 @@
 \node[usecase] (UC_Disp) at (7, -11.5) {Cambiar disponibilidad\\(Disponible / No Disp.)};
 \node[usecase] (UC_AR) at (7, -14) {Gestionar solicitudes\\(Aceptar/Rechazar)};
 \node[usecase] (UC_Comp) at (7, -16.5) {Marcar solicitud\\como completada};
+\node[usecase] (UC_SolV) at (7, -19) {Solicitar verificación\\(Básica / Profesional)};
+\node[usecase] (UC_EstV) at (7, -21.5) {Consultar estado de\\su verificación};
 
 % --- Columna Derecha (Calificar al cliente y Administrador) ---
 \node[usecase] (UC_CalC) at (19, -16.5) {Calificar al\\cliente};
@@ -88,6 +91,8 @@
 \node[usecase] (UC_ResR) at (19, 3.5) {Resolver caso\\(Procedente / Desestimado)};
 \node[usecase] (UC_EmiM) at (19, 1) {Aplicar o revocar\\medida administrativa};
 \node[usecase] (UC_Apel) at (19, -1.5) {Atender apelación\\y reabrir caso};
+\node[usecase] (UC_RevV) at (19, -4) {Revisar solicitudes\\de verificación};
+\node[usecase] (UC_ResV) at (19, -6.5) {Aprobar, rechazar o\\revocar verificación};
 
 
 % ====================
@@ -95,6 +100,7 @@
 % ====================
 
 % Visitante
+\draw[assoc] (V) -- (UC_VerIns);
 \draw[assoc] (V) -- (UC_Exp);
 \draw[assoc] (V) -- (UC_Con);
 
@@ -115,8 +121,11 @@
 \draw[assoc] (P) -- (UC_Disp);
 \draw[assoc] (P) -- (UC_AR);
 \draw[assoc] (P) -- (UC_Comp);
+% Verificación del prestador: se baja por el lateral para no cruzar los casos de uso
+\draw[assoc, rounded corners=15pt] (P) |- (UC_SolV.west);
+\draw[assoc, rounded corners=15pt] (P) |- (UC_EstV.west);
 % Rutada ortogonalmente por debajo para no cruzar los casos de uso
-\draw[assoc, rounded corners=15pt] (P) -- (-2, -18.2) -| (UC_CalC.south);
+\draw[assoc, rounded corners=15pt] (P) -- (-2, -23.2) -| (UC_CalC.south);
 
 % Administrador
 \draw[assoc] (A) to[out=90, in=0] (UC_Adm.east);
@@ -126,6 +135,8 @@
 \draw[assoc] (A) -- (UC_ResR);
 \draw[assoc] (A) -- (UC_EmiM);
 \draw[assoc] (A) -- (UC_Apel);
+\draw[assoc] (A) -- (UC_RevV);
+\draw[assoc] (A) -- (UC_ResV);
 
 
 % ====================
@@ -137,6 +148,9 @@
 
 % UC_ResR extends UC_EmiM (Línea recta vertical)
 \draw[extend] (UC_ResR.south) -- node[pos=0.5, fill=gray!3, font=\scriptsize\sffamily, text=purple!70!black, inner sep=2pt] {$\ll$\textsf{extends}$\gg$} (UC_EmiM.north);
+
+% UC_RevV extends UC_ResV (Línea recta vertical)
+\draw[extend] (UC_RevV.south) -- node[pos=0.5, fill=gray!3, font=\scriptsize\sffamily, text=purple!70!black, inner sep=2pt] {$\ll$\textsf{extends}$\gg$} (UC_ResV.north);
 
 % UC_Comp extends UC_CalC (Línea recta horizontal)
 \draw[extend] (UC_Comp.east) -- node[pos=0.5, fill=gray!3, font=\scriptsize\sffamily, text=purple!70!black, inner sep=2pt] {$\ll$\textsf{extends}$\gg$} (UC_CalC.west);

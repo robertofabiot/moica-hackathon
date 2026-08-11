@@ -1,3 +1,14 @@
+---
+config:
+  theme: base
+  themeVariables:
+    primaryColor: '#FFFFFF'
+    primaryBorderColor: '#28253C'
+    primaryTextColor: '#28253C'
+    secondaryColor: '#FFFFFF'
+    tertiaryColor: '#FFFFFF'
+    lineColor: '#000000'
+---
 classDiagram
     %% ==========================================
     %% Identidad y Acceso
@@ -17,6 +28,9 @@ classDiagram
 
     class Administrador {
         +OffsetDateTime fechaAsignacion
+        +tomarSolicitudVerificacion(SolicitudVerificacionPrestador)
+        +resolverVerificacion(SolicitudVerificacionPrestador, boolean, String)
+        +revocarVerificacion(SolicitudVerificacionPrestador, String)
         +asignarCaso(CasoModeracion)
         +resolverCaso(CasoModeracion, Resultado)
         +aplicarMedida(CasoModeracion, MedidaAdministrativa)
@@ -66,8 +80,11 @@ classDiagram
         +TipoPrestador tipo
         +String descripcionCobertura
         +EstadoDisponibilidad disponibilidad
+        +NivelVerificacionPrestador nivelVerificacion
         +actualizarPerfil()
         +cambiarDisponibilidad(EstadoDisponibilidad)
+        +solicitarVerificacion(NivelVerificacionSolicitado) SolicitudVerificacionPrestador
+        +esVisiblePublicamente() boolean
         +publicarServicio(Detalles) ServicioPublicado
     }
 
@@ -90,6 +107,35 @@ classDiagram
         +String urlImagen
         +String textoAlternativo
         +int ordenVisualizacion
+    }
+
+    %% ==========================================
+    %% Verificación del Prestador
+    %% ==========================================
+    class SolicitudVerificacionPrestador {
+        +Long id
+        +NivelVerificacionSolicitado nivelSolicitado
+        +EstadoSolicitudVerificacion estadoSolicitud
+        +String observacionResolucion
+        +OffsetDateTime fechaSolicitud
+        +OffsetDateTime fechaInicioRevision
+        +OffsetDateTime fechaResolucion
+        +adjuntarDocumento(TipoDocumentoVerificacion, Archivo) DocumentoVerificacionPrestador
+        +iniciarRevision(Administrador)
+        +aprobar(Administrador)
+        +rechazar(Administrador, String motivo)
+        +revocar(Administrador, String motivo)
+        +estaAbierta() boolean
+    }
+
+    class DocumentoVerificacionPrestador {
+        +Long id
+        +TipoDocumentoVerificacion tipoDocumento
+        +String claveAlmacenamiento
+        +String nombreOriginal
+        +String tipoMime
+        +int tamanoBytes
+        +OffsetDateTime fechaCarga
     }
 
     %% ==========================================
@@ -216,6 +262,13 @@ classDiagram
     PerfilPrestador "1" *-- "0..*" MedioContactoPrestador : expone
     PerfilPrestador "1" *-- "0..*" TrabajoPortafolio : muestra
     TrabajoPortafolio "1" *-- "0..*" ImagenTrabajoPortafolio : ilustra
+
+    %% ==========================================
+    %% Relaciones — Verificación del Prestador
+    %% ==========================================
+    PerfilPrestador "1" *-- "0..*" SolicitudVerificacionPrestador : presenta
+    SolicitudVerificacionPrestador "1" *-- "0..*" DocumentoVerificacionPrestador : adjunta
+    Administrador "0..1" --> "0..*" SolicitudVerificacionPrestador : resuelve
 
     %% ==========================================
     %% Relaciones — Territorio

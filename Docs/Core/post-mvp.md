@@ -17,3 +17,11 @@ Este documento recopila las decisiones arquitectónicas, refactorizaciones y nue
 
 ## 3. Seguridad
 - Cifrado de extremo a extremo (E2E) para la mensajería del chat.
+
+## 4. Moderación y Cumplimiento Normativo
+En el MVP, una persona administradora revisa cada caso y decide manualmente cada medida. Las capacidades siguientes quedan excluidas y **sus reglas todavía no están definidas**: deberán diseñarse y aprobarse antes de implementarlas.
+
+- **Automatización del cumplimiento normativo:** Comprobaciones y reportes automáticos de cumplimiento sobre las cuentas y los casos de moderación.
+- **Detección y reglas de reincidencia:** Identificación automática de conductas repetidas y las reglas que se derivarían de ellas.
+- **Umbrales de severidad:** Criterios cuantitativos que asocien un nivel de severidad con una consecuencia determinada. En el MVP, el nivel de severidad del catálogo es únicamente descriptivo.
+- **Recomendación, selección o escalamiento automático de medidas:** Que Moica proponga, elija o agrave una medida sin la decisión de una persona administradora. No debe confundirse con la expiración automática de una medida temporal ya elegida por una persona, que sí forma parte del MVP.

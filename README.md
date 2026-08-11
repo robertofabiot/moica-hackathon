@@ -2,7 +2,9 @@
 
 MOICA es una plataforma digital desarrollada por el equipo Nova Studios para la categoria Avanzado del Hackathon Nicaragua 2026. 
 
-El proyecto resuelve la desconexion estructural entre personas que requieren contratar servicios (mantenimiento, reparacion, cuidado) y prestadores independientes informales. MOICA actua como un puente digital que sustituye la informalidad por perfiles verificados, calificaciones y un portafolio visible, mitigando la asimetria de informacion y generando confianza.
+El proyecto resuelve la desconexion estructural entre personas que requieren contratar servicios (mantenimiento, reparacion, cuidado) y prestadores independientes informales. MOICA actua como un puente digital que sustituye la informalidad por perfiles profesionales con portafolio visible, servicios publicados y calificaciones emitidas despues de completar una solicitud dentro de la plataforma, reduciendo la asimetria de informacion.
+
+MOICA no realiza verificacion documental de identidad: esa funcion queda fuera del alcance del MVP.
 
 ## Arquitectura y Tecnologias
 

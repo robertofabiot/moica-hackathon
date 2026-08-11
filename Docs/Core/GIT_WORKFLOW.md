@@ -103,3 +103,29 @@ Cuando un desarrollador inicie una nueva tarea, debe seguir este proceso exacto:
 *   **Aprobación Cruzada (Code Review):** Cuando un desarrollador abre un PR, **otro miembro del equipo debe revisarlo y aprobarlo**. Esto asegura conocimiento compartido de la base de código y ayuda a prevenir bugs evidentes.
 *   **Título del PR:** Debe utilizar la misma convención de commits, con el scope igualmente opcional (Ej: `feat: módulo de autenticación` o `feat(auth): implementar módulo de autenticación`).
 *   **Borrar ramas:** Una vez que el PR es aprobado y se integra a `develop` exitosamente, la rama `feature/` correspondiente debe ser eliminada del repositorio remoto para mantener el orden.
+
+---
+
+## 6. Promoción de hitos a `main`
+
+`develop` es la rama de integración del trabajo diario. `main` solo recibe **hitos estables y presentables**, y la única forma de llevar contenido hasta ella es un Pull Request desde `develop`.
+
+**Cuándo se abre ese PR:**
+
+*   Al cerrar un hito completo: una línea base documental, una versión demostrable o la entrega final.
+*   **No** se abre después de cada funcionalidad ni después de cada PR integrado en `develop`. Si cada rama `feature/` terminara en `main`, la rama dejaría de representar lo que el equipo puede presentar.
+
+**Cómo se hace:**
+
+1.  Actualizar `develop` local y comprobar que contiene exactamente lo aprobado.
+2.  Abrir el PR `develop` → `main` con título convencional (Ej: `docs: publicar linea base documental del mvp`).
+3.  Describir todo lo que `main` todavía no contiene, no solo el último PR integrado.
+4.  Esperar la revisión y la aprobación cruzada, igual que en cualquier otro PR.
+
+**Prohibiciones que no admiten excepción:**
+
+*   Nunca se hacen *commits* directos sobre `main`.
+*   Nunca se hace *merge* local ni `git push` directo hacia `main`.
+*   Nunca se reescribe su historial (`--force`, *rebase* o *amend* sobre lo ya publicado).
+
+La etiqueta de versión se crea únicamente cuando el hito corresponde a una versión del producto (Ej: `v0.1.0-mvp`). Una línea base documental previa al código no lleva etiqueta de versión del MVP.

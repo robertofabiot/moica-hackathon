@@ -20,7 +20,9 @@ El reto también contempla la conexión con proveedores de insumos, materia prim
 
 ## 2. Definición del producto
 
-Moica es una aplicación web progresiva (PWA) mobile-first que conecta clientes con trabajadores independientes, emprendimientos y pequeñas empresas que ofrecen servicios. Permitirá descubrir prestadores mediante perfiles que integran presentación profesional, servicios publicados, trabajos de portafolio, disponibilidad, cobertura y reputación.
+Moica es una aplicación web progresiva (PWA) mobile-first que conecta clientes con trabajadores independientes, emprendimientos y pequeñas empresas que ofrecen servicios. Permitirá descubrir prestadores mediante perfiles que integran presentación profesional, servicios publicados, trabajos de portafolio, disponibilidad, cobertura, nivel de verificación y reputación.
+
+El acceso será inmediato y la validación posterior: cualquier cuenta podrá crear y preparar su perfil de prestador desde el primer momento, pero para aparecer públicamente deberá superar una verificación documental revisada por una persona administradora.
 
 A diferencia de un directorio convencional, Moica permitirá gestionar el inicio y el seguimiento básico de la relación mediante solicitudes de servicio. Cuando el prestador acepte una solicitud, se habilitarán un chat de texto y sus medios de contacto externos. Después de realizar el trabajo, el prestador marcará la solicitud como completada y ambas partes podrán calificarse de manera opcional.
 
@@ -33,6 +35,7 @@ Moica busca que encontrar y contactar a un prestador local resulte más organiza
 La plataforma aportará valor mediante:
 
 - Un espacio centralizado para descubrir prestadores y servicios.
+- Verificación documental en dos etapas, revisada por una persona, que respalda la identidad y la trayectoria declarada de quien ofrece un servicio.
 - Perfiles que reúnan la presentación profesional, los servicios y el portafolio del prestador.
 - Información sobre disponibilidad, municipio y cobertura aproximada.
 - Solicitudes que dejen registro del inicio y evolución de cada contratación.
@@ -68,6 +71,8 @@ Una cuenta podrá crear un perfil de prestador para comenzar a ofrecer servicios
 Como prestador, una cuenta podrá:
 
 - Crear y actualizar su perfil profesional.
+- Presentar su expediente documental para obtener la verificación básica y, después, la verificación profesional opcional.
+- Consultar el estado y la observación de sus propias solicitudes de verificación.
 - Publicar y administrar varios servicios.
 - Gestionar los trabajos mostrados en su portafolio.
 - Indicar si se encuentra disponible o no disponible.
@@ -90,6 +95,8 @@ Las funciones administrativas se ubicarán en el área `/admin` del mismo fronte
 
 El administrador podrá:
 
+- Consultar las solicitudes de verificación de prestadores y tomarlas para su revisión.
+- Abrir los documentos del expediente, aprobar o rechazar la solicitud y revocar una verificación ya concedida.
 - Consultar los casos de moderación recibidos.
 - Revisar la solicitud, los participantes, el historial de estados y los mensajes relacionados.
 - Asignarse un caso o reasignarlo a otro administrador.
@@ -115,6 +122,8 @@ El segundo factor será de tipo TOTP: la persona registrará un secreto en una a
 - Cada cuenta podrá registrar como máximo un segundo factor, que pasará por los estados `PENDIENTE_ACTIVACION`, `ACTIVO` y `DESACTIVADO`.
 - Cada sesión registrará si superó la verificación del segundo factor; el área `/admin` solo aceptará sesiones que la hayan superado.
 
+El segundo factor y la verificación documental del prestador son mecanismos distintos y no se sustituyen entre sí. El TOTP protege el inicio de sesión de una cuenta; la verificación documental descrita en la sección 5.6 respalda la identidad y la trayectoria de un perfil de prestador ante el resto de la comunidad. Una cuenta puede tener TOTP activo y un perfil sin verificar, o un perfil verificado y ningún segundo factor.
+
 ## 5. Perfil del prestador
 
 Cada cuenta podrá poseer como máximo un perfil de prestador. Este será una extensión de la cuenta y no una cuenta independiente.
@@ -128,6 +137,7 @@ El perfil incluirá, como mínimo:
 - Municipio principal.
 - Descripción libre de cobertura.
 - Disponibilidad.
+- Nivel de verificación vigente.
 - Medios de contacto externos.
 - Trabajos de portafolio.
 - Reputación como prestador.
@@ -184,6 +194,71 @@ El portafolio será una sección del perfil, no un módulo ni un perfil independ
 
 En el modelo de datos, cada trabajo se relacionará directamente con el perfil del prestador. No se requiere una entidad contenedora `Portafolio` mientras este no posea atributos propios.
 
+### 5.6 Verificación del prestador
+
+La verificación es el mecanismo con el que Moica respalda que detrás de un perfil existe una persona real y, opcionalmente, una trayectoria comprobable. Se aplica al perfil de prestador y no a las cuentas que solo actúan como clientes.
+
+El principio operativo es **acceso inmediato y validación posterior**: una cuenta puede registrarse, crear su perfil, escribir su presentación, cargar su portafolio y preparar sus servicios desde el primer momento. Lo que depende de la verificación es la salida al público, no la preparación.
+
+#### Niveles de verificación
+
+| Nivel | Significado | Efecto |
+|---|---|---|
+| `SIN_VERIFICAR` | Estado inicial de todo perfil recién creado. | El perfil es privado: no aparece en el descubrimiento público, no puede tener servicios activos y no recibe solicitudes. |
+| `VERIFICADO_BASICO` | Una persona administradora revisó y aprobó la documentación oficial de identidad de la persona responsable del perfil. | El perfil puede hacerse público, activar servicios y recibir solicitudes. Muestra la insignia **Verificado Básico**. |
+| `PROFESIONAL_VERIFICADO` | Después de la verificación básica, una persona administradora revisó y aprobó documentación profesional, técnica o comercial que respalda la actividad declarada. | Conserva todo lo anterior y muestra la insignia superior **Profesional Verificado**. |
+
+La verificación profesional es opcional y progresiva: exige una verificación básica vigente y no sustituye ninguno de sus efectos. La básica basta para operar; la profesional distingue.
+
+#### Solicitudes de verificación
+
+Cada intento de obtener o renovar un nivel se registra como una solicitud de verificación con su propio expediente documental. Una solicitud recorre estos estados:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Pendiente: Prestador envía expediente
+    Pendiente --> En_revision: Administrador toma la solicitud
+    En_revision --> Aprobada: Documentación suficiente
+    En_revision --> Rechazada: Documentación insuficiente
+    Aprobada --> Revocada: Administrador revoca la verificación
+    Rechazada --> [*]
+    Revocada --> [*]
+```
+
+| Estado | Significado |
+|---|---|
+| `PENDIENTE` | El prestador envió su expediente y espera revisión. |
+| `EN_REVISION` | Una persona administradora tomó la solicitud y analiza los documentos. |
+| `APROBADA` | La documentación fue aceptada y el perfil alcanzó el nivel solicitado. |
+| `RECHAZADA` | La documentación no fue aceptada. Exige una observación que explique el motivo. |
+| `REVOCADA` | Una verificación previamente aprobada quedó sin efecto. Exige una observación que explique el motivo. |
+
+Reglas del flujo:
+
+- Solo puede existir una solicitud abierta —`PENDIENTE` o `EN_REVISION`— del mismo nivel por perfil.
+- Una solicitud rechazada puede volver a presentarse con documentos corregidos; se registra como una solicitud nueva y la anterior se conserva.
+- Si se rechaza una solicitud profesional, el perfil conserva su nivel básico.
+- La revisión es siempre manual: la ejecuta una cuenta con rol administrativo cuya sesión haya verificado el segundo factor. Moica no aprueba, rechaza ni revoca verificaciones de forma automática.
+- Toda decisión negativa —rechazo o revocación— exige registrar una observación o motivo.
+
+#### Efectos de una revocación
+
+Si se revoca la verificación básica, el perfil vuelve a `SIN_VERIFICAR`: deja de aparecer públicamente, sus servicios dejan de admitir nuevas solicitudes y cualquier nivel profesional deja de surtir efecto. Las solicitudes ya aceptadas conservan su flujo normal —chat, cancelación, finalización y calificación— para no dejar compromisos abiertos sin cierre.
+
+#### Expediente documental y privacidad
+
+El expediente se compone de los archivos que el prestador adjunta a su solicitud. Los documentos admitidos serán JPEG, PNG o PDF, con un tamaño máximo inicial configurable de 5 MB por archivo.
+
+- Los archivos se almacenan como recursos privados. Moica guarda una clave opaca de almacenamiento y los metadatos del documento, nunca el archivo binario ni una dirección pública permanente.
+- Solo la persona propietaria del perfil puede enviar documentos y consultar los metadatos de su propio expediente.
+- Solo un administrador con segundo factor verificado puede abrir los archivos y resolver la solicitud.
+- Ningún documento, número de identificación, clave de almacenamiento ni observación administrativa es público.
+- Un visitante solo ve la insignia o el nivel vigente y una explicación breve de lo que significa.
+
+#### Qué significa y qué no significa una insignia
+
+Las insignias indican que Moica revisó la documentación presentada en un momento determinado. No garantizan la calidad futura del trabajo ni sustituyen el criterio del cliente. La calidad y la reputación se siguen respaldando mediante el portafolio y las calificaciones vinculadas a solicitudes completadas.
+
 ## 6. Servicios, categorías y descubrimiento
 
 Cada publicación representará un servicio concreto ofrecido por un prestador. Incluirá, como mínimo:
@@ -204,14 +279,14 @@ El estado de un servicio tendrá únicamente dos valores:
 - `ACTIVO`.
 - `INACTIVO`.
 
-Solo un servicio activo perteneciente a un prestador disponible podrá recibir nuevas solicitudes. Los servicios asociados con solicitudes anteriores no se eliminarán físicamente; se desactivarán para preservar el historial.
+Solo un servicio activo perteneciente a un prestador disponible y con verificación básica vigente podrá mostrarse públicamente y recibir nuevas solicitudes. Los servicios asociados con solicitudes anteriores no se eliminarán físicamente; se desactivarán para preservar el historial.
 
 | Estado actual | Acción del prestador | Estado resultante | Efecto |
 |---|---|---|---|
 | `ACTIVO` | Desactivar publicación | `INACTIVO` | Deja de aparecer como opción habilitada y no admite nuevas solicitudes. |
 | `INACTIVO` | Activar publicación | `ACTIVO` | Puede volver a mostrarse y recibir solicitudes si el prestador está disponible. |
 
-La exploración podrá combinar, como mínimo, texto, categoría o subcategoría y municipio. El texto libre de cobertura complementará el filtro territorial cuando un prestador no atienda todo el municipio.
+La exploración podrá combinar, como mínimo, texto, categoría o subcategoría y municipio. El texto libre de cobertura complementará el filtro territorial cuando un prestador no atienda todo el municipio. El descubrimiento público solo incluirá perfiles con verificación básica vigente, y cada resultado mostrará la insignia correspondiente al nivel del prestador.
 
 ## 7. Solicitud de servicio
 
@@ -226,7 +301,7 @@ La solicitud registrará el interés de un cliente en un servicio publicado. Con
 - Estado actual.
 - Fecha de creación y última actualización.
 
-Para crearla, el usuario deberá estar autenticado, el servicio deberá estar activo, el prestador deberá estar disponible y la cuenta solicitante no podrá ser la propietaria del servicio.
+Para crearla, el usuario deberá estar autenticado, el servicio deberá estar activo, el prestador deberá estar disponible y con verificación básica vigente, y la cuenta solicitante no podrá ser la propietaria del servicio.
 
 ## 8. Estados e historial de una solicitud
 
@@ -257,7 +332,7 @@ stateDiagram-v2
 
 | Estado actual | Acción | Actor autorizado | Estado resultante | Regla o efecto |
 |---|---|---|---|---|
-| Sin solicitud | Enviar solicitud | Cliente | `PENDIENTE` | Requiere servicio activo, prestador disponible y servicio ajeno. |
+| Sin solicitud | Enviar solicitud | Cliente | `PENDIENTE` | Requiere servicio activo, prestador disponible y verificado, y servicio ajeno. |
 | `PENDIENTE` | Aceptar | Prestador destinatario | `ACEPTADA` | Habilita el envío de mensajes y revela los contactos externos. |
 | `PENDIENTE` | Rechazar | Prestador destinatario | `RECHAZADA` | No exige motivo. Es un estado definitivo. |
 | `PENDIENTE` | Cancelar | Cliente solicitante | `CANCELADA` | No exige motivo. Es un estado definitivo. |
@@ -408,6 +483,7 @@ El siguiente inventario resume, por área funcional, las entidades del modelo l�
 | Acceso | `Sesion`, `SegundoFactorUsuario` | Las sesiones expiran y pueden revocarse; el segundo factor es obligatorio para el rol administrativo. |
 | Territorio | `Departamento`, `Municipio` | El MVP filtra Managua, pero conserva una estructura ampliable. |
 | Perfil | `MedioContactoPrestador`, `TrabajoPortafolio`, `ImagenTrabajoPortafolio` | Contactos libres y trabajos vinculados directamente al perfil. |
+| Verificación | `SolicitudVerificacionPrestador`, `DocumentoVerificacionPrestador` | Cada intento de verificación conserva su expediente documental privado; el nivel vigente se proyecta en `PerfilPrestador`. |
 | Clasificación | `CategoriaServicio`, `SubcategoriaServicio` | Un servicio elige una subcategoría principal. |
 | Oferta | `ServicioPublicado`, `ImagenServicioPublicado` | Imágenes opcionales y múltiples; publicación activa o inactiva. |
 | Contratación | `SolicitudServicio`, `CambioEstadoSolicitud` | Se conserva el estado actual y cada transición. |
@@ -424,6 +500,7 @@ No se crearán tablas independientes `Cliente`, `Portafolio`, `Conversacion` ni 
 | Autenticación y usuarios | Registro, inicio de sesión, segundo factor, sesiones, identidad, autorización y estado de cuenta. |
 | Perfiles de prestadores | Información profesional, tipo, municipio, cobertura, disponibilidad y contactos. |
 | Portafolio | Gestión de trabajos e imágenes como sección del perfil. |
+| Verificación de prestadores | Solicitudes por nivel, expediente documental privado, revisión manual y nivel vigente del perfil. |
 | Servicios y categorías | Publicación, edición, consulta y clasificación jerárquica. |
 | Descubrimiento | Exploración pública y búsqueda por texto, categoría y municipio. |
 | Solicitudes | Envío, aceptación, rechazo, cancelación, finalización e historial. |
@@ -437,15 +514,17 @@ No se crearán tablas independientes `Cliente`, `Portafolio`, `Conversacion` ni 
 El MVP deberá permitir demostrar el siguiente ciclo:
 
 1. Una persona crea una cuenta, que inicia con vista de cliente.
-2. La cuenta crea un perfil de prestador y publica uno o varios servicios.
-3. Otro usuario descubre un servicio mediante la navegación pública.
-4. Después de iniciar sesión, envía una solicitud.
-5. El prestador acepta o rechaza la solicitud.
-6. Si la acepta, se habilitan el chat y los contactos externos.
-7. Las partes coordinan el trabajo y el prestador lo marca como completado.
-8. Ambas partes pueden calificarse de forma opcional.
-9. Desde la aceptación, cualquiera de los participantes puede abrir un caso de moderación.
-10. Un administrador revisa el caso, registra su resultado y su resolución y, si corresponde, aplica una medida administrativa.
+2. La cuenta crea un perfil de prestador, prepara su portafolio y sus servicios, y envía su expediente de verificación básica.
+3. Un administrador con segundo factor verificado revisa el expediente y aprueba la verificación básica; el perfil y sus servicios activos se vuelven públicos con la insignia correspondiente.
+4. Opcionalmente, el prestador presenta documentación profesional y obtiene la insignia superior.
+5. Otro usuario descubre un servicio mediante la navegación pública.
+6. Después de iniciar sesión, envía una solicitud.
+7. El prestador acepta o rechaza la solicitud.
+8. Si la acepta, se habilitan el chat y los contactos externos.
+9. Las partes coordinan el trabajo y el prestador lo marca como completado.
+10. Ambas partes pueden calificarse de forma opcional.
+11. Desde la aceptación, cualquiera de los participantes puede abrir un caso de moderación.
+12. Un administrador revisa el caso, registra su resultado y su resolución y, si corresponde, aplica una medida administrativa.
 
 ## 15. Fuera del alcance del MVP
 
@@ -463,6 +542,11 @@ Las siguientes funciones no se consideran necesarias para la primera versión:
 - Imágenes, audios, documentos o llamadas dentro del chat.
 - Cifrado de extremo a extremo.
 - Notificaciones avanzadas basadas en ubicación.
+- OCR o extracción automática de datos de los documentos del expediente.
+- Reconocimiento facial, prueba de vida o comparación biométrica.
+- Consulta automática a bases de datos gubernamentales o de terceros para validar documentos.
+- Proveedores externos de verificación de identidad.
+- Verificación documental de las cuentas que solo actúan como clientes.
 - Sanciones completamente automatizadas.
 - Reglas de reincidencia, umbrales de severidad y recomendación o escalamiento automático de medidas.
 - Formulario de apelación dentro de la aplicación.
@@ -482,35 +566,43 @@ Estas funciones podrán evaluarse para versiones futuras sin comprometer el alca
 8. Un prestador no disponible no recibe nuevas solicitudes y sus servicios no aparecen habilitados para contratación.
 9. Los medios de contacto son entradas libres, sin clasificación por plataforma, y se revelan después de aceptar la solicitud.
 10. El portafolio forma parte del perfil y contiene múltiples trabajos; cada trabajo puede tener varias imágenes.
-11. Un prestador puede publicar múltiples servicios.
-12. Cada servicio pertenece a una subcategoría principal y puede incluir varias imágenes.
-13. El precio de referencia es opcional; su ausencia se presenta como “A convenir”.
-14. Un servicio solo puede estar activo o inactivo.
-15. Solo un servicio activo de un prestador disponible puede recibir nuevas solicitudes.
-16. Solo el prestador destinatario puede aceptar o rechazar una solicitud pendiente.
-17. El cliente puede cancelar una solicitud pendiente sin indicar motivo.
-18. Cualquiera de los participantes puede cancelar una solicitud aceptada, pero debe indicar el motivo.
-19. Solo el prestador puede marcar una solicitud aceptada como completada.
-20. Las solicitudes rechazadas, canceladas y completadas no se reabren.
-21. Las solicitudes pendientes no expiran automáticamente en el MVP.
-22. Cada cambio de estado de la solicitud queda registrado en su historial.
-23. El chat y los contactos se habilitan únicamente después de la aceptación.
-24. Al cancelar o completar una solicitud, el historial del chat queda visible pero no admite mensajes nuevos.
-25. Cada parte puede emitir como máximo una calificación por solicitud completada.
-26. Las calificaciones son opcionales y la reputación se calcula por separado como cliente y como prestador.
-27. Solo se puede reportar a la contraparte desde que la solicitud haya sido aceptada.
-28. Cada participante puede abrir como máximo un caso de moderación por solicitud.
-29. Los casos de moderación no generan sanciones automáticas ni alteran el estado de la solicitud.
-30. El caso conserva su resultado, su resolución y su medida vigentes, y cada cambio queda registrado como una nueva versión de su historial.
-31. Toda medida administrativa la elige manualmente una persona administradora; Moica no recomienda, selecciona ni escala sanciones por reincidencia, severidad o cantidad de casos.
-32. Cada cuenta puede tener como máximo una medida vigente; aplicar otra exige advertir cuál está vigente y confirmar explícitamente su sustitución.
-33. Al expirar o revocarse la única medida vigente, la cuenta vuelve al estado `ACTIVA`.
-34. El sistema puede finalizar automáticamente una medida temporal ya elegida por una persona, pero nunca decide una medida nueva.
-35. El catálogo de medidas se gestiona desde el área administrativa; una medida con referencias históricas se deshabilita en lugar de eliminarse.
-36. Las apelaciones se presentan por un canal externo indicado en la aplicación; el administrador registra lo recibido, lo resuelve y puede reabrir el caso.
-37. Cada inicio de sesión crea una sesión registrada, con fecha de expiración propia.
-38. Una sesión puede revocarse antes de expirar al cerrar sesión, al cambiar las credenciales o al aplicarse una medida administrativa a la cuenta.
-39. El segundo factor TOTP es obligatorio para las cuentas con rol administrativo y opcional para el resto; `/admin` solo admite sesiones que lo hayan verificado.
+11. La verificación se aplica al perfil de prestador; las cuentas que solo actúan como clientes no presentan documentación.
+12. Todo perfil nace `SIN_VERIFICAR` y puede completarse y prepararse sin restricción, pero no aparece públicamente ni admite servicios activos ni solicitudes hasta obtener la verificación básica.
+13. La verificación básica la concede una persona administradora tras revisar la documentación oficial de identidad de la persona responsable del perfil.
+14. La verificación profesional es opcional, exige una verificación básica vigente y solo añade una insignia superior.
+15. Solo puede existir una solicitud de verificación abierta del mismo nivel por perfil; una solicitud rechazada puede volver a presentarse con documentos corregidos y el perfil conserva el nivel que ya tenía.
+16. Toda resolución de verificación es manual y exige rol administrativo con segundo factor verificado; un rechazo o una revocación exige registrar una observación.
+17. Al revocarse la verificación básica, el perfil deja de ser público, sus servicios dejan de admitir nuevas solicitudes y el nivel profesional deja de surtir efecto; las solicitudes ya aceptadas conservan su flujo normal.
+18. Los documentos del expediente son privados: solo su propietario consulta los metadatos y solo un administrador con segundo factor verificado abre los archivos; la insignia es lo único público.
+19. Un prestador puede publicar múltiples servicios.
+20. Cada servicio pertenece a una subcategoría principal y puede incluir varias imágenes.
+21. El precio de referencia es opcional; su ausencia se presenta como “A convenir”.
+22. Un servicio solo puede estar activo o inactivo.
+23. Solo un servicio activo de un prestador disponible y con verificación básica vigente puede mostrarse públicamente y recibir nuevas solicitudes.
+24. Solo el prestador destinatario puede aceptar o rechazar una solicitud pendiente.
+25. El cliente puede cancelar una solicitud pendiente sin indicar motivo.
+26. Cualquiera de los participantes puede cancelar una solicitud aceptada, pero debe indicar el motivo.
+27. Solo el prestador puede marcar una solicitud aceptada como completada.
+28. Las solicitudes rechazadas, canceladas y completadas no se reabren.
+29. Las solicitudes pendientes no expiran automáticamente en el MVP.
+30. Cada cambio de estado de la solicitud queda registrado en su historial.
+31. El chat y los contactos se habilitan únicamente después de la aceptación.
+32. Al cancelar o completar una solicitud, el historial del chat queda visible pero no admite mensajes nuevos.
+33. Cada parte puede emitir como máximo una calificación por solicitud completada.
+34. Las calificaciones son opcionales y la reputación se calcula por separado como cliente y como prestador.
+35. Solo se puede reportar a la contraparte desde que la solicitud haya sido aceptada.
+36. Cada participante puede abrir como máximo un caso de moderación por solicitud.
+37. Los casos de moderación no generan sanciones automáticas ni alteran el estado de la solicitud.
+38. El caso conserva su resultado, su resolución y su medida vigentes, y cada cambio queda registrado como una nueva versión de su historial.
+39. Toda medida administrativa la elige manualmente una persona administradora; Moica no recomienda, selecciona ni escala sanciones por reincidencia, severidad o cantidad de casos.
+40. Cada cuenta puede tener como máximo una medida vigente; aplicar otra exige advertir cuál está vigente y confirmar explícitamente su sustitución.
+41. Al expirar o revocarse la única medida vigente, la cuenta vuelve al estado `ACTIVA`.
+42. El sistema puede finalizar automáticamente una medida temporal ya elegida por una persona, pero nunca decide una medida nueva.
+43. El catálogo de medidas se gestiona desde el área administrativa; una medida con referencias históricas se deshabilita en lugar de eliminarse.
+44. Las apelaciones se presentan por un canal externo indicado en la aplicación; el administrador registra lo recibido, lo resuelve y puede reabrir el caso.
+45. Cada inicio de sesión crea una sesión registrada, con fecha de expiración propia.
+46. Una sesión puede revocarse antes de expirar al cerrar sesión, al cambiar las credenciales o al aplicarse una medida administrativa a la cuenta.
+47. El segundo factor TOTP es obligatorio para las cuentas con rol administrativo y opcional para el resto; `/admin` solo admite sesiones que lo hayan verificado.
 
 ## 17. Dirección técnica preliminar
 
@@ -541,7 +633,7 @@ El chat almacenará los mensajes en PostgreSQL y protegerá su tránsito mediant
 
 ## 19. Criterio de éxito del MVP
 
-Moica tendrá un MVP demostrable cuando una cuenta pueda crear su perfil de prestador y publicar un servicio, y otra pueda descubrirlo, solicitarlo, comunicarse después de la aceptación y completar el ciclo con una calificación opcional. Además, deberá existir un mecanismo funcional para abrir casos de moderación y permitir que un administrador los revise y los resuelva desde el área `/admin`.
+Moica tendrá un MVP demostrable cuando una cuenta pueda crear su perfil de prestador, obtener la verificación básica mediante la revisión de un administrador y publicar un servicio, y otra pueda descubrirlo, solicitarlo, comunicarse después de la aceptación y completar el ciclo con una calificación opcional. Además, deberá existir un mecanismo funcional para abrir casos de moderación y permitir que un administrador los revise y los resuelva desde el área `/admin`.
 
 ---
 

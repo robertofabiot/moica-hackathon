@@ -8,7 +8,7 @@
 | Proyecto | Hackathon UAM 2026 — categoría Avanzado |
 | Reto | Conecta Emprende |
 | Equipo | Nova Studios |
-| Última actualización | 5 de agosto de 2026 |
+| Última actualización | 10 de agosto de 2026 |
 
 ---
 
@@ -95,8 +95,9 @@ El administrador podrá:
 - Asignarse un caso o reasignarlo a otro administrador.
 - Cambiar el estado del caso entre `ABIERTO`, `EN_REVISION`, `CERRADO` y `REABIERTO`.
 - Registrar la resolución indicando si el caso resultó `PROCEDENTE` o `DESESTIMADO`.
-- Aplicar una medida administrativa del catálogo y revocarla cuando corresponda.
-- Atender apelaciones y reabrir un caso ya cerrado.
+- Gestionar el catálogo de medidas administrativas: crearlas, editarlas y deshabilitarlas.
+- Aplicar manualmente una medida administrativa del catálogo, sustituirla o revocarla cuando corresponda.
+- Registrar las apelaciones recibidas por el canal externo, resolverlas y reabrir un caso ya cerrado cuando proceda.
 
 ### 4.5 Autenticación, sesiones y segundo factor
 
@@ -371,9 +372,17 @@ Las medidas formarán un catálogo con código estable, nivel de severidad, esta
 - Advertencia.
 - Restricción temporal de funciones.
 - Suspensión temporal de la cuenta.
-- Suspensión permanente ante conductas graves o reiteradas.
+- Suspensión permanente ante conductas graves.
 
 El caso conservará la medida vigente y la fecha en que termina, cuando sea temporal. Una revisión o una apelación podrá revocarla o sustituirla.
+
+**Decisión manual.** En el MVP, una persona administradora revisa cada caso y decide manualmente si aplica, sustituye o revoca una medida. Moica no recomendará ni elegirá sanciones a partir de la reincidencia, del nivel de severidad ni de la cantidad de casos acumulados. El nivel de severidad del catálogo es un dato descriptivo que orienta a quien decide; no activa ninguna regla automática.
+
+**Una sola medida vigente por cuenta.** Cada cuenta podrá tener como máximo una medida vigente. Si otro caso origina una nueva medida, el sistema advertirá cuál está vigente y exigirá una confirmación explícita para sustituirla; la revocación de la anterior y la aplicación de la nueva ocurrirán dentro de la misma operación. Al expirar o revocarse la única medida vigente, la cuenta volverá al estado `ACTIVA`.
+
+**Expiración de medidas temporales.** El sistema sí podrá finalizar automáticamente una medida temporal que una persona ya eligió, cuando se alcance su fecha de finalización. Esto no equivale a seleccionar automáticamente una sanción: únicamente ejecuta el plazo de una decisión humana previa.
+
+**Gestión del catálogo.** Las medidas podrán crearse, editarse y deshabilitarse desde el área administrativa. Una medida referenciada por casos o por el historial no se eliminará físicamente: se deshabilitará para que deje de ofrecerse sin perder la trazabilidad de las decisiones anteriores.
 
 ### 11.4 Historial del caso
 
@@ -382,6 +391,12 @@ Cada caso conservará un historial de versiones. Cada evento administrativo cerr
 Los eventos registrados serán `CASO_ABIERTO`, `RESPONSABLE_ASIGNADO`, `ESTADO_CASO_CAMBIADO`, `RESOLUCION_REGISTRADA`, `MEDIDA_APLICADA`, `MEDIDA_REVOCADA`, `MEDIDA_EXPIRADA`, `ESTADO_CUENTA_CAMBIADO`, `APELACION_PRESENTADA`, `APELACION_ACEPTADA`, `APELACION_RECHAZADA` y `CASO_REABIERTO`. Cada versión indicará si el evento lo originó un usuario, un administrador o el sistema.
 
 La existencia de un caso no cambiará el estado de la solicitud. Tampoco ocasionará una sanción automática.
+
+### 11.5 Apelaciones
+
+Las apelaciones se presentarán mediante un canal externo indicado dentro de la aplicación, por ejemplo un correo de soporte mostrado junto al aviso de la medida. El MVP no incluirá un formulario de apelación para el usuario.
+
+Un administrador registrará en el caso la apelación recibida por ese canal, la aceptará o la rechazará y, cuando proceda, reabrirá el mismo expediente. Los eventos `APELACION_PRESENTADA`, `APELACION_ACEPTADA`, `APELACION_RECHAZADA` y `CASO_REABIERTO` quedarán registrados en el historial del caso aunque la comunicación con la persona haya ocurrido fuera de Moica.
 
 ## 12. Estructura funcional del dominio
 
@@ -449,6 +464,8 @@ Las siguientes funciones no se consideran necesarias para la primera versión:
 - Cifrado de extremo a extremo.
 - Notificaciones avanzadas basadas en ubicación.
 - Sanciones completamente automatizadas.
+- Reglas de reincidencia, umbrales de severidad y recomendación o escalamiento automático de medidas.
+- Formulario de apelación dentro de la aplicación.
 - Aplicación móvil nativa.
 
 Estas funciones podrán evaluarse para versiones futuras sin comprometer el alcance principal de la hackathon.
@@ -485,9 +502,15 @@ Estas funciones podrán evaluarse para versiones futuras sin comprometer el alca
 28. Cada participante puede abrir como máximo un caso de moderación por solicitud.
 29. Los casos de moderación no generan sanciones automáticas ni alteran el estado de la solicitud.
 30. El caso conserva su resultado, su resolución y su medida vigentes, y cada cambio queda registrado como una nueva versión de su historial.
-31. Cada inicio de sesión crea una sesión registrada, con fecha de expiración propia.
-32. Una sesión puede revocarse antes de expirar al cerrar sesión, al cambiar las credenciales o al aplicarse una medida administrativa a la cuenta.
-33. El segundo factor TOTP es obligatorio para las cuentas con rol administrativo y opcional para el resto; `/admin` solo admite sesiones que lo hayan verificado.
+31. Toda medida administrativa la elige manualmente una persona administradora; Moica no recomienda, selecciona ni escala sanciones por reincidencia, severidad o cantidad de casos.
+32. Cada cuenta puede tener como máximo una medida vigente; aplicar otra exige advertir cuál está vigente y confirmar explícitamente su sustitución.
+33. Al expirar o revocarse la única medida vigente, la cuenta vuelve al estado `ACTIVA`.
+34. El sistema puede finalizar automáticamente una medida temporal ya elegida por una persona, pero nunca decide una medida nueva.
+35. El catálogo de medidas se gestiona desde el área administrativa; una medida con referencias históricas se deshabilita en lugar de eliminarse.
+36. Las apelaciones se presentan por un canal externo indicado en la aplicación; el administrador registra lo recibido, lo resuelve y puede reabrir el caso.
+37. Cada inicio de sesión crea una sesión registrada, con fecha de expiración propia.
+38. Una sesión puede revocarse antes de expirar al cerrar sesión, al cambiar las credenciales o al aplicarse una medida administrativa a la cuenta.
+39. El segundo factor TOTP es obligatorio para las cuentas con rol administrativo y opcional para el resto; `/admin` solo admite sesiones que lo hayan verificado.
 
 ## 17. Dirección técnica preliminar
 

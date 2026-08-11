@@ -34,19 +34,38 @@ Nunca se trabajará directamente sobre la rama principal. El repositorio estará
 
 Cada *commit* debe explicar claramente **qué se hizo y por qué**. Se usará el estándar de la industria conocido como Conventional Commits. 
 
-El formato es: `<tipo>: <mensaje claro en minúsculas y modo imperativo>`
+El formato es: `<tipo>(<scope opcional>): <descripción en minúsculas y modo imperativo>`
+
+El *scope* indica el área afectada y **es opcional**: se incluye solo cuando ayuda a ubicar el cambio y se omite cuando el commit no pertenece a un área concreta. Ambas formas son válidas:
+
+```text
+docs: actualizar diagrama de clases
+docs(git): completar convenciones de commits
+```
 
 **Tipos permitidos:**
-*   `feat:` -> Para una nueva funcionalidad de código. (Ej: `feat: integrar JWT en el login`).
-*   `fix:` -> Para arreglar un bug o error. (Ej: `fix: resolver error de CORS en peticiones del chat`).
-*   `docs:` -> Para cambios en la documentación (markdown, diagramas). (Ej: `docs: actualizar diagrama de clases`).
+*   `feat:` -> Nueva funcionalidad de código. (Ej: `feat(auth): integrar jwt en el login`).
+*   `fix:` -> Corrección de un bug o error. (Ej: `fix(chat): resolver error de cors en las peticiones`).
+*   `docs:` -> Cambios en la documentación (markdown, diagramas). (Ej: `docs: actualizar diagrama de clases`).
+*   `refactor:` -> Cambios internos que no añaden funcionalidades ni arreglan bugs, pero mejoran la estructura. (Ej: `refactor(perfil): limpiar importaciones sin uso`).
+*   `test:` -> Añadir o corregir pruebas automatizadas. (Ej: `test(solicitud): cubrir transiciones inválidas`).
 *   `chore:` -> Tareas de mantenimiento, configuraciones, instalación de dependencias, ignore. (Ej: `chore: instalar react-query y zustand`).
-*   `refactor:` -> Cambios en el código que no añaden funcionalidades ni arreglan bugs, pero mejoran la estructura. (Ej: `refactor: limpiar importaciones sin uso en perfil`).
-*   `style:` -> Cambios de formato visual del código (espacios, punto y coma, indentación).
+*   `ci:` -> Workflows y automatización de integración continua. (Ej: `ci(repo): validar títulos convencionales`).
+*   `build:` -> Sistema de construcción, empaquetado o imágenes de despliegue. (Ej: `build(deploy): crear imagen del backend`).
+*   `style:` -> Cambios de formato visual del código (espacios, punto y coma, indentación), sin alterar la lógica.
+*   `perf:` -> Mejoras de rendimiento. (Ej: `perf(busqueda): reducir consultas repetidas`).
+*   `revert:` -> Revertir un commit anterior. (Ej: `revert: deshacer cambio de política de sesiones`).
+
+**Reglas de redacción:**
+*   El tipo se escribe siempre en minúscula (`docs:`, nunca `Docs:`).
+*   La descripción va en minúscula, en modo imperativo y sin punto final.
+*   El mensaje describe el resultado obtenido, no la herramienta utilizada.
+
+**Alcances orientativos:** `repo`, `db`, `backend`, `frontend`, `auth`, `session`, `2fa`, `usuario`, `prestador`, `portafolio`, `servicio`, `busqueda`, `solicitud`, `chat`, `calificacion`, `moderacion`, `admin`, `pwa`, `deploy` y `docs`. Esta lista es una referencia abierta, no un catálogo cerrado: si ninguno describe bien el cambio, es preferible omitir el scope antes que forzar un término incorrecto.
 
 *Ejemplo de un buen historial de commits:*
-> `feat: crear componente de tarjeta de portafolio`
-> `fix: centrar imagen rota en dispositivos móviles`
+> `feat(portafolio): crear componente de tarjeta de portafolio`
+> `fix(frontend): centrar imagen rota en dispositivos móviles`
 > `docs: agregar guía de contribución a los docs`
 
 ---
@@ -82,5 +101,5 @@ Cuando un desarrollador inicie una nueva tarea, debe seguir este proceso exacto:
 
 *   **Bloqueo de Ramas:** Está estrictamente **prohibido** hacer *merge* directo a `develop` o a `main`. Todo código debe pasar obligatoriamente por un Pull Request (PR).
 *   **Aprobación Cruzada (Code Review):** Cuando un desarrollador abre un PR, **otro miembro del equipo debe revisarlo y aprobarlo**. Esto asegura conocimiento compartido de la base de código y ayuda a prevenir bugs evidentes.
-*   **Título del PR:** Debe utilizar la convención de commits (Ej: `feat: módulo de autenticación`).
+*   **Título del PR:** Debe utilizar la misma convención de commits, con el scope igualmente opcional (Ej: `feat: módulo de autenticación` o `feat(auth): implementar módulo de autenticación`).
 *   **Borrar ramas:** Una vez que el PR es aprobado y se integra a `develop` exitosamente, la rama `feature/` correspondiente debe ser eliminada del repositorio remoto para mantener el orden.

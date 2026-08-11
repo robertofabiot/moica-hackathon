@@ -1,5 +1,12 @@
 erDiagram
 	direction TB
+	classDef usuarios fill:#E8F5E9,stroke:#2E7D32,color:#1B1B1B
+	classDef ubicaciones fill:#E3F2FD,stroke:#1565C0,color:#1B1B1B
+	classDef prestadores fill:#E0F2F1,stroke:#00897B,color:#1B1B1B
+	classDef servicios fill:#EDE7F6,stroke:#5E35B1,color:#1B1B1B
+	classDef contratacion fill:#FFF3E0,stroke:#EF6C00,color:#1B1B1B
+	classDef confianza fill:#FFEBEE,stroke:#C62828,color:#1B1B1B
+
 	Usuario {
 
 	}
@@ -41,6 +48,14 @@ erDiagram
 	}
 
 	ImagenTrabajoPortafolio {
+
+	}
+
+	SolicitudVerificacionPrestador {
+
+	}
+
+	DocumentoVerificacionPrestador {
 
 	}
 
@@ -94,6 +109,9 @@ erDiagram
 	PerfilPrestador||--o{MedioContactoPrestador:"perfilMedioContacto"
 	PerfilPrestador||--o{TrabajoPortafolio:"perfilTrabajoPortafolio"
 	TrabajoPortafolio||--o{ImagenTrabajoPortafolio:"trabajoImagenPortafolio"
+	PerfilPrestador||--o{SolicitudVerificacionPrestador:"perfilSolicitudVerificacion"
+	Administrador|o--o{SolicitudVerificacionPrestador:"solicitudVerificacionRevisada"
+	SolicitudVerificacionPrestador||--o{DocumentoVerificacionPrestador:"solicitudDocumentoVerificacion"
 	CategoriaServicio||--o{SubcategoriaServicio:"categoriaSubcategoria"
 	SubcategoriaServicio||--o{ServicioPublicado:"subcategoriaServicioPublicado"
 	PerfilPrestador||--o{ServicioPublicado:"perfilServicioPublicado"
@@ -129,6 +147,8 @@ erDiagram
 	MedioContactoPrestador:::prestadores
 	TrabajoPortafolio:::prestadores
 	ImagenTrabajoPortafolio:::prestadores
+	SolicitudVerificacionPrestador:::prestadores
+	DocumentoVerificacionPrestador:::prestadores
 	CategoriaServicio:::servicios
 	SubcategoriaServicio:::servicios
 	ServicioPublicado:::servicios

@@ -3,6 +3,14 @@ erDiagram
     %% PENDIENTE_ACTIVACION, ACTIVO, DESACTIVADO.
     %% MotivoRevocacionSesion:
     %% CIERRE_VOLUNTARIO, CAMBIO_CREDENCIALES, MEDIDA_ADMINISTRATIVA.
+    %% NivelVerificacionPrestador:
+    %% SIN_VERIFICAR, VERIFICADO_BASICO, PROFESIONAL_VERIFICADO.
+    %% NivelVerificacionSolicitado:
+    %% BASICA, PROFESIONAL.
+    %% EstadoSolicitudVerificacion:
+    %% PENDIENTE, EN_REVISION, APROBADA, RECHAZADA, REVOCADA.
+    %% TipoDocumentoVerificacion:
+    %% IDENTIDAD, CERTIFICACION, CONSTANCIA, REGISTRO_NEGOCIO, OTRO_RESPALDO.
     %% EstadoCasoModeracion:
     %% ABIERTO, EN_REVISION, CERRADO, REABIERTO.
     %% ResultadoCasoModeracion:
@@ -73,8 +81,33 @@ erDiagram
         integer idMunicipioPrincipal FK
         text descripcionCobertura
         EstadoDisponibilidad disponibilidad
+        NivelVerificacionPrestador nivelVerificacion
         timestamptz fechaCreacion
         timestamptz fechaActualizacion
+    }
+
+    SolicitudVerificacionPrestador {
+        bigint idSolicitudVerificacion PK
+        bigint idPrestador FK
+        bigint idAdministradorRevisor FK "opcional"
+        NivelVerificacionSolicitado nivelSolicitado
+        EstadoSolicitudVerificacion estadoSolicitud
+        text observacionResolucion "opcional obligatoria si rechaza o revoca"
+        timestamptz fechaSolicitud
+        timestamptz fechaInicioRevision "opcional"
+        timestamptz fechaResolucion "opcional"
+        timestamptz fechaActualizacion
+    }
+
+    DocumentoVerificacionPrestador {
+        bigint idDocumentoVerificacion PK
+        bigint idSolicitudVerificacion FK
+        TipoDocumentoVerificacion tipoDocumento
+        varchar claveAlmacenamiento UK
+        varchar nombreOriginal
+        varchar tipoMime
+        integer tamanoBytes
+        timestamptz fechaCarga
     }
 
     MedioContactoPrestador {
@@ -245,6 +278,10 @@ erDiagram
     PerfilPrestador ||--o{ TrabajoPortafolio : prestadorTrabajosPortafolio
     TrabajoPortafolio ||--o{ ImagenTrabajoPortafolio : trabajoImagenesPortafolio
 
+    PerfilPrestador ||--o{ SolicitudVerificacionPrestador : prestadorSolicitudesVerificacion
+    Administrador o|--o{ SolicitudVerificacionPrestador : revisorSolicitudesVerificacion
+    SolicitudVerificacionPrestador ||--o{ DocumentoVerificacionPrestador : solicitudDocumentosVerificacion
+
     CategoriaServicio ||--o{ SubcategoriaServicio : categoriaSubcategoriasServicio
     SubcategoriaServicio ||--o{ ServicioPublicado : subcategoriaServiciosPublicados
     PerfilPrestador ||--o{ ServicioPublicado : prestadorServiciosPublicados
@@ -282,7 +319,7 @@ erDiagram
 
     class Usuario,Administrador,SegundoFactorUsuario,Sesion acceso
     class Departamento,Municipio ubicacion
-    class PerfilPrestador,MedioContactoPrestador,TrabajoPortafolio,ImagenTrabajoPortafolio prestador
+    class PerfilPrestador,MedioContactoPrestador,TrabajoPortafolio,ImagenTrabajoPortafolio,SolicitudVerificacionPrestador,DocumentoVerificacionPrestador prestador
     class CategoriaServicio,SubcategoriaServicio,ServicioPublicado,ImagenServicioPublicado catalogo
     class SolicitudServicio,CambioEstadoSolicitud,MensajeSolicitud contratacion
     class CalificacionUsuario,CasoModeracion,MedidaAdministrativa,HistorialCaso moderacion

@@ -71,6 +71,38 @@ concreta.
 - Prohibido crear carpetas, clases, interfaces o componentes vacíos anticipando
   módulos futuros.
 
+## Autonomía dentro del alcance
+
+Al ejecutar un incremento aprobado no se pide permiso para corregir sus
+**consecuencias directas**: lo que ese trabajo deja incoherente se arregla en la
+misma rama, porque forma parte de dejar el repositorio listo para revisión.
+
+Entra sin consultar:
+
+- documentación técnica afectada;
+- `README.md` y los comandos que documenta;
+- `Docs/Dev/MatrizCumplimiento.md`;
+- comentarios y Javadoc;
+- ejemplos y archivos de configuración;
+- el cuerpo del Pull Request;
+- pruebas y evidencia directamente relacionadas.
+
+Antes de dar el incremento por terminado se hace una **búsqueda de consistencia**
+en el repositorio: se localizan afirmaciones obsoletas, contradicciones y
+pendientes que el propio trabajo ya resolvió, y se corrigen. Una incoherencia
+conocida no se deja en pie solo porque aparece en otro archivo.
+
+Esta autonomía **no** autoriza a: agregar funcionalidades; cambiar la
+arquitectura o una decisión aprobada; tocar el modelo de datos o crear
+migraciones no planificadas; cambiar seguridad, dependencias o versiones;
+refactorizar código ajeno al incremento; reescribir historial o hacer
+force-push; exponer secretos o realizar acciones destructivas; aprobar o
+fusionar un Pull Request.
+
+Si la corrección exigiera alguna de esas acciones, si dos fuentes autoritativas
+se contradicen de verdad o si la ambigüedad obliga a mover el alcance aprobado,
+se detiene y se consulta.
+
 ## Cómo se resuelve
 
 - Entre dos soluciones equivalentes gana la más simple, explícita y comprobable.

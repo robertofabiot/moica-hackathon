@@ -1,0 +1,36 @@
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--moica-espacio-2);
+  min-height: 100dvh;
+  padding: var(--moica-espacio-3);
+  text-align: center;
+}
+
+.titulo {
+  font-size: 1.5rem;
+}
+
+.explicacion {
+  max-width: 40ch;
+  color: var(--moica-texto-suave);
+}
+
+.enlace {
+  padding: var(--moica-espacio-1) var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+  text-decoration: none;
+}
+
+.enlace:hover {
+  border-color: var(--moica-texto);
+}
+
+@media (min-width: 48rem) {
+  .titulo {
+    font-size: 2rem;
+  }
+}

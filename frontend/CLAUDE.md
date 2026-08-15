@@ -14,6 +14,9 @@ el código de `frontend/`.
   carpetas o componentes vacíos anticipando pantallas futuras.
 - Lo genuinamente compartido va en `src/comun/`. Una capacidad no importa
   archivos internos de otra.
+- Las pantallas que no pertenecen a ninguna capacidad, como el inicio y la ruta
+  no encontrada, viven en `src/paginas/`.
+- Los estilos globales y las variables CSS viven en `src/estilos/`.
 
 ## TypeScript
 

@@ -59,10 +59,14 @@
       <artifactId>spring-boot-starter-actuator</artifactId>
     </dependency>
 
-    <!-- Migraciones versionadas del esquema -->
+    <!--
+      Migraciones versionadas del esquema. En Spring Boot 4 la autoconfiguracion
+      de Flyway vive en su propio modulo: con `flyway-core` a secas la
+      biblioteca esta en el classpath pero nadie la ejecuta al arrancar.
+    -->
     <dependency>
-      <groupId>org.flywaydb</groupId>
-      <artifactId>flyway-core</artifactId>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-flyway</artifactId>
     </dependency>
     <dependency>
       <groupId>org.flywaydb</groupId>

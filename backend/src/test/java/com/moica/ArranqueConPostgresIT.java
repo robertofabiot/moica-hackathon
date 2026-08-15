@@ -27,9 +27,11 @@ import org.testcontainers.junit.jupiter.Testcontainers;
  * <p>Se usa Testcontainers y no H2: solo PostgreSQL real demuestra restricciones {@code CHECK},
  * índices parciales y exclusiones temporales, que el diccionario de datos sí utiliza.
  *
- * <p>Las migraciones se toman del classpath de pruebas. El directorio de migraciones de la
- * aplicación todavía está vacío a propósito, y Flyway no crea su historial cuando no hay ninguna
- * migración que aplicar: por eso la comprobación necesita una migración propia de la prueba.
+ * <p>Las migraciones se toman del classpath de pruebas, porque el directorio de migraciones de la
+ * aplicación todavía está vacío a propósito. Flyway crea su tabla {@code flyway_schema_history} al
+ * arrancar aunque no encuentre ninguna migración, pero entonces queda sin registros. La migración
+ * aislada de la prueba es lo que permite comprobar el ciclo completo: que Flyway aplica una
+ * migración real sobre PostgreSQL y deja constancia de su ejecución en ese historial.
  *
  * <p>Necesita Docker en ejecución. La ejecuta {@code ./mvnw verify}.
  */

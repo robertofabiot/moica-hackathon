@@ -148,7 +148,18 @@ En Windows PowerShell se usa `.\mvnw.cmd` en lugar de `./mvnw`.
 
 La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`.
 
-Hoy ese directorio esta vacio a proposito, y conviene saber que **mientras no haya ninguna migracion, Flyway no crea la tabla `flyway_schema_history`**: no hay nada que aplicar ni que registrar. La tabla aparecera con la primera migracion real. Que el mecanismo funciona esta demostrado por una migracion aislada que vive en el classpath de pruebas (`src/test/resources/db/migracion-prueba`) y que la prueba de integracion aplica contra PostgreSQL real.
+Hoy ese directorio esta vacio a proposito. Aun asi, **Flyway se ejecuta al arrancar y crea su tabla de historial `flyway_schema_history`**, que queda existiendo pero sin ningun registro de migracion aplicada. El propio arranque lo describe:
+
+```text
+Schema history table "public"."flyway_schema_history" does not exist yet
+No migrations found
+Creating Schema History table "public"."flyway_schema_history"
+Schema "public" is up to date. No migration necessary.
+```
+
+Comprobado contra la base de datos: la tabla `public.flyway_schema_history` existe y `SELECT COUNT(*) FROM public.flyway_schema_history;` devuelve `0`.
+
+La primera migracion real de la aplicacion sera la que agregue el primer registro a esa tabla. Que el ciclo completo funciona esta demostrado por una migracion aislada que vive en el classpath de pruebas (`src/test/resources/db/migracion-prueba`) y que la prueba de integracion aplica contra PostgreSQL real.
 
 ### 4. Comprobar el healthcheck
 

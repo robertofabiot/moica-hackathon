@@ -1,0 +1,40 @@
+name: Convenciones
+
+# Valida el título del Pull Request y los commits que aporta, según los tipos de
+# Docs/Core/GIT_WORKFLOW.md. Solo se revisa el rango del PR: el historial previo
+# a esta automatización no se reescribe para simular cumplimiento.
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: convenciones-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  convenciones:
+    name: Título y commits convencionales
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v7
+        with:
+          # Se necesita el historial completo para recorrer el rango del PR.
+          fetch-depth: 0
+
+      # El título llega por variable de entorno, no interpolado en el script:
+      # es texto que escribe una persona y no debe poder ejecutar nada.
+      - name: Validar el título del Pull Request
+        env:
+          TITULO_PR: ${{ github.event.pull_request.title }}
+        run: ./.github/scripts/validar-convenciones.sh titulo "$TITULO_PR"
+
+      - name: Validar los commits del Pull Request
+        env:
+          SHA_BASE: ${{ github.event.pull_request.base.sha }}
+          SHA_CABEZA: ${{ github.event.pull_request.head.sha }}
+        run: ./.github/scripts/validar-convenciones.sh commits "$SHA_BASE" "$SHA_CABEZA"

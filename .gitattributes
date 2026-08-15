@@ -44,5 +44,6 @@ mvnw text eol=lf
 *.mmd text eol=lf
 *.tex text eol=lf
 
-# Los archivos de bloqueo se generan; no conviene revisarlos linea a linea.
-package-lock.json -diff linguist-generated=true
+# El lockfile se genera solo: GitHub lo muestra plegado, pero su diff sigue
+# disponible porque un cambio de dependencia si debe poder revisarse.
+package-lock.json linguist-generated=true

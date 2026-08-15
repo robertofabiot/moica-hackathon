@@ -28,17 +28,17 @@ pruebas ejecutadas y el material de apoyo.
 
 | # | Criterio | Estado | Incremento | PR | Commits | Pruebas | Evidencia |
 |---|---|---|---|---|---|---|---|
-| 1 | README técnico completo (requisitos, variables, estructura, scripts, comandos, endpoints) | En progreso | P1 → P11 | #3 | `daaae20` | Sus instrucciones se siguieron de principio a fin en una máquina real | `README.md` cubre requisitos, versiones, variables, estructura del monorepo, arranque de cada pieza, healthcheck, build de la PWA y comandos de validación. Endpoints de negocio y despliegue se completan en P11. |
+| 1 | README técnico completo (requisitos, variables, estructura, scripts, comandos, endpoints) | En progreso | P1 → P11 | #3 | `70467f6` | Sus instrucciones se siguieron de principio a fin en una máquina real | `README.md` cubre requisitos, versiones, variables, estructura del monorepo, arranque de cada pieza, healthcheck, build de la PWA y comandos de validación. Endpoints de negocio y despliegue se completan en P11. |
 | 2 | Modelo ER en 3FN y tres diagramas UML completos | Cumplido | P0 | #1, #2 | | | `Docs/Dev/DiagramaLogico.mmd`, `DiagramaConceptual.mmd`, `DiagramaClasesDominio.mmd`, `DiagramaCasosDeUso.tex`, `DiagramaActividades.tex`, `Moica - Diccionario de Datos.xlsx` |
-| 3 | Interfaz navegable, validada y responsiva | En progreso | P1 → P11 | #3 | `0a68858`, `9eeb4db` | 3 pruebas de navegación; comprobación local en Chrome a 375x812 | Solo existen la pantalla base y la ruta no encontrada, ambas verificadas en teléfono. Las pantallas del producto y la validación de formularios llegan desde P2. |
-| 4 | Ramas, Conventional Commits, Pull Requests y trazabilidad | En progreso | P0 → P11 | #1, #2, #3 | `1192f84`, `363ccc9` | Check «Título y commits convencionales» en verde | `Docs/Core/GIT_WORKFLOW.md` define ramas, tipos y promoción a `main`; P1 agrega `.github/pull_request_template.md` y la validación automática de título y commits del PR. |
-| 5 | Matriz de cumplimiento mantenida | En progreso | P1 → P11 | #3 | `1192f84` | — | Este documento, creado en P1 y actualizado por cada PR. |
+| 3 | Interfaz navegable, validada y responsiva | En progreso | P1 → P11 | #3 | `117af69`, `9c80210` | 3 pruebas de navegación; comprobación local en Chrome a 375x812 | Solo existen la pantalla base y la ruta no encontrada, ambas verificadas en teléfono. Las pantallas del producto y la validación de formularios llegan desde P2. |
+| 4 | Ramas, Conventional Commits, Pull Requests y trazabilidad | En progreso | P0 → P11 | #1, #2, #3 | `eb77733`, `d1cba29` | Check «Título y commits convencionales» en verde | `Docs/Core/GIT_WORKFLOW.md` define ramas, tipos y promoción a `main`; P1 agrega `.github/pull_request_template.md` y la validación automática de título y commits del PR. |
+| 5 | Matriz de cumplimiento mantenida | En progreso | P1 → P11 | #3 | `eb77733` | — | Este documento, creado en P1 y actualizado por cada PR. |
 | 6 | Validación de entradas y manejo uniforme de errores | Pendiente | P2 | | | | |
 | 7 | Protección de rutas y datos (rol, propiedad, estado de cuenta) | Pendiente | P3 → P10B | | | | |
 | 8 | Verificación documental de prestadores en dos niveles | Pendiente | P4V | | | | |
 | 9 | Autenticación de dos factores (TOTP) | Pendiente | P3 | | | | |
 | 10 | Expiración y revocación de sesión | Pendiente | P2 → P3 | | | | |
-| 11 | Preparación para producción (contenedores, configuración por entorno, migraciones, healthcheck) | En progreso | P1 → P11 | #3 | `d429cf3`, `fc0cc70`, `f3305ce`, `b2a1d15` | `./mvnw verify` en CI; arranque local con Docker Compose | Configuración por variables de entorno comprobada en local incluso con el puerto 5432 ocupado, Flyway aplicando migraciones versionadas sobre PostgreSQL real y `GET /actuator/health` respondiendo `UP`. Imágenes de producción, despliegue y proveedor corresponden a P11. |
+| 11 | Preparación para producción (contenedores, configuración por entorno, migraciones, healthcheck) | En progreso | P1 → P11 | #3 | `78518ff`, `286ca5f`, `715fd3d`, `0f464d2` | `./mvnw verify` en CI; arranque local con Docker Compose | Configuración por variables de entorno comprobada en local incluso con el puerto 5432 ocupado, Flyway aplicando migraciones versionadas sobre PostgreSQL real y `GET /actuator/health` respondiendo `UP`. Imágenes de producción, despliegue y proveedor corresponden a P11. |
 
 ## Base técnica de P1
 
@@ -54,7 +54,7 @@ Una casilla vacía significa que ahí no aplica, no que fallara.
 
 | Control | Cómo se comprueba | Local | CI | Evidencia |
 |---|---|---|---|---|
-| Finales de línea normalizados | `git add --renormalize .` no produce cambios | Sí | | Ejecutado antes de `8a3211c`: el índice ya estaba en LF y no se reescribió ningún archivo |
+| Finales de línea normalizados | `git add --renormalize .` no produce cambios | Sí | | Ejecutado antes de `9600ace`: el índice ya estaba en LF y no se reescribió ningún archivo |
 | Sin secretos versionados | `git ls-files` y revisión del diff | Sí | | El único archivo de entorno versionado es `.env.example`; `.env` está ignorado |
 | Formato del backend | `./mvnw spotless:check` | Sí | Sí | «keeping 2 files clean, 0 needs changes» |
 | Análisis estático del backend | `./mvnw spotbugs:check` | Sí | Sí | «BugInstance size is 0» |

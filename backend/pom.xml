@@ -21,7 +21,24 @@
     <java.version>21</java.version>
     <spotless.version>3.9.0</spotless.version>
     <spotbugs.version>4.10.3.0</spotbugs.version>
+    <testcontainers.version>1.21.4</testcontainers.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!--
+        Spring Boot 4 ya no fija las versiones de Testcontainers, asi que se
+        importa su BOM para que todos sus modulos usen la misma.
+      -->
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>${testcontainers.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- API REST -->
@@ -66,6 +83,23 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+
+    <!-- Pruebas de integracion contra PostgreSQL real -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-testcontainers</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>postgresql</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -73,6 +107,17 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+      </plugin>
+
+      <!--
+        Las pruebas que necesitan PostgreSQL real se llaman *IT y las ejecuta
+        Failsafe en `verify`, con Docker disponible. Surefire queda para las
+        pruebas que no dependen de infraestructura. Las ejecuciones ya vienen
+        configuradas por el parent de Spring Boot: basta con activar el plugin.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
       </plugin>
 
       <!--

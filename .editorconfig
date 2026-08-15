@@ -19,5 +19,14 @@ indent_size = 2
 indent_style = space
 indent_size = 4
 
+# Configuracion de Maven y recursos del backend
+[*.{xml,properties}]
+indent_style = space
+indent_size = 2
+
+# En Markdown, dos espacios finales significan salto de linea: no se recortan
+[*.md]
+trim_trailing_whitespace = false
+
 [Makefile]
 indent_style = tab

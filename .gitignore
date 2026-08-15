@@ -1,33 +1,69 @@
 # =========================================================================
-# IGNORAR DEPENDENCIAS Y COMPILACIONES
+# DEPENDENCIAS Y ARTEFACTOS DE COMPILACION
 # =========================================================================
 node_modules/
 dist/
+dist-ssr/
 build/
 target/
 *.jar
 *.war
+*.ear
+*.class
+
+# Salida del plugin PWA de Vite (se regenera en cada build).
+frontend/dev-dist/
+frontend/public/sw.js
+frontend/public/workbox-*.js
 
 # =========================================================================
-# IGNORAR ARCHIVOS DEL SISTEMA OPERATIVO
+# MAVEN
 # =========================================================================
-.DS_Store
-Thumbs.db
+# El wrapper (mvnw, mvnw.cmd y .mvn/wrapper/maven-wrapper.properties) SI se
+# versiona: es la entrada reproducible del backend. Lo que se ignora es lo
+# que el wrapper descarga o genera.
+.mvn/wrapper/maven-wrapper.jar
+.mvn/.gradle-enterprise/
+.mvn/.develocity/
+buildNumber.properties
+dependency-reduced-pom.xml
+release.properties
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
 
 # =========================================================================
-# IGNORAR VARIABLES DE ENTORNO (SECRETS)
+# PRUEBAS Y COBERTURA
 # =========================================================================
+coverage/
+.nyc_output/
+*.lcov
+surefire-reports/
+failsafe-reports/
+
+# =========================================================================
+# VARIABLES DE ENTORNO (NUNCA SE VERSIONAN)
+# =========================================================================
+# El unico archivo de entorno versionado es .env.example, sin secretos.
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
 # =========================================================================
-# IGNORAR CONFIGURACIONES DE IDEs
+# CONFIGURACIONES DE IDEs Y EDITORES
 # =========================================================================
 .idea/
+*.iml
+*.ipr
+*.iws
 .vscode/
+!.vscode/extensions.json
+.settings/
+.project
+.classpath
+.factorypath
+nbproject/private/
 *.suo
 *.ntvs*
 *.njsproj
@@ -35,9 +71,24 @@ Thumbs.db
 *.sw?
 
 # =========================================================================
-# IGNORAR LOGS
+# ARCHIVOS DEL SISTEMA OPERATIVO
+# =========================================================================
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# =========================================================================
+# LOGS Y TEMPORALES
 # =========================================================================
 *.log
+logs/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
+*.tmp
+*.temp
+.cache/
+.vite/

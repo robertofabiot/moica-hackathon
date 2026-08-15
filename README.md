@@ -84,7 +84,7 @@ Para mantener la calidad y el orden del codigo base durante el Hackathon, es obl
 
 *   **Docker y Docker Compose.** Levantan PostgreSQL y pgAdmin, y ademas Testcontainers los necesita para las pruebas de integracion del backend.
 *   **JDK 21 o superior.** Maven no hace falta: el repositorio incluye el Maven Wrapper.
-*   **Node.js 22 LTS o superior.** Node 20 ya no recibe soporte y Vite 8 no lo admite.
+*   **Node.js 22 LTS o superior.** Vite 8 todavia admite Node 20.19 o posterior, pero la linea 20 termino su soporte: el proyecto usa Node 22 para trabajar sobre una linea mantenida y coincidir con la version que ejecuta CI.
 *   **Git.**
 
 ### 1. Configurar las variables de entorno
@@ -146,7 +146,9 @@ cd backend
 
 En Windows PowerShell se usa `.\mvnw.cmd` en lugar de `./mvnw`.
 
-La API queda en `http://localhost:8080`. Flyway aplica las migraciones de `src/main/resources/db/migration` al arrancar; hoy ese directorio esta vacio a proposito y Flyway solo crea su tabla de historial.
+La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`.
+
+Hoy ese directorio esta vacio a proposito, y conviene saber que **mientras no haya ninguna migracion, Flyway no crea la tabla `flyway_schema_history`**: no hay nada que aplicar ni que registrar. La tabla aparecera con la primera migracion real. Que el mecanismo funciona esta demostrado por una migracion aislada que vive en el classpath de pruebas (`src/test/resources/db/migracion-prueba`) y que la prueba de integracion aplica contra PostgreSQL real.
 
 ### 4. Comprobar el healthcheck
 

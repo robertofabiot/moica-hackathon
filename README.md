@@ -107,7 +107,7 @@ Copy-Item .env.example .env
 | `MOICA_DB_USUARIO` | Usuario de PostgreSQL | Docker Compose y backend |
 | `MOICA_DB_CLAVE` | Contrasena de PostgreSQL | Docker Compose y backend |
 | `MOICA_DB_HOST` | Host por el que el backend alcanza la base | Backend |
-| `MOICA_DB_PORT` | Puerto de PostgreSQL | Docker Compose y backend |
+| `MOICA_DB_PORT` | Puerto por el que se publica PostgreSQL (cambialo si el 5432 ya esta ocupado) | Docker Compose y backend |
 | `MOICA_PGADMIN_EMAIL` | Usuario de pgAdmin | Docker Compose |
 | `MOICA_PGADMIN_CLAVE` | Contrasena de pgAdmin | Docker Compose |
 | `MOICA_PGADMIN_PORT` | Puerto web de pgAdmin | Docker Compose |
@@ -130,6 +130,14 @@ Esto inicia PostgreSQL en el puerto de `MOICA_DB_PORT` (5432 por omision) y pgAd
 ```bash
 docker compose config
 ```
+
+**Si el puerto 5432 ya esta ocupado** —es lo que pasa cuando la maquina tiene un PostgreSQL instalado en Windows— el contenedor no podra publicarse y Compose fallara. La solucion es cambiar una sola variable en `.env`:
+
+```dotenv
+MOICA_DB_PORT=5433
+```
+
+El puerto interno del contenedor sigue siendo 5432; solo cambia por cual se publica hacia la maquina. El backend usa esa misma variable para conectarse, asi que no hay que tocar codigo ni `docker-compose.yml`. Ya se comprobo funcionando de esta forma.
 
 Para detener los servicios:
 

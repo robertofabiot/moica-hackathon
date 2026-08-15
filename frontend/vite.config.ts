@@ -31,7 +31,8 @@ export default defineConfig(({ mode }) => {
           start_url: '/',
           scope: '/',
           display: 'standalone',
-          orientation: 'portrait',
+          // Sin `orientation`: Moica se adapta a teléfono, tableta, escritorio
+          // y plegables. Imponer vertical romperia esa adaptacion.
           background_color: '#ffffff',
           theme_color: '#ffffff',
           icons: [

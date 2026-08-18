@@ -1,0 +1,75 @@
+/*
+ * Estilos base de Moica.
+ *
+ * Deliberadamente neutros: la paleta y la tipografia definitivas todavia no
+ * estan aprobadas. `Docs/Design/IdentidadYConceptoDeMarca.md` presenta once
+ * opciones de color como tentativas, asi que aqui solo hay grises, tipografia
+ * del sistema y el logotipo ya entregado. Cuando el equipo de diseno cierre la
+ * identidad, estos valores se sustituyen en un solo lugar.
+ */
+
+:root {
+  --moica-fondo: #ffffff;
+  --moica-texto: #1d1d1b;
+  --moica-texto-suave: #55554f;
+  --moica-borde: #dcdcd6;
+  --moica-foco: #1d1d1b;
+
+  --moica-espacio-1: 0.5rem;
+  --moica-espacio-2: 1rem;
+  --moica-espacio-3: 1.5rem;
+  --moica-espacio-4: 2rem;
+
+  color-scheme: light;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  line-height: 1.5;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background-color: var(--moica-fondo);
+  color: var(--moica-texto);
+  /* Mobile-first: el texto base se define para telefono y crece despues. */
+  font-size: 1rem;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: inherit;
+}
+
+/* El foco siempre debe verse: es la unica guia de quien navega con teclado. */
+:focus-visible {
+  outline: 2px solid var(--moica-foco);
+  outline-offset: 2px;
+}
+
+@media (min-width: 48rem) {
+  body {
+    font-size: 1.0625rem;
+  }
+}

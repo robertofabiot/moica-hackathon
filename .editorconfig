@@ -15,9 +15,20 @@ indent_style = space
 indent_size = 2
 
 # Backend (Java/Spring Boot)
+# 2 espacios para coincidir con Google Java Format, que es lo que aplica
+# Spotless. Con 4, el editor y `spotless:check` se contradirian en cada archivo.
 [*.java]
 indent_style = space
-indent_size = 4
+indent_size = 2
+
+# Configuracion de Maven y recursos del backend
+[*.{xml,properties}]
+indent_style = space
+indent_size = 2
+
+# En Markdown, dos espacios finales significan salto de linea: no se recortan
+[*.md]
+trim_trailing_whitespace = false
 
 [Makefile]
 indent_style = tab

@@ -1,0 +1,95 @@
+name: CI
+
+# Barrera real: si un control falla, el check correspondiente queda en rojo.
+# Ningun paso usa `continue-on-error` ni oculta avisos.
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Java 21)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v7
+
+      - name: Preparar Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      # `verify` ejecuta, en este orden: spotless:check (formato), compilacion,
+      # pruebas de Surefire, empaquetado, pruebas de integracion de Failsafe
+      # contra PostgreSQL real mediante Testcontainers y spotbugs:check
+      # (analisis estatico). Docker viene disponible en el runner.
+      - name: Formato, análisis estático, pruebas e integración
+        run: ./mvnw -B -ntp verify
+
+  frontend:
+    name: Frontend (Node 22)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v7
+
+      - name: Preparar Node
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # `npm ci` instala exactamente lo que fija el lockfile.
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Comprobar formato
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Verificar tipos
+        run: npm run typecheck
+
+      - name: Pruebas
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+  entorno-local:
+    name: Entorno local (docker compose)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v7
+
+      # El entorno local se valida con los valores de ejemplo, nunca con
+      # secretos productivos.
+      - name: Preparar variables de ejemplo
+        run: cp .env.example .env
+
+      # `-q` valida sin imprimir la configuracion resuelta: aunque sean valores
+      # de desarrollo, las credenciales no se escriben en los registros de CI.
+      - name: Validar docker-compose.yml
+        run: docker compose config -q

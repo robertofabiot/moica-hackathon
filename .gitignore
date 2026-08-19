@@ -51,6 +51,19 @@ failsafe-reports/
 !.env.example
 
 # =========================================================================
+# INSTRUCCIONES LOCALES PARA ASISTENTES
+# =========================================================================
+# Directrices personales de desarrollo. No forman parte del producto ni
+# se versionan. Cada persona las mantiene en su máquina.
+CLAUDE.md
+**/CLAUDE.md
+AGENTS.md
+**/AGENTS.md
+.cursor/
+.claude/
+.codex/
+
+# =========================================================================
 # CONFIGURACIONES DE IDEs Y EDITORES
 # =========================================================================
 .idea/

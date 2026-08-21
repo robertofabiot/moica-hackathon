@@ -1,8 +1,8 @@
 # Migraciones de Flyway
 
 Este directorio contiene las migraciones versionadas del esquema de PostgreSQL.
-Está vacío a propósito: P1 solo integra el mecanismo. Las tablas del diccionario
-de datos llegan con el incremento que las necesita.
+Las tablas del diccionario de datos llegan con el incremento que las necesita;
+P2 abre el rango de identidad con `V10__crear_usuario_y_sesion.sql`.
 
 ## Reglas
 
@@ -35,5 +35,11 @@ Los rangos evitan que dos ramas elijan el mismo número de versión.
 | `V50`–`V59` | Moderación, medidas e historial SCD2 |
 | `V90`–`V99` | Catálogos y datos de demostración aprobados |
 
-No se crea una migración vacía para ocupar un número. El primer archivo real
-será el del incremento que lo necesite.
+No se crea una migración vacía para ocupar un número, ni se ocupa por
+adelantado un rango que todavía no hace falta.
+
+## Migraciones aplicadas
+
+| Migración | Incremento | Contenido |
+|---|---|---|
+| `V10__crear_usuario_y_sesion.sql` | P2 | Tablas `usuario` y `sesion` con sus claves, dominios y restricciones |

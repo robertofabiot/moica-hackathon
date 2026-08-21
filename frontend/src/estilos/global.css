@@ -10,10 +10,16 @@
 
 :root {
   --moica-fondo: #ffffff;
+  --moica-fondo-suave: #f5f5f3;
   --moica-texto: #1d1d1b;
   --moica-texto-suave: #55554f;
   --moica-borde: #dcdcd6;
   --moica-foco: #1d1d1b;
+  /*
+   * Color de estado, no de identidad: solo sirve para senalar que algo salio
+   * mal en un formulario. Contraste 5.9:1 sobre el fondo, suficiente para AA.
+   */
+  --moica-error: #b3261e;
 
   --moica-espacio-1: 0.5rem;
   --moica-espacio-2: 1rem;

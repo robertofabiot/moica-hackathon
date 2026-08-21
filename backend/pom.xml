@@ -47,6 +47,12 @@
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
+    <!-- Validacion de los DTO de entrada con Bean Validation -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-validation</artifactId>
+    </dependency>
+
     <!-- Acceso a datos con JPA -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

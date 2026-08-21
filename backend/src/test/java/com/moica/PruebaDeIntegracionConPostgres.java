@@ -25,12 +25,18 @@ import org.testcontainers.containers.PostgreSQLContainer;
       "MOICA_DB_NOMBRE=moica_prueba",
       "MOICA_DB_USUARIO=moica_prueba",
       "MOICA_DB_CLAVE=moica_prueba",
+      // Secreto de pruebas. No es el de ningún entorno real: los despliegues lo
+      // reciben por variable de entorno y nunca se versiona.
+      "MOICA_JWT_SECRETO=" + PruebaDeIntegracionConPostgres.SECRETO_JWT,
       // El detalle de salud está cerrado en producción; aquí se abre para poder
       // afirmar que el componente de base de datos es el que responde.
       "management.endpoint.health.show-details=always",
       "management.endpoint.health.show-components=always"
     })
 public abstract class PruebaDeIntegracionConPostgres {
+
+  /** Clave con la que se firman los JWT durante las pruebas. */
+  public static final String SECRETO_JWT = "secreto-de-pruebas-de-moica-solo-para-testcontainers";
 
   @ServiceConnection
   static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:15-alpine");

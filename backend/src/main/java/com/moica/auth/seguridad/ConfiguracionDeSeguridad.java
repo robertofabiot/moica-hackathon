@@ -1,6 +1,5 @@
 package com.moica.auth.seguridad;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,8 +18,9 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
  * <p>Decisiones que aplica, todas del plan:
  *
  * <ul>
- *   <li>Nada de sesión de servlet: la autenticación de Moica viajará en su propia cookie y se
- *       comprobará en cada petición, así que la cadena es {@link SessionCreationPolicy#STATELESS}.
+ *   <li>La autenticación viaja en una cookie {@code HttpOnly} y se comprueba contra la fila {@code
+ *       sesion} en cada petición, así que no hay sesión de servlet: {@link
+ *       SessionCreationPolicy#STATELESS}.
  *   <li>CSRF sigue activo. La configuración es la que Spring Security documenta para una SPA del
  *       mismo origen: el token viaja en la cookie {@code XSRF-TOKEN}, legible por JavaScript, y el
  *       navegador lo devuelve en la cabecera {@code X-XSRF-TOKEN} de toda operación mutable.
@@ -47,25 +47,27 @@ public class ConfiguracionDeSeguridad {
       HttpSecurity http,
       PuntoDeEntradaNoAutenticado puntoDeEntrada,
       ManejadorDeAccesoDenegado accesoDenegado,
-      @Value("${moica.seguridad.cookie-segura}") boolean cookieSegura)
+      PropiedadesDeSeguridad propiedades)
       throws Exception {
 
     return http.csrf(
             csrf ->
-                csrf.csrfTokenRepository(repositorioDeTokenCsrf(cookieSegura))
+                csrf.csrfTokenRepository(repositorioDeTokenCsrf(propiedades))
                     .csrfTokenRequestHandler(manejadorDeTokenCsrf()))
         .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        // Moica se autenticará con su propia cookie: ni formulario de Spring
-        // Security, ni autenticación básica, ni su cierre de sesión.
+        // Moica solo se autentica con su propia cookie de sesión: ni formulario
+        // de Spring Security, ni autenticación básica, ni su cierre de sesión.
         .formLogin(AbstractHttpConfigurer::disable)
         .httpBasic(AbstractHttpConfigurer::disable)
         .logout(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(
             rutas ->
                 rutas
-                    // Registrarse es, por definición, lo que se hace sin haber
-                    // iniciado sesión.
+                    // Registrarse e iniciar sesión son, por definición, lo que
+                    // se hace sin haber iniciado sesión.
                     .requestMatchers(HttpMethod.POST, "/api/usuarios")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/auth/sesion")
                     .permitAll()
                     .requestMatchers("/actuator/health")
                     .permitAll()
@@ -83,12 +85,15 @@ public class ConfiguracionDeSeguridad {
         .build();
   }
 
-  private static CookieCsrfTokenRepository repositorioDeTokenCsrf(boolean cookieSegura) {
+  private static CookieCsrfTokenRepository repositorioDeTokenCsrf(
+      PropiedadesDeSeguridad propiedades) {
+
     // `withHttpOnlyFalse` es intencionado: el token CSRF debe poder leerlo el
-    // JavaScript de Moica para devolverlo en la cabecera.
+    // JavaScript de Moica para devolverlo en la cabecera. Lo que nunca es
+    // legible por script es la cookie de sesión.
     CookieCsrfTokenRepository repositorio = CookieCsrfTokenRepository.withHttpOnlyFalse();
     repositorio.setCookieCustomizer(
-        cookie -> cookie.secure(cookieSegura).sameSite("Lax").path("/"));
+        cookie -> cookie.secure(propiedades.cookieSegura()).sameSite("Lax").path("/"));
     return repositorio;
   }
 

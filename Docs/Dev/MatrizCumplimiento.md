@@ -28,11 +28,11 @@ pruebas ejecutadas y el material de apoyo.
 
 | # | Criterio | Estado | Incremento | PR | Commits | Pruebas | Evidencia |
 |---|---|---|---|---|---|---|---|
-| 1 | README técnico completo (requisitos, variables, estructura, scripts, comandos, endpoints) | En progreso | P1 → P11 | #3, #5 | `70467f6` | Sus instrucciones se siguieron de principio a fin en una máquina real | `README.md` cubre requisitos, versiones, variables, estructura del monorepo, arranque de cada pieza, healthcheck, build de la PWA y comandos de validación. P2 añade los endpoints de acceso, el modelo de sesión, la protección CSRF, la política de contraseña y la forma de los errores. El despliegue se completa en P11. |
+| 1 | README técnico completo (requisitos, variables, estructura, scripts, comandos, endpoints) | En progreso | P1 → P11 | #3, #5 | `70467f6`, `61b4af6` | Sus instrucciones se siguieron de principio a fin en una máquina real | `README.md` cubre requisitos, versiones, variables, estructura del monorepo, arranque de cada pieza, healthcheck, build de la PWA y comandos de validación. P2 añade los endpoints de acceso, el modelo de sesión, la protección CSRF, la política de contraseña y la forma de los errores. El despliegue se completa en P11. |
 | 2 | Modelo ER en 3FN y tres diagramas UML completos | Cumplido | P0 | #1, #2 | | | `Docs/Dev/DiagramaLogico.mmd`, `DiagramaConceptual.mmd`, `DiagramaClasesDominio.mmd`, `DiagramaCasosDeUso.tex`, `DiagramaActividades.tex`, `Moica - Diccionario de Datos.xlsx` |
 | 3 | Interfaz navegable, validada y responsiva | En progreso | P1 → P11 | #3, #5 | `117af69`, `9c80210`, `e3ba201`, `feff7ef` | 29 pruebas de Vitest; recorrido manual en el navegador a 375x812, 768x1024 y 1280x800 | Registro, inicio de sesión, cierre de sesión y aviso de sesión vencida, con validación en el formulario y mensajes del backend por campo. Las pantallas de perfil, servicios y solicitudes llegan con sus incrementos. |
 | 4 | Ramas, Conventional Commits, Pull Requests y trazabilidad | En progreso | P0 → P11 | #1, #2, #3, #5 | `eb77733`, `d1cba29` | Check «Título y commits convencionales» en verde; `./mvnw verify` ejecutado además sobre cada commit del incremento por separado | `Docs/Core/GIT_WORKFLOW.md` define ramas, tipos y promoción a `main`; P1 agrega `.github/pull_request_template.md` y la validación automática de título y commits del PR. P2 aporta siete commits atómicos que se pueden leer en orden: esquema, errores, registro, autenticación, ciclo de sesión y las dos entregas de interfaz. |
-| 5 | Matriz de cumplimiento mantenida | En progreso | P1 → P11 | #3, #5 | `eb77733` | — | Este documento, creado en P1 y actualizado por cada PR. |
+| 5 | Matriz de cumplimiento mantenida | En progreso | P1 → P11 | #3, #5 | `eb77733`, `61b4af6` | — | Este documento, creado en P1 y actualizado por cada PR. |
 | 6 | Validación de entradas y manejo uniforme de errores | Cumplido | P2 | #5 | `fe1ab99`, `e2be568` | 17 pruebas de la política de contraseña sobre el DTO; 13 pruebas de integración de registro con casos negativos; 29 pruebas del frontend | Bean Validation en los DTO más un manejador global que traduce cualquier fallo —incluidos los de Spring MVC— a un cuerpo único (`instante`, `estado`, `codigo`, `mensaje`, `ruta` y, en validación, `errores` por campo). Los rechazos de la cadena de seguridad usan ese mismo cuerpo. Ninguna respuesta lleva trazas, SQL ni valores internos. |
 | 7 | Protección de rutas y datos (rol, propiedad, estado de cuenta) | En progreso | P2 → P10B | #5 | `e2be568`, `b3bcfcc` | Pruebas de 401 sin sesión, con sesión expirada y con sesión revocada; pruebas de 403 sin token CSRF | P2 deja la base: todo `/api` exige sesión vigente salvo registro e inicio de sesión, y las operaciones mutables exigen token CSRF. Rol, propiedad y estado de cuenta se aplican desde P3. |
 | 8 | Verificación documental de prestadores en dos niveles | Pendiente | P4V | | | | |
@@ -87,7 +87,11 @@ Comprobaciones del incremento P2, con el resultado real de cada una.
 
 - **Local**: máquina de desarrollo (Windows 11, Docker Desktop, Node 22, JDK
   compilando con `release 21`), con PostgreSQL publicado en `localhost:5433`.
-- **CI**: pendiente de la ejecución del Pull Request; se enlazará al abrirlo.
+- **CI**: ejecutado por GitHub Actions en el Pull Request #5,
+  [ejecución 32508248310](https://github.com/robertofabiot/moica-hackathon/actions/runs/32508248310),
+  con Backend, Frontend y Entorno local en verde, y
+  [ejecución 32508248303](https://github.com/robertofabiot/moica-hackathon/actions/runs/32508248303)
+  con el check de convenciones también en verde.
 
 | Control | Cómo se comprueba | Local | Evidencia |
 |---|---|---|---|

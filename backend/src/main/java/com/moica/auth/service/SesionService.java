@@ -1,18 +1,24 @@
 package com.moica.auth.service;
 
+import com.moica.auth.entity.MotivoRevocacionSesion;
 import com.moica.auth.entity.Sesion;
 import com.moica.auth.repository.SesionRepository;
 import com.moica.auth.seguridad.PropiedadesDeSeguridad;
+import com.moica.comun.error.ErrorDeAplicacion;
 import java.security.SecureRandom;
 import java.time.OffsetDateTime;
 import java.util.Base64;
+import java.util.Optional;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Ciclo de vida de las sesiones.
+ * Ciclo de vida de las sesiones: abrirlas, comprobar si siguen valiendo y revocarlas.
  *
- * <p>La fila {@code sesion} es la fuente de verdad: el JWT solo la señala mediante su {@code jti}.
+ * <p>La fila {@code sesion} es la fuente de verdad. El JWT solo la señala mediante su {@code jti},
+ * así que una sesión revocada deja de conceder acceso en la petición siguiente aunque el token aún
+ * no haya alcanzado su expiración.
  */
 @Service
 public class SesionService {
@@ -45,6 +51,47 @@ public class SesionService {
             inicio.plus(propiedades.duracionDeSesion()));
 
     return repositorio.save(sesion);
+  }
+
+  /**
+   * Devuelve la sesión que señala un {@code jti} solo si sigue concediendo acceso.
+   *
+   * <p>Vacío significa las tres cosas a la vez: no existe, expiró o fue revocada. Ninguna de ellas
+   * autentica.
+   */
+  @Transactional(readOnly = true)
+  public Optional<Sesion> buscarVigente(String identificadorToken) {
+    return repositorio
+        .findByIdentificadorToken(identificadorToken)
+        .filter(sesion -> sesion.estaVigente(OffsetDateTime.now()));
+  }
+
+  /**
+   * Recupera una sesión por su identificador.
+   *
+   * @throws ErrorDeAplicacion si la sesión no existe
+   */
+  @Transactional(readOnly = true)
+  public Sesion obtener(Long idSesion) {
+    return repositorio
+        .findById(idSesion)
+        .orElseThrow(
+            () ->
+                new ErrorDeAplicacion(
+                    HttpStatus.NOT_FOUND, "RECURSO_NO_ENCONTRADO", "La sesión no existe."));
+  }
+
+  /**
+   * Revoca una sesión, dejando constancia del instante y del motivo.
+   *
+   * <p>Revocar una sesión ya revocada no cambia nada: se conserva la primera revocación.
+   */
+  @Transactional
+  public void revocar(Long idSesion, MotivoRevocacionSesion motivo) {
+    repositorio
+        .findById(idSesion)
+        .filter(sesion -> sesion.getFechaRevocacion() == null)
+        .ifPresent(sesion -> sesion.revocar(OffsetDateTime.now(), motivo));
   }
 
   private static String generarIdentificadorDeToken() {

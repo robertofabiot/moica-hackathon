@@ -2,7 +2,9 @@ package com.moica.auth.service;
 
 import com.moica.auth.dto.RespuestaDeSesion;
 import com.moica.auth.dto.SolicitudDeInicioSesion;
+import com.moica.auth.entity.MotivoRevocacionSesion;
 import com.moica.auth.entity.Sesion;
+import com.moica.auth.seguridad.UsuarioAutenticado;
 import com.moica.comun.error.ErrorDeAplicacion;
 import com.moica.usuario.dto.DatosDeUsuario;
 import com.moica.usuario.service.UsuarioService;
@@ -11,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Inicio de la sesión de una persona.
+ * Inicio, consulta y cierre de la sesión de una persona.
  *
  * <p>Coordina las dos capacidades implicadas: pregunta por las credenciales a {@code usuario} y
  * gestiona la vigencia con {@link SesionService}. Nunca consulta el repositorio de la otra
@@ -52,6 +54,21 @@ public class AutenticacionService {
     Sesion sesion = sesiones.abrir(usuario.idUsuario());
 
     return new SesionIniciada(tokens.emitir(sesion), RespuestaDeSesion.de(usuario, sesion));
+  }
+
+  /** Describe la sesión con la que llega la petición en curso. */
+  @Transactional(readOnly = true)
+  public RespuestaDeSesion consultar(UsuarioAutenticado sujeto) {
+    // Se releen ambas filas en lugar de copiarlas en el contexto de seguridad:
+    // así la respuesta refleja el estado actual de la cuenta y de la sesión.
+    return RespuestaDeSesion.de(
+        usuarios.obtener(sujeto.idUsuario()), sesiones.obtener(sujeto.idSesion()));
+  }
+
+  /** Cierra la sesión en curso, dejando registrado que fue la persona quien la cerró. */
+  @Transactional
+  public void cerrarSesion(UsuarioAutenticado sujeto) {
+    sesiones.revocar(sujeto.idSesion(), MotivoRevocacionSesion.CIERRE_VOLUNTARIO);
   }
 
   /**

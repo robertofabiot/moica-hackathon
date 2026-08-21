@@ -1,5 +1,7 @@
 package com.moica.auth.seguridad;
 
+import com.moica.auth.service.SesionService;
+import com.moica.auth.service.TokenDeSesionService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -9,6 +11,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
@@ -45,10 +48,17 @@ public class ConfiguracionDeSeguridad {
   @Bean
   public SecurityFilterChain cadenaDeSeguridad(
       HttpSecurity http,
+      CookieDeSesion cookie,
+      TokenDeSesionService tokens,
+      SesionService sesiones,
       PuntoDeEntradaNoAutenticado puntoDeEntrada,
       ManejadorDeAccesoDenegado accesoDenegado,
       PropiedadesDeSeguridad propiedades)
       throws Exception {
+
+    // El filtro se construye aquí y no se publica como bean: si lo fuera, Spring
+    // Boot lo registraría además en el servidor, fuera de esta cadena.
+    FiltroDeSesion filtroDeSesion = new FiltroDeSesion(cookie, tokens, sesiones);
 
     return http.csrf(
             csrf ->
@@ -82,6 +92,10 @@ public class ConfiguracionDeSeguridad {
                 errores
                     .authenticationEntryPoint(puntoDeEntrada)
                     .accessDeniedHandler(accesoDenegado))
+        // Antes del filtro anónimo a propósito: ese deja siempre un sujeto
+        // anónimo en el contexto, y a partir de ahí el filtro de sesión ya no
+        // podría distinguir «nadie ha llegado» de «llegó una sesión válida».
+        .addFilterBefore(filtroDeSesion, AnonymousAuthenticationFilter.class)
         .build();
   }
 

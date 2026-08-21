@@ -1,5 +1,9 @@
 package com.moica.auth.seguridad;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.Optional;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +29,28 @@ public class CookieDeSesion {
   /** Cookie con el token de una sesión recién abierta. */
   public ResponseCookie conToken(String token) {
     return base(token).maxAge(propiedades.duracionDeSesion()).build();
+  }
+
+  /**
+   * Cookie que borra la anterior.
+   *
+   * <p>Se envía al cerrar sesión: el navegador la sustituye por una vacía y ya caducada.
+   */
+  public ResponseCookie caducada() {
+    return base("").maxAge(0).build();
+  }
+
+  /** Lee el token que trae la petición, si trae alguno. */
+  public Optional<String> leerToken(HttpServletRequest peticion) {
+    Cookie[] cookies = peticion.getCookies();
+    if (cookies == null) {
+      return Optional.empty();
+    }
+    return Arrays.stream(cookies)
+        .filter(cookie -> NOMBRE.equals(cookie.getName()))
+        .map(Cookie::getValue)
+        .filter(valor -> !valor.isBlank())
+        .findFirst();
   }
 
   private ResponseCookie.ResponseCookieBuilder base(String valor) {

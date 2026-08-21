@@ -53,6 +53,15 @@
       <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
 
+    <!--
+      Seguridad de la API: cadena de filtros, proteccion CSRF y el codificador
+      BCrypt con el que se guardan las contrasenas.
+    -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
     <!-- Acceso a datos con JPA -->
     <dependency>
       <groupId>org.springframework.boot</groupId>

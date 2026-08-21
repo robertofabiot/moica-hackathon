@@ -31,14 +31,16 @@ El proyecto utiliza una arquitectura de Monolito Modular dividida en las siguien
 | Spring Boot | 4.0.7 | `backend/pom.xml` |
 | PostgreSQL | 15 (alpine) | `docker-compose.yml` y Testcontainers |
 | Flyway | Gestionado por Spring Boot | `backend/pom.xml` |
+| Spring Security | 7 (gestionado por Spring Boot) | `backend/pom.xml` |
+| JJWT | 0.13.0 | `backend/pom.xml` (`jjwt.version`) |
 | Node.js | 22 LTS o superior | `frontend/.nvmrc` y `frontend/package.json` |
 | Vite | 8 | `frontend/package.json` |
 | React | 19 | `frontend/package.json` |
 | TypeScript | 6 (modo estricto) | `frontend/tsconfig.app.json` |
 
-Dependencias principales del backend: Spring Web, Spring Data JPA, Spring Boot Actuator, Flyway, el controlador de PostgreSQL, Spring Boot Test y Testcontainers. Calidad: Spotless y SpotBugs.
+Dependencias principales del backend: Spring Web, Spring Data JPA, Spring Security, Bean Validation, Spring Boot Actuator, Flyway, JJWT, el controlador de PostgreSQL, Spring Boot Test y Testcontainers. Calidad: Spotless y SpotBugs.
 
-Dependencias principales del frontend: React Router, TanStack React Query y el soporte PWA de Vite. Calidad: ESLint, Prettier, TypeScript, Vitest y React Testing Library.
+Dependencias principales del frontend: React Router, TanStack React Query, React Hook Form, Zod (con `@hookform/resolvers`) y el soporte PWA de Vite. Calidad: ESLint, Prettier, TypeScript, Vitest y React Testing Library.
 
 Zustand todavia no esta instalado: se incorporara cuando exista estado global real, tal como indica el plan.
 
@@ -112,8 +114,23 @@ Copy-Item .env.example .env
 | `MOICA_PGADMIN_CLAVE` | Contrasena de pgAdmin | Docker Compose |
 | `MOICA_PGADMIN_PORT` | Puerto web de pgAdmin | Docker Compose |
 | `MOICA_BACKEND_PORT` | Puerto de Spring Boot | Backend y proxy de Vite |
+| `MOICA_JWT_SECRETO` | Clave con la que se firma el JWT de sesion (minimo 32 bytes) | Backend |
+| `MOICA_SESION_DURACION` | Cuanto dura una sesion, en formato ISO-8601 (por omision `P7D`) | Backend |
+| `MOICA_COOKIE_SEGURA` | Marca `Secure` en las cookies; `false` en desarrollo, `true` en produccion | Backend |
 
 Los valores de `.env.example` son de desarrollo local. En produccion cada variable se define en el entorno del servidor; ningun secreto se versiona.
+
+**`MOICA_JWT_SECRETO` merece una advertencia aparte.** El valor que trae la plantilla es publico —esta en el repositorio— y solo sirve para trabajar en la maquina propia. Cualquier entorno compartido necesita uno aleatorio y distinto:
+
+```bash
+openssl rand -base64 48
+```
+
+```powershell
+[Convert]::ToBase64String((1..48 | ForEach-Object { Get-Random -Max 256 }))
+```
+
+Si el secreto tiene menos de 32 bytes, el backend no arranca: HMAC-SHA256 no admite una clave mas corta.
 
 El backend lee estas variables del entorno del sistema y, si no estan definidas, importa el mismo archivo `.env` de la raiz. Las variables de entorno reales tienen prioridad, de modo que CI y produccion no dependen del archivo.
 
@@ -154,20 +171,16 @@ cd backend
 
 En Windows PowerShell se usa `.\mvnw.cmd` en lugar de `./mvnw`.
 
-La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`.
+La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`. Desde P2 ese directorio contiene `V10__crear_usuario_y_sesion.sql`, que crea las tablas `usuario` y `sesion`.
 
-Hoy ese directorio esta vacio a proposito. Aun asi, **Flyway se ejecuta al arrancar y crea su tabla de historial `flyway_schema_history`**, que queda existiendo pero sin ningun registro de migracion aplicada. El propio arranque lo describe:
+El arranque lo describe asi:
 
 ```text
-Schema history table "public"."flyway_schema_history" does not exist yet
-No migrations found
-Creating Schema History table "public"."flyway_schema_history"
-Schema "public" is up to date. No migration necessary.
+Migrating schema "public" to version "10 - crear usuario y sesion"
+Successfully applied 1 migration to schema "public", now at version v10
 ```
 
-Comprobado contra la base de datos: la tabla `public.flyway_schema_history` existe y `SELECT COUNT(*) FROM public.flyway_schema_history;` devuelve `0`.
-
-La primera migracion real de la aplicacion sera la que agregue el primer registro a esa tabla. Que el ciclo completo funciona esta demostrado por una migracion aislada que vive en el classpath de pruebas (`src/test/resources/db/migracion-prueba`) y que la prueba de integracion aplica contra PostgreSQL real.
+Hibernate arranca con `ddl-auto=validate`: si el esquema y las entidades dejaran de coincidir, la aplicacion no arrancaria. El esquema lo crea Flyway y solo Flyway.
 
 ### 4. Comprobar el healthcheck
 
@@ -195,7 +208,72 @@ npm run dev
 
 La aplicacion queda en `http://localhost:5173`. El proxy de Vite reenvia `/api` y `/actuator` al backend, de modo que en desarrollo se conserva el mismo contrato de origen unico que habra en produccion.
 
-Rutas disponibles hoy: `/` (pantalla base) y cualquier otra direccion, que muestra la pagina de ruta no encontrada.
+Rutas disponibles hoy:
+
+| Ruta | Pantalla |
+|---|---|
+| `/` | Inicio. Muestra si hay sesion iniciada y ofrece entrar, registrarse o cerrar sesion |
+| `/registro` | Creacion de cuenta |
+| `/iniciar-sesion` | Inicio de sesion. Admite `?motivo=sesion-vencida` y `?motivo=cuenta-creada` |
+| cualquier otra | Pagina de ruta no encontrada |
+
+## API de acceso
+
+Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy de Vite en desarrollo y lo que comparte origen con el frontend en produccion.
+
+| Metodo y ruta | Que hace | Quien puede |
+|---|---|---|
+| `POST /api/usuarios` | Registra una cuenta | Cualquiera |
+| `POST /api/auth/sesion` | Inicia sesion y entrega la cookie de sesion | Cualquiera |
+| `GET /api/auth/sesion` | Describe la sesion en curso | Sesion vigente |
+| `DELETE /api/auth/sesion` | Cierra la sesion y la revoca | Sesion vigente |
+| `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
+
+### Como se autentica una peticion
+
+1. Al iniciar sesion, Moica crea una fila en `sesion` con un identificador aleatorio y una fecha de expiracion (siete dias por omision, configurable con `MOICA_SESION_DURACION`).
+2. Ese identificador viaja como `jti` dentro de un JWT firmado, y el JWT viaja en la cookie `moica_sesion`, que es `HttpOnly`, `SameSite=Lax` y `Secure` en produccion. **El token no se guarda en `localStorage` ni en `sessionStorage`.**
+3. En cada peticion autenticada, el backend lee el `jti` y comprueba la fila: debe existir, no haber expirado y no haber sido revocada. Si falla cualquiera de las tres, la respuesta es 401.
+
+Por eso cerrar sesion tiene efecto inmediato aunque el JWT conserve una expiracion futura: la fuente de verdad es la fila, no el token.
+
+### Proteccion CSRF
+
+La proteccion CSRF esta activa para todas las operaciones mutables. El backend emite la cookie `XSRF-TOKEN` —legible por JavaScript a proposito— y espera recibirla de vuelta en la cabecera `X-XSRF-TOKEN`. El frontend lo hace solo; para probar con `curl` hay que repetir el trámite:
+
+```bash
+# 1. Cualquier respuesta trae la cookie con el token
+curl -s -c galletas.txt -o /dev/null http://localhost:8080/api/auth/sesion
+
+# 2. Se devuelve en la cabecera de la operacion mutable
+TOKEN=$(grep XSRF-TOKEN galletas.txt | awk '{print $7}')
+curl -s -b galletas.txt -X POST http://localhost:8080/api/usuarios   -H "Content-Type: application/json" -H "X-XSRF-TOKEN: $TOKEN"   -d '{"nombreCompleto":"Persona de prueba","correoElectronico":"persona@moica.test","clave":"Moica2026$segura"}'
+```
+
+Sin el paso 2 la respuesta es `403`.
+
+### Politica de contraseña
+
+De 8 a 72 caracteres, con al menos una mayuscula, una minuscula, un numero y un simbolo. No hace falta alternar tipos en cada caracter. El maximo lo impone BCrypt, que solo tiene en cuenta los primeros 72 bytes: una contraseña con acentos o emojis puede alcanzar ese limite antes de los 72 caracteres, y en ese caso se rechaza con una explicacion, no con un error del servidor.
+
+La recuperacion de contraseña queda fuera del MVP.
+
+### Forma de los errores
+
+Todos los errores comparten cuerpo. El detalle por campo solo aparece cuando el fallo es de validacion:
+
+```json
+{
+  "instante": "2026-08-21T11:18:40.222525-06:00",
+  "estado": 400,
+  "codigo": "VALIDACION",
+  "mensaje": "Revisa los datos enviados.",
+  "ruta": "/api/usuarios",
+  "errores": [{ "campo": "correoElectronico", "mensaje": "Escribe un correo electronico valido." }]
+}
+```
+
+Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. Ninguna respuesta de error lleva trazas, SQL ni valores internos.
 
 ## Validaciones y pruebas
 
@@ -218,7 +296,7 @@ Ordenes individuales:
 ./mvnw verify -DskipITs   # todo menos las pruebas que exigen Docker
 ```
 
-En P1 todas las pruebas del backend son de integracion, porque lo que hay que demostrar es el arranque real contra PostgreSQL. Por eso `./mvnw test` todavia no ejecuta ninguna.
+`./mvnw test` ejecuta las pruebas que no necesitan infraestructura —politica de contraseña, vigencia de una sesion, emision y validacion del JWT, configuracion de seguridad— y `./mvnw verify` añade las de integracion, que trabajan sobre PostgreSQL real y recorren la API por HTTP.
 
 ### Frontend
 
@@ -259,7 +337,9 @@ La identidad visual todavia no esta cerrada: el manifiesto usa colores neutros y
 
 ## Estado actual
 
-El repositorio contiene la base tecnica del monorepo: proyectos backend y frontend inicializados, controles de calidad, pruebas de arranque, integracion continua y entorno local configurable. Todavia no hay registro, inicio de sesion, perfiles, servicios, solicitudes, chat, calificaciones ni area administrativa: cada uno llega con su propio incremento del plan.
+El repositorio contiene la base tecnica del monorepo y el ciclo de acceso completo: registro, inicio de sesion, sesion persistida con expiracion y revocacion, cierre de sesion y las pantallas correspondientes.
+
+Todavia no hay segundo factor TOTP, cambio de contraseña, area administrativa, perfiles de prestador, verificacion documental, servicios, solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
 
 ## Licencia
 

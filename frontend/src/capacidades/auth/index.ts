@@ -7,7 +7,8 @@
 
 export { ErrorDeApi } from './api';
 export { useSesionActual } from './hooks/useSesionActual';
-export { useInicioSesion, useRegistro } from './hooks/useAcceso';
+export { useCierreSesion, useInicioSesion, useRegistro } from './hooks/useAcceso';
+export { useAvisoDeSesionVencida } from './hooks/useAvisoDeSesionVencida';
 export { default as InicioSesion } from './paginas/InicioSesion';
 export { default as Registro } from './paginas/Registro';
 export {

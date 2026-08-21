@@ -6,7 +6,13 @@ import {
   sesionDeEjemplo,
   type ApiFalsa,
 } from '../../pruebas/apiFalsa';
-import { ErrorDeApi, iniciarSesion, obtenerSesionActual, registrarUsuario } from './api';
+import {
+  cerrarSesion,
+  ErrorDeApi,
+  iniciarSesion,
+  obtenerSesionActual,
+  registrarUsuario,
+} from './api';
 
 describe('llamadas a la API de acceso', () => {
   let api: ApiFalsa;
@@ -124,6 +130,14 @@ describe('llamadas a la API de acceso', () => {
     await expect(
       iniciarSesion({ correoElectronico: 'erving@moica.test', clave: 'incorrecta' })
     ).rejects.toMatchObject({ codigo: 'CREDENCIALES_INVALIDAS' });
+  });
+
+  it('cierra la sesión sin devolver cuerpo', async () => {
+    document.cookie = 'XSRF-TOKEN=token-de-prueba';
+    api.responder('DELETE /api/auth/sesion', { estado: 204 });
+
+    await expect(cerrarSesion()).resolves.toBeUndefined();
+    expect(api.ultima('DELETE /api/auth/sesion')).toBeDefined();
   });
 
   it('avisa cuando no se pudo hablar con el servidor', async () => {

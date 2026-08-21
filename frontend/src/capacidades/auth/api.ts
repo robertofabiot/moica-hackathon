@@ -65,6 +65,15 @@ export async function iniciarSesion(datos: DatosDeInicioSesion): Promise<SesionA
   return (await comoJson(respuesta)) as SesionActual;
 }
 
+/** Cierra la sesión: el backend la revoca y caduca la cookie. */
+export async function cerrarSesion(): Promise<void> {
+  const respuesta = await enviar('DELETE', RUTA_SESION);
+
+  if (!respuesta.ok) {
+    throw await comoErrorDeApi(respuesta);
+  }
+}
+
 async function enviar(metodo: string, ruta: string, cuerpo?: unknown): Promise<Response> {
   const cabeceras: Record<string, string> = {};
 

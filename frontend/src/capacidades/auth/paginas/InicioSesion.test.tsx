@@ -71,7 +71,7 @@ describe('pantalla de inicio de sesión', () => {
     );
   });
 
-  it('entra y lleva a la pantalla de inicio', async () => {
+  it('entra y deja la sesión iniciada en la pantalla de inicio', async () => {
     const persona = userEvent.setup();
     api.responder('POST /api/auth/sesion', { estado: 201, cuerpo: sesionDeEjemplo() });
     renderizarConProveedores(<App />, '/iniciar-sesion');
@@ -80,7 +80,8 @@ describe('pantalla de inicio de sesión', () => {
     await persona.type(screen.getByLabelText('Contraseña'), 'Moica2026$segura');
     await persona.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
-    expect(await screen.findByRole('heading', { name: 'Moica' })).toBeVisible();
+    expect(await screen.findByText('Erving Miranda')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible();
   });
 
   it('normaliza el correo antes de enviarlo', async () => {
@@ -92,7 +93,7 @@ describe('pantalla de inicio de sesión', () => {
     await persona.type(screen.getByLabelText('Contraseña'), 'Moica2026$segura');
     await persona.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
-    await screen.findByRole('heading', { name: 'Moica' });
+    await screen.findByText('Erving Miranda');
     expect(api.ultima('POST /api/auth/sesion')?.cuerpo).toMatchObject({
       correoElectronico: 'erving@moica.test',
     });

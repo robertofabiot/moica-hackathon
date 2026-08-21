@@ -37,8 +37,8 @@ public class ConfiguracionDeSeguridad {
   /**
    * Algoritmo con el que se guardan las contraseñas.
    *
-   * <p>BCrypt con su coste por omisión. Solo tiene en cuenta los primeros 72 bytes, que es de donde
-   * sale el máximo de la política de contraseña.
+   * <p>BCrypt con su coste por omisión. Solo tiene en cuenta los primeros 72 bytes, por eso la
+   * política añade un tope de 72 bytes UTF-8 además de los 8–72 caracteres de D-SEC-02.
    */
   @Bean
   public PasswordEncoder codificadorDeClaves() {

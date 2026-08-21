@@ -20,11 +20,12 @@ import java.lang.annotation.Target;
  * <p>Las clases del patrón son Unicode a propósito: «Ñ» cuenta como mayúscula y «á» como minúscula,
  * no como símbolo. Símbolo es cualquier carácter que no sea letra ni número.
  *
- * <p>El máximo de 72 lo impone BCrypt, que solo tiene en cuenta los primeros 72 <em>bytes</em> de
- * la contraseña y rechaza lo que los supere. Como en UTF-8 una eñe o un emoji ocupan más de un
- * byte, el límite se comprueba dos veces: en caracteres, con {@link Size}, y en bytes, con {@link
- * ValidadorDeClaveSegura}. Sin la segunda comprobación una contraseña de 72 caracteres acentuados
- * llegaría hasta BCrypt y fallaría allí.
+ * <p>Los 8–72 de D-SEC-02 miden caracteres. Además, BCrypt solo tiene en cuenta los primeros 72
+ * <em>bytes</em> UTF-8 y rechaza lo que los supere: ese tope es una restricción adicional de
+ * implementación, no un cambio de la regla en caracteres. Como en UTF-8 una eñe o un emoji ocupan
+ * más de un byte, el límite se comprueba dos veces: en caracteres, con {@link Size}, y en bytes,
+ * con {@link ValidadorDeClaveSegura}. Sin la segunda comprobación una contraseña de 72 caracteres
+ * acentuados llegaría hasta BCrypt y fallaría allí.
  */
 @Documented
 @Size(min = 8, max = 72, message = ClaveSegura.LONGITUD) @Pattern(regexp = ClaveSegura.PATRON, message = ClaveSegura.COMPOSICION) @Constraint(validatedBy = ValidadorDeClaveSegura.class)

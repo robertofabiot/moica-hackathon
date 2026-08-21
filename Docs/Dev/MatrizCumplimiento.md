@@ -34,7 +34,7 @@ pruebas ejecutadas y el material de apoyo.
 | 4 | Ramas, Conventional Commits, Pull Requests y trazabilidad | En progreso | P0 → P11 | #1, #2, #3, #5 | `eb77733`, `d1cba29` | Check «Título y commits convencionales» en verde; `./mvnw verify` ejecutado además sobre cada commit del incremento por separado | `Docs/Core/GIT_WORKFLOW.md` define ramas, tipos y promoción a `main`; P1 agrega `.github/pull_request_template.md` y la validación automática de título y commits del PR. P2 aporta siete commits atómicos que se pueden leer en orden: esquema, errores, registro, autenticación, ciclo de sesión y las dos entregas de interfaz. |
 | 5 | Matriz de cumplimiento mantenida | En progreso | P1 → P11 | #3, #5 | `eb77733`, `61b4af6` | — | Este documento, creado en P1 y actualizado por cada PR. |
 | 6 | Validación de entradas y manejo uniforme de errores | Cumplido | P2 | #5 | `fe1ab99`, `e2be568` | 17 pruebas de la política de contraseña sobre el DTO; 13 pruebas de integración de registro con casos negativos; 29 pruebas del frontend | Bean Validation en los DTO más un manejador global que traduce cualquier fallo —incluidos los de Spring MVC— a un cuerpo único (`instante`, `estado`, `codigo`, `mensaje`, `ruta` y, en validación, `errores` por campo). Los rechazos de la cadena de seguridad usan ese mismo cuerpo. Ninguna respuesta lleva trazas, SQL ni valores internos. |
-| 7 | Protección de rutas y datos (rol, propiedad, estado de cuenta) | En progreso | P2 → P10B | #5 | `e2be568`, `b3bcfcc` | Pruebas de 401 sin sesión, con sesión expirada y con sesión revocada; pruebas de 403 sin token CSRF | P2 deja la base: todo `/api` exige sesión vigente salvo registro e inicio de sesión, y las operaciones mutables exigen token CSRF. Rol, propiedad y estado de cuenta se aplican desde P3. |
+| 7 | Protección de rutas y datos (rol, propiedad, estado de cuenta) | Pendiente | P3 → P10B | | | | |
 | 8 | Verificación documental de prestadores en dos niveles | Pendiente | P4V | | | | |
 | 9 | Autenticación de dos factores (TOTP) | Pendiente | P3 | | | | |
 | 10 | Expiración y revocación de sesión | En progreso | P2 → P3 | #5 | `6f09fdd`, `b3bcfcc`, `feff7ef` | 10 pruebas de integración de `CicloDeSesionIT` y 6 unitarias de `TokenDeSesionServiceTest`; recorrido manual con la base de datos a la vista | Cada login crea una fila `sesion` con expiración de siete días configurable; el JWT solo la señala con su `jti` y su `exp` nunca la supera. Cada petición comprueba la fila: expirada o revocada responde 401 aunque el token siga vigente. Cerrar sesión registra `CIERRE_VOLUNTARIO` y caduca la cookie. La revocación por cambio de credenciales y por medida administrativa llega en P3 y P10B. |
@@ -127,5 +127,6 @@ en el contenedor:
 4. Cierre de sesión: la fila queda revocada como `CIERRE_VOLUNTARIO` y la
    aplicación vuelve a la pantalla de acceso.
 
-Las capturas de las tres pantallas en teléfono, tableta y escritorio se adjuntan
-en el Pull Request.
+La comprobación responsiva sí se realizó en el navegador a 375x812, 768x1024 y
+1280x800. Las capturas de teléfono, tableta y escritorio siguen pendientes de
+adjuntar en el Pull Request.

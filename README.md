@@ -127,7 +127,7 @@ openssl rand -base64 48
 ```
 
 ```powershell
-[Convert]::ToBase64String((1..48 | ForEach-Object { Get-Random -Max 256 }))
+$b = [byte[]]::new(48); [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
 ```
 
 Si el secreto tiene menos de 32 bytes, el backend no arranca: HMAC-SHA256 no admite una clave mas corta.

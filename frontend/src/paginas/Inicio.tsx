@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 
 import {
+  ErrorDeApi,
   RUTA_INICIO_SESION,
   RUTA_REGISTRO,
   useAvisoDeSesionVencida,
@@ -18,6 +19,7 @@ import estilos from './Inicio.module.css';
 export default function Inicio() {
   const sesion = useSesionActual();
   const cierre = useCierreSesion();
+  const avisoDeCierre = mensajeDeCierreFallido(cierre.error);
 
   useAvisoDeSesionVencida(sesion.data);
 
@@ -36,19 +38,26 @@ export default function Inicio() {
       {sesion.isPending ? (
         <p className={estilos.estado}>Comprobando tu sesión…</p>
       ) : sesion.data ? (
-        <div className={estilos.acceso}>
-          <p className={estilos.estado}>
-            Sesión iniciada como <strong>{sesion.data.usuario.nombreCompleto}</strong>
-          </p>
-          <button
-            className={estilos.boton}
-            type="button"
-            onClick={() => cierre.mutate()}
-            disabled={cierre.isPending}
-          >
-            {cierre.isPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
-          </button>
-        </div>
+        <>
+          <div className={estilos.acceso}>
+            <p className={estilos.estado}>
+              Sesión iniciada como <strong>{sesion.data.usuario.nombreCompleto}</strong>
+            </p>
+            <button
+              className={estilos.boton}
+              type="button"
+              onClick={() => cierre.mutate()}
+              disabled={cierre.isPending}
+            >
+              {cierre.isPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
+            </button>
+          </div>
+          {avisoDeCierre !== null && (
+            <p className={estilos.avisoDeError} role="alert">
+              {avisoDeCierre}
+            </p>
+          )}
+        </>
       ) : (
         <div className={estilos.acceso}>
           <Link className={estilos.boton} to={RUTA_INICIO_SESION}>
@@ -61,4 +70,15 @@ export default function Inicio() {
       )}
     </main>
   );
+}
+
+/**
+ * El 401 ya se traduce en navegación a «sesión vencida»; no se pinta aquí para
+ * no mostrar un error de cierre sobre una sesión que acaba de olvidarse.
+ */
+function mensajeDeCierreFallido(error: unknown): string | null {
+  if (error instanceof ErrorDeApi && error.estado === 401) {
+    return null;
+  }
+  return error instanceof Error ? error.message : null;
 }

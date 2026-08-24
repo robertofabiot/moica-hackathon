@@ -1,7 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router';
 
-import { cerrarSesion, ErrorDeApi, iniciarSesion, registrarUsuario } from '../api';
+import {
+  cerrarSesion,
+  ErrorDeApi,
+  iniciarSesion,
+  MENSAJE_SIN_RESPUESTA,
+  registrarUsuario,
+} from '../api';
 import { MOTIVO_CUENTA_CREADA, MOTIVO_SESION_VENCIDA, rutaDeInicioSesion } from '../rutas';
 import { CLAVE_DE_SESION } from './useSesionActual';
 
@@ -43,20 +49,32 @@ export function useInicioSesion() {
 /**
  * Cierra la sesión.
  *
- * Se olvida la sesión pase lo que pase: si el backend responde 401 es porque ya no valía, y en ese
- * caso se avisa de que venció en lugar de dejar a la persona sin explicación.
+ * Solo se olvida el estado local cuando el servidor confirmó el cierre (204) o
+ * cuando ya no hay sesión que revocar (401). Un fallo de red, un 403 o un 500
+ * no revocan la fila: si se limpiara aquí, la persona creería que salió y el
+ * servidor seguiría con la sesión vigente.
  */
 export function useCierreSesion() {
   const cliente = useQueryClient();
   const navegar = useNavigate();
 
   return useMutation({
-    mutationFn: cerrarSesion,
-    onSettled: (_resultado, error) => {
+    mutationFn: async () => {
+      // Offline de DevTools deja `fetch` colgado; no hay que llegar a disparar la petición.
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        throw new ErrorDeApi(0, 'SIN_RESPUESTA', MENSAJE_SIN_RESPUESTA);
+      }
+      return cerrarSesion();
+    },
+    onSuccess: () => {
       cliente.setQueryData(CLAVE_DE_SESION, null);
-
-      const habiaVencido = error instanceof ErrorDeApi && error.estado === 401;
-      navegar(rutaDeInicioSesion(habiaVencido ? MOTIVO_SESION_VENCIDA : undefined));
+      navegar(rutaDeInicioSesion());
+    },
+    onError: (error) => {
+      if (error instanceof ErrorDeApi && error.estado === 401) {
+        cliente.setQueryData(CLAVE_DE_SESION, null);
+        navegar(rutaDeInicioSesion(MOTIVO_SESION_VENCIDA));
+      }
     },
   });
 }

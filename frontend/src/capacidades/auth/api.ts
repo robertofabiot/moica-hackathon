@@ -14,8 +14,21 @@ const RUTA_USUARIOS = '/api/usuarios';
 const COOKIE_CSRF = 'XSRF-TOKEN';
 const CABECERA_CSRF = 'X-XSRF-TOKEN';
 
-const MENSAJE_SIN_RESPUESTA =
+/** Evita que una petición se quede colgada (por ejemplo, al perder la red) y deje la interfaz en carga. */
+export const TIEMPO_DE_ESPERA_MS = 10_000;
+
+let tiempoDeEsperaMs = TIEMPO_DE_ESPERA_MS;
+
+/** Las pruebas acortan la espera para no depender de diez segundos reales. */
+export function definirTiempoDeEsperaMs(milisegundos: number): void {
+  tiempoDeEsperaMs = milisegundos;
+}
+
+export const MENSAJE_SIN_RESPUESTA =
   'No pudimos comunicarnos con Moica. Revisa tu conexión e inténtalo otra vez.';
+
+const MENSAJE_TIEMPO_AGOTADO =
+  'Tardamos demasiado en obtener respuesta. Revisa tu conexión e inténtalo otra vez.';
 
 /** Error de la API con la forma uniforme que devuelve el backend. */
 export class ErrorDeApi extends Error {
@@ -87,16 +100,58 @@ async function enviar(metodo: string, ruta: string, cuerpo?: unknown): Promise<R
     }
   }
 
+  return fetchConTiempoDeEspera(ruta, {
+    method: metodo,
+    credentials: 'same-origin',
+    headers: cabeceras,
+    body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
+  });
+}
+
+/**
+ * Envuelve `fetch` con el tiempo de espera del cliente.
+ *
+ * Sin esto, un `DELETE` hecho sin red (o a través de un proxy que no corta) puede
+ * quedarse pendiente para siempre y dejar el botón en «Cerrando sesión…».
+ *
+ * El `Promise.race` es necesario porque, en Offline de DevTools, `abort()` a
+ * veces no hace que `fetch` rechace: si solo esperáramos su promesa, la
+ * interfaz seguiría en carga aunque el temporizador ya hubiera vencido.
+ */
+async function fetchConTiempoDeEspera(ruta: string, opciones: RequestInit): Promise<Response> {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    throw new ErrorDeApi(0, 'SIN_RESPUESTA', MENSAJE_SIN_RESPUESTA);
+  }
+
+  const controlador = new AbortController();
+  const temporizador = setTimeout(() => controlador.abort(), tiempoDeEsperaMs);
+
+  const peticion = fetch(ruta, { ...opciones, signal: controlador.signal });
+  const limite = new Promise<never>((_, reject) => {
+    const vencer = () => reject(new ErrorDeApi(0, 'TIEMPO_AGOTADO', MENSAJE_TIEMPO_AGOTADO));
+    if (controlador.signal.aborted) {
+      vencer();
+      return;
+    }
+    controlador.signal.addEventListener('abort', vencer, { once: true });
+  });
+
   try {
-    return await fetch(ruta, {
-      method: metodo,
-      credentials: 'same-origin',
-      headers: cabeceras,
-      body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),
-    });
-  } catch {
+    return await Promise.race([peticion, limite]);
+  } catch (error) {
+    if (error instanceof ErrorDeApi) {
+      throw error;
+    }
+    if (controlador.signal.aborted) {
+      throw new ErrorDeApi(0, 'TIEMPO_AGOTADO', MENSAJE_TIEMPO_AGOTADO);
+    }
     // `fetch` solo falla así cuando la petición no llegó a completarse.
     throw new ErrorDeApi(0, 'SIN_RESPUESTA', MENSAJE_SIN_RESPUESTA);
+  } finally {
+    clearTimeout(temporizador);
+    // Si `fetch` sigue colgado tras el aborto, su rechazo tardío no debe quedar sin capturar.
+    void peticion.catch(() => undefined);
+    void limite.catch(() => undefined);
   }
 }
 
@@ -113,11 +168,7 @@ async function asegurarTokenCsrf(): Promise<string | null> {
     return guardado;
   }
 
-  try {
-    await fetch(RUTA_SESION, { credentials: 'same-origin' });
-  } catch {
-    throw new ErrorDeApi(0, 'SIN_RESPUESTA', MENSAJE_SIN_RESPUESTA);
-  }
+  await fetchConTiempoDeEspera(RUTA_SESION, { credentials: 'same-origin' });
   return leerCookie(COOKIE_CSRF);
 }
 

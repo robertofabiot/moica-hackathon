@@ -8,10 +8,12 @@ import {
 } from '../../pruebas/apiFalsa';
 import {
   cerrarSesion,
+  definirTiempoDeEsperaMs,
   ErrorDeApi,
   iniciarSesion,
   obtenerSesionActual,
   registrarUsuario,
+  TIEMPO_DE_ESPERA_MS,
 } from './api';
 
 describe('llamadas a la API de acceso', () => {
@@ -24,6 +26,8 @@ describe('llamadas a la API de acceso', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.useRealTimers();
+    definirTiempoDeEsperaMs(TIEMPO_DE_ESPERA_MS);
   });
 
   it('devuelve la sesión cuando hay una vigente', async () => {
@@ -140,6 +144,13 @@ describe('llamadas a la API de acceso', () => {
     expect(api.ultima('DELETE /api/auth/sesion')).toBeDefined();
   });
 
+  it('avisa cuando el navegador declara que no hay conexión', async () => {
+    vi.stubGlobal('navigator', { ...navigator, onLine: false });
+
+    await expect(obtenerSesionActual()).rejects.toMatchObject({ codigo: 'SIN_RESPUESTA' });
+    expect(api.peticiones).toHaveLength(0);
+  });
+
   it('avisa cuando no se pudo hablar con el servidor', async () => {
     vi.stubGlobal(
       'fetch',
@@ -147,5 +158,30 @@ describe('llamadas a la API de acceso', () => {
     );
 
     await expect(obtenerSesionActual()).rejects.toMatchObject({ codigo: 'SIN_RESPUESTA' });
+  });
+
+  it('abandona la petición si el servidor no responde a tiempo', async () => {
+    vi.useFakeTimers();
+    document.cookie = 'XSRF-TOKEN=token-de-prueba';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        (_entrada: unknown, opciones?: RequestInit) =>
+          new Promise<Response>((_resolve, reject) => {
+            opciones?.signal?.addEventListener(
+              'abort',
+              () => {
+                reject(new DOMException('The operation was aborted.', 'AbortError'));
+              },
+              { once: true }
+            );
+          })
+      )
+    );
+
+    const cierre = cerrarSesion();
+    const expectativa = expect(cierre).rejects.toMatchObject({ codigo: 'TIEMPO_AGOTADO' });
+    await vi.advanceTimersByTimeAsync(TIEMPO_DE_ESPERA_MS);
+    await expectativa;
   });
 });

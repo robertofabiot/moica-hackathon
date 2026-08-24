@@ -30,10 +30,10 @@ pruebas ejecutadas y el material de apoyo.
 |---|---|---|---|---|---|---|---|
 | 1 | README técnico completo (requisitos, variables, estructura, scripts, comandos, endpoints) | En progreso | P1 → P11 | #3, #5 | `70467f6`, `61b4af6` | Sus instrucciones se siguieron de principio a fin en una máquina real | `README.md` cubre requisitos, versiones, variables, estructura del monorepo, arranque de cada pieza, healthcheck, build de la PWA y comandos de validación. P2 añade los endpoints de acceso, el modelo de sesión, la protección CSRF, la política de contraseña y la forma de los errores. El despliegue se completa en P11. |
 | 2 | Modelo ER en 3FN y tres diagramas UML completos | Cumplido | P0 | #1, #2 | | | `Docs/Dev/DiagramaLogico.mmd`, `DiagramaConceptual.mmd`, `DiagramaClasesDominio.mmd`, `DiagramaCasosDeUso.tex`, `DiagramaActividades.tex`, `Moica - Diccionario de Datos.xlsx` |
-| 3 | Interfaz navegable, validada y responsiva | En progreso | P1 → P11 | #3, #5 | `117af69`, `9c80210`, `e3ba201`, `feff7ef` | 29 pruebas de Vitest; recorrido manual en el navegador a 375x812, 768x1024 y 1280x800 | Registro, inicio de sesión, cierre de sesión y aviso de sesión vencida, con validación en el formulario y mensajes del backend por campo. Las pantallas de perfil, servicios y solicitudes llegan con sus incrementos. |
+| 3 | Interfaz navegable, validada y responsiva | En progreso | P1 → P11 | #3, #5 | `117af69`, `9c80210`, `e3ba201`, `feff7ef` | 37 pruebas de Vitest; recorrido manual en el navegador a 375x812, 768x1024 y 1280x800 | Registro, inicio de sesión, cierre de sesión y aviso de sesión vencida, con validación en el formulario y mensajes del backend por campo. Un fallo al cerrar (red, 403, 500 o tiempo agotado) conserva la sesión y permite reintentar. Las pantallas de perfil, servicios y solicitudes llegan con sus incrementos. |
 | 4 | Ramas, Conventional Commits, Pull Requests y trazabilidad | En progreso | P0 → P11 | #1, #2, #3, #5 | `eb77733`, `d1cba29` | Check «Título y commits convencionales» en verde; `./mvnw verify` ejecutado además sobre cada commit del incremento por separado | `Docs/Core/GIT_WORKFLOW.md` define ramas, tipos y promoción a `main`; P1 agrega `.github/pull_request_template.md` y la validación automática de título y commits del PR. P2 aporta siete commits atómicos que se pueden leer en orden: esquema, errores, registro, autenticación, ciclo de sesión y las dos entregas de interfaz. |
 | 5 | Matriz de cumplimiento mantenida | En progreso | P1 → P11 | #3, #5 | `eb77733`, `61b4af6` | — | Este documento, creado en P1 y actualizado por cada PR. |
-| 6 | Validación de entradas y manejo uniforme de errores | Cumplido | P2 | #5 | `fe1ab99`, `e2be568` | 17 pruebas de la política de contraseña sobre el DTO; 13 pruebas de integración de registro con casos negativos; 29 pruebas del frontend | Bean Validation en los DTO más un manejador global que traduce cualquier fallo —incluidos los de Spring MVC— a un cuerpo único (`instante`, `estado`, `codigo`, `mensaje`, `ruta` y, en validación, `errores` por campo). Los rechazos de la cadena de seguridad usan ese mismo cuerpo. Ninguna respuesta lleva trazas, SQL ni valores internos. |
+| 6 | Validación de entradas y manejo uniforme de errores | Cumplido | P2 | #5 | `fe1ab99`, `e2be568` | 17 pruebas de la política de contraseña sobre el DTO; 13 pruebas de integración de registro con casos negativos; 37 pruebas del frontend | Bean Validation en los DTO más un manejador global que traduce cualquier fallo —incluidos los de Spring MVC— a un cuerpo único (`instante`, `estado`, `codigo`, `mensaje`, `ruta` y, en validación, `errores` por campo). Los rechazos de la cadena de seguridad usan ese mismo cuerpo. Ninguna respuesta lleva trazas, SQL ni valores internos. |
 | 7 | Protección de rutas y datos (rol, propiedad, estado de cuenta) | Pendiente | P3 → P10B | | | | |
 | 8 | Verificación documental de prestadores en dos niveles | Pendiente | P4V | | | | |
 | 9 | Autenticación de dos factores (TOTP) | Pendiente | P3 | | | | |
@@ -103,12 +103,12 @@ Comprobaciones del incremento P2, con el resultado real de cada una.
 | Cookie de sesión inaccesible para JavaScript | `document.cookie` en el navegador con la sesión iniciada | Sí | Solo aparece `XSRF-TOKEN`; `moica_sesion` no es visible. La cabecera es `HttpOnly; SameSite=Lax; Path=/; Max-Age=604800` |
 | El JWT no sobrevive a su sesión | `./mvnw verify` | Sí | `elJwtNoValeMasTiempoQueLaSesionPersistida` y `elJwtSenalaLaFilaDeSesionMedianteSuJti` |
 | Rechazo de sesión expirada y revocada | `./mvnw verify` | Sí | `CicloDeSesionIT` responde 401 con la fila expirada y con la fila revocada, en ambos casos con el JWT todavía vigente en el navegador |
-| Cierre de sesión | Recorrido en el navegador y consulta a la base | Sí | Tras pulsar «Cerrar sesión», la fila queda con `motivo_revocacion = CIERRE_VOLUNTARIO` y la siguiente petición autenticada responde 401 |
+| Cierre de sesión | Recorrido en el navegador y consulta a la base | Sí | Tras pulsar «Cerrar sesión», la fila queda con `motivo_revocacion = CIERRE_VOLUNTARIO` y la siguiente petición autenticada responde 401. Un 204 o un 401 limpian el estado local; un fallo de red, un 403, un 500 o un tiempo de espera agotado conservan la sesión, cortan «Cerrando sesión…» y permiten reintentar |
 | Credenciales incorrectas | `./mvnw verify` y recorrido en el navegador | Sí | Un correo inexistente y una contraseña incorrecta devuelven exactamente el mismo cuerpo, y ninguno crea sesión |
 | Protección CSRF | `curl` a través del proxy de Vite | Sí | `POST /api/usuarios` sin la cabecera `X-XSRF-TOKEN` responde 403 y no crea la cuenta; con el token responde 201. Lo mismo al iniciar y cerrar sesión |
 | Errores uniformes | `curl` y pruebas de integración | Sí | Un cuerpo inválido devuelve `instante`, `estado`, `codigo`, `mensaje`, `ruta` y `errores` por campo; un 401 devuelve el mismo cuerpo sin `errores`. Ninguna respuesta lleva trazas ni SQL |
 | Pruebas del backend | `./mvnw verify` | Sí | 32 pruebas unitarias y 45 de integración en verde, con Spotless y SpotBugs limpios. Además, `./mvnw verify` ejecutado por separado sobre cada uno de los cinco commits del backend |
-| Pruebas del frontend | `npm run test` | Sí | 29 pruebas en verde: API, formularios, navegación y aviso de sesión vencida con reloj controlado |
+| Pruebas del frontend | `npm run test` | Sí | 37 pruebas en verde: API, formularios, navegación, aviso de sesión vencida y los casos de cierre (204, 401, sin conexión, 403, 500, tiempo agotado, `navigator.onLine` y reintento) |
 | Cadena completa del frontend | `format:check`, `lint`, `typecheck`, `test` y `build` | Sí | Todo en verde; el build vuelve a generar el manifiesto y el service worker |
 | Interfaz responsiva | Navegador a 375x812, 768x1024 y 1280x800 | Sí | El formulario se centra con un máximo de 26 rem y en ningún tamaño hay desbordamiento horizontal. Los accesos de la pantalla de inicio se apilan en teléfono y se ponen en fila a partir de 48 rem |
 | Sin secretos versionados | Revisión del diff antes de subir | Sí | El único archivo de entorno versionado sigue siendo `.env.example`. `MOICA_JWT_SECRETO` se documenta allí con un valor de desarrollo marcado como público y con instrucciones para generar uno real |
@@ -126,7 +126,14 @@ en el contenedor:
    ofrece cerrar sesión.
 4. Cierre de sesión: la fila queda revocada como `CIERRE_VOLUNTARIO` y la
    aplicación vuelve a la pantalla de acceso.
+5. Cierre sin conexión: se reprodujo el cuelgue original («Cerrando sesión…»
+   indefinido) al simular Offline. Las pruebas automatizadas cubren el error,
+   el fin de carga, la sesión conservada y el reintento. Al volver Online, el
+   `DELETE` pendiente llegó a revocar la fila como `CIERRE_VOLUNTARIO`. Queda
+   confirmar en Chrome DevTools el recorrido Offline → error → Online →
+   reintento sobre el código nuevo.
 
 La comprobación responsiva sí se realizó en el navegador a 375x812, 768x1024 y
-1280x800. Las capturas de teléfono, tableta y escritorio siguen pendientes de
-adjuntar en el Pull Request.
+1280x800. Las nueve capturas de `/registro`, `/iniciar-sesion` e `/` con sesión
+están fuera del repositorio, en `C:\Users\ervin\Desktop\moica-pr5-capturas-p2`,
+para adjuntarlas al Pull Request #5.

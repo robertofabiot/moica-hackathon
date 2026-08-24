@@ -19,11 +19,20 @@ export interface RespuestaPreparada {
   cuerpo?: unknown;
 }
 
+type Preparacion =
+  | { tipo: 'respuesta'; respuesta: RespuestaPreparada }
+  | { tipo: 'rechazo'; error: Error }
+  | { tipo: 'colgada' };
+
 export interface ApiFalsa {
   /** Peticiones que ha recibido, en orden. */
   peticiones: PeticionRecibida[];
   /** Prepara la respuesta de una ruta, por ejemplo `responder('GET /api/auth/sesion', {...})`. */
   responder(clave: string, respuesta: RespuestaPreparada): void;
+  /** Hace fallar la petición como si no hubiera red. */
+  rechazar(clave: string, error?: Error): void;
+  /** Deja la petición pendiente hasta que el cliente la aborte por tiempo de espera. */
+  colgar(clave: string): void;
   /** Última petición recibida a esa ruta, si hubo alguna. */
   ultima(clave: string): PeticionRecibida | undefined;
 }
@@ -42,7 +51,7 @@ const SIN_PREPARAR: RespuestaPreparada = {
 /** Instala el backend de mentira. Debe llamarse desde cada prueba o desde un `beforeEach`. */
 export function instalarApiFalsa(): ApiFalsa {
   const peticiones: PeticionRecibida[] = [];
-  const preparadas = new Map<string, RespuestaPreparada>();
+  const preparadas = new Map<string, Preparacion>();
 
   const fetchFalso = vi.fn(async (entrada: unknown, opciones?: RequestInit) => {
     const ruta = String(entrada);
@@ -56,10 +65,20 @@ export function instalarApiFalsa(): ApiFalsa {
       cabeceras: (opciones?.headers as Record<string, string> | undefined) ?? {},
     });
 
-    const preparada = preparadas.get(clave) ?? SIN_PREPARAR;
+    const preparada = preparadas.get(clave);
 
-    return new Response(preparada.cuerpo === undefined ? null : JSON.stringify(preparada.cuerpo), {
-      status: preparada.estado,
+    if (preparada?.tipo === 'colgada') {
+      await esperarAborto(opciones?.signal ?? undefined);
+    }
+
+    if (preparada?.tipo === 'rechazo') {
+      throw preparada.error;
+    }
+
+    const respuesta = preparada?.tipo === 'respuesta' ? preparada.respuesta : SIN_PREPARAR;
+
+    return new Response(respuesta.cuerpo === undefined ? null : JSON.stringify(respuesta.cuerpo), {
+      status: respuesta.estado,
       headers: { 'Content-Type': 'application/json' },
     });
   });
@@ -68,12 +87,36 @@ export function instalarApiFalsa(): ApiFalsa {
 
   return {
     peticiones,
-    responder: (clave, respuesta) => preparadas.set(clave, respuesta),
+    responder: (clave, respuesta) => preparadas.set(clave, { tipo: 'respuesta', respuesta }),
+    rechazar: (clave, error = new TypeError('Failed to fetch')) =>
+      preparadas.set(clave, { tipo: 'rechazo', error }),
+    colgar: (clave) => preparadas.set(clave, { tipo: 'colgada' }),
     ultima: (clave) => {
       const [metodo, ruta] = clave.split(' ');
       return peticiones.filter((p) => p.metodo === metodo && p.ruta === ruta).at(-1);
     },
   };
+}
+
+function esperarAborto(senal: AbortSignal | undefined): Promise<never> {
+  return new Promise((_, reject) => {
+    const abortar = () => {
+      reject(
+        senal?.reason instanceof Error
+          ? senal.reason
+          : new DOMException('The operation was aborted.', 'AbortError')
+      );
+    };
+
+    if (senal === undefined) {
+      return;
+    }
+    if (senal.aborted) {
+      abortar();
+      return;
+    }
+    senal.addEventListener('abort', abortar, { once: true });
+  });
 }
 
 /** Cuerpo de error con la forma uniforme que devuelve la API de Moica. */

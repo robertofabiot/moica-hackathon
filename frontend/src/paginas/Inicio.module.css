@@ -38,6 +38,18 @@
   color: var(--moica-texto-suave);
 }
 
+.avisoDeError {
+  width: 100%;
+  max-width: 26rem;
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-left-width: 4px;
+  border-left-color: var(--moica-error);
+  border-radius: 0.5rem;
+  background-color: var(--moica-fondo-suave);
+  text-align: left;
+}
+
 .boton {
   width: 100%;
   padding: 0.75rem var(--moica-espacio-2);

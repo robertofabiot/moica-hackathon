@@ -41,7 +41,7 @@ El acceso es inmediato y la validacion, posterior: cualquier cuenta puede armar 
 * **Verificado Basico** — una persona administradora reviso y aprobo la documentacion oficial de identidad. Es el requisito para aparecer en la busqueda publica, activar servicios y recibir solicitudes.
 * **Profesional Verificado** — nivel opcional y posterior al basico, respaldado con documentacion profesional, tecnica o comercial.
 
-No hay OCR, biometria, prueba de vida ni proveedores externos de verificacion en el MVP: toda revision la hace una persona administradora con segundo factor verificado, y los documentos quedan como recursos privados. Detalle funcional completo en [`Docs/Core/DefinicionProducto.md`](Docs/Core/DefinicionProducto.md) (seccion 5.6).
+No hay OCR, biometria, prueba de vida ni proveedores externos de verificacion en el MVP: toda revision la hace una persona administradora con segundo factor verificado, y los documentos quedan como recursos privados.
 
 ## Por que MOICA
 
@@ -51,7 +51,7 @@ No hay OCR, biometria, prueba de vida ni proveedores externos de verificacion en
 | Perfil-portafolio dinamico | "Mira fotos de trabajos que ya hizo" | "Tu historial se arma solo con cada trabajo" |
 | Calificaciones reales | "Otros clientes ya lo calificaron" | "Tu buen trabajo queda escrito, no se olvida" |
 
-Cero cobros iniciales: sin membresia ni pago por contacto, se cobra una comision solo cuando el prestador ya cobro. Propuesta de valor completa, estrategia de canales y buyer persona en [Diseño e identidad de marca](#diseño-e-identidad-de-marca).
+Cero cobros iniciales: sin membresia ni pago por contacto, se cobra una comision solo cuando el prestador ya cobro.
 
 ## Diseño e identidad de marca
 
@@ -130,13 +130,7 @@ El backend se organiza por capacidades (`usuario`, `auth`, `prestador`, ...), y 
 
 ## Guia para desarrolladores
 
-Antes del primer commit, revisa:
-
-1. [`Docs/Core/GIT_WORKFLOW.md`](Docs/Core/GIT_WORKFLOW.md) — ramas, Conventional Commits y Pull Requests (GitFlow simplificado; todo pasa por Code Review)
-2. [`Docs/Dev/ESTANDARES_CODIGO.md`](Docs/Dev/ESTANDARES_CODIGO.md) — Clean Code y SOLID traducidos a reglas verificables, y los controles automaticos que las hacen cumplir
-3. [`Docs/Core/prompt.md`](Docs/Core/prompt.md) — librerias permitidas y limites de arquitectura para el MVP
-4. [`Docs/Core/post-mvp.md`](Docs/Core/post-mvp.md) — que queda fuera del MVP a proposito
-5. [`Docs/Dev/MatrizCumplimiento.md`](Docs/Dev/MatrizCumplimiento.md) — cada PR actualiza la fila que le corresponde
+Antes de tu primer commit, lee [`Docs/Core/GIT_WORKFLOW.md`](Docs/Core/GIT_WORKFLOW.md): ramas, Conventional Commits y Pull Requests (GitFlow simplificado, todo pasa por Code Review).
 
 ## Instalacion rapida
 
@@ -217,13 +211,13 @@ npm run build      # genera manifest.webmanifest, sw.js y su registro en fronten
 npm run preview    # sirve el build para probar la instalacion (Chrome/Chromium)
 ```
 
-La identidad visual del manifiesto todavia usa colores neutros: la paleta definitiva esta pendiente (ver [Diseño e identidad de marca](#diseño-e-identidad-de-marca)).
+La identidad visual del manifiesto todavia usa colores neutros: la paleta definitiva esta pendiente.
 
 ## Estado actual
 
 Ciclo de acceso completo: registro, inicio de sesion, sesion persistida con expiracion y revocacion, y cierre de sesion, con sus pantallas correspondientes.
 
-Todavia no hay segundo factor TOTP, cambio de contraseña, area administrativa, perfiles de prestador, verificacion documental, servicios, solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan. Roadmap fuera del MVP en [`Docs/Core/post-mvp.md`](Docs/Core/post-mvp.md); avance por criterio en [`Docs/Dev/MatrizCumplimiento.md`](Docs/Dev/MatrizCumplimiento.md).
+Todavia no hay segundo factor TOTP, cambio de contraseña, area administrativa, perfiles de prestador, verificacion documental, servicios, solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
 
 ## Licencia
 

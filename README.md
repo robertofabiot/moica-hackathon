@@ -1,4 +1,33 @@
-# MOICA - Hackathon Nicaragua 2026
+<div align="center">
+  <img src="Docs/Design/logo/Logo.jpg" alt="Logo de MOICA" width="140">
+
+# MOICA
+
+**La confianza se construye entre todos.**
+
+*Hackathon Nicaragua 2026 — Categoria Avanzado · Equipo Nova Studios*
+
+[![CI](https://github.com/robertofabiot/moica-hackathon/actions/workflows/ci.yml/badge.svg)](https://github.com/robertofabiot/moica-hackathon/actions/workflows/ci.yml)
+[![Convenciones](https://github.com/robertofabiot/moica-hackathon/actions/workflows/convenciones.yml/badge.svg)](https://github.com/robertofabiot/moica-hackathon/actions/workflows/convenciones.yml)
+[![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
+
+</div>
+
+## Tabla de contenidos
+
+- [Sobre el proyecto](#sobre-el-proyecto)
+- [Diseño e identidad de marca](#diseño-e-identidad-de-marca)
+- [Arquitectura y Tecnologias](#arquitectura-y-tecnologias)
+- [Estructura del Repositorio (Monorepo)](#estructura-del-repositorio-monorepo)
+- [Guia para Desarrolladores](#guia-para-desarrolladores)
+- [Entorno de Desarrollo Local](#entorno-de-desarrollo-local)
+- [API de acceso](#api-de-acceso)
+- [Validaciones y pruebas](#validaciones-y-pruebas)
+- [Construir la PWA](#construir-la-pwa)
+- [Estado actual](#estado-actual)
+- [Licencia](#licencia)
+
+## Sobre el proyecto
 
 MOICA es una plataforma digital desarrollada por el equipo Nova Studios para la categoria Avanzado del Hackathon Nicaragua 2026. 
 
@@ -12,6 +41,29 @@ El acceso es inmediato y la validacion posterior: cualquier cuenta puede crear y
 *   **Profesional Verificado:** nivel opcional y posterior al basico. Una persona administradora reviso y aprobo documentacion profesional, tecnica o comercial que respalda la actividad declarada.
 
 Toda la revision es **manual**: en el MVP no hay OCR, biometria, prueba de vida, consulta a bases externas ni proveedores de verificacion de terceros. Los documentos del expediente se almacenan como recursos privados y solo un administrador con segundo factor verificado puede abrirlos; el resto de las personas unicamente ve la insignia del nivel vigente. El detalle funcional completo esta en `Docs/Core/DefinicionProducto.md` (seccion 5.6).
+
+## Diseño e identidad de marca
+
+La identidad visual y el modelo de negocio de MOICA viven en `Docs/Design/` y `Docs/Marketing/`.
+
+**Marca**
+
+* [Concepto e identidad de marca](Docs/Design/IdentidadYConceptoDeMarca.md) — naming, valores, direccion visual y paleta de colores (todavia tentativa)
+* [Plan de branding](Docs/Marketing/PlanDeBranding.pdf)
+* [Moodboard](Docs/Design/MoodboardMoica.jpg)
+* [Logo](Docs/Design/logo/)
+
+**Negocio**
+
+* [Propuesta de valor diferenciada y estrategia de canales](Docs/Marketing/PropuestaDeValorDiferenciada.pdf)
+* [Business Model Canvas](Docs/Marketing/MetodologiaBussinessModelCanvas.png)
+* [Mapas de empatia del buyer persona](Docs/Marketing/BuyerPersonaYAspiraciones/)
+
+**Interfaz**
+
+* [Mockups de escritorio](Docs/Design/UX/MockupEscritorio.png)
+* [Pantalla 404](Docs/Design/UX/Pantalla404.jpeg)
+* [Video de animacion de marca](Docs/Design/UX/VideoAnimacion.mp4)
 
 ## Arquitectura y Tecnologias
 

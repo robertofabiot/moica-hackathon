@@ -184,4 +184,18 @@ describe('llamadas a la API de acceso', () => {
     await vi.advanceTimersByTimeAsync(TIEMPO_DE_ESPERA_MS);
     await expectativa;
   });
+
+  it('abandona aunque fetch ignore por completo el aborto', async () => {
+    vi.useFakeTimers();
+    document.cookie = 'XSRF-TOKEN=token-de-prueba';
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => new Promise<Response>(() => undefined))
+    );
+
+    const cierre = cerrarSesion();
+    const expectativa = expect(cierre).rejects.toMatchObject({ codigo: 'TIEMPO_AGOTADO' });
+    await vi.advanceTimersByTimeAsync(TIEMPO_DE_ESPERA_MS);
+    await expectativa;
+  });
 });

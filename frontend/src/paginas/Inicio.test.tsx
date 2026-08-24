@@ -109,6 +109,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
 
     await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
 
+    expect(screen.queryByRole('button', { name: 'Cerrando sesión…' })).not.toBeInTheDocument();
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'No pudimos comunicarnos con Moica. Revisa tu conexión e inténtalo otra vez.'
     );
@@ -117,6 +118,24 @@ describe('estado de acceso en la pantalla de inicio', () => {
 
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true);
     await reintentaYCierra(persona);
+  });
+
+  it('abandona el cierre si fetch queda colgado como en Chrome offline', async () => {
+    const persona = userEvent.setup();
+    await conSesionIniciada();
+    definirTiempoDeEsperaMs(20);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => new Promise<Response>(() => undefined))
+    );
+
+    await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Tardamos demasiado en obtener respuesta. Revisa tu conexión e inténtalo otra vez.'
+    );
+    expect(screen.queryByRole('button', { name: 'Cerrando sesión…' })).not.toBeInTheDocument();
+    permaneceAutenticadoYPuedeReintentar();
   });
 
   it('conserva la sesión si no hay conexión y permite reintentar', async () => {

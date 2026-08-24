@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
 import {
@@ -17,6 +18,8 @@ import { CLAVE_DE_SESION } from './useSesionActual';
  * Cada una deja la caché de la sesión coherente con lo que acaba de pasar y lleva a la pantalla que
  * corresponde, para que las páginas solo tengan que pintar.
  */
+
+const CODIGO_OPERACION_OBSOLETA = 'OPERACION_OBSOLETA';
 
 /**
  * Crea la cuenta y lleva a iniciar sesión.
@@ -57,24 +60,47 @@ export function useInicioSesion() {
 export function useCierreSesion() {
   const cliente = useQueryClient();
   const navegar = useNavigate();
+  const [errorSinConexion, setErrorSinConexion] = useState<ErrorDeApi | null>(null);
+  const generacionRef = useRef(0);
 
-  return useMutation({
+  const mutacion = useMutation({
     mutationFn: async () => {
-      // Offline de DevTools deja `fetch` colgado; no hay que llegar a disparar la petición.
-      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-        throw new ErrorDeApi(0, 'SIN_RESPUESTA', MENSAJE_SIN_RESPUESTA);
+      const generacion = generacionRef.current;
+      await cerrarSesion();
+      if (generacion !== generacionRef.current) {
+        throw new ErrorDeApi(0, CODIGO_OPERACION_OBSOLETA, MENSAJE_SIN_RESPUESTA);
       }
-      return cerrarSesion();
     },
     onSuccess: () => {
+      setErrorSinConexion(null);
       cliente.setQueryData(CLAVE_DE_SESION, null);
       navegar(rutaDeInicioSesion());
     },
     onError: (error) => {
+      if (error instanceof ErrorDeApi && error.codigo === CODIGO_OPERACION_OBSOLETA) {
+        return;
+      }
       if (error instanceof ErrorDeApi && error.estado === 401) {
+        setErrorSinConexion(null);
         cliente.setQueryData(CLAVE_DE_SESION, null);
         navegar(rutaDeInicioSesion(MOTIVO_SESION_VENCIDA));
       }
     },
   });
+
+  const solicitarCierre = useCallback(() => {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      setErrorSinConexion(new ErrorDeApi(0, 'SIN_RESPUESTA', MENSAJE_SIN_RESPUESTA));
+      return;
+    }
+    setErrorSinConexion(null);
+    generacionRef.current += 1;
+    mutacion.mutate();
+  }, [mutacion]);
+
+  return {
+    solicitarCierre,
+    isPending: mutacion.isPending,
+    error: errorSinConexion ?? mutacion.error,
+  };
 }

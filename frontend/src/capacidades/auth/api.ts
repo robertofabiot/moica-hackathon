@@ -114,9 +114,9 @@ async function enviar(metodo: string, ruta: string, cuerpo?: unknown): Promise<R
  * Sin esto, un `DELETE` hecho sin red (o a través de un proxy que no corta) puede
  * quedarse pendiente para siempre y dejar el botón en «Cerrando sesión…».
  *
- * El `Promise.race` es necesario porque, en Offline de DevTools, `abort()` a
- * veces no hace que `fetch` rechace: si solo esperáramos su promesa, la
- * interfaz seguiría en carga aunque el temporizador ya hubiera vencido.
+ * El temporizador rechaza la carrera directamente: en Offline de DevTools,
+ * `fetch` a `localhost` puede quedar colgado sin rechazar ni disparar un
+ * `abort` fiable; depender solo del evento `abort` deja la mutación pendiente.
  */
 async function fetchConTiempoDeEspera(ruta: string, opciones: RequestInit): Promise<Response> {
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
@@ -124,20 +124,21 @@ async function fetchConTiempoDeEspera(ruta: string, opciones: RequestInit): Prom
   }
 
   const controlador = new AbortController();
-  const temporizador = setTimeout(() => controlador.abort(), tiempoDeEsperaMs);
+  const opcionesConSenal: RequestInit = { ...opciones, signal: controlador.signal };
 
-  const peticion = fetch(ruta, { ...opciones, signal: controlador.signal });
-  const limite = new Promise<never>((_, reject) => {
-    const vencer = () => reject(new ErrorDeApi(0, 'TIEMPO_AGOTADO', MENSAJE_TIEMPO_AGOTADO));
-    if (controlador.signal.aborted) {
-      vencer();
-      return;
-    }
-    controlador.signal.addEventListener('abort', vencer, { once: true });
+  let temporizador: ReturnType<typeof setTimeout> | undefined;
+
+  const limiteDeTiempo = new Promise<never>((_, reject) => {
+    temporizador = setTimeout(() => {
+      controlador.abort();
+      reject(new ErrorDeApi(0, 'TIEMPO_AGOTADO', MENSAJE_TIEMPO_AGOTADO));
+    }, tiempoDeEsperaMs);
   });
 
+  const peticion = fetch(ruta, opcionesConSenal);
+
   try {
-    return await Promise.race([peticion, limite]);
+    return await Promise.race([peticion, limiteDeTiempo]);
   } catch (error) {
     if (error instanceof ErrorDeApi) {
       throw error;
@@ -148,10 +149,11 @@ async function fetchConTiempoDeEspera(ruta: string, opciones: RequestInit): Prom
     // `fetch` solo falla así cuando la petición no llegó a completarse.
     throw new ErrorDeApi(0, 'SIN_RESPUESTA', MENSAJE_SIN_RESPUESTA);
   } finally {
-    clearTimeout(temporizador);
+    if (temporizador !== undefined) {
+      clearTimeout(temporizador);
+    }
     // Si `fetch` sigue colgado tras el aborto, su rechazo tardío no debe quedar sin capturar.
     void peticion.catch(() => undefined);
-    void limite.catch(() => undefined);
   }
 }
 
@@ -201,10 +203,26 @@ async function comoErrorDeApi(respuesta: Response): Promise<ErrorDeApi> {
 }
 
 async function leerCuerpoDeError(respuesta: Response): Promise<CuerpoDeError | null> {
+  let temporizador: ReturnType<typeof setTimeout> | undefined;
+
+  const limiteDeTiempo = new Promise<never>((_, reject) => {
+    temporizador = setTimeout(
+      () => reject(new ErrorDeApi(0, 'TIEMPO_AGOTADO', MENSAJE_TIEMPO_AGOTADO)),
+      tiempoDeEsperaMs
+    );
+  });
+
   try {
-    return (await respuesta.json()) as CuerpoDeError;
-  } catch {
+    return (await Promise.race([respuesta.json(), limiteDeTiempo])) as CuerpoDeError;
+  } catch (error) {
+    if (error instanceof ErrorDeApi) {
+      throw error;
+    }
     // Un error sin cuerpo JSON sigue siendo un error: se usa el mensaje genérico.
     return null;
+  } finally {
+    if (temporizador !== undefined) {
+      clearTimeout(temporizador);
+    }
   }
 }

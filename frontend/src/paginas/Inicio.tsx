@@ -46,7 +46,7 @@ export default function Inicio() {
             <button
               className={estilos.boton}
               type="button"
-              onClick={() => cierre.mutate()}
+              onClick={() => cierre.solicitarCierre()}
               disabled={cierre.isPending}
             >
               {cierre.isPending ? 'Cerrando sesión…' : 'Cerrar sesión'}

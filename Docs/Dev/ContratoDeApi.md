@@ -1,6 +1,18 @@
 # Contrato de la API
 
-Detalle del modelo de sesion, la proteccion CSRF, la politica de contraseña y la forma de los errores. La tabla de endpoints esta en el [README](../../README.md#api-de-acceso).
+Endpoints, modelo de sesion, proteccion CSRF, politica de contraseña y forma de los errores.
+
+## Endpoints
+
+Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy de Vite en desarrollo y lo que comparte origen con el frontend en produccion.
+
+| Metodo y ruta | Que hace | Quien puede |
+|---|---|---|
+| `POST /api/usuarios` | Registra una cuenta | Cualquiera |
+| `POST /api/auth/sesion` | Inicia sesion y entrega la cookie de sesion | Cualquiera |
+| `GET /api/auth/sesion` | Describe la sesion en curso | Sesion vigente |
+| `DELETE /api/auth/sesion` | Cierra la sesion y la revoca | Sesion vigente |
+| `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
 
 ## Como se autentica una peticion
 

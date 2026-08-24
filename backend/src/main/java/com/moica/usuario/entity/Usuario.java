@@ -71,6 +71,16 @@ public class Usuario {
     this.estadoCuenta = EstadoCuenta.ACTIVA;
   }
 
+  /**
+   * Sustituye el hash de la contraseña.
+   *
+   * <p>Recibe el hash ya calculado, nunca la contraseña: la entidad no conoce el algoritmo y así no
+   * existe ningún camino por el que un valor en claro llegue a la persistencia.
+   */
+  public void cambiarClaveHash(String claveHash) {
+    this.claveHash = claveHash;
+  }
+
   @PrePersist
   void registrarInstanteDeCreacion() {
     OffsetDateTime ahora = OffsetDateTime.now();

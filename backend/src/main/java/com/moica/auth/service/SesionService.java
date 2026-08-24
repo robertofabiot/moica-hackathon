@@ -94,6 +94,30 @@ public class SesionService {
         .ifPresent(sesion -> sesion.revocar(OffsetDateTime.now(), motivo));
   }
 
+  /**
+   * Revoca de una vez todas las sesiones vigentes de una cuenta.
+   *
+   * <p>Es lo que hace efectivo un cambio de credenciales: la sesión desde la que se hizo el cambio
+   * también queda revocada, así que después hay que volver a iniciar sesión en todas partes.
+   *
+   * @return cuántas sesiones quedaron revocadas
+   */
+  @Transactional
+  public int revocarTodasDe(Long idUsuario, MotivoRevocacionSesion motivo) {
+    return repositorio.revocarLasVigentesDe(idUsuario, OffsetDateTime.now(), motivo);
+  }
+
+  /**
+   * Da por superado el segundo factor en una sesión concreta.
+   *
+   * <p>La marca es de la sesión: verificar el código en un dispositivo no completa las demás
+   * sesiones abiertas de la misma cuenta.
+   */
+  @Transactional
+  public void marcarSegundoFactorVerificado(Long idSesion) {
+    repositorio.findById(idSesion).ifPresent(Sesion::verificarSegundoFactor);
+  }
+
   private static String generarIdentificadorDeToken() {
     byte[] bytes = new byte[BYTES_DEL_IDENTIFICADOR];
     ALEATORIO.nextBytes(bytes);

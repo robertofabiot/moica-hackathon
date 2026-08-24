@@ -36,12 +36,7 @@ MOICA conecta a personas que necesitan contratar un servicio (mantenimiento, rep
 
 ### Verificacion de prestadores
 
-El acceso es inmediato y la validacion, posterior: cualquier cuenta puede armar su perfil de prestador desde el primer momento, pero para aparecer publicamente necesita pasar una verificacion documental manual, en dos niveles progresivos:
-
-* **Verificado Basico** — una persona administradora reviso y aprobo la documentacion oficial de identidad. Es el requisito para aparecer en la busqueda publica, activar servicios y recibir solicitudes.
-* **Profesional Verificado** — nivel opcional y posterior al basico, respaldado con documentacion profesional, tecnica o comercial.
-
-No hay OCR, biometria, prueba de vida ni proveedores externos de verificacion en el MVP: toda revision la hace una persona administradora con segundo factor verificado, y los documentos quedan como recursos privados.
+El acceso es inmediato y la verificacion, posterior: un perfil puede armarse desde el primer momento, pero solo aparece publicamente tras pasar una verificacion documental manual, en dos niveles (**Basico**, obligatorio, y **Profesional**, opcional). Sin OCR, biometria ni proveedores externos de verificacion en el MVP: toda revision la hace una persona administradora, y los documentos quedan como recursos privados.
 
 ## Por que MOICA
 
@@ -55,52 +50,15 @@ Cero cobros iniciales: sin membresia ni pago por contacto, se cobra una comision
 
 ## Diseño e identidad de marca
 
-La identidad visual y el modelo de negocio de MOICA viven en `Docs/Design/` y `Docs/Marketing/`.
-
-**Marca**
-
-* [Concepto e identidad de marca](Docs/Design/IdentidadYConceptoDeMarca.md) — naming, valores, direccion visual y paleta de colores (todavia tentativa)
-* [Plan de branding](Docs/Marketing/PlanDeBranding.pdf)
-* [Moodboard](Docs/Design/MoodboardMoica.jpg)
-* [Logo](Docs/Design/logo/)
-
-**Negocio**
-
-* [Propuesta de valor diferenciada y estrategia de canales](Docs/Marketing/PropuestaDeValorDiferenciada.pdf)
-* [Business Model Canvas](Docs/Marketing/MetodologiaBussinessModelCanvas.png)
-* [Mapas de empatia del buyer persona](Docs/Marketing/BuyerPersonaYAspiraciones/)
-
-**Interfaz**
-
-* [Mockups de escritorio](Docs/Design/UX/MockupEscritorio.png)
-* [Pantalla 404](Docs/Design/UX/Pantalla404.jpeg)
-* [Video de animacion de marca](Docs/Design/UX/VideoAnimacion.mp4)
+* **Marca:** [concepto e identidad](Docs/Design/IdentidadYConceptoDeMarca.md), [plan de branding](Docs/Marketing/PlanDeBranding.pdf), [moodboard](Docs/Design/MoodboardMoica.jpg), [logo](Docs/Design/logo/)
+* **Negocio:** [propuesta de valor y canales](Docs/Marketing/PropuestaDeValorDiferenciada.pdf), [Business Model Canvas](Docs/Marketing/MetodologiaBussinessModelCanvas.png), [mapas de empatia del buyer persona](Docs/Marketing/BuyerPersonaYAspiraciones/)
+* **Interfaz:** [mockups de escritorio](Docs/Design/UX/MockupEscritorio.png), [pantalla 404](Docs/Design/UX/Pantalla404.jpeg), [video de animacion](Docs/Design/UX/VideoAnimacion.mp4)
 
 ## Arquitectura y tecnologias
 
 Monolito modular: **Java + Spring Boot** (API REST) · **React + TypeScript** (PWA mobile-first) · **PostgreSQL** · **Docker**.
 
-### Versiones utilizadas
-
-| Pieza | Version | Donde se fija |
-|---|---|---|
-| Java | 21 (LTS) | `backend/pom.xml` (`java.version`) |
-| Maven | 3.9.16 mediante Maven Wrapper | `backend/.mvn/wrapper/maven-wrapper.properties` |
-| Spring Boot | 4.0.7 | `backend/pom.xml` |
-| PostgreSQL | 15 (alpine) | `docker-compose.yml` y Testcontainers |
-| Flyway | Gestionado por Spring Boot | `backend/pom.xml` |
-| Spring Security | 7 (gestionado por Spring Boot) | `backend/pom.xml` |
-| JJWT | 0.13.0 | `backend/pom.xml` (`jjwt.version`) |
-| Node.js | 22 LTS o superior | `frontend/.nvmrc` y `frontend/package.json` |
-| Vite | 8 | `frontend/package.json` |
-| React | 19 | `frontend/package.json` |
-| TypeScript | 6 (modo estricto) | `frontend/tsconfig.app.json` |
-
-Backend: Spring Web, Spring Data JPA, Spring Security, Bean Validation, Spring Boot Actuator, Flyway, JJWT, el controlador de PostgreSQL, Spring Boot Test y Testcontainers · calidad con Spotless y SpotBugs.
-
-Frontend: React Router, TanStack React Query, React Hook Form, Zod (con `@hookform/resolvers`) y el soporte PWA de Vite · calidad con ESLint, Prettier, TypeScript, Vitest y React Testing Library.
-
-Zustand todavia no esta instalado: se incorporara cuando exista estado global real, tal como indica el plan.
+**Versiones:** Java 21 (LTS) · Spring Boot 4.0.7 · PostgreSQL 15 · Node.js 22 LTS+ · React 19 · TypeScript 6 (modo estricto).
 
 ## Estructura del repositorio
 
@@ -151,15 +109,6 @@ cd frontend
 npm ci
 npm run dev                          # App en http://localhost:5173
 ```
-
-Rutas disponibles hoy:
-
-| Ruta | Pantalla |
-|---|---|
-| `/` | Inicio: sesion activa, entrar, registrarse o cerrar sesion |
-| `/registro` | Creacion de cuenta |
-| `/iniciar-sesion` | Inicio de sesion (admite `?motivo=sesion-vencida` y `?motivo=cuenta-creada`) |
-| cualquier otra | Pagina no encontrada (404) |
 
 Variables de entorno principales (plantilla completa en `.env.example`):
 

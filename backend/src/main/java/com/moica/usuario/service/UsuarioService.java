@@ -24,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UsuarioService {
 
   private final UsuarioRepository repositorio;
+  private final AdministradorService administradores;
   private final PasswordEncoder codificador;
 
   /**
@@ -34,8 +35,12 @@ public class UsuarioService {
    */
   private final String hashDeCorreoInexistente;
 
-  public UsuarioService(UsuarioRepository repositorio, PasswordEncoder codificador) {
+  public UsuarioService(
+      UsuarioRepository repositorio,
+      AdministradorService administradores,
+      PasswordEncoder codificador) {
     this.repositorio = repositorio;
+    this.administradores = administradores;
     this.codificador = codificador;
     this.hashDeCorreoInexistente = codificador.encode(UUID.randomUUID().toString());
   }
@@ -58,7 +63,9 @@ public class UsuarioService {
             solicitud.nombreCompleto().strip(), correo, codificador.encode(solicitud.clave()));
 
     try {
-      return DatosDeUsuario.de(repositorio.saveAndFlush(usuario));
+      // Una cuenta recién creada nunca es administradora: el rol solo lo asigna
+      // el arranque sobre una cuenta que ya existe.
+      return DatosDeUsuario.de(repositorio.saveAndFlush(usuario), false);
     } catch (DataIntegrityViolationException colision) {
       // La comprobación previa no basta: dos registros simultáneos con el mismo
       // correo solo los separa la restricción única de la base de datos.
@@ -83,7 +90,7 @@ public class UsuarioService {
 
     return usuario
         .filter(cuenta -> codificador.matches(clave, cuenta.getClaveHash()))
-        .map(DatosDeUsuario::de);
+        .map(this::aDatos);
   }
 
   /**
@@ -95,11 +102,68 @@ public class UsuarioService {
   public DatosDeUsuario obtener(Long idUsuario) {
     return repositorio
         .findById(idUsuario)
-        .map(DatosDeUsuario::de)
+        .map(this::aDatos)
         .orElseThrow(
             () ->
                 new ErrorDeAplicacion(
                     HttpStatus.NOT_FOUND, "RECURSO_NO_ENCONTRADO", "La cuenta no existe."));
+  }
+
+  /**
+   * Sustituye la contraseña de una cuenta después de comprobar la actual.
+   *
+   * <p>Exigir la contraseña vigente es lo que impide que una sesión robada cambie las credenciales
+   * y deje fuera a la persona propietaria. Un fallo aquí es 403 y no 401 a propósito: la sesión
+   * sigue siendo válida, lo que no se acredita es la propiedad de la cuenta, y un 401 haría que la
+   * interfaz creyera que la sesión murió.
+   *
+   * <p>Revocar las sesiones no es asunto de esta capacidad: lo hace {@code auth} en la misma
+   * transacción.
+   *
+   * @throws ErrorDeAplicacion si la cuenta no existe o la contraseña actual no es correcta
+   */
+  @Transactional
+  public void cambiarClave(Long idUsuario, String claveActual, String claveNueva) {
+    Usuario usuario =
+        repositorio
+            .findById(idUsuario)
+            .orElseThrow(
+                () ->
+                    new ErrorDeAplicacion(
+                        HttpStatus.NOT_FOUND, "RECURSO_NO_ENCONTRADO", "La cuenta no existe."));
+
+    if (!codificador.matches(claveActual, usuario.getClaveHash())) {
+      throw claveActualIncorrecta();
+    }
+
+    usuario.cambiarClaveHash(codificador.encode(claveNueva));
+  }
+
+  /**
+   * Comprueba la contraseña vigente de una cuenta sin cambiarla.
+   *
+   * <p>La pide {@code auth} para desactivar el segundo factor: esa operación baja el nivel de
+   * protección de la cuenta, así que exige contraseña además del código.
+   *
+   * @throws ErrorDeAplicacion si la cuenta no existe o la contraseña no es correcta
+   */
+  @Transactional(readOnly = true)
+  public void comprobarClave(Long idUsuario, String clave) {
+    Usuario usuario =
+        repositorio
+            .findById(idUsuario)
+            .orElseThrow(
+                () ->
+                    new ErrorDeAplicacion(
+                        HttpStatus.NOT_FOUND, "RECURSO_NO_ENCONTRADO", "La cuenta no existe."));
+
+    if (!codificador.matches(clave, usuario.getClaveHash())) {
+      throw claveActualIncorrecta();
+    }
+  }
+
+  private DatosDeUsuario aDatos(Usuario usuario) {
+    return DatosDeUsuario.de(usuario, administradores.esAdministrador(usuario.getIdUsuario()));
   }
 
   /**
@@ -117,5 +181,10 @@ public class UsuarioService {
         HttpStatus.CONFLICT,
         "CORREO_YA_REGISTRADO",
         "Ese correo ya tiene una cuenta en Moica. Inicia sesión o usa otro correo.");
+  }
+
+  private static ErrorDeAplicacion claveActualIncorrecta() {
+    return new ErrorDeAplicacion(
+        HttpStatus.FORBIDDEN, "CREDENCIALES_INVALIDAS", "La contraseña actual no es correcta.");
   }
 }

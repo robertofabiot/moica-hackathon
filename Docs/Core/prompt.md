@@ -11,6 +11,7 @@ Este documento contiene las reglas estrictas de arquitectura y desarrollo para l
 ## 2. Convenciones de Backend (Spring Boot)
 - **Patrón Arquitectónico:** Arquitectura por Capas Clásica (Controller, Service, Repository, Entity). No usar Arquitectura Hexagonal en el MVP.
 - **Autenticación:** JWT (JSON Web Tokens) asociados a una sesión registrada en la base de datos. El token transporta el identificador de su sesión, de modo que esta pueda expirar y revocarse; la autenticación no es puramente stateless.
+- **Contraseña (D-SEC-02):** de 8 a 72 caracteres, con al menos una mayúscula, una minúscula, un número y un símbolo. Además, BCrypt impone un tope de implementación de 72 bytes UTF-8: los 8–72 siguen midiendo caracteres; el límite en bytes es adicional y evita que caracteres multibyte (acentos, eñes, emojis) hagan fallar a BCrypt.
 - **Tipos de Datos Críticos:** 
   - IDs siempre en `BIGINT` (en Java, usar `Long`).
   - Fechas siempre en `TIMESTAMPTZ` (en Java, usar `OffsetDateTime` o `Instant` para manejar UTC).

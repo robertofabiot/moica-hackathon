@@ -28,6 +28,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
       // Secreto de pruebas. No es el de ningún entorno real: los despliegues lo
       // reciben por variable de entorno y nunca se versiona.
       "MOICA_JWT_SECRETO=" + PruebaDeIntegracionConPostgres.SECRETO_JWT,
+      // Clave AES de pruebas para cifrar los secretos TOTP. Tampoco es la de
+      // ningún entorno real: llega por MOICA_TOTP_CLAVE_CIFRADO y no se versiona.
+      "MOICA_TOTP_CLAVE_CIFRADO=" + PruebaDeIntegracionConPostgres.CLAVE_DE_CIFRADO_TOTP,
       // El detalle de salud está cerrado en producción; aquí se abre para poder
       // afirmar que el componente de base de datos es el que responde.
       "management.endpoint.health.show-details=always",
@@ -37,6 +40,9 @@ public abstract class PruebaDeIntegracionConPostgres {
 
   /** Clave con la que se firman los JWT durante las pruebas. */
   public static final String SECRETO_JWT = "secreto-de-pruebas-de-moica-solo-para-testcontainers";
+
+  /** Clave AES-256 en Base64 con la que se cifran los secretos TOTP durante las pruebas. */
+  public static final String CLAVE_DE_CIFRADO_TOTP = "Y2xhdmUtZGUtcHJ1ZWJhcy10b3RwLWRlLW1vaWNhISE=";
 
   @ServiceConnection
   static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:15-alpine");

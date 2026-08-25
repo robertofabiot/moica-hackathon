@@ -32,6 +32,12 @@ Copy-Item .env.example .env
 | `MOICA_COOKIE_SEGURA` | Marca `Secure` en las cookies; `false` en desarrollo, `true` en produccion | Backend |
 | `MOICA_TOTP_CLAVE_CIFRADO` | Clave con la que se cifra el secreto TOTP de cada cuenta (Base64 de 16, 24 o 32 bytes) | Backend |
 | `MOICA_ADMIN_CORREO` | Correo de una cuenta ya registrada que recibe el rol administrativo al arrancar; vacia por omision | Backend |
+| `MOICA_R2_ID_CUENTA` | Identificador de la cuenta de Cloudflare; forma parte del endpoint S3 de R2 | Backend |
+| `MOICA_R2_ACCESS_KEY_ID` | Identificador del token de API de R2 | Backend |
+| `MOICA_R2_SECRET_ACCESS_KEY` | Secreto del token de API de R2; nunca se versiona | Backend |
+| `MOICA_R2_BUCKET_PUBLICO` | Nombre del bucket publico ya aprovisionado | Backend |
+| `MOICA_R2_URL_PUBLICA_BASE` | Origen HTTPS desde el que se leen las imagenes, sin barra final | Backend |
+| `MOICA_IMAGEN_TAMANO_MAXIMO` | Maximo por imagen (por omision `5MB`) | Backend |
 
 Los valores de `.env.example` son de desarrollo local. En produccion cada variable se define en el entorno del servidor; ningun secreto se versiona.
 
@@ -69,6 +75,23 @@ $b = [byte[]]::new(32); [System.Security.Cryptography.RandomNumberGenerator]::Cr
 
 Cambiar esta clave deja ilegibles los secretos ya guardados: quien tuviera el segundo factor activo
 tendria que volver a configurarlo.
+
+### Almacenamiento de imagenes
+
+Las imagenes de perfil y de portafolio se guardan en un bucket **publico** de
+Cloudflare R2. Las cinco variables `MOICA_R2_*` van juntas: o se definen todas o
+no se define ninguna.
+
+- **Sin ellas** el backend arranca con normalidad y todo lo demas funciona; solo
+  subir o borrar una imagen responde `503 ALMACENAMIENTO_NO_DISPONIBLE`. Es
+  suficiente para trabajar en cualquier otra parte de Moica.
+- **A medias** el arranque se detiene con un mensaje que dice cuales faltan, sin
+  revelar ningun valor: una configuracion incompleta solo puede ser un error de
+  despliegue.
+
+Como crear el bucket, que permisos darle al token y como comprobar una carga
+real contra R2: [Almacenamiento.md](Almacenamiento.md). No hace falta ningun
+servicio local ni un emulador: las pruebas automaticas usan un doble en memoria.
 
 ### Rol administrativo
 
@@ -132,14 +155,18 @@ cd backend
 
 En Windows PowerShell se usa `.\mvnw.cmd` en lugar de `./mvnw`.
 
-La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`: `V10__crear_usuario_y_sesion.sql` crea las tablas `usuario` y `sesion`, y `V11__crear_administrador_y_segundo_factor.sql` agrega `administrador`, `segundo_factor_usuario` y el indice que permite revocar de una vez todas las sesiones de una cuenta.
+La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`: `V10__crear_usuario_y_sesion.sql` crea las tablas `usuario` y `sesion`; `V11__crear_administrador_y_segundo_factor.sql` agrega `administrador`, `segundo_factor_usuario` y el indice que permite revocar de una vez todas las sesiones de una cuenta; y el rango `V20`–`V23` agrega el territorio (`departamento`, `municipio`), el perfil de prestador con sus contactos y el portafolio, y carga Managua con sus nueve municipios.
 
 El arranque lo describe asi:
 
 ```text
 Migrating schema "public" to version "10 - crear usuario y sesion"
 Migrating schema "public" to version "11 - crear administrador y segundo factor"
-Successfully applied 2 migrations to schema "public", now at version v11
+Migrating schema "public" to version "20 - crear departamento y municipio"
+Migrating schema "public" to version "21 - crear perfil prestador y contactos"
+Migrating schema "public" to version "22 - crear trabajos de portafolio"
+Migrating schema "public" to version "23 - cargar managua y sus municipios"
+Successfully applied 6 migrations to schema "public", now at version v23
 ```
 
 Hibernate arranca con `ddl-auto=validate`: si el esquema y las entidades dejaran de coincidir, la aplicacion no arrancaria. El esquema lo crea Flyway y solo Flyway.

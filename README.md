@@ -33,7 +33,7 @@ MOICA conecta a personas que necesitan contratar un servicio (mantenimiento, rep
 ## Caracteristicas
 
 * **Verificacion en dos niveles** — identidad revisada por una persona antes de aparecer en la busqueda publica
-* **Portafolio dinamico** — el historial de trabajos se arma solo, con cada servicio completado
+* **Portafolio propio** — el prestador elige que trabajos muestra, con sus imagenes y en el orden que decida
 * **Calificaciones reales** — reputacion bidireccional y visible para todos
 * **Cero cobros iniciales** — sin membresia ni pago por contacto
 * **Sesiones seguras** — JWT + cookie `HttpOnly`, revocacion inmediata y proteccion CSRF
@@ -73,6 +73,11 @@ npm run build                          # build de produccion + PWA instalable
 
 Pruebas: `./mvnw verify` (backend, necesita Docker) y `npm run test` (frontend).
 
+Las imagenes de perfil y portafolio se guardan en un bucket publico de Cloudflare
+R2. Sin las variables `MOICA_R2_*` la aplicacion arranca igual, pero subir o
+borrar imagenes responde `ALMACENAMIENTO_NO_DISPONIBLE`. Como aprovisionar el
+bucket y el token: [`Docs/Dev/Almacenamiento.md`](Docs/Dev/Almacenamiento.md).
+
 ## Estructura del repositorio
 
 ```text
@@ -91,6 +96,7 @@ moica-hackathon/
 * [`Docs/Core/GIT_WORKFLOW.md`](Docs/Core/GIT_WORKFLOW.md) — flujo de Git y Pull Requests
 * [`Docs/Dev/GuiaEntornoLocal.md`](Docs/Dev/GuiaEntornoLocal.md) — configuracion detallada del entorno
 * [`Docs/Dev/ContratoDeApi.md`](Docs/Dev/ContratoDeApi.md) — endpoints, autenticacion y forma de los errores
+* [`Docs/Dev/Almacenamiento.md`](Docs/Dev/Almacenamiento.md) — Cloudflare R2, buckets, permisos y comprobacion
 * [`Docs/Dev/ESTANDARES_CODIGO.md`](Docs/Dev/ESTANDARES_CODIGO.md) — estandares de codigo y controles automaticos
 * [`Docs/Design/`](Docs/Design/) y [`Docs/Marketing/`](Docs/Marketing/) — identidad de marca, mockups y modelo de negocio
 
@@ -100,7 +106,9 @@ Ciclo de acceso completo: registro, inicio de sesion, sesion persistida con expi
 
 Seguridad de la cuenta: cambio de contraseña que revoca todas las sesiones, segundo factor TOTP con su ciclo completo, sesion provisional hasta verificar el codigo y area `/admin` protegida por rol y segundo factor verificado.
 
-Todavia no hay perfiles de prestador, verificacion documental, servicios, solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
+Perfil de prestador: catalogo territorial de Managua, perfil propio con tipo, municipio principal, presentacion y cobertura, disponibilidad, medios de contacto y portafolio de trabajos con imagenes. Las imagenes publicas se guardan en Cloudflare R2 (ver [`Docs/Dev/Almacenamiento.md`](Docs/Dev/Almacenamiento.md)); PostgreSQL solo conserva su URL. Todo perfil nace `SIN_VERIFICAR` y permanece privado: no aparece en ninguna superficie publica.
+
+Todavia no hay verificacion documental, servicios, descubrimiento publico, solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
 
 ## Licencia
 

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 
-import { ErrorDeApi } from '../../auth';
+import { ErrorDeApi } from '../../../comun/api';
 import { obtenerResumenAdministrativo } from '../api';
 import estilos from './admin.module.css';
 

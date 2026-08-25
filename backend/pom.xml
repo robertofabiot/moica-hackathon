@@ -24,6 +24,7 @@
     <testcontainers.version>1.21.4</testcontainers.version>
     <jjwt.version>0.13.0</jjwt.version>
     <java-otp.version>0.4.0</java-otp.version>
+    <awssdk.version>2.46.7</awssdk.version>
   </properties>
 
   <dependencyManagement>
@@ -107,6 +108,26 @@
     <dependency>
       <groupId>commons-codec</groupId>
       <artifactId>commons-codec</artifactId>
+    </dependency>
+
+    <!--
+      Almacenamiento de objetos publico (Cloudflare R2) mediante su
+      compatibilidad S3, con el SDK v2 de AWS que documenta Cloudflare. Solo el
+      modulo `s3`: la aplicacion no usa ningun otro servicio del SDK.
+    -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>s3</artifactId>
+      <version>${awssdk.version}</version>
+    </dependency>
+    <!--
+      Cliente HTTP sincrono del SDK. `s3` lo trae solo en runtime; se declara
+      en compile unicamente para poder fijarle el tiempo maximo de conexion.
+    -->
+    <dependency>
+      <groupId>software.amazon.awssdk</groupId>
+      <artifactId>apache5-client</artifactId>
+      <version>${awssdk.version}</version>
     </dependency>
 
     <!-- Acceso a datos con JPA -->

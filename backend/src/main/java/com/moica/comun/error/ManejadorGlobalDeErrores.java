@@ -133,6 +133,9 @@ public class ManejadorGlobalDeErrores extends ResponseEntityExceptionHandler {
       case 400 -> "SOLICITUD_INVALIDA";
       case 404 -> "RECURSO_NO_ENCONTRADO";
       case 405 -> "METODO_NO_PERMITIDO";
+      // El tope de transporte de una subida multipart. El máximo de negocio de
+      // una imagen lo valida la aplicación antes, con su propio código.
+      case 413 -> "CONTENIDO_DEMASIADO_GRANDE";
       case 415 -> "TIPO_DE_CONTENIDO_NO_ADMITIDO";
       default -> estado.is5xxServerError() ? "ERROR_INTERNO" : "SOLICITUD_INVALIDA";
     };
@@ -143,6 +146,7 @@ public class ManejadorGlobalDeErrores extends ResponseEntityExceptionHandler {
       case 400 -> "No pudimos leer la solicitud. Revisa los datos enviados.";
       case 404 -> "El recurso solicitado no existe.";
       case 405 -> "Esa operación no está disponible en esta dirección.";
+      case 413 -> "Lo enviado supera el tamaño máximo admitido.";
       case 415 -> "El formato enviado no está admitido.";
       default ->
           estado.is5xxServerError()

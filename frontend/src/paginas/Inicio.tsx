@@ -7,7 +7,6 @@ import {
   RUTA_REGISTRO,
   RUTA_SEGURIDAD,
   RUTA_VERIFICACION_SEGUNDO_FACTOR,
-  useAvisoDeSesionVencida,
   useCierreSesion,
   useSesionActual,
 } from '../capacidades/auth';
@@ -23,8 +22,6 @@ export default function Inicio() {
   const sesion = useSesionActual();
   const cierre = useCierreSesion();
   const avisoDeCierre = mensajeDeCierreFallido(cierre.error);
-
-  useAvisoDeSesionVencida(sesion.data);
 
   const pendienteDeSegundoFactor = sesion.data?.sesion.pendienteDeSegundoFactor === true;
 

@@ -11,6 +11,7 @@ import {
   RutaDeVerificacion,
   RutaProtegida,
   SeguridadCuenta,
+  useVigilanciaDeSesion,
   VerificacionSegundoFactor,
 } from './capacidades/auth';
 import Inicio from './paginas/Inicio';
@@ -25,8 +26,13 @@ import RutaNoEncontrada from './paginas/RutaNoEncontrada';
  * Los envoltorios de ruta deciden a qué pantalla llevar a cada persona, no si puede hacer algo:
  * quien pida una ruta protegida de la API sin permiso recibe 401 o 403 del backend aunque llegue a
  * pintar la pantalla.
+ *
+ * Lo que si vive aqui y no en una pantalla concreta es la vigilancia de la sesion: es lo unico que
+ * debe seguir funcionando al cambiar de ruta.
  */
 export default function App() {
+  useVigilanciaDeSesion();
+
   return (
     <Routes>
       <Route path="/" element={<Inicio />} />

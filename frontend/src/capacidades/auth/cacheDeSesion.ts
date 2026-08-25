@@ -1,9 +1,10 @@
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
 
+import { MOTIVO_SESION_VENCIDA } from './rutas';
 import { CLAVE_DE_SESION } from './hooks/useSesionActual';
 
 /**
- * Qué se olvida cuando una sesión termina.
+ * Qué se olvida cuando una sesión termina, y cómo se explica esa salida.
  *
  * Moica es una sola aplicación que no se recarga entre una cuenta y la siguiente: cerrar sesión y
  * volver a entrar con otra cuenta ocurre sin que el navegador vacíe nada. La caché de React Query,
@@ -17,6 +18,17 @@ import { CLAVE_DE_SESION } from './hooks/useSesionActual';
  * La sesión se conserva y se pone en `null` en lugar de retirarse: es la consulta que todas las
  * pantallas observan, y quitarla las dejaría creyendo que todavía se está comprobando.
  */
+
+/** Cómo se explica la salida en la pantalla de inicio de sesión. `null` es «sin explicación». */
+export type MotivoDeSalida = string | null;
+
+/**
+ * El motivo que dejó anotado quien terminó la sesión, hasta que alguien lo recoge.
+ *
+ * Va por cliente y no en una variable suelta del módulo porque cada prueba estrena el suyo y
+ * ninguna debe heredar lo que anotó otra.
+ */
+const motivosPendientes = new WeakMap<QueryClient, MotivoDeSalida>();
 
 function esConsultaDeSesion(clave: QueryKey): boolean {
   return (
@@ -38,11 +50,28 @@ export function olvidarDatosPrivados(cliente: QueryClient): void {
 /**
  * Da la sesión por terminada: no queda en memoria nada de la cuenta que la tenía.
  *
- * Es el único sitio por el que se olvida una sesión, sea cual sea el motivo —cierre voluntario,
- * expiración, revocación, cambio de contraseña o desactivación del segundo factor—, de modo que
- * ninguno de esos caminos pueda limpiar menos que los demás.
+ * Quien la termina a propósito anota además **por qué**, pero no navega: de eso se encarga
+ * `useVigilanciaDeSesion`, que es el único sitio de la aplicación que lleva a iniciar sesión. Así
+ * no hay dos navegaciones compitiendo por la misma salida ni un motivo que dependa de cuál de las
+ * dos llegue antes.
  */
-export function olvidarSesion(cliente: QueryClient): void {
+export function olvidarSesion(
+  cliente: QueryClient,
+  motivo: MotivoDeSalida = MOTIVO_SESION_VENCIDA
+): void {
+  motivosPendientes.set(cliente, motivo);
   olvidarDatosPrivados(cliente);
   cliente.setQueryData(CLAVE_DE_SESION, null);
+}
+
+/**
+ * Recoge el motivo anotado y lo consume.
+ *
+ * Sin motivo anotado la sesión desapareció sola —venció, la revocaron desde otro dispositivo o una
+ * consulta de fondo recibió un 401—, y eso es exactamente lo que dice {@link MOTIVO_SESION_VENCIDA}.
+ */
+export function motivoDeLaSalida(cliente: QueryClient): MotivoDeSalida {
+  const motivo = motivosPendientes.get(cliente);
+  motivosPendientes.delete(cliente);
+  return motivo === undefined ? MOTIVO_SESION_VENCIDA : motivo;
 }

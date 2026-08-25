@@ -10,7 +10,7 @@ import {
   verificarSegundoFactorDeLaSesion,
 } from '../api';
 import { olvidarSesion } from '../cacheDeSesion';
-import { MOTIVO_CREDENCIALES_CAMBIADAS, MOTIVO_SESION_VENCIDA, rutaDeInicioSesion } from '../rutas';
+import { MOTIVO_CREDENCIALES_CAMBIADAS } from '../rutas';
 import { CLAVE_DE_SESION } from './useSesionActual';
 
 /**
@@ -18,7 +18,8 @@ import { CLAVE_DE_SESION } from './useSesionActual';
  *
  * Dos de ellas —cambiar la contraseña y desactivar el segundo factor— revocan todas las sesiones
  * en el servidor. Aquí eso se traduce en lo mismo que ya hace el cierre de sesión: olvidar el
- * estado de acceso y volver al inicio de sesión explicando por qué.
+ * estado de acceso anotando por qué. Quien lleva a la pantalla de entrada con esa explicación es
+ * `useVigilanciaDeSesion`, que es el único sitio que navega cuando una sesión termina.
  */
 
 /** Clave con la que React Query guarda el estado del segundo factor. */
@@ -95,10 +96,6 @@ export function useVerificacionDeSesion() {
       // Si la sesión provisional muere mientras se verifica, no tiene sentido
       // insistir con el código: hay que volver a entrar.
       if (esSesionPerdida(error)) {
-        // Primero se navega y después se olvida la sesión: al revés, el
-        // envoltorio de ruta vería «sin sesión» todavía montado y redirigiría
-        // por su cuenta al inicio de sesión, sin el motivo.
-        navegar(rutaDeInicioSesion(MOTIVO_SESION_VENCIDA));
         olvidarSesion(cliente);
       }
     },
@@ -107,19 +104,12 @@ export function useVerificacionDeSesion() {
 
 /**
  * Lo que ocurre después de cambiar unas credenciales: no queda ninguna sesión vigente, ni siquiera
- * la actual, así que se olvida todo el estado de acceso y se vuelve a la pantalla de entrada.
+ * la actual, así que se olvida todo el estado de acceso dejando anotado por qué.
  */
 function useSalidaTrasCambioDeCredenciales() {
   const cliente = useQueryClient();
-  const navegar = useNavigate();
 
-  return () => {
-    // El orden importa: si primero se olvidara la sesión, el envoltorio de la
-    // ruta protegida —todavía montado— redirigiría al inicio de sesión sin el
-    // motivo y la explicación se perdería.
-    navegar(rutaDeInicioSesion(MOTIVO_CREDENCIALES_CAMBIADAS));
-    olvidarSesion(cliente);
-  };
+  return () => olvidarSesion(cliente, MOTIVO_CREDENCIALES_CAMBIADAS);
 }
 
 function esSesionPerdida(error: unknown): boolean {

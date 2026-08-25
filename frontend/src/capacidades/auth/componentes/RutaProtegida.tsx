@@ -62,10 +62,15 @@ export function RutaDeVerificacion({ children }: { children: ReactNode }) {
  *
  * La diferencia importa porque los dos casos los resuelve alguien distinto. El primero es de este
  * componente: nadie más sabe que la persona pidió una ruta que no le corresponde. El segundo lo
- * resuelve quien acabó con la sesión —cerrar sesión, cambiar la contraseña, desactivar el segundo
- * factor o el aviso de vencimiento—, que además sabe **por qué** terminó y navega al inicio de
- * sesión con esa explicación. Si este componente redirigiera también en ese caso, su navegación
- * llegaría después y la explicación se perdería por el camino.
+ * resuelve quien acabó con la sesión —cerrar sesión, cambiar la contraseña o desactivar el segundo
+ * factor—, que además sabe **por qué** terminó y navega al inicio de sesión con esa explicación. Si
+ * este componente redirigiera también en ese caso, su navegación llegaría después y la explicación
+ * se perdería por el camino.
+ *
+ * Que ese segundo caso termine siempre no depende de que alguna pantalla se acuerde de resolverlo:
+ * `useVigilanciaDeSesion`, montada en `App` durante toda la navegación, lleva a iniciar sesión ante
+ * cualquier sesión que desaparezca sin que nadie más lo haya hecho. El aviso de aquí es una
+ * transición, no un estado en el que se pueda quedar.
  */
 function useSesionDesaparecida(sesion: unknown): boolean {
   const [huboSesion, setHuboSesion] = useState(false);

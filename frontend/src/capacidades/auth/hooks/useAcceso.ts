@@ -12,7 +12,6 @@ import {
 import { olvidarDatosPrivados, olvidarSesion } from '../cacheDeSesion';
 import {
   MOTIVO_CUENTA_CREADA,
-  MOTIVO_SESION_VENCIDA,
   RUTA_VERIFICACION_SEGUNDO_FACTOR,
   rutaDeInicioSesion,
 } from '../rutas';
@@ -71,10 +70,13 @@ export function useInicioSesion() {
  * cuando ya no hay sesión que revocar (401). Un fallo de red, un 403 o un 500
  * no revocan la fila: si se limpiara aquí, la persona creería que salió y el
  * servidor seguiría con la sesión vigente.
+ *
+ * No navega: olvidar la sesión basta, porque `useVigilanciaDeSesion` lleva a la
+ * pantalla de entrada con el motivo que se anote aquí. Un cierre voluntario no
+ * necesita explicación; uno que descubre un 401 sí.
  */
 export function useCierreSesion() {
   const cliente = useQueryClient();
-  const navegar = useNavigate();
   const [errorSinConexion, setErrorSinConexion] = useState<ErrorDeApi | null>(null);
   const generacionRef = useRef(0);
 
@@ -88,8 +90,7 @@ export function useCierreSesion() {
     },
     onSuccess: () => {
       setErrorSinConexion(null);
-      olvidarSesion(cliente);
-      navegar(rutaDeInicioSesion());
+      olvidarSesion(cliente, null);
     },
     onError: (error) => {
       if (error instanceof ErrorDeApi && error.codigo === CODIGO_OPERACION_OBSOLETA) {
@@ -98,7 +99,6 @@ export function useCierreSesion() {
       if (error instanceof ErrorDeApi && error.estado === 401) {
         setErrorSinConexion(null);
         olvidarSesion(cliente);
-        navegar(rutaDeInicioSesion(MOTIVO_SESION_VENCIDA));
       }
     },
   });

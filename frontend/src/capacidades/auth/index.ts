@@ -6,10 +6,11 @@
  */
 
 export { ErrorDeApi, obtenerJson } from './api';
+export { crearClienteDeConsultas } from './clienteDeConsultas';
 export { default as RutaProtegida, RutaDeVerificacion } from './componentes/RutaProtegida';
 export { useSesionActual } from './hooks/useSesionActual';
 export { useCierreSesion, useInicioSesion, useRegistro } from './hooks/useAcceso';
-export { useAvisoDeSesionVencida } from './hooks/useAvisoDeSesionVencida';
+export { useVigilanciaDeSesion } from './hooks/useVigilanciaDeSesion';
 export { default as InicioSesion } from './paginas/InicioSesion';
 export { default as Registro } from './paginas/Registro';
 export { default as SeguridadCuenta } from './paginas/SeguridadCuenta';

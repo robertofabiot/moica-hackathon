@@ -5,18 +5,24 @@
  * capacidad.
  */
 
-export { ErrorDeApi } from './api';
+export { ErrorDeApi, obtenerJson } from './api';
+export { default as RutaProtegida, RutaDeVerificacion } from './componentes/RutaProtegida';
 export { useSesionActual } from './hooks/useSesionActual';
 export { useCierreSesion, useInicioSesion, useRegistro } from './hooks/useAcceso';
 export { useAvisoDeSesionVencida } from './hooks/useAvisoDeSesionVencida';
 export { default as InicioSesion } from './paginas/InicioSesion';
 export { default as Registro } from './paginas/Registro';
+export { default as SeguridadCuenta } from './paginas/SeguridadCuenta';
+export { default as VerificacionSegundoFactor } from './paginas/VerificacionSegundoFactor';
 export {
+  MOTIVO_CREDENCIALES_CAMBIADAS,
   MOTIVO_CUENTA_CREADA,
   MOTIVO_SESION_VENCIDA,
   PARAMETRO_MOTIVO,
   RUTA_INICIO_SESION,
   RUTA_REGISTRO,
+  RUTA_SEGURIDAD,
+  RUTA_VERIFICACION_SEGUNDO_FACTOR,
   rutaDeInicioSesion,
 } from './rutas';
-export type { EstadoCuenta, SesionActual, Usuario } from './tipos';
+export type { EstadoCuenta, EstadoSegundoFactor, SesionActual, Usuario } from './tipos';

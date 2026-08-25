@@ -6,11 +6,13 @@ import { ErrorDeApi } from '../api';
 import { esquemaDeInicioSesion, type CamposDeInicioSesion } from '../esquemas';
 import { useInicioSesion } from '../hooks/useAcceso';
 import {
+  MOTIVO_CREDENCIALES_CAMBIADAS,
   MOTIVO_CUENTA_CREADA,
   MOTIVO_SESION_VENCIDA,
   PARAMETRO_MOTIVO,
   RUTA_REGISTRO,
 } from '../rutas';
+import { claseDeEntrada } from './estilosDeFormulario';
 import estilos from './formulario.module.css';
 
 /**
@@ -57,6 +59,13 @@ export default function InicioSesion() {
         {motivo === MOTIVO_CUENTA_CREADA && (
           <p className={estilos.aviso} role="status">
             Tu cuenta quedó creada. Inicia sesión para entrar.
+          </p>
+        )}
+
+        {motivo === MOTIVO_CREDENCIALES_CAMBIADAS && (
+          <p className={estilos.aviso} role="status">
+            Cambiaste tus credenciales, así que Moica cerró todas tus sesiones, también las de otros
+            dispositivos. Entra de nuevo para continuar.
           </p>
         )}
 
@@ -118,12 +127,4 @@ export default function InicioSesion() {
       </div>
     </main>
   );
-}
-
-function claseDeEntrada(conError: boolean): string {
-  const clases = [estilos.entrada];
-  if (conError) {
-    clases.push(estilos.entradaConError);
-  }
-  return clases.join(' ');
 }

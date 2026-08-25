@@ -9,7 +9,12 @@ import {
   MENSAJE_SIN_RESPUESTA,
   registrarUsuario,
 } from '../api';
-import { MOTIVO_CUENTA_CREADA, MOTIVO_SESION_VENCIDA, rutaDeInicioSesion } from '../rutas';
+import {
+  MOTIVO_CUENTA_CREADA,
+  MOTIVO_SESION_VENCIDA,
+  RUTA_VERIFICACION_SEGUNDO_FACTOR,
+  rutaDeInicioSesion,
+} from '../rutas';
 import { CLAVE_DE_SESION } from './useSesionActual';
 
 /**
@@ -35,7 +40,12 @@ export function useRegistro() {
   });
 }
 
-/** Inicia sesión y deja la sesión recién abierta en la caché, sin volver a pedirla. */
+/**
+ * Inicia sesión y deja la sesión recién abierta en la caché, sin volver a pedirla.
+ *
+ * Cuando la cuenta usa segundo factor, la sesión nace provisional y lo dice en la respuesta: en ese
+ * caso el siguiente paso no es el inicio, sino la pantalla de verificación.
+ */
 export function useInicioSesion() {
   const cliente = useQueryClient();
   const navegar = useNavigate();
@@ -44,7 +54,7 @@ export function useInicioSesion() {
     mutationFn: iniciarSesion,
     onSuccess: (sesion) => {
       cliente.setQueryData(CLAVE_DE_SESION, sesion);
-      navegar('/');
+      navegar(sesion.sesion.pendienteDeSegundoFactor ? RUTA_VERIFICACION_SEGUNDO_FACTOR : '/');
     },
   });
 }

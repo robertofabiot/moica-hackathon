@@ -121,6 +121,26 @@
   text-align: center;
 }
 
+/*
+ * Una acción que se lee como un enlace pero cambia el estado del servidor: por
+ * eso es un `button` y no un `a`. El estilo lo iguala visualmente al resto de
+ * enlaces del pie sin perder la semantica ni el foco visible.
+ */
+.enlaceDeTexto {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.enlaceDeTexto:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
 @media (min-width: 48rem) {
   .titulo {
     font-size: 2rem;

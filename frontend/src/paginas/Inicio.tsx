@@ -1,9 +1,12 @@
 import { Link } from 'react-router';
 
+import { RUTA_ADMIN } from '../capacidades/admin';
 import {
   ErrorDeApi,
   RUTA_INICIO_SESION,
   RUTA_REGISTRO,
+  RUTA_SEGURIDAD,
+  RUTA_VERIFICACION_SEGUNDO_FACTOR,
   useAvisoDeSesionVencida,
   useCierreSesion,
   useSesionActual,
@@ -13,8 +16,8 @@ import estilos from './Inicio.module.css';
 /**
  * Pantalla de inicio de Moica.
  *
- * Presenta la marca y muestra el estado de acceso: quién ha iniciado sesión o cómo hacerlo. Las
- * pantallas de contenido llegan con sus propios incrementos.
+ * Presenta la marca y muestra el estado de acceso: quién ha iniciado sesión, qué le falta para
+ * usarla y a dónde puede ir. Las pantallas de contenido llegan con sus propios incrementos.
  */
 export default function Inicio() {
   const sesion = useSesionActual();
@@ -22,6 +25,8 @@ export default function Inicio() {
   const avisoDeCierre = mensajeDeCierreFallido(cierre.error);
 
   useAvisoDeSesionVencida(sesion.data);
+
+  const pendienteDeSegundoFactor = sesion.data?.sesion.pendienteDeSegundoFactor === true;
 
   return (
     <main className={estilos.contenedor}>
@@ -43,6 +48,22 @@ export default function Inicio() {
             <p className={estilos.estado}>
               Sesión iniciada como <strong>{sesion.data.usuario.nombreCompleto}</strong>
             </p>
+            {pendienteDeSegundoFactor ? (
+              <Link className={estilos.boton} to={RUTA_VERIFICACION_SEGUNDO_FACTOR}>
+                Verificar segundo factor
+              </Link>
+            ) : (
+              <>
+                <Link className={estilos.boton} to={RUTA_SEGURIDAD}>
+                  Seguridad de la cuenta
+                </Link>
+                {sesion.data.usuario.esAdministrador && (
+                  <Link className={estilos.boton} to={RUTA_ADMIN}>
+                    Área administrativa
+                  </Link>
+                )}
+              </>
+            )}
             <button
               className={estilos.boton}
               type="button"
@@ -52,6 +73,12 @@ export default function Inicio() {
               {cierre.isPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
             </button>
           </div>
+          {pendienteDeSegundoFactor && (
+            <p className={estilos.aviso} role="status">
+              Falta verificar tu segundo factor. Hasta entonces, tu sesión solo sirve para eso o
+              para salir.
+            </p>
+          )}
           {avisoDeCierre !== null && (
             <p className={estilos.avisoDeError} role="alert">
               {avisoDeCierre}

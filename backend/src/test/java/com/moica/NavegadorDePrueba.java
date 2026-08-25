@@ -1,5 +1,6 @@
 package com.moica;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.CookieManager;
 import java.net.HttpCookie;
@@ -7,8 +8,11 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.ObjectWriter;
 
@@ -68,6 +72,78 @@ public final class NavegadorDePrueba {
 
   public HttpResponse<String> deleteSinTokenCsrf(String ruta) {
     return enviar(constructor(ruta).DELETE(), false);
+  }
+
+  /** Sube un archivo con {@code PUT}, como el formulario multipart del navegador real. */
+  public HttpResponse<String> putArchivo(
+      String ruta, String nombreArchivo, String tipoMime, byte[] contenido) {
+    return enviarArchivo("PUT", ruta, nombreArchivo, tipoMime, contenido, Map.of(), true);
+  }
+
+  public HttpResponse<String> putArchivoSinTokenCsrf(
+      String ruta, String nombreArchivo, String tipoMime, byte[] contenido) {
+    return enviarArchivo("PUT", ruta, nombreArchivo, tipoMime, contenido, Map.of(), false);
+  }
+
+  /** Sube un archivo con {@code POST} y campos adicionales del mismo formulario. */
+  public HttpResponse<String> postArchivo(
+      String ruta,
+      String nombreArchivo,
+      String tipoMime,
+      byte[] contenido,
+      Map<String, String> campos) {
+    return enviarArchivo("POST", ruta, nombreArchivo, tipoMime, contenido, campos, true);
+  }
+
+  /**
+   * Arma la petición multipart a mano, igual que la armaría un navegador: la parte {@code archivo}
+   * con su nombre y su {@code Content-Type} propios y un campo de texto por cada entrada.
+   */
+  private HttpResponse<String> enviarArchivo(
+      String metodo,
+      String ruta,
+      String nombreArchivo,
+      String tipoMime,
+      byte[] contenido,
+      Map<String, String> campos,
+      boolean conTokenCsrf) {
+
+    String frontera = "----moica-prueba-" + UUID.randomUUID();
+    ByteArrayOutputStream cuerpo = new ByteArrayOutputStream();
+    try {
+      cuerpo.write(
+          ("--"
+                  + frontera
+                  + "\r\nContent-Disposition: form-data; name=\"archivo\"; filename=\""
+                  + nombreArchivo
+                  + "\"\r\nContent-Type: "
+                  + tipoMime
+                  + "\r\n\r\n")
+              .getBytes(StandardCharsets.UTF_8));
+      cuerpo.write(contenido);
+      cuerpo.write("\r\n".getBytes(StandardCharsets.UTF_8));
+      for (Map.Entry<String, String> campo : campos.entrySet()) {
+        cuerpo.write(
+            ("--"
+                    + frontera
+                    + "\r\nContent-Disposition: form-data; name=\""
+                    + campo.getKey()
+                    + "\"\r\n\r\n"
+                    + campo.getValue()
+                    + "\r\n")
+                .getBytes(StandardCharsets.UTF_8));
+      }
+      cuerpo.write(("--" + frontera + "--\r\n").getBytes(StandardCharsets.UTF_8));
+    } catch (IOException imposible) {
+      throw new IllegalStateException("No se pudo armar el cuerpo multipart", imposible);
+    }
+
+    HttpRequest.Builder constructor =
+        HttpRequest.newBuilder(URI.create(base + ruta))
+            .header("Content-Type", "multipart/form-data; boundary=" + frontera)
+            .method(metodo, HttpRequest.BodyPublishers.ofByteArray(cuerpo.toByteArray()));
+
+    return enviar(constructor, conTokenCsrf);
   }
 
   /** Valor de una cookie guardada, si el servidor la envió y sigue vigente. */

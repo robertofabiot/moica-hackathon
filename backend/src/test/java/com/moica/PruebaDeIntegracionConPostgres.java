@@ -1,7 +1,12 @@
 package com.moica;
 
+import com.moica.comun.almacenamiento.AlmacenamientoDePrueba;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
@@ -36,7 +41,26 @@ import org.testcontainers.containers.PostgreSQLContainer;
       "management.endpoint.health.show-details=always",
       "management.endpoint.health.show-components=always"
     })
+@Import(PruebaDeIntegracionConPostgres.ConfiguracionDeAlmacenamientoDePrueba.class)
 public abstract class PruebaDeIntegracionConPostgres {
+
+  /**
+   * Sustituye el almacén real por el doble en memoria en toda la suite.
+   *
+   * <p>Las variables {@code MOICA_R2_*} no existen en las pruebas, así que el bean real arranca sin
+   * cliente; este doble es quien recibe las llamadas y permite afirmar sobre ellas. La comprobación
+   * contra un bucket R2 real queda como procedimiento manual documentado en {@code
+   * Docs/Dev/Almacenamiento.md}.
+   */
+  @TestConfiguration
+  public static class ConfiguracionDeAlmacenamientoDePrueba {
+
+    @Bean
+    @Primary
+    public AlmacenamientoDePrueba almacenamientoDePrueba() {
+      return new AlmacenamientoDePrueba();
+    }
+  }
 
   /** Clave con la que se firman los JWT durante las pruebas. */
   public static final String SECRETO_JWT = "secreto-de-pruebas-de-moica-solo-para-testcontainers";

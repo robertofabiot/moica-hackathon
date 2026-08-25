@@ -10,6 +10,7 @@ import com.moica.auth.dto.SolicitudDeInicioSesion;
 import com.moica.auth.seguridad.PropiedadesDeSegundoFactor;
 import com.moica.auth.seguridad.PropiedadesDeSeguridad;
 import com.moica.auth.service.AutenticacionService;
+import com.moica.comun.almacenamiento.PropiedadesDeAlmacenamiento;
 import com.moica.usuario.dto.SolicitudDeRegistro;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -100,5 +101,17 @@ class RepresentacionSinSecretosTest {
             new PropiedadesDeSegundoFactor(CLAVE_DE_CIFRADO, 6, Duration.ofSeconds(30), 1)
                 .toString())
         .doesNotContain(CLAVE_DE_CIFRADO);
+  }
+
+  @Test
+  void laConfiguracionDelAlmacenamientoNoRevelaElSecretoDelToken() {
+    String secretoR2 = "centinela-secreto-del-token-r2";
+
+    assertThat(
+            new PropiedadesDeAlmacenamiento(
+                    "cuenta", "access-key", secretoR2, "bucket", "https://imagenes.moica.ni")
+                .toString())
+        .doesNotContain(secretoR2)
+        .contains("bucketPublico=bucket");
   }
 }

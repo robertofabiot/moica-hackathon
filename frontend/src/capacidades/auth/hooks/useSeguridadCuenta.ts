@@ -9,6 +9,7 @@ import {
   obtenerSegundoFactor,
   verificarSegundoFactorDeLaSesion,
 } from '../api';
+import { olvidarSesion } from '../cacheDeSesion';
 import { MOTIVO_CREDENCIALES_CAMBIADAS, MOTIVO_SESION_VENCIDA, rutaDeInicioSesion } from '../rutas';
 import { CLAVE_DE_SESION } from './useSesionActual';
 
@@ -98,7 +99,7 @@ export function useVerificacionDeSesion() {
         // envoltorio de ruta vería «sin sesión» todavía montado y redirigiría
         // por su cuenta al inicio de sesión, sin el motivo.
         navegar(rutaDeInicioSesion(MOTIVO_SESION_VENCIDA));
-        cliente.setQueryData(CLAVE_DE_SESION, null);
+        olvidarSesion(cliente);
       }
     },
   });
@@ -117,8 +118,7 @@ function useSalidaTrasCambioDeCredenciales() {
     // ruta protegida —todavía montado— redirigiría al inicio de sesión sin el
     // motivo y la explicación se perdería.
     navegar(rutaDeInicioSesion(MOTIVO_CREDENCIALES_CAMBIADAS));
-    cliente.setQueryData(CLAVE_DE_SESION, null);
-    cliente.removeQueries({ queryKey: CLAVE_DE_SEGUNDO_FACTOR });
+    olvidarSesion(cliente);
   };
 }
 

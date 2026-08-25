@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 
 import type { SesionActual } from '../tipos';
+import { olvidarSesion } from '../cacheDeSesion';
 import { MOTIVO_SESION_VENCIDA, rutaDeInicioSesion } from '../rutas';
-import { CLAVE_DE_SESION } from './useSesionActual';
 
 /**
  * Avisa cuando la sesión vence sin que la persona haya hecho nada.
@@ -28,8 +28,8 @@ export function useAvisoDeSesionVencida(sesion: SesionActual | null | undefined)
 
     const temporizador = setTimeout(
       () => {
-        cliente.setQueryData(CLAVE_DE_SESION, null);
         navegar(rutaDeInicioSesion(MOTIVO_SESION_VENCIDA));
+        olvidarSesion(cliente);
       },
       Math.max(restante, 0)
     );

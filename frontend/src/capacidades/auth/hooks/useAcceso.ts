@@ -9,6 +9,7 @@ import {
   MENSAJE_SIN_RESPUESTA,
   registrarUsuario,
 } from '../api';
+import { olvidarDatosPrivados, olvidarSesion } from '../cacheDeSesion';
 import {
   MOTIVO_CUENTA_CREADA,
   MOTIVO_SESION_VENCIDA,
@@ -53,6 +54,10 @@ export function useInicioSesion() {
   return useMutation({
     mutationFn: iniciarSesion,
     onSuccess: (sesion) => {
+      // Quien entra no hereda nada: la salida anterior ya debió limpiarlo, pero
+      // entre dos cuentas no se recarga la aplicación y esta es la última
+      // oportunidad de comprobarlo.
+      olvidarDatosPrivados(cliente);
       cliente.setQueryData(CLAVE_DE_SESION, sesion);
       navegar(sesion.sesion.pendienteDeSegundoFactor ? RUTA_VERIFICACION_SEGUNDO_FACTOR : '/');
     },
@@ -83,7 +88,7 @@ export function useCierreSesion() {
     },
     onSuccess: () => {
       setErrorSinConexion(null);
-      cliente.setQueryData(CLAVE_DE_SESION, null);
+      olvidarSesion(cliente);
       navegar(rutaDeInicioSesion());
     },
     onError: (error) => {
@@ -92,7 +97,7 @@ export function useCierreSesion() {
       }
       if (error instanceof ErrorDeApi && error.estado === 401) {
         setErrorSinConexion(null);
-        cliente.setQueryData(CLAVE_DE_SESION, null);
+        olvidarSesion(cliente);
         navegar(rutaDeInicioSesion(MOTIVO_SESION_VENCIDA));
       }
     },

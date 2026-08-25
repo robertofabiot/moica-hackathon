@@ -303,6 +303,43 @@ describe('seguridad de la cuenta', () => {
       ).not.toBeInTheDocument();
     });
 
+    it('no muestra el estado de la cuenta anterior a la que entra después', async () => {
+      const persona = userEvent.setup();
+
+      // La cuenta A tiene el segundo factor activo y lo consulta.
+      api.responder('GET /api/auth/sesion', {
+        estado: 200,
+        cuerpo: sesionDeEjemplo({ segundoFactorRequerido: true, segundoFactorVerificado: true }),
+      });
+      api.responder('GET /api/auth/segundo-factor', {
+        estado: 200,
+        cuerpo: segundoFactorDeEjemplo('ACTIVO'),
+      });
+      api.responder('DELETE /api/auth/sesion', { estado: 204 });
+
+      const { cliente } = await abrirSeguridad();
+      expect(await screen.findByText('Activo')).toBeVisible();
+
+      await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
+      await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
+      expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+
+      // La cuenta B entra sin recargar y su consulta todavía no ha respondido.
+      api.responder('POST /api/auth/sesion', { estado: 201, cuerpo: sesionDeEjemplo() });
+      api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesionDeEjemplo() });
+      api.colgar('GET /api/auth/segundo-factor');
+
+      await persona.type(screen.getByLabelText('Correo electrónico'), 'otra@moica.test');
+      await persona.type(screen.getByLabelText('Contraseña'), 'Moica2026$segura');
+      await persona.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+
+      await persona.click(await screen.findByRole('link', { name: 'Seguridad de la cuenta' }));
+
+      expect(await screen.findByText('Consultando el estado de tu segundo factor…')).toBeVisible();
+      expect(screen.queryByText('Activo')).not.toBeInTheDocument();
+      expect(cliente.getQueryData(['auth', 'segundo-factor'])).toBeUndefined();
+    });
+
     it('permite reintentar cuando no se pudo consultar su estado', async () => {
       const persona = userEvent.setup();
       api.rechazar('GET /api/auth/segundo-factor');

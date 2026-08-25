@@ -3,7 +3,7 @@ import { Navigate } from 'react-router';
 
 import { useSesionActual } from '../hooks/useSesionActual';
 import { RUTA_VERIFICACION_SEGUNDO_FACTOR, rutaDeInicioSesion } from '../rutas';
-import estilos from '../paginas/formulario.module.css';
+import estilos from '../../../comun/estilos/formulario.module.css';
 
 /**
  * Deja pasar solo a quien tiene una sesión completa.

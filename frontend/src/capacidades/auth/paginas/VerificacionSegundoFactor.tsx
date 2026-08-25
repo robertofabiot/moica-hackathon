@@ -5,8 +5,8 @@ import { ErrorDeApi } from '../api';
 import { esquemaDeCodigoTotp, type CamposDeCodigoTotp } from '../esquemas';
 import { useCierreSesion } from '../hooks/useAcceso';
 import { useVerificacionDeSesion } from '../hooks/useSeguridadCuenta';
-import { claseDeEntrada } from './estilosDeFormulario';
-import estilos from './formulario.module.css';
+import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
+import estilos from '../../../comun/estilos/formulario.module.css';
 
 /**
  * Segundo paso del inicio de sesión cuando la cuenta usa segundo factor.

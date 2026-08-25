@@ -4,8 +4,8 @@ import { useForm } from 'react-hook-form';
 import { ErrorDeApi } from '../api';
 import { esquemaDeDesactivacion, type CamposDeDesactivacion } from '../esquemas';
 import { useDesactivacionDeSegundoFactor } from '../hooks/useSeguridadCuenta';
-import { claseDeEntrada } from '../paginas/estilosDeFormulario';
-import estilos from '../paginas/formulario.module.css';
+import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
+import estilos from '../../../comun/estilos/formulario.module.css';
 import seccion from '../paginas/seguridad.module.css';
 
 /**

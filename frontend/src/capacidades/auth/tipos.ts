@@ -3,7 +3,12 @@
  *
  * El frontend declara sus propios tipos en lugar de reutilizar los del backend: si un día la
  * respuesta cambia, el compilador debe avisar aquí.
+ *
+ * El cuerpo uniforme de error se mudó a `src/comun/api` junto con la infraestructura de red; se
+ * reexporta para no romper a quien lo importaba de aquí.
  */
+
+export type { CuerpoDeError, ErrorDeCampo } from '../../comun/api';
 
 /** Estado operativo de una cuenta. Coincide con el dominio `EstadoCuenta` del diccionario. */
 export type EstadoCuenta =
@@ -62,20 +67,4 @@ export interface ActivacionDeSegundoFactor {
   uriDeConfiguracion: string;
   digitos: number;
   periodoEnSegundos: number;
-}
-
-/** Detalle de un campo que el backend no admitió. */
-export interface ErrorDeCampo {
-  campo: string;
-  mensaje: string;
-}
-
-/** Cuerpo uniforme con el que la API responde a cualquier error. */
-export interface CuerpoDeError {
-  instante: string;
-  estado: number;
-  codigo: string;
-  mensaje: string;
-  ruta: string;
-  errores?: ErrorDeCampo[];
 }

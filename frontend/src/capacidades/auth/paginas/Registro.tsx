@@ -6,8 +6,8 @@ import { ErrorDeApi } from '../api';
 import { esquemaDeRegistro, type CamposDeRegistro } from '../esquemas';
 import { useRegistro } from '../hooks/useAcceso';
 import { RUTA_INICIO_SESION } from '../rutas';
-import { claseDeEntrada } from './estilosDeFormulario';
-import estilos from './formulario.module.css';
+import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
+import estilos from '../../../comun/estilos/formulario.module.css';
 
 /**
  * Pantalla de creación de cuenta.

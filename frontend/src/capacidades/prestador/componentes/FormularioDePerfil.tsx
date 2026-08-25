@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 
 import { ErrorDeApi } from '../../../comun/api';
 import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
@@ -26,6 +26,7 @@ export default function FormularioDePerfil({ perfil }: { perfil: PerfilPrestador
   const guardado = perfil === null ? creacion : actualizacion;
 
   const {
+    control,
     register,
     handleSubmit,
     setError,
@@ -130,38 +131,55 @@ export default function FormularioDePerfil({ perfil }: { perfil: PerfilPrestador
           <label className={estilos.etiqueta} htmlFor="idMunicipioPrincipal">
             Municipio principal
           </label>
-          <select
-            id="idMunicipioPrincipal"
-            className={claseDeEntrada(errors.idMunicipioPrincipal !== undefined)}
-            aria-invalid={errors.idMunicipioPrincipal !== undefined}
-            aria-describedby={
-              errors.idMunicipioPrincipal ? 'error-idMunicipioPrincipal' : undefined
-            }
-            {...register('idMunicipioPrincipal')}
-          >
-            <option value="" disabled>
-              {catalogo.isPending ? 'Cargando municipios…' : 'Elige tu municipio'}
-            </option>
-            {/*
-              Mientras el catálogo viaja, el municipio ya elegido necesita su
-              propia opción: un `select` no puede tomar un valor que todavía no
-              existe entre sus hijos, y el campo aparecería vacío.
-            */}
-            {perfil !== null && catalogo.data === undefined && (
-              <option value={perfil.municipioPrincipal.idMunicipio}>
-                {perfil.municipioPrincipal.nombreMunicipio}
-              </option>
-            )}
-            {(catalogo.data ?? []).map((departamento) => (
-              <optgroup key={departamento.idDepartamento} label={departamento.nombre}>
-                {departamento.municipios.map((municipio) => (
-                  <option key={municipio.idMunicipio} value={municipio.idMunicipio}>
-                    {municipio.nombre}
+          {/*
+            Controlado con `Controller` y no con `register` a propósito: las
+            opciones llegan después que el formulario, y al sustituirlas el
+            navegador descarta el valor que ya no encuentra entre ellas y
+            selecciona la primera. Con el `value` en cada render, React lo
+            vuelve a aplicar en cuanto la opción existe.
+          */}
+          <Controller
+            control={control}
+            name="idMunicipioPrincipal"
+            render={({ field }) => (
+              <select
+                id="idMunicipioPrincipal"
+                className={claseDeEntrada(errors.idMunicipioPrincipal !== undefined)}
+                aria-invalid={errors.idMunicipioPrincipal !== undefined}
+                aria-describedby={
+                  errors.idMunicipioPrincipal ? 'error-idMunicipioPrincipal' : undefined
+                }
+                name={field.name}
+                ref={field.ref}
+                value={field.value ?? ''}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+              >
+                <option value="" disabled>
+                  {catalogo.isPending ? 'Cargando municipios…' : 'Elige tu municipio'}
+                </option>
+                {/*
+                  Mientras el catálogo viaja, el municipio ya elegido necesita
+                  su propia opción: sin ella el campo aparecería vacío durante
+                  la carga.
+                */}
+                {perfil !== null && catalogo.data === undefined && (
+                  <option value={perfil.municipioPrincipal.idMunicipio}>
+                    {perfil.municipioPrincipal.nombreMunicipio}
                   </option>
+                )}
+                {(catalogo.data ?? []).map((departamento) => (
+                  <optgroup key={departamento.idDepartamento} label={departamento.nombre}>
+                    {departamento.municipios.map((municipio) => (
+                      <option key={municipio.idMunicipio} value={municipio.idMunicipio}>
+                        {municipio.nombre}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
-              </optgroup>
-            ))}
-          </select>
+              </select>
+            )}
+          />
           {catalogo.isError && (
             <p className={estilos.error} role="alert">
               No pudimos cargar los municipios. Recarga la página e inténtalo otra vez.

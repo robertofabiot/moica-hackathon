@@ -161,6 +161,24 @@ describe('Perfil de prestador', () => {
     });
   });
 
+  // El catálogo llega después que el formulario y sustituye las opciones del
+  // selector. Un `select` no controlado descarta en ese momento el valor que ya
+  // no encuentra entre sus hijos y se queda con el primero, así que el perfil
+  // aparecía con un municipio que no era el suyo.
+  it('conserva el municipio del perfil cuando llegan las opciones del catálogo', async () => {
+    conPerfil();
+
+    renderizarConProveedores(<App />, '/prestador');
+
+    const municipio = await screen.findByLabelText('Municipio principal');
+
+    // Se espera a que las opciones reales estén puestas, que es cuando ocurría
+    // la pérdida del valor.
+    expect(await screen.findByRole('option', { name: 'Tipitapa' })).toBeInTheDocument();
+    expect(municipio).toHaveValue('3');
+    expect(screen.getByRole('option', { name: 'Managua', selected: true })).toBeInTheDocument();
+  });
+
   it('alterna la disponibilidad y refleja el estado devuelto', async () => {
     const persona = userEvent.setup();
     conPerfil();

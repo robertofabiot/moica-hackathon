@@ -1,7 +1,9 @@
 package com.moica.auth.seguridad;
 
+import com.moica.auth.service.SegundoFactorService;
 import com.moica.auth.service.SesionService;
 import com.moica.auth.service.TokenDeSesionService;
+import com.moica.usuario.service.UsuarioService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -29,6 +31,8 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
  *       navegador lo devuelve en la cabecera {@code X-XSRF-TOKEN} de toda operación mutable.
  *   <li>No se abre CORS: en producción el frontend y la API comparten origen y en desarrollo lo
  *       resuelve el proxy de Vite.
+ *   <li>Autorización por omisión cerrada: lo que no se declara exige una sesión plena. Añadir un
+ *       endpoint nuevo sin pensar en sus permisos lo deja protegido, no abierto.
  * </ul>
  */
 @Configuration
@@ -51,6 +55,8 @@ public class ConfiguracionDeSeguridad {
       CookieDeSesion cookie,
       TokenDeSesionService tokens,
       SesionService sesiones,
+      UsuarioService usuarios,
+      SegundoFactorService segundoFactor,
       PuntoDeEntradaNoAutenticado puntoDeEntrada,
       ManejadorDeAccesoDenegado accesoDenegado,
       PropiedadesDeSeguridad propiedades)
@@ -58,7 +64,8 @@ public class ConfiguracionDeSeguridad {
 
     // El filtro se construye aquí y no se publica como bean: si lo fuera, Spring
     // Boot lo registraría además en el servidor, fuera de esta cadena.
-    FiltroDeSesion filtroDeSesion = new FiltroDeSesion(cookie, tokens, sesiones);
+    FiltroDeSesion filtroDeSesion =
+        new FiltroDeSesion(cookie, tokens, sesiones, usuarios, segundoFactor);
 
     return http.csrf(
             csrf ->
@@ -85,8 +92,21 @@ public class ConfiguracionDeSeguridad {
                     // petición de nadie: sin esto, un 404 se convertiría en 403.
                     .requestMatchers("/error")
                     .permitAll()
+                    // Lo único que puede hacer una sesión provisional: mirar en
+                    // qué estado está, presentar su código y marcharse. Es
+                    // también lo único que le queda a una cuenta suspendida.
+                    .requestMatchers(HttpMethod.GET, "/api/auth/sesion")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.DELETE, "/api/auth/sesion")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.POST, "/api/auth/sesion/segundo-factor")
+                    .authenticated()
+                    // El área administrativa exige rol y segundo factor
+                    // verificado en esta misma sesión.
+                    .requestMatchers("/api/admin/**")
+                    .access(AutorizacionDeSesion.areaAdministrativa())
                     .anyRequest()
-                    .authenticated())
+                    .access(AutorizacionDeSesion.sesionPlena()))
         .exceptionHandling(
             errores ->
                 errores

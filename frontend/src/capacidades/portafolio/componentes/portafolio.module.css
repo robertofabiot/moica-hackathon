@@ -1,0 +1,25 @@
+/*
+ * Estilos propios de la galería del portafolio.
+ *
+ * Las secciones, listas y botones que comparte con el perfil viven en
+ * `src/comun/estilos/secciones.module.css`. Mobile-first: la rejilla se ajusta
+ * sola al ancho disponible, así que no necesita media query.
+ */
+
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: var(--moica-espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.miniatura {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+  object-fit: cover;
+  background-color: var(--moica-fondo-suave);
+}

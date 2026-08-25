@@ -10,6 +10,7 @@ import {
   useCierreSesion,
   useSesionActual,
 } from '../capacidades/auth';
+import { RUTA_PRESTADOR } from '../capacidades/prestador';
 import estilos from './Inicio.module.css';
 
 /**
@@ -51,6 +52,9 @@ export default function Inicio() {
               </Link>
             ) : (
               <>
+                <Link className={estilos.boton} to={RUTA_PRESTADOR}>
+                  Mi perfil de prestador
+                </Link>
                 <Link className={estilos.boton} to={RUTA_SEGURIDAD}>
                   Seguridad de la cuenta
                 </Link>

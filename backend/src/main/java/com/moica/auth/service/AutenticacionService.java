@@ -132,5 +132,12 @@ public class AutenticacionService {
    * Resultado de iniciar sesión: el token que se entrega en la cookie y lo que se cuenta en el
    * cuerpo de la respuesta.
    */
-  public record SesionIniciada(String token, RespuestaDeSesion respuesta) {}
+  public record SesionIniciada(String token, RespuestaDeSesion respuesta) {
+
+    /** Se redefine a propósito: el token es el JWT que abre la sesión recién creada. */
+    @Override
+    public String toString() {
+      return "SesionIniciada[token=(oculto), respuesta=" + respuesta + "]";
+    }
+  }
 }

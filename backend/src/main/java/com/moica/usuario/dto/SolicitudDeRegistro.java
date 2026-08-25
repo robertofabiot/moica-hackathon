@@ -29,4 +29,17 @@ public record SolicitudDeRegistro(
         (correoElectronico == null) ? null : correoElectronico.strip().toLowerCase(Locale.ROOT);
     // La contraseña no se toca: sus espacios forman parte de ella.
   }
+
+  /**
+   * Se redefine a propósito: la representación que genera el compilador incluiría la contraseña en
+   * claro. El nombre y el correo sí se describen: son los datos que se estaba registrando.
+   */
+  @Override
+  public String toString() {
+    return "SolicitudDeRegistro[nombreCompleto="
+        + nombreCompleto
+        + ", correoElectronico="
+        + correoElectronico
+        + ", clave=(oculta)]";
+  }
 }

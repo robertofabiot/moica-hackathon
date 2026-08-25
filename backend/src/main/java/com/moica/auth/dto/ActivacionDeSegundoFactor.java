@@ -14,4 +14,19 @@ package com.moica.auth.dto;
  * @param periodoEnSegundos cuánto vale cada código
  */
 public record ActivacionDeSegundoFactor(
-    String claveManual, String uriDeConfiguracion, int digitos, long periodoEnSegundos) {}
+    String claveManual, String uriDeConfiguracion, int digitos, long periodoEnSegundos) {
+
+  /**
+   * Se redefine a propósito: la representación que genera el compilador incluiría el secreto en
+   * Base32 y la URI {@code otpauth://}, que lo lleva dentro. Los parámetros sí se describen: no son
+   * secretos y ayudan a diagnosticar.
+   */
+  @Override
+  public String toString() {
+    return "ActivacionDeSegundoFactor[claveManual=(oculta), uriDeConfiguracion=(oculta), digitos="
+        + digitos
+        + ", periodoEnSegundos="
+        + periodoEnSegundos
+        + "]";
+  }
+}

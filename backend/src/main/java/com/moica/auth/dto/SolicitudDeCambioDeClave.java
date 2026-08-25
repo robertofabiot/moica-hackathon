@@ -11,4 +11,11 @@ import jakarta.validation.constraints.NotBlank;
  * sigue {@link ClaveSegura}, que es la misma política del registro.
  */
 public record SolicitudDeCambioDeClave(
-    @NotBlank String claveActual, @NotBlank @ClaveSegura String claveNueva) {}
+    @NotBlank String claveActual, @NotBlank @ClaveSegura String claveNueva) {
+
+  /** Se redefine a propósito: los dos componentes son contraseñas en claro. */
+  @Override
+  public String toString() {
+    return "SolicitudDeCambioDeClave[claveActual=(oculta), claveNueva=(oculta)]";
+  }
+}

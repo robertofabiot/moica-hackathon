@@ -18,4 +18,10 @@ public record SolicitudDeCodigoTotp(@NotBlank @Size(max = 16) String codigo) {
   public SolicitudDeCodigoTotp {
     codigo = (codigo == null) ? null : codigo.replaceAll("\s", "");
   }
+
+  /** Se redefine a propósito: el único componente es un código válido durante su ventana. */
+  @Override
+  public String toString() {
+    return "SolicitudDeCodigoTotp[codigo=(oculto)]";
+  }
 }

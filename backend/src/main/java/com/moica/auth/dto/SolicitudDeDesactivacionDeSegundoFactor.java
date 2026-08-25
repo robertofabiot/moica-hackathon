@@ -15,4 +15,10 @@ public record SolicitudDeDesactivacionDeSegundoFactor(
   public SolicitudDeDesactivacionDeSegundoFactor {
     codigo = (codigo == null) ? null : codigo.replaceAll("\s", "");
   }
+
+  /** Se redefine a propósito: los dos componentes son los dos factores de la cuenta. */
+  @Override
+  public String toString() {
+    return "SolicitudDeDesactivacionDeSegundoFactor[claveActual=(oculta), codigo=(oculto)]";
+  }
 }

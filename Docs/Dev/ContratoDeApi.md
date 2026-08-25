@@ -83,6 +83,15 @@ Despues de activarlo, el secreto **no se puede recuperar**: `GET /api/auth/segun
 el estado, si es obligatorio y la fecha de activacion, y nada mas. En la base de datos se guarda
 cifrado con AES-GCM y una clave que llega por `MOICA_TOTP_CLAVE_CIFRADO`.
 
+Ninguna respuesta de la API se guarda en cache: la cadena de seguridad emite un `Cache-Control` con
+`no-store` en todas. Sobre `POST /api/auth/segundo-factor`, que es la unica que lleva el secreto,
+hay ademas una prueba que lo fija, para que retirar esa cabecera no pase inadvertido.
+
+Un codigo aceptado **puede volver a presentarse mientras dure su ventana** y los intentos fallidos
+no estan limitados. Las dos cosas son endurecimientos pendientes de decision del equipo, descritos
+en «Segundo factor: reutilizacion de codigo e intentos» de
+[la matriz de cumplimiento](MatrizCumplimiento.md).
+
 Los codigos son de 6 digitos y duran 30 segundos, y se aceptan tambien los del periodo anterior y
 el siguiente para absorber el desfase de reloj. Los tres valores estan centralizados en
 `moica.segundo-factor.*` y son los mismos que anuncia la URI `otpauth://`.

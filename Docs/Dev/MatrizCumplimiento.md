@@ -164,12 +164,17 @@ Comprobaciones del incremento P3, con el resultado real de cada una.
 
 - **Local**: máquina de desarrollo (Windows 11, Docker Desktop, Node 22, JDK
   compilando con `release 21`), con PostgreSQL publicado en `localhost:5433`.
-- **CI**: ejecutado por GitHub Actions en el Pull Request #7 sobre el commit
+- **CI**: ejecutado por GitHub Actions en el Pull Request #7. Sobre el commit
   `d74d2da`,
   [ejecución 32792478119](https://github.com/robertofabiot/moica-hackathon/actions/runs/32792478119),
   con Backend, Frontend y Entorno local en verde, y
   [ejecución 32792478085](https://github.com/robertofabiot/moica-hackathon/actions/runs/32792478085)
-  con el check de convenciones también en verde.
+  con el check de convenciones también en verde. Sobre `b42a542`, que cierra la
+  revisión correctiva,
+  [ejecución 32799768721](https://github.com/robertofabiot/moica-hackathon/actions/runs/32799768721)
+  y
+  [ejecución 32799768722](https://github.com/robertofabiot/moica-hackathon/actions/runs/32799768722),
+  las dos en verde.
 
 | Control | Cómo se comprueba | Local | Evidencia |
 |---|---|---|---|

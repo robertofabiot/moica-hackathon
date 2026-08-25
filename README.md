@@ -37,6 +37,7 @@ MOICA conecta a personas que necesitan contratar un servicio (mantenimiento, rep
 * **Calificaciones reales** — reputacion bidireccional y visible para todos
 * **Cero cobros iniciales** — sin membresia ni pago por contacto
 * **Sesiones seguras** — JWT + cookie `HttpOnly`, revocacion inmediata y proteccion CSRF
+* **Segundo factor TOTP** — opcional para cualquier cuenta y obligatorio para el area administrativa
 * **PWA mobile-first** — instalable, funciona como una app nativa
 
 ## Arquitectura
@@ -97,7 +98,9 @@ moica-hackathon/
 
 Ciclo de acceso completo: registro, inicio de sesion, sesion persistida con expiracion y revocacion, y cierre de sesion, con sus pantallas correspondientes.
 
-Todavia no hay segundo factor TOTP, cambio de contraseña, area administrativa, perfiles de prestador, verificacion documental, servicios, solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
+Seguridad de la cuenta: cambio de contraseña que revoca todas las sesiones, segundo factor TOTP con su ciclo completo, sesion provisional hasta verificar el codigo y area `/admin` protegida por rol y segundo factor verificado.
+
+Todavia no hay perfiles de prestador, verificacion documental, servicios, solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
 
 ## Licencia
 

@@ -30,6 +30,8 @@ Copy-Item .env.example .env
 | `MOICA_JWT_SECRETO` | Clave con la que se firma el JWT de sesion (minimo 32 bytes) | Backend |
 | `MOICA_SESION_DURACION` | Cuanto dura una sesion, en formato ISO-8601 (por omision `P7D`) | Backend |
 | `MOICA_COOKIE_SEGURA` | Marca `Secure` en las cookies; `false` en desarrollo, `true` en produccion | Backend |
+| `MOICA_TOTP_CLAVE_CIFRADO` | Clave con la que se cifra el secreto TOTP de cada cuenta (Base64 de 16, 24 o 32 bytes) | Backend |
+| `MOICA_ADMIN_CORREO` | Correo de una cuenta ya registrada que recibe el rol administrativo al arrancar; vacia por omision | Backend |
 
 Los valores de `.env.example` son de desarrollo local. En produccion cada variable se define en el entorno del servidor; ningun secreto se versiona.
 
@@ -46,6 +48,50 @@ $b = [byte[]]::new(48); [System.Security.Cryptography.RandomNumberGenerator]::Cr
 ```
 
 Si el secreto tiene menos de 32 bytes, el backend no arranca: HMAC-SHA256 no admite una clave mas corta.
+
+### La clave de cifrado del segundo factor
+
+El secreto TOTP no puede guardarse como hash: el servidor necesita regenerar los codigos. Se guarda
+cifrado con AES-GCM, y la clave llega en `MOICA_TOTP_CLAVE_CIFRADO`, en Base64 y de 16, 24 o 32
+bytes. Con cualquier otra cosa —ausente, mal codificada o de otra longitud— la aplicacion **no
+arranca**: es preferible eso a guardar un secreto sin cifrar.
+
+El valor de la plantilla es publico, igual que el del JWT, y solo sirve para trabajar en la maquina
+propia. Para generar uno de verdad:
+
+```bash
+openssl rand -base64 32
+```
+
+```powershell
+$b = [byte[]]::new(32); [System.Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($b); [Convert]::ToBase64String($b)
+```
+
+Cambiar esta clave deja ilegibles los secretos ya guardados: quien tuviera el segundo factor activo
+tendria que volver a configurarlo.
+
+### Rol administrativo
+
+Moica no tiene registro publico de administradores, ni endpoint de promocion, ni contrasena fija.
+La unica via es `MOICA_ADMIN_CORREO`, que se aplica al arrancar:
+
+1. Registra la cuenta desde la aplicacion, como cualquier otra.
+2. Escribe su correo en `MOICA_ADMIN_CORREO` y reinicia el backend.
+3. Entra con esa cuenta, activa su segundo factor en `/seguridad` y ya puedes abrir `/admin`.
+
+Es idempotente: se ejecuta en cada arranque y, si la cuenta ya tiene el rol, no cambia nada. Si la
+variable esta vacia no se promueve a nadie, y si apunta a una cuenta que todavia no existe el
+arranque continua y deja este aviso:
+
+```text
+MOICA_ADMIN_CORREO apunta a una cuenta que todavia no existe. Registrala desde la aplicacion y
+vuelve a arrancar para asignarle el rol administrativo.
+```
+
+El aviso no incluye el correo: es un dato personal y el arranque suele quedar registrado.
+
+Recuerda que tener el rol no basta para entrar en `/admin`: hace falta ademas que **esa sesion**
+haya verificado el segundo factor.
 
 El backend lee estas variables del entorno del sistema y, si no estan definidas, importa el mismo archivo `.env` de la raiz. Las variables de entorno reales tienen prioridad, de modo que CI y produccion no dependen del archivo.
 
@@ -86,13 +132,14 @@ cd backend
 
 En Windows PowerShell se usa `.\mvnw.cmd` en lugar de `./mvnw`.
 
-La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`. Desde P2 ese directorio contiene `V10__crear_usuario_y_sesion.sql`, que crea las tablas `usuario` y `sesion`.
+La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`: `V10__crear_usuario_y_sesion.sql` crea las tablas `usuario` y `sesion`, y `V11__crear_administrador_y_segundo_factor.sql` agrega `administrador`, `segundo_factor_usuario` y el indice que permite revocar de una vez todas las sesiones de una cuenta.
 
 El arranque lo describe asi:
 
 ```text
 Migrating schema "public" to version "10 - crear usuario y sesion"
-Successfully applied 1 migration to schema "public", now at version v10
+Migrating schema "public" to version "11 - crear administrador y segundo factor"
+Successfully applied 2 migrations to schema "public", now at version v11
 ```
 
 Hibernate arranca con `ddl-auto=validate`: si el esquema y las entidades dejaran de coincidir, la aplicacion no arrancaria. El esquema lo crea Flyway y solo Flyway.

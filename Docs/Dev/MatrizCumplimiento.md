@@ -34,10 +34,10 @@ pruebas ejecutadas y el material de apoyo.
 | 4 | Ramas, Conventional Commits, Pull Requests y trazabilidad | En progreso | P0 → P11 | #1, #2, #3, #5 | `eb77733`, `d1cba29` | Check «Título y commits convencionales» en verde; `./mvnw verify` ejecutado además sobre cada commit del incremento por separado | `Docs/Core/GIT_WORKFLOW.md` define ramas, tipos y promoción a `main`; P1 agrega `.github/pull_request_template.md` y la validación automática de título y commits del PR. P2 aporta siete commits atómicos que se pueden leer en orden: esquema, errores, registro, autenticación, ciclo de sesión y las dos entregas de interfaz. |
 | 5 | Matriz de cumplimiento mantenida | En progreso | P1 → P11 | #3, #5 | `eb77733`, `61b4af6` | — | Este documento, creado en P1 y actualizado por cada PR. |
 | 6 | Validación de entradas y manejo uniforme de errores | Cumplido | P2 | #5 | `fe1ab99`, `e2be568` | 17 pruebas de la política de contraseña sobre el DTO; 13 pruebas de integración de registro con casos negativos; 39 pruebas del frontend | Bean Validation en los DTO más un manejador global que traduce cualquier fallo —incluidos los de Spring MVC— a un cuerpo único (`instante`, `estado`, `codigo`, `mensaje`, `ruta` y, en validación, `errores` por campo). Los rechazos de la cadena de seguridad usan ese mismo cuerpo. Ninguna respuesta lleva trazas, SQL ni valores internos. |
-| 7 | Protección de rutas y datos (rol, propiedad, estado de cuenta) | Pendiente | P3 → P10B | | | | |
+| 7 | Protección de rutas y datos (rol, propiedad, estado de cuenta) | En progreso | P3 → P10B | #PR_P3 | `14a2d1a`, `ce9cfcc`, `bc4bfeb`, `1b1cc1f`, `2b7bf91`, `4b4e3f0`, `5bdbd43` | 11 pruebas de integración de `AreaAdministrativaIT`, 15 de `SesionProvisionalIT` y 13 del frontend sobre `/admin` y las rutas protegidas | La cadena de seguridad cierra por omisión: lo que no se declara exige una sesión plena. `UsuarioAutenticado` relee en cada petición el rol, el estado de la cuenta y el segundo factor, así que retirar un permiso surte efecto en la petición siguiente. `/api/admin/**` exige rol administrativo **y** segundo factor verificado en esa sesión; una suspensión bloquea todo salvo consultar y cerrar la sesión. La propiedad del recurso se resuelve sin parámetros: cada endpoint de P3 opera sobre la cuenta de la sesión. Moderación y verificación documental llegan en P4V y P10B. |
 | 8 | Verificación documental de prestadores en dos niveles | Pendiente | P4V | | | | |
-| 9 | Autenticación de dos factores (TOTP) | Pendiente | P3 | | | | |
-| 10 | Expiración y revocación de sesión | En progreso | P2 → P3 | #5 | `6f09fdd`, `b3bcfcc`, `feff7ef` | 10 pruebas de integración de `CicloDeSesionIT` y 6 unitarias de `TokenDeSesionServiceTest`; recorrido manual con la base de datos a la vista | Cada login crea una fila `sesion` con expiración de siete días configurable; el JWT solo la señala con su `jti` y su `exp` nunca la supera. Cada petición comprueba la fila: expirada o revocada responde 401 aunque el token siga vigente. Cerrar sesión registra `CIERRE_VOLUNTARIO` y caduca la cookie. La revocación por cambio de credenciales y por medida administrativa llega en P3 y P10B. |
+| 9 | Autenticación de dos factores (TOTP) | Cumplido | P3 | #PR_P3 | `14a2d1a`, `ce9cfcc`, `bc4bfeb`, `1b1cc1f`, `2b7bf91`, `4b4e3f0`, `5bdbd43` | 21 pruebas de integración de `SegundoFactorIT`, 15 de `SesionProvisionalIT`, 9 unitarias de `AlgoritmoTotpTest` con reloj fijo, 7 de `CifradoDeSecretosTest`, 10 de `PropiedadesDeSegundoFactorTest`, 5 de `SegundoFactorUsuarioTest` y 22 del frontend | Ciclo completo `PENDIENTE_ACTIVACION` → `ACTIVO` → `DESACTIVADO`, uno por cuenta (lo garantiza la clave primaria compartida). El algoritmo es RFC 6238 mediante `java-otp`; los dígitos, el periodo y la tolerancia viven solo en `moica.segundo-factor.*`. El secreto se genera con `SecureRandom`, se guarda cifrado con AES-GCM y nonce aleatorio, y se entrega una única vez al iniciar la activación. Obligatorio para el rol administrativo, opcional para el resto. |
+| 10 | Expiración y revocación de sesión | Cumplido | P2 → P3 | #5, #PR_P3 | `6f09fdd`, `b3bcfcc`, `feff7ef`, `14a2d1a`, `1b1cc1f`, `2b7bf91` | 10 pruebas de integración de `CicloDeSesionIT`, 13 de `CambioDeClaveIT`, 15 de `SesionProvisionalIT` y 6 unitarias de `TokenDeSesionServiceTest`; recorrido manual con la base de datos a la vista | Cada login crea una fila `sesion` con expiración de siete días configurable; el JWT solo la señala con su `jti` y su `exp` nunca la supera. Cada petición comprueba la fila: expirada o revocada responde 401 aunque el token siga vigente. Cerrar sesión registra `CIERRE_VOLUNTARIO`. P3 añade la revocación por `CAMBIO_CREDENCIALES`: cambiar la contraseña o desactivar el segundo factor revoca en una sola operación todas las sesiones de la cuenta, incluida la actual, apoyándose en el índice `ix_sesion_id_usuario`. La revocación por medida administrativa llega en P10B. |
 | 11 | Preparación para producción (contenedores, configuración por entorno, migraciones, healthcheck) | En progreso | P1 → P11 | #3 | `78518ff`, `286ca5f`, `715fd3d`, `0f464d2` | `./mvnw verify` en CI; arranque local con Docker Compose | Configuración por variables de entorno comprobada en local incluso con el puerto 5432 ocupado, Flyway aplicando migraciones versionadas sobre PostgreSQL real y `GET /actuator/health` respondiendo `UP`. Imágenes de producción, despliegue y proveedor corresponden a P11. |
 
 ## Base técnica de P1
@@ -157,3 +157,70 @@ e `/` con sesión están fuera del repositorio, en
 que indica su nombre. La evidencia del cierre sin conexión va aparte, en
 `C:\Users\ervin\Desktop\moica-pr5-capturas-p2\evidencia-offline`, para no
 mezclarla con el recorrido responsivo normal. Ninguna imagen se versiona.
+
+## Seguridad de la cuenta de P3
+
+Comprobaciones del incremento P3, con el resultado real de cada una.
+
+- **Local**: máquina de desarrollo (Windows 11, Docker Desktop, Node 22, JDK
+  compilando con `release 21`), con PostgreSQL publicado en `localhost:5433`.
+- **CI**: ejecutado por GitHub Actions en el Pull Request #PR_P3 sobre el commit
+  final `5bdbd43` (enlaces al cerrar el PR).
+
+| Control | Cómo se comprueba | Local | Evidencia |
+|---|---|---|---|
+| Migración del esquema de seguridad | `./mvnw verify` y arranque local | Sí | «Migrating schema "public" to version "11 - crear administrador y segundo factor"» sobre una base que ya tenía `V10`. `EsquemaDeSeguridadIT` comprueba contra PostgreSQL real las 13 restricciones del diccionario: clave primaria compartida que impide dos roles o dos segundos factores por cuenta, claves foráneas, borrado en cascada, dominio de `estadoSegundoFactor`, la regla «`ACTIVO` exige fecha de activación» y la existencia de `ix_sesion_id_usuario` |
+| Secreto TOTP cifrado en la base | Consulta directa tras activar el segundo factor desde el navegador | Sí | `SELECT left(secreto_totp,24), length(secreto_totp)` devuelve 80 caracteres de Base64 que no contienen el secreto; `secreto_totp ~ '^[A-Z2-7]{32}$'` da `false`, así que no es Base32 en claro. `SegundoFactorIT.guardaElSecretoCifradoYNuncaEnClaro` lo descifra con la clave del entorno y recupera exactamente la clave manual entregada |
+| Códigos TOTP con reloj controlable | `./mvnw test` | Sí | `AlgoritmoTotpTest` usa `Clock.fixed`: acepta el periodo en curso y los de tolerancia, rechaza dos periodos atrás y adelante, y con tolerancia 0 solo vale el actual. Ninguna prueba espera 30 segundos reales |
+| Bootstrap administrativo idempotente | Reinicio real del backend con `MOICA_ADMIN_CORREO` definida | Sí | Antes: sin filas en `administrador`. Al reiniciar: «Rol administrativo asignado a la cuenta indicada en MOICA_ADMIN_CORREO. Para entrar en /admin debe activar su segundo factor TOTP.», sin el correo en el mensaje, y la fila aparece con su `fecha_asignacion`. `BootstrapDeAdministradorIT` cubre además repetirlo, la variable vacía y el correo sin cuenta; `ArranqueConAdministradorInexistenteIT` levanta un contexto con la variable apuntando a una cuenta inexistente y demuestra que la aplicación arranca igual |
+| Cambio de contraseña | Recorrido con `curl` a través del backend y consulta a la base | Sí | Con la sesión provisional responde 403; tras verificar el segundo factor responde 204. Las tres sesiones vigentes de la cuenta quedan revocadas **en el mismo instante** (`2026-08-24 23:48:55.238719+00`) con motivo `CAMBIO_CREDENCIALES`; la sesión de otra cuenta no se toca. La petición siguiente con la misma cookie responde 401, la contraseña antigua responde 401 y la nueva 201 |
+| Sesión provisional | Recorrido en el navegador y `SesionProvisionalIT` | Sí | Con el segundo factor activo, el login responde 201 con `pendienteDeSegundoFactor: true`. Esa sesión solo consulta, verifica y cierra; el resto de rutas protegidas responden 403 `ACCESO_DENEGADO`. Una cuenta **sin** segundo factor abre una sesión completa aunque `segundoFactorVerificado` sea `false` |
+| Verificación por sesión | `./mvnw verify` y consulta a la base | Sí | Verificar en un navegador deja `segundo_factor_verificado = true` solo en esa fila; la otra sesión vigente sigue en 403. `verificarUnaSesionNoCompletaLasDemas` lo comprueba contando las sesiones vigentes verificadas |
+| Área administrativa | Recorrido real con la cuenta promovida | Sí | Con el rol asignado pero la sesión sin verificar, `GET /api/admin/resumen` responde 403; tras presentar el código, 200 con el nombre, el correo y la fecha de asignación. `AreaAdministrativaIT` recorre la tabla completa: sin sesión 401, cuenta ordinaria 403, ordinaria con TOTP verificado 403, administrador sin TOTP 403, administrador con sesión provisional 403, administrador verificado 200, y retirar el rol vuelve a cerrar el área en la petición siguiente |
+| Administrador atado a su segundo factor | `./mvnw verify` | Sí | `unaCuentaAdministradoraNoPuedeDesactivarSuSegundoFactor` responde 403 `SEGUNDO_FACTOR_OBLIGATORIO` y deja el estado en `ACTIVO` |
+| Respuestas sin secretos ni trazas | `./mvnw verify` y revisión de las respuestas del recorrido | Sí | Ninguna respuesta del ciclo contiene el secreto, ni el valor cifrado, ni hashes, ni `com.moica`, ni SQL, ni `Exception`. Consultar el segundo factor una vez activo devuelve estado, obligatoriedad y fecha, sin `claveManual` ni `otpauth` |
+| 401 y 403 con el formato de siempre | `./mvnw verify` | Sí | El cuerpo uniforme se conserva: `instante`, `estado`, `codigo`, `mensaje`, `ruta` y sin `errores` fuera de validación. Códigos nuevos: `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO` y `CUENTA_SUSPENDIDA` |
+| Pruebas del backend | `./mvnw verify` | Sí | 64 pruebas unitarias y 125 de integración en verde, con Spotless y SpotBugs limpios («BugInstance size is 0») |
+| Pruebas del frontend | `npm run test` | Sí | 73 pruebas en verde (39 de P2 más 34 de P3): cambio de contraseña, activación y desactivación del segundo factor, verificación de la sesión provisional, accesos denegados, `/admin` y los fallos de red de cada pantalla |
+| Cadena completa del frontend | `format:check`, `lint`, `typecheck`, `test` y `build` | Sí | Todo en verde; el build vuelve a generar el manifiesto y el service worker |
+| Interfaz responsiva | Chrome sobre el commit `5bdbd43`, a 375x812, 768x1024 y 1280x800 | Sí | En las 18 capturas, `scrollWidth` es igual a `clientWidth`: no hay desbordamiento horizontal en ninguna de las pantallas nuevas. La clave manual del segundo factor se parte en lugar de desbordar y el QR se limita a 12 rem |
+| Sin secretos versionados | Revisión del diff antes de subir | Sí | El único archivo de entorno versionado sigue siendo `.env.example`. `MOICA_TOTP_CLAVE_CIFRADO` se documenta allí con un valor de desarrollo marcado como público y con instrucciones para generar uno real; `MOICA_ADMIN_CORREO` viaja vacía |
+
+### Recorrido manual comprobado
+
+Con el backend en `localhost:8080`, el frontend servido por Vite en
+`localhost:5173` y PostgreSQL en el contenedor:
+
+1. Registro e inicio de sesión de una cuenta ordinaria: la pantalla de inicio
+   ofrece «Seguridad de la cuenta» y **no** ofrece el área administrativa.
+2. En `/seguridad`, el segundo factor aparece «Sin configurar». «Activar el
+   segundo factor» entrega el QR y la clave manual, con el aviso de que después
+   no se podrá volver a mostrar.
+3. Confirmado el primer código, el estado pasa a «Activo» y esa misma sesión
+   queda verificada, sin pedir el código otra vez.
+4. Cerrar sesión y volver a entrar: la respuesta trae
+   `pendienteDeSegundoFactor: true` y la aplicación lleva a
+   `/verificar-segundo-factor`. Pedir `/seguridad` desde ahí devuelve a la
+   verificación, y `GET /api/auth/segundo-factor` responde 403.
+5. Un código correcto completa esa sesión; otra sesión abierta a la vez sigue
+   pendiente hasta presentar el suyo.
+6. Cambio de contraseña: 204, cookie caducada y las tres sesiones de la cuenta
+   revocadas como `CAMBIO_CREDENCIALES` en el mismo instante. La contraseña
+   antigua ya no entra.
+7. Se define `MOICA_ADMIN_CORREO` con esa cuenta y se reinicia el backend: el
+   registro anuncia la asignación sin nombrar el correo y la fila aparece en
+   `administrador`.
+8. Al volver a entrar, `esAdministrador: true` pero la sesión nace provisional:
+   `/api/admin/resumen` responde 403. Tras verificar el código, responde 200 y
+   `/admin` muestra la cuenta, el correo y la fecha de asignación.
+
+Las 18 capturas de `/seguridad`, de la sección del segundo factor (desactivado
+y en activación), de `/verificar-segundo-factor`, de `/admin` y del
+inicio con la cuenta administradora están fuera del repositorio, en
+`C:\Users\ervin\Desktop\moica-pr7-capturas-p3`, cada una con el tamaño exacto
+que indica su nombre. Ninguna imagen se versiona.
+
+Chrome impone un ancho mínimo de ventana en Windows, así que las capturas se
+tomaron fijando el viewport con `Emulation.setDeviceMetricsOverride` del
+protocolo de DevTools. Cada archivo se acompaña de la medida de `scrollWidth` y
+`clientWidth` tomada en esa misma página.

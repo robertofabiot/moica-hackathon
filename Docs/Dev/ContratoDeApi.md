@@ -123,7 +123,19 @@ ordinaria ya registrada (ver [la guia de entorno local](GuiaEntornoLocal.md#rol-
 
 La regla es una sola: **401 significa que ya no hay sesion y 403 que la hay pero no alcanza**. Por
 eso una contrasena o un codigo equivocados no devuelven 401 aunque sean credenciales: la sesion
-sigue viva y responder 401 haria creer a la interfaz que acaba de morir.
+sigue viva y responder 401 haria creer a la interfaz que acaba de morir. Tampoco son 400: lo que
+falla no es la forma de la solicitud sino una credencial que se presento con ella, y la RFC 9110
+reserva el 403 justamente para «se recibieron credenciales y el servidor las considera
+insuficientes».
+
+Dentro del 403 hay dos situaciones que piden cosas distintas, y **el codigo es lo que las separa**:
+
+| El 403 dice | Codigo | Que tiene que hacer quien lo recibe |
+|---|---|---|
+| A esta sesion le falta algo para operar aqui | `ACCESO_DENEGADO`, `SEGUNDO_FACTOR_OBLIGATORIO` | Resolver lo que falta: verificar el segundo factor, recargar para obtener el token CSRF o desistir |
+| La sesion alcanza, pero el dato presentado no es correcto | `CREDENCIALES_INVALIDAS`, `CODIGO_INVALIDO` | Volver a escribirlo; la sesion sigue vigente |
+
+Ningun cliente debe deducir de un 403 que la sesion termino: eso solo lo dice el 401.
 
 ## Proteccion CSRF
 

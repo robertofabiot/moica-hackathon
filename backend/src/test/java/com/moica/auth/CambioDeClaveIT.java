@@ -67,6 +67,43 @@ class CambioDeClaveIT extends EscenarioDeSeguridad {
         .isEqualTo(HttpStatus.CREATED.value());
   }
 
+  /**
+   * La regla completa de la API sobre un solo endpoint, que es donde se puede confundir.
+   *
+   * <p>Los tres casos piden a quien usa Moica cosas distintas —volver a entrar, resolver lo que le
+   * falta a la sesión o escribir bien la contraseña—, así que ninguno debe poder tomarse por otro.
+   * El estado separa «ya no hay sesión» de «la hay pero no alcanza para esto»; dentro del 403, el
+   * código dice qué es lo que no alcanza.
+   */
+  @Test
+  void separaSinSesionDeSesionQueNoAlcanzaYDeContrasenaEquivocada() {
+    NavegadorDePrueba anonimo = abrirNavegador();
+    HttpResponse<String> sinSesion = cambiar(anonimo, CLAVE, CLAVE_NUEVA);
+
+    assertThat(sinSesion.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+    assertThat(codigoDeError(sinSesion)).isEqualTo("NO_AUTENTICADO");
+
+    // Una sesión abierta con la contraseña correcta a la que le falta el
+    // segundo factor: existe, pero no alcanza para cambiar credenciales.
+    activarSegundoFactor(navegador);
+    NavegadorDePrueba provisional = abrirNavegador();
+    iniciarSesion(provisional);
+    HttpResponse<String> sesionQueNoAlcanza = cambiar(provisional, CLAVE, CLAVE_NUEVA);
+
+    assertThat(sesionQueNoAlcanza.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    assertThat(codigoDeError(sesionQueNoAlcanza)).isEqualTo("ACCESO_DENEGADO");
+
+    HttpResponse<String> claveEquivocada = cambiar(navegador, "Moica2026$equivocada", CLAVE_NUEVA);
+
+    assertThat(claveEquivocada.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    assertThat(codigoDeError(claveEquivocada))
+        .as("el código es lo que distingue un 403 del otro")
+        .isEqualTo("CREDENCIALES_INVALIDAS");
+    assertThat(navegador.get(RUTA_SESION).statusCode())
+        .as("acertar mal la contraseña no termina la sesión")
+        .isEqualTo(HttpStatus.OK.value());
+  }
+
   @Test
   void rechazaElCambioSiLaContrasenaActualNoEsCorrecta() {
     HttpResponse<String> respuesta = cambiar(navegador, "Moica2026$equivocada", CLAVE_NUEVA);

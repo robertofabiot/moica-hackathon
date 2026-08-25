@@ -2,8 +2,9 @@
 
 Este directorio contiene las migraciones versionadas del esquema de PostgreSQL.
 Las tablas del diccionario de datos llegan con el incremento que las necesita;
-P2 abre el rango de identidad con `V10__crear_usuario_y_sesion.sql` y P3 lo
-completa con `V11__crear_administrador_y_segundo_factor.sql`.
+P2 abre el rango de identidad con `V10__crear_usuario_y_sesion.sql`, P3 lo
+completa con `V11__crear_administrador_y_segundo_factor.sql` y P4 abre el rango
+de territorio, perfiles y portafolio con `V20`–`V23`.
 
 ## Reglas
 
@@ -45,3 +46,7 @@ adelantado un rango que todavía no hace falta.
 |---|---|---|
 | `V10__crear_usuario_y_sesion.sql` | P2 | Tablas `usuario` y `sesion` con sus claves, dominios y restricciones |
 | `V11__crear_administrador_y_segundo_factor.sql` | P3 | Tablas `administrador` y `segundo_factor_usuario`, especializaciones 0..1 de `usuario`, y el índice `ix_sesion_id_usuario` |
+| `V20__crear_departamento_y_municipio.sql` | P4 | Catálogos `departamento` y `municipio` con su unicidad por departamento |
+| `V21__crear_perfil_prestador_y_contactos.sql` | P4 | Tablas `perfil_prestador` (especialización 0..1 de `usuario`) y `medio_contacto_prestador`, con sus dominios e índice por prestador |
+| `V22__crear_trabajos_de_portafolio.sql` | P4 | Tablas `trabajo_portafolio` e `imagen_trabajo_portafolio` con sus índices por prestador y por trabajo |
+| `V23__cargar_managua_y_sus_municipios.sql` | P4 | Departamento de Managua habilitado y sus nueve municipios |

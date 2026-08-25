@@ -8,6 +8,8 @@
 
 export const RUTA_REGISTRO = '/registro';
 export const RUTA_INICIO_SESION = '/iniciar-sesion';
+export const RUTA_SEGURIDAD = '/seguridad';
+export const RUTA_VERIFICACION_SEGUNDO_FACTOR = '/verificar-segundo-factor';
 
 export const PARAMETRO_MOTIVO = 'motivo';
 
@@ -16,6 +18,14 @@ export const MOTIVO_SESION_VENCIDA = 'sesion-vencida';
 
 /** La cuenta acaba de crearse y falta iniciar sesión. */
 export const MOTIVO_CUENTA_CREADA = 'cuenta-creada';
+
+/**
+ * Las credenciales acaban de cambiar y todas las sesiones quedaron revocadas.
+ *
+ * Es lo mismo que ocurre al cambiar la contraseña y al desactivar el segundo factor: el backend
+ * revoca todo con motivo `CAMBIO_CREDENCIALES` y hay que volver a entrar.
+ */
+export const MOTIVO_CREDENCIALES_CAMBIADAS = 'credenciales-cambiadas';
 
 export function rutaDeInicioSesion(motivo?: string): string {
   return motivo === undefined

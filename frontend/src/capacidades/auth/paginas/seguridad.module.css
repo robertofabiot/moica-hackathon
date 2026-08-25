@@ -1,0 +1,129 @@
+/*
+ * Estilos de la sección de seguridad de la cuenta.
+ *
+ * Reutiliza las variables neutras de `src/estilos/global.css`, igual que las
+ * pantallas de acceso: la paleta de marca todavía no está aprobada. Mobile-first:
+ * la hoja base describe el teléfono y la media query amplía a tableta y
+ * escritorio.
+ */
+
+.pantalla {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+}
+
+.contenido {
+  width: 100%;
+  max-width: 34rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-4);
+}
+
+.encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+}
+
+.titulo {
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+.explicacion {
+  color: var(--moica-texto-suave);
+}
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.75rem;
+  background-color: var(--moica-fondo);
+}
+
+.tituloDeSeccion {
+  font-size: 1.125rem;
+}
+
+.estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--moica-espacio-1);
+  color: var(--moica-texto-suave);
+}
+
+.etiquetaDeEstado {
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--moica-borde);
+  border-radius: 999px;
+  background-color: var(--moica-fondo-suave);
+  color: var(--moica-texto);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+}
+
+/* La clave manual puede ser larga: se parte en lugar de desbordar la pantalla. */
+.claveManual {
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+  background-color: var(--moica-fondo-suave);
+  font-family: ui-monospace, SFMono-Regular, 'Cascadia Mono', Menlo, Consolas, monospace;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+.codigoQr {
+  display: flex;
+  justify-content: center;
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+  background-color: #ffffff;
+}
+
+.codigoQr svg {
+  width: 100%;
+  max-width: 12rem;
+  height: auto;
+}
+
+.pasos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+  margin: 0;
+  padding-left: 1.25rem;
+  color: var(--moica-texto-suave);
+}
+
+.pie {
+  color: var(--moica-texto-suave);
+  text-align: center;
+}
+
+@media (min-width: 48rem) {
+  .titulo {
+    font-size: 2rem;
+  }
+
+  .seccion {
+    padding: var(--moica-espacio-3);
+  }
+}

@@ -61,5 +61,47 @@ export const esquemaDeInicioSesion = z.object({
   clave: z.string().min(1, 'Escribe tu contraseña.'),
 });
 
+/**
+ * Cambio de contraseña.
+ *
+ * La contraseña actual solo se comprueba que esté escrita: quien decide si es correcta es el
+ * backend, y validarla aquí contra la política rechazaría contraseñas antiguas legítimas.
+ */
+export const esquemaDeCambioDeClave = z
+  .object({
+    claveActual: z.string().min(1, 'Escribe tu contraseña actual.'),
+    claveNueva: esquemaDeClave,
+    confirmacionDeClave: z.string().min(1, 'Repite la contraseña nueva.'),
+  })
+  .refine((datos) => datos.claveNueva === datos.confirmacionDeClave, {
+    message: 'Las dos contraseñas deben coincidir.',
+    path: ['confirmacionDeClave'],
+  });
+
+/**
+ * Código del segundo factor.
+ *
+ * Los espacios se retiran porque las aplicaciones autenticadoras muestran el código partido en dos
+ * grupos y es habitual copiarlo tal cual. Aquí no se exige una longitud concreta: el número de
+ * dígitos lo decide el backend y anunciarlo en un mensaje describiría la forma del código.
+ */
+const esquemaDeCodigo = z
+  .string()
+  .transform((codigo) => codigo.replace(/\s/g, ''))
+  .pipe(z.string().min(1, 'Escribe el código de tu aplicación autenticadora.'));
+
+export const esquemaDeCodigoTotp = z.object({
+  codigo: esquemaDeCodigo,
+});
+
+/** Desactivación del segundo factor: exige los dos factores a la vez. */
+export const esquemaDeDesactivacion = z.object({
+  claveActual: z.string().min(1, 'Escribe tu contraseña actual.'),
+  codigo: esquemaDeCodigo,
+});
+
 export type CamposDeRegistro = z.infer<typeof esquemaDeRegistro>;
 export type CamposDeInicioSesion = z.infer<typeof esquemaDeInicioSesion>;
+export type CamposDeCambioDeClave = z.infer<typeof esquemaDeCambioDeClave>;
+export type CamposDeCodigoTotp = z.infer<typeof esquemaDeCodigoTotp>;
+export type CamposDeDesactivacion = z.infer<typeof esquemaDeDesactivacion>;

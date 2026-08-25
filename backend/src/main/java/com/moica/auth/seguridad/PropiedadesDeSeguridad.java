@@ -37,4 +37,17 @@ public record PropiedadesDeSeguridad(
       throw new IllegalStateException("moica.seguridad.duracion-de-sesion debe ser positiva.");
     }
   }
+
+  /**
+   * Se redefine a propósito: la representación que genera el compilador para un record incluye
+   * todos sus componentes, y uno de ellos es la clave con la que se firman los JWT de sesión.
+   */
+  @Override
+  public String toString() {
+    return "PropiedadesDeSeguridad[secretoJwt=(oculto), duracionDeSesion="
+        + duracionDeSesion
+        + ", cookieSegura="
+        + cookieSegura
+        + "]";
+  }
 }

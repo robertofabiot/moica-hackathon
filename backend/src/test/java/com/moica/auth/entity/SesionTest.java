@@ -41,6 +41,19 @@ class SesionTest {
     assertThat(sesionDeSieteDias().isSegundoFactorVerificado()).isFalse();
   }
 
+  @Test
+  void verificarElSegundoFactorAfectaSoloALaSesionQueLoPresenta() {
+    Sesion unDispositivo = sesionDeSieteDias();
+    Sesion otroDispositivo = sesionDeSieteDias();
+
+    unDispositivo.verificarSegundoFactor();
+
+    assertThat(unDispositivo.isSegundoFactorVerificado()).isTrue();
+    assertThat(otroDispositivo.isSegundoFactorVerificado())
+        .as("presentar el código en un dispositivo no completa las demás sesiones")
+        .isFalse();
+  }
+
   private static Sesion sesionDeSieteDias() {
     return new Sesion(1L, "identificador-de-prueba", INICIO, INICIO.plusDays(7));
   }

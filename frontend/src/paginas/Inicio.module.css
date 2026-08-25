@@ -38,6 +38,16 @@
   color: var(--moica-texto-suave);
 }
 
+.aviso {
+  width: 100%;
+  max-width: 26rem;
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+  background-color: var(--moica-fondo-suave);
+  text-align: left;
+}
+
 .avisoDeError {
   width: 100%;
   max-width: 26rem;

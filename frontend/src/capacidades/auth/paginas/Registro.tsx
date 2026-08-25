@@ -6,6 +6,7 @@ import { ErrorDeApi } from '../api';
 import { esquemaDeRegistro, type CamposDeRegistro } from '../esquemas';
 import { useRegistro } from '../hooks/useAcceso';
 import { RUTA_INICIO_SESION } from '../rutas';
+import { claseDeEntrada } from './estilosDeFormulario';
 import estilos from './formulario.module.css';
 
 /**
@@ -166,14 +167,6 @@ export default function Registro() {
       </div>
     </main>
   );
-}
-
-function claseDeEntrada(conError: boolean): string {
-  const clases = [estilos.entrada];
-  if (conError) {
-    clases.push(estilos.entradaConError);
-  }
-  return clases.join(' ');
 }
 
 function esCampoDelFormulario(campo: string): campo is keyof CamposDeRegistro {

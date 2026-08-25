@@ -54,6 +54,14 @@ public final class NavegadorDePrueba {
     return enviar(constructor(ruta).POST(comoJson(cuerpo)), false);
   }
 
+  public HttpResponse<String> put(String ruta, Object cuerpo) {
+    return enviar(constructor(ruta).PUT(comoJson(cuerpo)), true);
+  }
+
+  public HttpResponse<String> putSinTokenCsrf(String ruta, Object cuerpo) {
+    return enviar(constructor(ruta).PUT(comoJson(cuerpo)), false);
+  }
+
   public HttpResponse<String> delete(String ruta) {
     return enviar(constructor(ruta).DELETE(), true);
   }

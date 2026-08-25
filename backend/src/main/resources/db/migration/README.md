@@ -2,7 +2,8 @@
 
 Este directorio contiene las migraciones versionadas del esquema de PostgreSQL.
 Las tablas del diccionario de datos llegan con el incremento que las necesita;
-P2 abre el rango de identidad con `V10__crear_usuario_y_sesion.sql`.
+P2 abre el rango de identidad con `V10__crear_usuario_y_sesion.sql` y P3 lo
+completa con `V11__crear_administrador_y_segundo_factor.sql`.
 
 ## Reglas
 
@@ -43,3 +44,4 @@ adelantado un rango que todavía no hace falta.
 | Migración | Incremento | Contenido |
 |---|---|---|
 | `V10__crear_usuario_y_sesion.sql` | P2 | Tablas `usuario` y `sesion` con sus claves, dominios y restricciones |
+| `V11__crear_administrador_y_segundo_factor.sql` | P3 | Tablas `administrador` y `segundo_factor_usuario`, especializaciones 0..1 de `usuario`, y el índice `ix_sesion_id_usuario` |

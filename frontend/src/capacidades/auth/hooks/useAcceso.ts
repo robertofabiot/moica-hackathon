@@ -9,7 +9,12 @@ import {
   MENSAJE_SIN_RESPUESTA,
   registrarUsuario,
 } from '../api';
-import { MOTIVO_CUENTA_CREADA, MOTIVO_SESION_VENCIDA, rutaDeInicioSesion } from '../rutas';
+import { olvidarDatosPrivados, olvidarSesion } from '../cacheDeSesion';
+import {
+  MOTIVO_CUENTA_CREADA,
+  RUTA_VERIFICACION_SEGUNDO_FACTOR,
+  rutaDeInicioSesion,
+} from '../rutas';
 import { CLAVE_DE_SESION } from './useSesionActual';
 
 /**
@@ -35,7 +40,12 @@ export function useRegistro() {
   });
 }
 
-/** Inicia sesión y deja la sesión recién abierta en la caché, sin volver a pedirla. */
+/**
+ * Inicia sesión y deja la sesión recién abierta en la caché, sin volver a pedirla.
+ *
+ * Cuando la cuenta usa segundo factor, la sesión nace provisional y lo dice en la respuesta: en ese
+ * caso el siguiente paso no es el inicio, sino la pantalla de verificación.
+ */
 export function useInicioSesion() {
   const cliente = useQueryClient();
   const navegar = useNavigate();
@@ -43,8 +53,12 @@ export function useInicioSesion() {
   return useMutation({
     mutationFn: iniciarSesion,
     onSuccess: (sesion) => {
+      // Quien entra no hereda nada: la salida anterior ya debió limpiarlo, pero
+      // entre dos cuentas no se recarga la aplicación y esta es la última
+      // oportunidad de comprobarlo.
+      olvidarDatosPrivados(cliente);
       cliente.setQueryData(CLAVE_DE_SESION, sesion);
-      navegar('/');
+      navegar(sesion.sesion.pendienteDeSegundoFactor ? RUTA_VERIFICACION_SEGUNDO_FACTOR : '/');
     },
   });
 }
@@ -56,10 +70,13 @@ export function useInicioSesion() {
  * cuando ya no hay sesión que revocar (401). Un fallo de red, un 403 o un 500
  * no revocan la fila: si se limpiara aquí, la persona creería que salió y el
  * servidor seguiría con la sesión vigente.
+ *
+ * No navega: olvidar la sesión basta, porque `useVigilanciaDeSesion` lleva a la
+ * pantalla de entrada con el motivo que se anote aquí. Un cierre voluntario no
+ * necesita explicación; uno que descubre un 401 sí.
  */
 export function useCierreSesion() {
   const cliente = useQueryClient();
-  const navegar = useNavigate();
   const [errorSinConexion, setErrorSinConexion] = useState<ErrorDeApi | null>(null);
   const generacionRef = useRef(0);
 
@@ -73,8 +90,7 @@ export function useCierreSesion() {
     },
     onSuccess: () => {
       setErrorSinConexion(null);
-      cliente.setQueryData(CLAVE_DE_SESION, null);
-      navegar(rutaDeInicioSesion());
+      olvidarSesion(cliente, null);
     },
     onError: (error) => {
       if (error instanceof ErrorDeApi && error.codigo === CODIGO_OPERACION_OBSOLETA) {
@@ -82,8 +98,7 @@ export function useCierreSesion() {
       }
       if (error instanceof ErrorDeApi && error.estado === 401) {
         setErrorSinConexion(null);
-        cliente.setQueryData(CLAVE_DE_SESION, null);
-        navegar(rutaDeInicioSesion(MOTIVO_SESION_VENCIDA));
+        olvidarSesion(cliente);
       }
     },
   });

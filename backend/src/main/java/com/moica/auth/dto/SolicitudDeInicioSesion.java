@@ -18,4 +18,13 @@ public record SolicitudDeInicioSesion(@NotBlank String correoElectronico, @NotBl
     correoElectronico =
         (correoElectronico == null) ? null : correoElectronico.strip().toLowerCase(Locale.ROOT);
   }
+
+  /**
+   * Se redefine a propósito: la representación que genera el compilador incluiría la contraseña en
+   * claro. El correo sí se describe: es el dato que permite seguir un intento de acceso.
+   */
+  @Override
+  public String toString() {
+    return "SolicitudDeInicioSesion[correoElectronico=" + correoElectronico + ", clave=(oculta)]";
+  }
 }

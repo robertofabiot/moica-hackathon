@@ -136,8 +136,30 @@ export function cuerpoDeError(
   };
 }
 
-/** Sesión de ejemplo, vigente durante los días que se indiquen. */
-export function sesionDeEjemplo(diasParaExpirar = 7) {
+/** Qué clase de sesión debe describir el ejemplo. */
+export interface OpcionesDeSesion {
+  diasParaExpirar?: number;
+  esAdministrador?: boolean;
+  /** La cuenta tiene el segundo factor activo. */
+  segundoFactorRequerido?: boolean;
+  /** Esta sesión ya presentó un código válido. */
+  segundoFactorVerificado?: boolean;
+}
+
+/**
+ * Sesión de ejemplo con la forma exacta que devuelve la API.
+ *
+ * Por omisión describe el caso más común: una cuenta ordinaria sin segundo factor, con la sesión
+ * completa desde el primer momento.
+ */
+export function sesionDeEjemplo(opciones: OpcionesDeSesion = {}) {
+  const {
+    diasParaExpirar = 7,
+    esAdministrador = false,
+    segundoFactorRequerido = false,
+    segundoFactorVerificado = false,
+  } = opciones;
+
   const ahora = Date.now();
 
   return {
@@ -146,12 +168,37 @@ export function sesionDeEjemplo(diasParaExpirar = 7) {
       nombreCompleto: 'Erving Miranda',
       correoElectronico: 'erving@moica.test',
       estadoCuenta: 'ACTIVA',
+      esAdministrador,
       fechaRegistro: new Date(ahora).toISOString(),
     },
     sesion: {
       fechaInicio: new Date(ahora).toISOString(),
       fechaExpiracion: new Date(ahora + diasParaExpirar * 24 * 60 * 60 * 1000).toISOString(),
-      segundoFactorVerificado: false,
+      segundoFactorRequerido,
+      segundoFactorVerificado,
+      pendienteDeSegundoFactor: segundoFactorRequerido && !segundoFactorVerificado,
     },
+  };
+}
+
+/** Estado del segundo factor tal como lo devuelve la API. */
+export function segundoFactorDeEjemplo(
+  estado: 'PENDIENTE_ACTIVACION' | 'ACTIVO' | 'DESACTIVADO' | null = null,
+  obligatorio = false
+) {
+  return {
+    estado,
+    obligatorio,
+    fechaActivacion: estado === 'ACTIVO' ? new Date().toISOString() : null,
+  };
+}
+
+/** Lo que devuelve el inicio de la activación del segundo factor. */
+export function activacionDeEjemplo(claveManual = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP') {
+  return {
+    claveManual,
+    uriDeConfiguracion: `otpauth://totp/Moica%3Aerving%40moica.test?secret=${claveManual}&issuer=Moica&algorithm=SHA1&digits=6&period=30`,
+    digitos: 6,
+    periodoEnSegundos: 30,
   };
 }

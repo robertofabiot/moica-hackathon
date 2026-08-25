@@ -23,6 +23,7 @@
     <spotbugs.version>4.10.3.0</spotbugs.version>
     <testcontainers.version>1.21.4</testcontainers.version>
     <jjwt.version>0.13.0</jjwt.version>
+    <java-otp.version>0.4.0</java-otp.version>
   </properties>
 
   <dependencyManagement>
@@ -84,6 +85,28 @@
       <artifactId>jjwt-jackson</artifactId>
       <version>${jjwt.version}</version>
       <scope>runtime</scope>
+    </dependency>
+
+    <!--
+      Segundo factor TOTP (RFC 6238). java-otp implementa el algoritmo y nada
+      mas: no arrastra dependencias transitivas y solo usa `javax.crypto` del
+      JDK, asi que funciona tal cual sobre Java 21. Moica no reimplementa el
+      algoritmo a mano.
+    -->
+    <dependency>
+      <groupId>com.eatthepath</groupId>
+      <artifactId>java-otp</artifactId>
+      <version>${java-otp.version}</version>
+    </dependency>
+
+    <!--
+      Base32 del secreto TOTP, que es el alfabeto que esperan las aplicaciones
+      autenticadoras y el que no trae el JDK. La version la fija el parent de
+      Spring Boot.
+    -->
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
     </dependency>
 
     <!-- Acceso a datos con JPA -->

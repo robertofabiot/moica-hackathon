@@ -1,4 +1,11 @@
-import type { CuerpoDeError, ErrorDeCampo, SesionActual, Usuario } from './tipos';
+import type {
+  ActivacionDeSegundoFactor,
+  CuerpoDeError,
+  ErrorDeCampo,
+  SegundoFactor,
+  SesionActual,
+  Usuario,
+} from './tipos';
 
 /**
  * Llamadas a la API de autenticación.
@@ -9,6 +16,9 @@ import type { CuerpoDeError, ErrorDeCampo, SesionActual, Usuario } from './tipos
  */
 
 const RUTA_SESION = '/api/auth/sesion';
+const RUTA_VERIFICACION = '/api/auth/sesion/segundo-factor';
+const RUTA_SEGUNDO_FACTOR = '/api/auth/segundo-factor';
+const RUTA_CLAVE = '/api/auth/clave';
 const RUTA_USUARIOS = '/api/usuarios';
 
 const COOKIE_CSRF = 'XSRF-TOKEN';
@@ -85,6 +95,80 @@ export async function cerrarSesion(): Promise<void> {
   if (!respuesta.ok) {
     throw await comoErrorDeApi(respuesta);
   }
+}
+
+export interface DatosDeCambioDeClave {
+  claveActual: string;
+  claveNueva: string;
+}
+
+export interface DatosDeDesactivacion {
+  claveActual: string;
+  codigo: string;
+}
+
+/**
+ * Completa la sesión en curso presentando el código del segundo factor.
+ *
+ * Solo afecta a esta sesión: las que estén abiertas en otros dispositivos siguen pendientes.
+ */
+export async function verificarSegundoFactorDeLaSesion(codigo: string): Promise<SesionActual> {
+  const respuesta = await enviar('POST', RUTA_VERIFICACION, { codigo });
+  return (await comoJson(respuesta)) as SesionActual;
+}
+
+/** Estado del segundo factor de la cuenta. Nunca devuelve el secreto. */
+export async function obtenerSegundoFactor(): Promise<SegundoFactor> {
+  const respuesta = await enviar('GET', RUTA_SEGUNDO_FACTOR);
+  return (await comoJson(respuesta)) as SegundoFactor;
+}
+
+/**
+ * Empieza la activación del segundo factor.
+ *
+ * Es la única respuesta que trae el secreto. Quien la reciba debe mostrarlo y olvidarlo: repetir
+ * esta llamada genera otro secreto y el anterior deja de valer.
+ */
+export async function iniciarActivacionDeSegundoFactor(): Promise<ActivacionDeSegundoFactor> {
+  const respuesta = await enviar('POST', RUTA_SEGUNDO_FACTOR, {});
+  return (await comoJson(respuesta)) as ActivacionDeSegundoFactor;
+}
+
+/** Confirma la activación con el primer código válido. */
+export async function confirmarActivacionDeSegundoFactor(codigo: string): Promise<SegundoFactor> {
+  const respuesta = await enviar('POST', `${RUTA_SEGUNDO_FACTOR}/activacion`, { codigo });
+  return (await comoJson(respuesta)) as SegundoFactor;
+}
+
+/** Desactiva el segundo factor. El backend revoca todas las sesiones de la cuenta. */
+export async function desactivarSegundoFactor(datos: DatosDeDesactivacion): Promise<void> {
+  const respuesta = await enviar('POST', `${RUTA_SEGUNDO_FACTOR}/desactivacion`, datos);
+
+  if (!respuesta.ok) {
+    throw await comoErrorDeApi(respuesta);
+  }
+}
+
+/** Cambia la contraseña. El backend revoca todas las sesiones, incluida esta. */
+export async function cambiarClave(datos: DatosDeCambioDeClave): Promise<void> {
+  const respuesta = await enviar('PUT', RUTA_CLAVE, datos);
+
+  if (!respuesta.ok) {
+    throw await comoErrorDeApi(respuesta);
+  }
+}
+
+/**
+ * Lee un recurso de la API con el mismo cuidado que el resto de la capacidad: tiempo de espera,
+ * detección de «sin conexión» y traducción del cuerpo de error a {@link ErrorDeApi}.
+ *
+ * Lo publica la capacidad de acceso porque es infraestructura de red, no una regla suya: otras
+ * capacidades la usan para sus propias consultas en lugar de reescribir el mismo cuidado. Cuando
+ * haya una tercera consumidora conviene moverla a `src/comun/`.
+ */
+export async function obtenerJson<T>(ruta: string): Promise<T> {
+  const respuesta = await enviar('GET', ruta);
+  return (await comoJson(respuesta)) as T;
 }
 
 async function enviar(metodo: string, ruta: string, cuerpo?: unknown): Promise<Response> {

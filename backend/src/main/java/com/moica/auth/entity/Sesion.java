@@ -74,7 +74,8 @@ public class Sesion {
     this.identificadorToken = identificadorToken;
     this.fechaInicio = fechaInicio;
     this.fechaExpiracion = fechaExpiracion;
-    // El segundo factor se verifica en P3: toda sesión nace sin verificarlo.
+    // Toda sesión nace sin el segundo factor verificado: quien tenga TOTP activo
+    // la completa después con `verificarSegundoFactor()`.
     this.segundoFactorVerificado = false;
   }
 
@@ -91,6 +92,17 @@ public class Sesion {
   public void revocar(OffsetDateTime instante, MotivoRevocacionSesion motivo) {
     this.fechaRevocacion = instante;
     this.motivoRevocacion = motivo;
+  }
+
+  /**
+   * Da por superado el segundo factor en esta sesión.
+   *
+   * <p>La marca es de la sesión y no de la cuenta: verificar el código en un dispositivo no
+   * completa las demás sesiones abiertas, que siguen siendo provisionales hasta que cada una
+   * presente el suyo.
+   */
+  public void verificarSegundoFactor() {
+    this.segundoFactorVerificado = true;
   }
 
   public Long getIdSesion() {

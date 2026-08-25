@@ -12,6 +12,8 @@ export interface PeticionRecibida {
   ruta: string;
   cuerpo: unknown;
   cabeceras: Record<string, string>;
+  /** Partes del formulario cuando la petición fue multipart, como una subida de imagen. */
+  formulario?: FormData;
 }
 
 export interface RespuestaPreparada {
@@ -63,6 +65,9 @@ export function instalarApiFalsa(): ApiFalsa {
       ruta,
       cuerpo: typeof opciones?.body === 'string' ? JSON.parse(opciones.body) : undefined,
       cabeceras: (opciones?.headers as Record<string, string> | undefined) ?? {},
+      // Una subida de imagen viaja como multipart: el cuerpo no es JSON y hay
+      // que conservarlo tal cual para poder comprobar qué partes se enviaron.
+      formulario: opciones?.body instanceof FormData ? opciones.body : undefined,
     });
 
     const preparada = preparadas.get(clave);
@@ -190,6 +195,83 @@ export function segundoFactorDeEjemplo(
     estado,
     obligatorio,
     fechaActivacion: estado === 'ACTIVO' ? new Date().toISOString() : null,
+  };
+}
+
+/** Catálogo territorial de ejemplo: Managua con dos de sus municipios. */
+export function catalogoDeEjemplo() {
+  return [
+    {
+      idDepartamento: 1,
+      nombre: 'Managua',
+      municipios: [
+        { idMunicipio: 3, nombre: 'Managua' },
+        { idMunicipio: 8, nombre: 'Tipitapa' },
+      ],
+    },
+  ];
+}
+
+/** Perfil de prestador de ejemplo con la forma exacta que devuelve la API. */
+export function perfilDeEjemplo(cambios: Partial<ReturnType<typeof perfilBase>> = {}) {
+  return { ...perfilBase(), ...cambios };
+}
+
+function perfilBase() {
+  return {
+    idPrestador: 1,
+    nombrePublico: 'Taller La Esperanza',
+    urlImagenPerfil: null as string | null,
+    descripcion: 'Reparaciones eléctricas a domicilio con diez años de experiencia.',
+    tipoPrestador: 'INDEPENDIENTE',
+    municipioPrincipal: {
+      idMunicipio: 3,
+      nombreMunicipio: 'Managua',
+      nombreDepartamento: 'Managua',
+    },
+    descripcionCobertura: 'Distritos I y II de Managua.',
+    disponibilidad: 'DISPONIBLE',
+    nivelVerificacion: 'SIN_VERIFICAR',
+    fechaCreacion: '2026-08-25T10:00:00-06:00',
+    fechaActualizacion: '2026-08-25T10:00:00-06:00',
+  };
+}
+
+/** Un trabajo del portafolio de ejemplo. */
+export function trabajoDeEjemplo(
+  cambios: Partial<{
+    idTrabajo: number;
+    titulo: string;
+    descripcion: string;
+    fechaRealizacion: string | null;
+    ordenVisualizacion: number;
+    imagenes: ReturnType<typeof imagenDeEjemplo>[];
+  }> = {}
+) {
+  return {
+    idTrabajo: 1,
+    titulo: 'Instalación eléctrica',
+    descripcion: 'Instalación completa de una vivienda.',
+    fechaRealizacion: null as string | null,
+    ordenVisualizacion: 0,
+    imagenes: [] as ReturnType<typeof imagenDeEjemplo>[],
+    fechaCreacion: '2026-08-25T10:00:00-06:00',
+    fechaActualizacion: '2026-08-25T10:00:00-06:00',
+    ...cambios,
+  };
+}
+
+/** Una imagen de un trabajo del portafolio. */
+export function imagenDeEjemplo(
+  idImagenTrabajoPortafolio = 1,
+  textoAlternativo: string | null = null
+) {
+  return {
+    idImagenTrabajoPortafolio,
+    urlImagen: `https://imagenes.moica.test/trabajos/abc${idImagenTrabajoPortafolio}.png`,
+    textoAlternativo,
+    ordenVisualizacion: idImagenTrabajoPortafolio - 1,
+    fechaCreacion: '2026-08-25T10:00:00-06:00',
   };
 }
 

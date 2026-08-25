@@ -48,6 +48,15 @@ class SegundoFactorIT extends EscenarioDeSeguridad {
   }
 
   @Test
+  void laRespuestaQueLlevaElSecretoPideQueNoSeGuardeEnNingunaCache() {
+    HttpResponse<String> respuesta = navegador.post(RUTA_SEGUNDO_FACTOR, Map.of());
+
+    assertThat(respuesta.headers().firstValue("Cache-Control"))
+        .as("es la única respuesta con el secreto: ni el navegador ni un intermediario debe copiarla")
+        .hasValueSatisfying(cabecera -> assertThat(cabecera).contains("no-store"));
+  }
+
+  @Test
   void guardaElSecretoCifradoYNuncaEnClaro() {
     String secreto =
         json(navegador.post(RUTA_SEGUNDO_FACTOR, Map.of())).get("claveManual").asText();

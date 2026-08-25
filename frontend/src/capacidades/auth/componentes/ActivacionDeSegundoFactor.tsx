@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { QRCodeSVG } from 'qrcode.react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { ErrorDeApi } from '../api';
@@ -16,8 +17,10 @@ import seccion from '../paginas/seguridad.module.css';
  * Activación del segundo factor, en sus dos pasos.
  *
  * El primero pide un secreto nuevo y lo muestra; el segundo lo confirma con un código. El secreto
- * vive solo en el resultado de la mutación: no se guarda en la caché, ni en `localStorage`, ni en
- * ningún estado global, así que desaparece al salir de la pantalla.
+ * vive solo en el resultado de la mutación: no se guarda en la caché de consultas, ni en
+ * `localStorage`, ni en ningún estado global, y este componente lo descarta al desmontarse. Así
+ * está a la vista únicamente mientras la activación en curso lo necesita, que es también lo que se
+ * le promete a quien lo lee.
  *
  * El código QR es una comodidad. La clave manual siempre está a la vista, porque es la que permite
  * configurar la aplicación autenticadora sin depender de una cámara.
@@ -25,6 +28,12 @@ import seccion from '../paginas/seguridad.module.css';
 export default function ActivacionDeSegundoFactor() {
   const activacion = useActivacionDeSegundoFactor();
   const confirmacion = useConfirmacionDeSegundoFactor();
+
+  // Al salir de la pantalla —o al quedar el segundo factor activo, que también
+  // desmonta este componente— el secreto se descarta en el acto, sin esperar a
+  // que la caché de mutaciones lo recoja.
+  const olvidarElSecreto = activacion.reset;
+  useEffect(() => olvidarElSecreto, [olvidarElSecreto]);
 
   const {
     register,

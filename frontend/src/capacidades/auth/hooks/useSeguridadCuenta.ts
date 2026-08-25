@@ -45,11 +45,13 @@ export function useCambioDeClave() {
 /**
  * Empieza la activación del segundo factor.
  *
- * El resultado —con el secreto dentro— se queda en el estado de la mutación, no en la caché de
- * React Query: así desaparece al salir de la pantalla en lugar de sobrevivir en memoria.
+ * El resultado lleva el secreto dentro, así que no basta con no guardarlo en la caché de consultas:
+ * TanStack Query conserva el resultado de una mutación en su `MutationCache` durante cinco minutos
+ * después de que la pantalla deje de observarla. `gcTime: 0` lo retira en cuanto se desmonta, y
+ * quien lo muestra llama además a `reset()` al salir para no depender solo de la recolección.
  */
 export function useActivacionDeSegundoFactor() {
-  return useMutation({ mutationFn: iniciarActivacionDeSegundoFactor });
+  return useMutation({ mutationFn: iniciarActivacionDeSegundoFactor, gcTime: 0 });
 }
 
 /** Confirma la activación con el primer código válido. */

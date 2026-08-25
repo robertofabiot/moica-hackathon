@@ -8,6 +8,10 @@ import { MemoryRouter } from 'react-router';
  *
  * Cada prueba estrena su propio cliente de React Query para que ninguna vea la caché de otra, y no
  * reintenta: en una prueba, un fallo debe verse a la primera.
+ *
+ * Devuelve también el cliente, porque hay reglas que se comprueban mirando la caché: que el secreto
+ * del segundo factor no sobreviva a la pantalla que lo mostró, o que al terminar una sesión no
+ * quede en memoria nada de la cuenta anterior.
  */
 export function renderizarConProveedores(ui: ReactElement, rutaInicial = '/') {
   const cliente = new QueryClient({
@@ -17,9 +21,12 @@ export function renderizarConProveedores(ui: ReactElement, rutaInicial = '/') {
     },
   });
 
-  return render(
-    <MemoryRouter initialEntries={[rutaInicial]}>
-      <QueryClientProvider client={cliente}>{ui}</QueryClientProvider>
-    </MemoryRouter>
-  );
+  return {
+    ...render(
+      <MemoryRouter initialEntries={[rutaInicial]}>
+        <QueryClientProvider client={cliente}>{ui}</QueryClientProvider>
+      </MemoryRouter>
+    ),
+    cliente,
+  };
 }

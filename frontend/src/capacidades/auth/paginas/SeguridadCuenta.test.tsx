@@ -1,3 +1,4 @@
+import type { QueryClient } from '@tanstack/react-query';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -13,6 +14,9 @@ import {
 } from '../../../pruebas/apiFalsa';
 import { renderizarConProveedores } from '../../../pruebas/utilidades';
 import { definirTiempoDeEsperaMs, TIEMPO_DE_ESPERA_MS } from '../api';
+
+/** El secreto que devuelve {@link activacionDeEjemplo}, para poder buscarlo literalmente. */
+const SECRETO_DE_ACTIVACION = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
 
 describe('seguridad de la cuenta', () => {
   let api: ApiFalsa;
@@ -33,8 +37,19 @@ describe('seguridad de la cuenta', () => {
   });
 
   async function abrirSeguridad() {
-    renderizarConProveedores(<App />, '/seguridad');
+    const montado = renderizarConProveedores(<App />, '/seguridad');
     expect(await screen.findByRole('heading', { name: 'Seguridad de tu cuenta' })).toBeVisible();
+    return montado;
+  }
+
+  /** Todo lo que queda guardado de las mutaciones, para buscar en ello un secreto. */
+  function memoriaDeLasMutaciones(cliente: QueryClient): string {
+    return JSON.stringify(
+      cliente
+        .getMutationCache()
+        .getAll()
+        .map((mutacion) => mutacion.state)
+    );
   }
 
   describe('cambio de contraseña', () => {
@@ -153,6 +168,51 @@ describe('seguridad de la cuenta', () => {
         screen.getByTitle('Código QR para configurar tu aplicación autenticadora')
       ).toBeInTheDocument();
       expect(screen.getByLabelText('Código de verificación')).toBeVisible();
+    });
+
+    it('olvida el secreto al salir de la pantalla y no lo reaparece al volver', async () => {
+      const persona = userEvent.setup();
+      api.responder('POST /api/auth/segundo-factor', {
+        estado: 200,
+        cuerpo: activacionDeEjemplo(),
+      });
+      const { cliente } = await abrirSeguridad();
+
+      await persona.click(await screen.findByRole('button', { name: 'Activar el segundo factor' }));
+      expect(await screen.findByText(SECRETO_DE_ACTIVACION)).toBeVisible();
+
+      await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
+      expect(await screen.findByRole('heading', { name: 'Moica' })).toBeVisible();
+
+      expect(memoriaDeLasMutaciones(cliente)).not.toContain(SECRETO_DE_ACTIVACION);
+
+      await persona.click(await screen.findByRole('link', { name: 'Seguridad de la cuenta' }));
+
+      expect(
+        await screen.findByRole('button', { name: 'Activar el segundo factor' })
+      ).toBeVisible();
+      expect(screen.queryByText(SECRETO_DE_ACTIVACION)).not.toBeInTheDocument();
+    });
+
+    it('deja de mostrar el secreto en cuanto el segundo factor queda activo', async () => {
+      const persona = userEvent.setup();
+      api.responder('POST /api/auth/segundo-factor', {
+        estado: 200,
+        cuerpo: activacionDeEjemplo(),
+      });
+      api.responder('POST /api/auth/segundo-factor/activacion', {
+        estado: 200,
+        cuerpo: segundoFactorDeEjemplo('ACTIVO'),
+      });
+      const { cliente } = await abrirSeguridad();
+
+      await persona.click(await screen.findByRole('button', { name: 'Activar el segundo factor' }));
+      await persona.type(await screen.findByLabelText('Código de verificación'), '123456');
+      await persona.click(screen.getByRole('button', { name: 'Confirmar activación' }));
+
+      expect(await screen.findByText('Activo')).toBeVisible();
+      expect(screen.queryByText(SECRETO_DE_ACTIVACION)).not.toBeInTheDocument();
+      expect(memoriaDeLasMutaciones(cliente)).not.toContain(SECRETO_DE_ACTIVACION);
     });
 
     it('activa el segundo factor con el primer código válido', async () => {

@@ -2,14 +2,16 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { RUTA_ADMIN_VERIFICACIONES } from '../../verificacion';
 import { obtenerResumenAdministrativo } from '../api';
 import estilos from './admin.module.css';
 
 /**
  * Pantalla mínima del área administrativa.
  *
- * P3 protege el área; no la llena. Lo único que muestra es con qué cuenta se entró y desde cuándo
- * tiene permisos, que es lo justo para demostrar que la protección funciona de extremo a extremo.
+ * P3 protegió el área y P4V le da su primera función: la cola de verificaciones documentales.
+ * Además de ella se muestra con qué cuenta se entró y desde cuándo tiene permisos, que es lo que
+ * demuestra que la protección funciona de extremo a extremo.
  */
 export default function PanelAdministrativo() {
   const resumen = useQuery({
@@ -62,10 +64,17 @@ export default function PanelAdministrativo() {
           </dl>
         )}
 
-        <p className={estilos.pendiente}>
-          La revisión de verificaciones documentales y la moderación de casos llegan con sus propios
-          incrementos.
-        </p>
+        <nav className={estilos.pendiente} aria-label="Funciones administrativas">
+          <p>
+            <Link to={RUTA_ADMIN_VERIFICACIONES}>Verificaciones documentales</Link>
+          </p>
+          <p className={estilos.explicacion}>
+            Revisa los expedientes de los prestadores, aprueba o rechaza sus solicitudes y revoca
+            una verificación ya concedida.
+          </p>
+        </nav>
+
+        <p className={estilos.pendiente}>La moderación de casos llega con su propio incremento.</p>
 
         <p className={estilos.pie}>
           <Link to="/">Volver al inicio</Link>

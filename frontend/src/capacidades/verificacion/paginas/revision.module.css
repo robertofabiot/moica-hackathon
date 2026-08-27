@@ -1,0 +1,101 @@
+/*
+ * Estilos propios de la cola administrativa de verificaciones.
+ *
+ * Lo que comparte con el resto de pantallas de contenido vive en
+ * `src/comun/estilos/secciones.module.css`. Reutiliza las variables neutras de
+ * `src/estilos/global.css`: la paleta de marca todavía no está aprobada.
+ * Mobile-first: la hoja base describe el teléfono y la media query amplía a
+ * tableta y escritorio.
+ */
+
+.pantalla {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+}
+
+.contenido {
+  width: 100%;
+  max-width: 52rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-3);
+}
+
+.encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+}
+
+.titulo {
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--moica-espacio-2);
+}
+
+/*
+ * La tabla es lo único que no cabe en un teléfono, así que se desplaza dentro
+ * de su propio contenedor. Es lo que impide que la página entera se desborde
+ * en horizontal. `tabindex` no hace falta: el navegador da foco a una región
+ * desplazable, y el botón de cada fila ya es alcanzable con el teclado.
+ */
+.tablaDesplazable {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabla caption {
+  padding-bottom: var(--moica-espacio-1);
+  text-align: left;
+}
+
+.tabla th,
+.tabla td {
+  padding: var(--moica-espacio-1);
+  border-bottom: 1px solid var(--moica-borde);
+  vertical-align: top;
+  /* Sin esto, una fila con pocas palabras largas ensancharía la tabla entera. */
+  white-space: nowrap;
+}
+
+.tabla thead th {
+  color: var(--moica-texto-suave);
+  font-size: 0.875rem;
+}
+
+/* El nombre del prestador sí puede partirse: es lo más largo de cada fila. */
+.celdaDePrestador {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 10rem;
+}
+
+.pie {
+  color: var(--moica-texto-suave);
+  text-align: center;
+}
+
+@media (min-width: 48rem) {
+  .titulo {
+    font-size: 2rem;
+  }
+
+  .tabla th,
+  .tabla td {
+    padding: var(--moica-espacio-2) var(--moica-espacio-1);
+  }
+}

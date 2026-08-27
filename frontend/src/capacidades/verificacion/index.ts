@@ -9,11 +9,14 @@
  * mismo que dice aquí.
  */
 
+export { default as ColaDeVerificaciones } from './paginas/ColaDeVerificaciones';
 export { default as InsigniaDeVerificacion } from './componentes/InsigniaDeVerificacion';
 export { default as Verificacion } from './componentes/Verificacion';
+export { RUTA_ADMIN_VERIFICACIONES } from './rutas';
 export type {
   EstadoDeSolicitud,
   EstadoDeVerificacion,
+  Expediente,
   NivelSolicitado,
   NivelVerificacion,
   SolicitudDeVerificacion,

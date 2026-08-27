@@ -475,8 +475,14 @@ Controles que P4V dejó funcionando, con el resultado real de cada comprobación
 - **Local**: ejecutado en la máquina de desarrollo (Windows 11, Docker Desktop,
   Node 22, JDK compilando con `release 21`), con PostgreSQL publicado en
   `localhost:5433`. Sobre `d096558`, el último commit de código.
-- **CI**: se anota en el cuerpo del Pull Request #10 y en esta sección cuando
-  termine sobre el commit final.
+- **CI**: ejecutado por GitHub Actions en el Pull Request #10. Sobre `2d6c8c7`,
+  el commit que ya contiene todo el código y toda la documentación,
+  [ejecución 33094908156](https://github.com/robertofabiot/moica-hackathon/actions/runs/33094908156)
+  dejó en verde «Backend (Java 21)», «Frontend (Node 22)» y «Entorno local
+  (docker compose)», y
+  [ejecución 33094908157](https://github.com/robertofabiot/moica-hackathon/actions/runs/33094908157)
+  dejó en verde «Título y commits convencionales». Este cambio solo anota esos
+  enlaces; el CI de su propio commit queda en un comentario del PR.
 
 Una casilla vacía significa que ahí no aplica, no que fallara.
 

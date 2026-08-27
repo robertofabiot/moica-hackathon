@@ -483,6 +483,18 @@ Controles que P4V dejó funcionando, con el resultado real de cada comprobación
   [ejecución 33094908157](https://github.com/robertofabiot/moica-hackathon/actions/runs/33094908157)
   dejó en verde «Título y commits convencionales». Este cambio solo anota esos
   enlaces; el CI de su propio commit queda en un comentario del PR.
+- **Corrección de concurrencia**: la fila «Concurrencia sobre el nivel del
+  perfil» llega con el Pull Request #11, posterior a P4V. En local, `./mvnw
+  verify` sobre `5bca790` dejó 138 unitarias y 262 de integración en verde, y
+  `ConcurrenciaDeVerificacionIT` se ejecutó seis veces seguidas sin un solo
+  fallo para descartar inestabilidad. En CI, sobre ese mismo commit,
+  [ejecución 33124855278](https://github.com/robertofabiot/moica-hackathon/actions/runs/33124855278)
+  dejó en verde «Backend (Java 21)», «Frontend (Node 22)» y «Entorno local
+  (docker compose)», y
+  [ejecución 33124855452](https://github.com/robertofabiot/moica-hackathon/actions/runs/33124855452)
+  dejó en verde «Título y commits convencionales». Que el backend pase también
+  en la máquina del CI, con otros tiempos, es parte de la evidencia: la
+  coordinación de esas pruebas no depende de pausas.
 
 Una casilla vacía significa que ahí no aplica, no que fallara.
 

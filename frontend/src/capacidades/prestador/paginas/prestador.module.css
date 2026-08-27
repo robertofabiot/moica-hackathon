@@ -52,6 +52,27 @@
   gap: var(--moica-espacio-2);
 }
 
+/*
+ * Mientras hay un archivo elegido conviven dos retratos: el guardado y el local.
+ * En teléfono caben los dos en fila (2 x 8rem mas el hueco), y `wrap` los apila
+ * si el texto crece o la letra del sistema es mayor.
+ */
+.retratos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--moica-espacio-2);
+}
+
+.retratoConPie {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--moica-espacio-1);
+  margin: 0;
+  text-align: center;
+}
+
 .retrato {
   width: 8rem;
   height: 8rem;

@@ -17,11 +17,29 @@ const CABECERA_CSRF = 'X-XSRF-TOKEN';
 /** Evita que una petición se quede colgada (por ejemplo, al perder la red) y deje la interfaz en carga. */
 export const TIEMPO_DE_ESPERA_MS = 10_000;
 
+/**
+ * Espera propia de las cargas de archivo, que no caben en la de una petición corriente.
+ *
+ * Una imagen de hasta 5 MB por una red móvil tarda mucho más que un JSON, y el backend puede
+ * emplear hasta un minuto solo en su llamada al almacenamiento: `AlmacenamientoR2` limita cada
+ * operación a 60 s. Cortar a los diez segundos abandonaría en el navegador una carga que el
+ * servidor y R2 siguen procesando, y quien la hizo vería un error por una imagen que sí se guardó.
+ * Noventa segundos dejan margen sobre ese máximo sin renunciar al límite: una carga que de verdad
+ * se quedó colgada sigue terminando en un mensaje y no en una interfaz cargando para siempre.
+ */
+export const TIEMPO_DE_ESPERA_DE_ARCHIVO_MS = 90_000;
+
 let tiempoDeEsperaMs = TIEMPO_DE_ESPERA_MS;
+let tiempoDeEsperaDeArchivoMs = TIEMPO_DE_ESPERA_DE_ARCHIVO_MS;
 
 /** Las pruebas acortan la espera para no depender de diez segundos reales. */
 export function definirTiempoDeEsperaMs(milisegundos: number): void {
   tiempoDeEsperaMs = milisegundos;
+}
+
+/** La espera de las cargas de archivo, que las pruebas acortan igual que la ordinaria. */
+export function definirTiempoDeEsperaDeArchivoMs(milisegundos: number): void {
+  tiempoDeEsperaDeArchivoMs = milisegundos;
 }
 
 export const MENSAJE_SIN_RESPUESTA =
@@ -91,6 +109,9 @@ export async function enviarSinRespuesta(
  *
  * El `Content-Type` no se escribe a mano: el navegador lo pone él mismo con la frontera del
  * formulario. El token CSRF sí viaja, igual que en cualquier otra operación mutable.
+ *
+ * La carga en sí usa {@link TIEMPO_DE_ESPERA_DE_ARCHIVO_MS}, no la espera corriente. La petición
+ * previa que consigue el token CSRF sí la conserva: es un JSON como cualquier otro.
  */
 export async function enviarArchivo<T>(
   metodo: string,
@@ -103,12 +124,16 @@ export async function enviarArchivo<T>(
     cabeceras[CABECERA_CSRF] = token;
   }
 
-  const respuesta = await fetchConTiempoDeEspera(ruta, {
-    method: metodo,
-    credentials: 'same-origin',
-    headers: cabeceras,
-    body: formulario,
-  });
+  const respuesta = await fetchConTiempoDeEspera(
+    ruta,
+    {
+      method: metodo,
+      credentials: 'same-origin',
+      headers: cabeceras,
+      body: formulario,
+    },
+    tiempoDeEsperaDeArchivoMs
+  );
 
   return (await comoJson(respuesta)) as T;
 }
@@ -163,8 +188,15 @@ export async function comoErrorDeApi(respuesta: Response): Promise<ErrorDeApi> {
  * El temporizador rechaza la carrera directamente: en Offline de DevTools,
  * `fetch` a `localhost` puede quedar colgado sin rechazar ni disparar un
  * `abort` fiable; depender solo del evento `abort` deja la mutación pendiente.
+ *
+ * La duración se indica por operación porque no todas tardan lo mismo: subir una
+ * imagen no es leer un JSON. Sin el parámetro se usa la espera ordinaria.
  */
-async function fetchConTiempoDeEspera(ruta: string, opciones: RequestInit): Promise<Response> {
+async function fetchConTiempoDeEspera(
+  ruta: string,
+  opciones: RequestInit,
+  milisegundos: number = tiempoDeEsperaMs
+): Promise<Response> {
   if (typeof navigator !== 'undefined' && navigator.onLine === false) {
     throw new ErrorDeApi(0, 'SIN_RESPUESTA', MENSAJE_SIN_RESPUESTA);
   }
@@ -178,7 +210,7 @@ async function fetchConTiempoDeEspera(ruta: string, opciones: RequestInit): Prom
     temporizador = setTimeout(() => {
       controlador.abort();
       reject(new ErrorDeApi(0, 'TIEMPO_AGOTADO', MENSAJE_TIEMPO_AGOTADO));
-    }, tiempoDeEsperaMs);
+    }, milisegundos);
   });
 
   const peticion = fetch(ruta, opcionesConSenal);

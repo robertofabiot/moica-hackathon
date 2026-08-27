@@ -312,7 +312,7 @@ public class RevisionDeVerificacionService {
    * resoluciones, y por eso ninguna pareja puede quedarse esperándose: quien llega segundo no tiene
    * todavía ningún bloqueo que el primero necesite.
    *
-   * @return el perfil sobre el que va a decidirse, ya bloqueado
+   * @return el identificador del perfil sobre el que va a decidirse, ya bloqueado
    */
   private Long bloquearElPerfilDe(Long idSolicitudVerificacion) {
     Long idPrestador =

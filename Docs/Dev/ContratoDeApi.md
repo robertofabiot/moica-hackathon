@@ -375,6 +375,18 @@ expediente.
   comprobar que la basica siga vigente: si se revoco entre el envio y la
   revision, responde `409 VERIFICACION_BASICA_REQUERIDA` y hay que rechazarla
   indicando el motivo.
+- Esa comprobacion vale tambien **mientras** se revoca la basica, no solo
+  despues. Aprobar, rechazar y revocar toman antes la fila del perfil, asi que
+  dos resoluciones sobre solicitudes distintas del mismo prestador se resuelven
+  una detras de otra: la segunda ve lo que decidio la primera. Si la revocacion
+  de la basica llega primero, la aprobacion profesional responde
+  `409 VERIFICACION_BASICA_REQUERIDA`; si llega despues, arrastra tambien la
+  profesional recien aprobada. Nunca queda un nivel que contradiga a las
+  solicitudes.
+- Editar el perfil, cambiar la disponibilidad o sustituir la imagen comparten esa
+  misma fila y ese mismo turno. Guardar el perfil no devuelve una insignia
+  retirada ni borra la que acaba de concederse, y una resolucion administrativa
+  no revierte los datos que el propietario acaba de editar.
 - **Rechazar y revocar exigen una observacion no vacia.** Sin ella la respuesta
   es `400 VALIDACION`, y PostgreSQL lo vuelve a exigir con
   `ck_solicitud_verificacion_observacion`.

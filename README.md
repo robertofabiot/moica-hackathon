@@ -73,10 +73,12 @@ npm run build                          # build de produccion + PWA instalable
 
 Pruebas: `./mvnw verify` (backend, necesita Docker) y `npm run test` (frontend).
 
-Las imagenes de perfil y portafolio se guardan en un bucket publico de Cloudflare
-R2. Sin las variables `MOICA_R2_*` la aplicacion arranca igual, pero subir o
-borrar imagenes responde `ALMACENAMIENTO_NO_DISPONIBLE`. Como aprovisionar el
-bucket y el token: [`Docs/Dev/Almacenamiento.md`](Docs/Dev/Almacenamiento.md).
+Moica usa **dos** buckets de Cloudflare R2, con credenciales distintas: uno
+publico para las imagenes de perfil y portafolio (`MOICA_R2_*`) y otro privado
+para los documentos de verificacion (`MOICA_R2_PRIVADO_*`). Sin esas variables
+la aplicacion arranca igual, pero las operaciones con archivos responden
+`ALMACENAMIENTO_NO_DISPONIBLE`. Como aprovisionar cada bucket y su token:
+[`Docs/Dev/Almacenamiento.md`](Docs/Dev/Almacenamiento.md).
 
 ## Estructura del repositorio
 
@@ -108,7 +110,9 @@ Seguridad de la cuenta: cambio de contraseña que revoca todas las sesiones, seg
 
 Perfil de prestador: catalogo territorial de Managua, perfil propio con tipo, municipio principal, presentacion y cobertura, disponibilidad, medios de contacto y portafolio de trabajos con imagenes. Las imagenes publicas se guardan en Cloudflare R2 (ver [`Docs/Dev/Almacenamiento.md`](Docs/Dev/Almacenamiento.md)); PostgreSQL solo conserva su URL. Todo perfil nace `SIN_VERIFICAR` y permanece privado: no aparece en ninguna superficie publica.
 
-Todavia no hay verificacion documental, servicios, descubrimiento publico, solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
+Verificacion documental: el prestador presenta su expediente —JPEG, PNG o PDF, hasta 5 MB por archivo— en una sola operacion, y una persona administradora con segundo factor verificado lo toma, lo aprueba, lo rechaza con motivo o revoca una verificacion ya concedida. Los documentos viven en un bucket privado de R2; PostgreSQL guarda solo una clave opaca y sus metadatos, y el archivo se abre con un enlace temporal que caduca. El nivel del perfil —`SIN_VERIFICAR`, `VERIFICADO_BASICO` o `PROFESIONAL_VERIFICADO`— lo proyecta ese flujo y nadie mas.
+
+Todavia no hay servicios, descubrimiento publico, solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
 
 ## Licencia
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 import { ErrorDeApi } from '../../../comun/api';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import { Portafolio } from '../../portafolio';
+import { Verificacion } from '../../verificacion';
 import Contactos from '../componentes/Contactos';
 import Disponibilidad from '../componentes/Disponibilidad';
 import FormularioDePerfil from '../componentes/FormularioDePerfil';
@@ -75,8 +76,8 @@ export default function PerfilPrestador() {
         {datos !== null && datos.nivelVerificacion === 'SIN_VERIFICAR' && (
           <p className={propios.avisoDePrivacidad} role="status">
             <strong>Tu perfil todavía es privado.</strong> Nadie más puede verlo mientras esté sin
-            verificar. Puedes prepararlo completo desde ahora: la verificación documental llega en
-            una próxima entrega.
+            verificar. Puedes prepararlo completo desde ahora y presentar tu expediente cuando
+            quieras, en la sección de verificación.
           </p>
         )}
 
@@ -85,6 +86,7 @@ export default function PerfilPrestador() {
         {datos !== null && (
           <>
             <ImagenDePerfil perfil={datos} />
+            <Verificacion />
             <Disponibilidad perfil={datos} />
             <Contactos />
             <Portafolio />

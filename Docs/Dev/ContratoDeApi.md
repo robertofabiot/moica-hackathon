@@ -40,6 +40,17 @@ Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy
 | `PUT /api/prestador/portafolio/trabajos/{id}/imagenes/orden` | Reordena las imagenes del trabajo | Sesion plena con cuenta `ACTIVA` |
 | `PUT /api/prestador/portafolio/trabajos/{id}/imagenes/{idImagen}` | Cambia el texto alternativo de una imagen | Sesion plena con cuenta `ACTIVA` |
 | `DELETE /api/prestador/portafolio/trabajos/{id}/imagenes/{idImagen}` | Elimina una imagen y su objeto | Sesion plena con cuenta `ACTIVA` |
+| `GET /api/prestador/verificacion` | Nivel de verificacion vigente del perfil propio y que puede solicitar | Sesion plena |
+| `GET /api/prestador/verificacion/solicitudes` | Historial propio, con los metadatos de cada expediente | Sesion plena |
+| `GET /api/prestador/verificacion/solicitudes/{id}` | Una solicitud propia | Sesion plena |
+| `POST /api/prestador/verificacion/solicitudes` | Envia una solicitud con todo su expediente (`multipart/form-data`) | Sesion plena con cuenta `ACTIVA` |
+| `GET /api/admin/verificaciones` | Cola de solicitudes, con filtros `estado` y `nivel` | Rol administrativo con segundo factor verificado |
+| `GET /api/admin/verificaciones/{id}` | Detalle de un expediente | Rol administrativo con segundo factor verificado |
+| `POST /api/admin/verificaciones/{id}/toma` | Toma una solicitud pendiente para revisarla | Rol administrativo con segundo factor verificado |
+| `POST /api/admin/verificaciones/{id}/aprobacion` | Aprueba y proyecta el nivel en el perfil | Rol administrativo con segundo factor verificado |
+| `POST /api/admin/verificaciones/{id}/rechazo` | Rechaza con motivo obligatorio | Rol administrativo con segundo factor verificado |
+| `POST /api/admin/verificaciones/{id}/revocacion` | Revoca una verificacion concedida, con motivo obligatorio | Rol administrativo con segundo factor verificado |
+| `GET /api/admin/verificaciones/{id}/documentos/{idDocumento}/acceso` | Redirige a un acceso temporal al documento | Rol administrativo con segundo factor verificado |
 | `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
 
 **Sesion plena** es la que no esta pendiente del segundo factor y pertenece a una cuenta que no esta
@@ -138,6 +149,9 @@ El rol no se solicita ni se concede desde la API: no hay registro publico de adm
 endpoint de promocion. Lo asigna el arranque a partir de `MOICA_ADMIN_CORREO`, sobre una cuenta
 ordinaria ya registrada (ver [la guia de entorno local](GuiaEntornoLocal.md#rol-administrativo)).
 
+La primera funcion del area es la cola de verificaciones documentales, descrita
+mas abajo. La moderacion de casos llega con su propio incremento.
+
 ## Cuando es 401 y cuando es 403
 
 | Situacion | Estado | Codigo |
@@ -150,7 +164,8 @@ ordinaria ya registrada (ver [la guia de entorno local](GuiaEntornoLocal.md#rol-
 | Contrasena actual incorrecta al cambiarla o al desactivar el segundo factor | 403 | `CREDENCIALES_INVALIDAS` |
 | Codigo del segundo factor incorrecto, vencido o fuera de tolerancia | 403 | `CODIGO_INVALIDO` |
 | La cuenta esta suspendida al iniciar sesion | 403 | `CUENTA_SUSPENDIDA` |
-| La cuenta esta restringida y pide modificar su perfil o su portafolio | 403 | `CUENTA_RESTRINGIDA` |
+| La cuenta esta restringida y pide modificar su perfil, su portafolio o su expediente | 403 | `CUENTA_RESTRINGIDA` |
+| Un administrador quiere resolver una revision que tomo otro | 403 | `REVISION_DE_OTRO_ADMINISTRADOR` |
 
 La regla es una sola: **401 significa que ya no hay sesion y 403 que la hay pero no alcanza**. Por
 eso una contrasena o un codigo equivocados no devuelven 401 aunque sean credenciales: la sesion
@@ -202,13 +217,13 @@ enumerar identificadores para averiguar que contactos o trabajos existen.
   de las dos es una opcion valida.
 - **No existe borrar el perfil.** La definicion vigente solo autoriza crearlo y
   actualizarlo.
-- `nivelVerificacion` es de **solo lectura**: es una proyeccion que actualizara
-  el flujo de verificacion documental (P4V). Ningun DTO de P4 lo acepta, asi que
-  enviarlo no tiene efecto.
+- `nivelVerificacion` es de **solo lectura**: lo proyecta el flujo de
+  verificacion documental al aprobar o revocar una solicitud. Ningun DTO del
+  prestador lo acepta, asi que enviarlo no tiene efecto.
 
 Mientras el perfil este `SIN_VERIFICAR` **no aparece en ninguna superficie
-publica**. P4 no crea todavia endpoints publicos de descubrimiento: eso llega
-con P5.
+publica**. P4V tampoco crea endpoints publicos de descubrimiento: eso llega con
+P5.
 
 ### Contactos
 
@@ -257,6 +272,140 @@ los objetos son opacas y no se derivan del nombre original. El detalle del
 proveedor —endpoint, credenciales, bucket— no aparece en ninguna respuesta ni en
 ningun registro. Ver [Almacenamiento.md](Almacenamiento.md).
 
+## Verificacion documental del prestador
+
+El expediente propio se opera **siempre sobre la cuenta de la sesion**: ninguna
+ruta de `/api/prestador/verificacion` lleva identificador de perfil. Resolver
+una solicitud vive aparte, en `/api/admin/verificaciones`, y hereda las dos
+condiciones del area administrativa.
+
+### Niveles y estados
+
+| Nivel del perfil | Como se alcanza |
+|---|---|
+| `SIN_VERIFICAR` | Estado inicial de todo perfil, y al que vuelve tras revocar la basica |
+| `VERIFICADO_BASICO` | Un administrador aprobo una solicitud `BASICA` |
+| `PROFESIONAL_VERIFICADO` | Sobre la basica vigente, un administrador aprobo una solicitud `PROFESIONAL` |
+
+Una solicitud recorre `PENDIENTE`, `EN_REVISION`, `APROBADA`, `RECHAZADA` y
+`REVOCADA`. **No existe `BORRADOR`.** Las unicas transiciones permitidas son:
+
+```text
+PENDIENTE   --toma-->       EN_REVISION
+EN_REVISION --aprobacion--> APROBADA
+EN_REVISION --rechazo-->    RECHAZADA
+APROBADA    --revocacion--> REVOCADA
+```
+
+Cualquier otra responde `409 TRANSICION_NO_PERMITIDA` y no deja nada a medias.
+
+### Enviar un expediente
+
+`POST /api/prestador/verificacion/solicitudes` recibe `multipart/form-data` con:
+
+- `nivelSolicitado`: `BASICA` o `PROFESIONAL`.
+- una parte `archivo` por documento;
+- un campo `tipoDocumento` por documento, **en el mismo orden** que los
+  archivos. Los valores son los del dominio: `IDENTIDAD`, `CERTIFICACION`,
+  `CONSTANCIA`, `REGISTRO_NEGOCIO` y `OTRO_RESPALDO`.
+
+Es **una sola peticion** a proposito: la solicitud y su expediente nacen juntos
+o no nacen. Si algo falla, no queda una solicitud pendiente sin documentos ni un
+archivo suelto en el almacenamiento. El navegador **no** sube directamente al
+proveedor: siempre pasa por la API.
+
+Reglas que se aplican al recibirlo:
+
+- Solo una cuenta `ACTIVA` puede enviar. Una restringida conserva la lectura de
+  lo suyo.
+- `BASICA` se solicita cuando el perfil esta `SIN_VERIFICAR` y exige **al menos
+  un documento `IDENTIDAD`**.
+- `PROFESIONAL` exige **una basica vigente** y **al menos un respaldo que no sea
+  identidad**.
+- Solo puede haber **una solicitud abierta** —`PENDIENTE` o `EN_REVISION`— del
+  mismo nivel por perfil. Lo garantiza tambien un indice parcial en PostgreSQL,
+  asi que dos envios simultaneos no crean dos.
+- Una solicitud rechazada **puede reenviarse como una solicitud nueva**; la
+  anterior y sus documentos se conservan.
+- **No se pueden editar ni sustituir documentos despues de enviar.** Corregir
+  algo significa presentar otra solicitud.
+- No hay un maximo de documentos por expediente: el limite efectivo es el tope
+  de transporte multipart (25 MB por peticion) y los 5 MB por archivo.
+
+### Formatos y validacion
+
+Solo `image/jpeg`, `image/png` y `application/pdf`. Se valida en el backend
+—nunca solo en el navegador— el tamano, el tipo declarado y **la firma binaria
+real**, que debe corresponder con lo declarado.
+
+| Situacion | Estado | Codigo |
+|---|---|---|
+| Supera el maximo por documento | 413 | `DOCUMENTO_DEMASIADO_GRANDE` |
+| Formato no admitido, archivo vacio o firma que no corresponde | 400 | `DOCUMENTO_NO_ADMITIDO` |
+| Expediente sin documentos o sin el respaldo que exige el nivel | 400 | `EXPEDIENTE_INCOMPLETO` |
+| Ya hay una solicitud abierta de ese nivel | 409 | `SOLICITUD_ABIERTA_DUPLICADA` |
+| El perfil ya tiene ese nivel vigente | 409 | `NIVEL_YA_VIGENTE` |
+| Se pide la profesional sin una basica vigente | 409 | `VERIFICACION_BASICA_REQUERIDA` |
+| El almacenamiento privado no responde o no esta configurado | 503 | `ALMACENAMIENTO_NO_DISPONIBLE` |
+| La peticion supera el tope de transporte multipart | 413 | `CONTENIDO_DEMASIADO_GRANDE` |
+
+### Que ve cada quien
+
+| | Propietario del perfil | Administrador con TOTP verificado |
+|---|---|---|
+| Estado, nivel, fechas y motivo de la decision | Si | Si |
+| Metadatos de los documentos (tipo, nombre saneado, MIME, tamano) | Si | Si |
+| A que cuenta pertenece el perfil (nombre y correo) | Su propia cuenta | Si |
+| Que administrador tiene la revision | **No** | Si |
+| Abrir el archivo | **No** | Si, con acceso temporal |
+| Clave de almacenamiento o URL del archivo | **Nunca** | **Nunca** |
+
+Consultar una solicitud de otro prestador responde **404 y no 403**, igual que
+el resto de recursos propios: distinguirlos permitiria enumerar quien presento
+expediente.
+
+### Revisar y resolver
+
+- Tomar una solicitud la pasa de `PENDIENTE` a `EN_REVISION` y la asigna a quien
+  la tomo. Una toma concurrente responde `409 SOLICITUD_YA_TOMADA`; la fila se
+  bloquea, asi que dos administradores no pueden quedarsela los dos.
+- **Solo quien tomo la revision puede aprobarla o rechazarla.** Otro
+  administrador recibe `403 REVISION_DE_OTRO_ADMINISTRADOR`.
+- Aprobar proyecta el nivel en el perfil. Aprobar una profesional vuelve a
+  comprobar que la basica siga vigente: si se revoco entre el envio y la
+  revision, responde `409 VERIFICACION_BASICA_REQUERIDA` y hay que rechazarla
+  indicando el motivo.
+- **Rechazar y revocar exigen una observacion no vacia.** Sin ella la respuesta
+  es `400 VALIDACION`, y PostgreSQL lo vuelve a exigir con
+  `ck_solicitud_verificacion_observacion`.
+- Rechazar una profesional **no toca la basica vigente**.
+- Revocar **no exige haber tomado la solicitud**: la aprobo otra persona en otro
+  momento y esa revision ya esta cerrada.
+
+### Efectos de una revocacion
+
+- Revocar una **profesional** degrada el perfil a `VERIFICADO_BASICO`.
+- Revocar una **basica** devuelve el perfil a `SIN_VERIFICAR` y, **en la misma
+  transaccion**, deja `REVOCADA` cualquier profesional aprobada de ese perfil,
+  con el **mismo motivo, el mismo administrador y el mismo instante**.
+- Una profesional revocada asi **no se reactiva sola** si el perfil vuelve a
+  obtener la basica: recuperar la insignia exige una solicitud nueva.
+
+Las solicitudes y los documentos resueltos **no se eliminan**: son la evidencia
+de que se reviso y de quien lo decidio. El propietario nunca puede cambiar el
+nivel de su perfil por ninguna via.
+
+### Abrir un documento
+
+`GET /api/admin/verificaciones/{id}/documentos/{idDocumento}/acceso` responde
+**302** hacia una URL prefirmada de vida corta, con `Cache-Control: no-store`.
+Se prefiere la redireccion a devolverla en un cuerpo JSON para que la direccion
+firmada no pase por el JavaScript de la aplicacion ni entre en su cache. La URL
+no se persiste en ninguna parte, caduca sola —`PT5M` por omision— y la
+autorizacion se comprueba en **cada** peticion. Un documento que no pertenece a
+ese expediente responde `404 DOCUMENTO_NO_ENCONTRADO`. Ver
+[Almacenamiento.md](Almacenamiento.md).
+
 ## Proteccion CSRF
 
 La proteccion CSRF esta activa para todas las operaciones mutables. El backend emite la cookie `XSRF-TOKEN` —legible por JavaScript a proposito— y espera recibirla de vuelta en la cabecera `X-XSRF-TOKEN`. El frontend lo hace solo; para probar con `curl` hay que repetir el tramite:
@@ -293,4 +442,4 @@ Todos los errores comparten cuerpo. El detalle por campo solo aparece cuando el 
 }
 ```
 
-Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento ni valores internos.
+Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ADMITIDO`, `DOCUMENTO_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ENCONTRADO`, `EXPEDIENTE_INCOMPLETO`, `SOLICITUD_ABIERTA_DUPLICADA`, `SOLICITUD_NO_ENCONTRADA`, `SOLICITUD_YA_TOMADA`, `NIVEL_YA_VIGENTE`, `VERIFICACION_BASICA_REQUERIDA`, `TRANSICION_NO_PERMITIDA`, `REVISION_DE_OTRO_ADMINISTRADOR`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento, URL prefirmadas ni valores internos.

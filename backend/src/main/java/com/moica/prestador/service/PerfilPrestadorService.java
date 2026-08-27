@@ -5,11 +5,14 @@ import com.moica.catalogo.dto.UbicacionDeMunicipio;
 import com.moica.catalogo.service.CatalogoTerritorialService;
 import com.moica.comun.error.ErrorDeAplicacion;
 import com.moica.prestador.dto.DatosDePerfilPrestador;
+import com.moica.prestador.dto.ResumenDePerfilPrestador;
 import com.moica.prestador.dto.SolicitudDeDisponibilidad;
 import com.moica.prestador.dto.SolicitudDePerfilPrestador;
+import com.moica.prestador.entity.NivelVerificacionPrestador;
 import com.moica.prestador.entity.PerfilPrestador;
 import com.moica.prestador.repository.PerfilPrestadorRepository;
 import com.moica.usuario.entity.EstadoCuenta;
+import java.util.Optional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -23,8 +26,9 @@ import org.springframework.transaction.annotation.Transactional;
  * camino que no existe.
  *
  * <p>La definición vigente solo autoriza crear y actualizar el perfil; eliminarlo no existe a
- * propósito. El nivel de verificación tampoco se toca aquí: es una proyección del flujo de
- * verificación documental (P4V).
+ * propósito. El nivel de verificación no lo decide nadie desde aquí: {@link
+ * #proyectarNivelDeVerificacion(Long, NivelVerificacionPrestador)} solo escribe lo que ya resolvió
+ * una persona administradora en la capacidad {@code verificacion}.
  */
 @Service
 public class PerfilPrestadorService {
@@ -131,6 +135,34 @@ public class PerfilPrestadorService {
     String anterior = perfil.getUrlImagenPerfil();
     perfil.cambiarUrlImagenPerfil(urlImagenPerfil);
     return anterior;
+  }
+
+  /**
+   * Describe un perfil para otra capacidad, sin entregarle la entidad ni su repositorio.
+   *
+   * <p>Lo usa la revisión de expedientes, que necesita saber a qué perfil pertenece una solicitud y
+   * qué nivel tiene hoy. Devuelve vacío si ese perfil no existe, para que quien pregunte decida qué
+   * responder en lugar de recibir un error genérico.
+   */
+  @Transactional(readOnly = true)
+  public Optional<ResumenDePerfilPrestador> resumirPerfil(Long idPrestador) {
+    return repositorio.findById(idPrestador).map(ResumenDePerfilPrestador::de);
+  }
+
+  /**
+   * Deja vigente en el perfil el nivel que resolvió una persona administradora.
+   *
+   * <p>No decide nada: la regla de qué nivel corresponde vive en la capacidad {@code verificacion},
+   * que es quien conoce las solicitudes. Aquí solo se escribe, y por eso este método no comprueba
+   * el estado de la cuenta: revocar la verificación de una cuenta restringida debe seguir siendo
+   * posible.
+   *
+   * @throws ErrorDeAplicacion si el perfil no existe
+   */
+  @Transactional
+  public void proyectarNivelDeVerificacion(
+      Long idPrestador, NivelVerificacionPrestador nivelVerificacion) {
+    perfilDe(idPrestador).proyectarNivelVerificacion(nivelVerificacion);
   }
 
   /**

@@ -1,6 +1,9 @@
 package com.moica;
 
 import com.moica.comun.almacenamiento.AlmacenamientoDePrueba;
+import com.moica.comun.almacenamiento.AlmacenamientoPrivadoDePrueba;
+import com.moica.comun.almacenamiento.PropiedadesDeDocumentos;
+import java.time.Clock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
@@ -45,11 +48,13 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public abstract class PruebaDeIntegracionConPostgres {
 
   /**
-   * Sustituye el almacén real por el doble en memoria en toda la suite.
+   * Sustituye los dos almacenes reales por dobles en memoria en toda la suite.
    *
-   * <p>Las variables {@code MOICA_R2_*} no existen en las pruebas, así que el bean real arranca sin
-   * cliente; este doble es quien recibe las llamadas y permite afirmar sobre ellas. La comprobación
-   * contra un bucket R2 real queda como procedimiento manual documentado en {@code
+   * <p>Ni las variables {@code MOICA_R2_*} ni las {@code MOICA_R2_PRIVADO_*} existen en las
+   * pruebas, así que los beans reales arrancan sin cliente; estos dobles son quienes reciben las
+   * llamadas y permiten afirmar sobre ellas. Siguen siendo **dos** superficies separadas, igual que
+   * en producción: un doble para las imágenes públicas y otro para los expedientes privados. La
+   * comprobación contra buckets R2 reales queda como procedimiento manual documentado en {@code
    * Docs/Dev/Almacenamiento.md}.
    */
   @TestConfiguration
@@ -59,6 +64,13 @@ public abstract class PruebaDeIntegracionConPostgres {
     @Primary
     public AlmacenamientoDePrueba almacenamientoDePrueba() {
       return new AlmacenamientoDePrueba();
+    }
+
+    @Bean
+    @Primary
+    public AlmacenamientoPrivadoDePrueba almacenamientoPrivadoDePrueba(
+        PropiedadesDeDocumentos propiedades, Clock reloj) {
+      return new AlmacenamientoPrivadoDePrueba(propiedades, reloj);
     }
   }
 

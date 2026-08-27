@@ -284,3 +284,84 @@ export function activacionDeEjemplo(claveManual = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3
     periodoEnSegundos: 30,
   };
 }
+
+/** Un documento del expediente, con solo los metadatos que devuelve la API. */
+export function documentoDeVerificacionDeEjemplo(
+  idDocumentoVerificacion = 1,
+  tipoDocumento = 'IDENTIDAD',
+  nombreOriginal = 'cedula.png'
+) {
+  return {
+    idDocumentoVerificacion,
+    tipoDocumento,
+    nombreOriginal,
+    tipoMime: 'image/png',
+    tamanoBytes: 128_000,
+    fechaCarga: '2026-08-26T10:00:00-06:00',
+  };
+}
+
+/** Una solicitud de verificación tal como la ve su propietario. */
+export function solicitudDeVerificacionDeEjemplo(
+  cambios: Partial<ReturnType<typeof solicitudBase>> = {}
+) {
+  return { ...solicitudBase(), ...cambios };
+}
+
+function solicitudBase() {
+  return {
+    idSolicitudVerificacion: 1,
+    nivelSolicitado: 'BASICA',
+    estadoSolicitud: 'PENDIENTE',
+    observacionResolucion: null as string | null,
+    fechaSolicitud: '2026-08-26T10:00:00-06:00',
+    fechaInicioRevision: null as string | null,
+    fechaResolucion: null as string | null,
+    documentos: [documentoDeVerificacionDeEjemplo()],
+  };
+}
+
+/** Lo que devuelve `GET /api/prestador/verificacion`. */
+export function estadoDeVerificacionDeEjemplo(
+  cambios: Partial<ReturnType<typeof estadoDeVerificacionBase>> = {}
+) {
+  return { ...estadoDeVerificacionBase(), ...cambios };
+}
+
+function estadoDeVerificacionBase() {
+  return {
+    nivelVerificacion: 'SIN_VERIFICAR',
+    significado:
+      'Tu perfil todavía no superó la verificación documental: es privado, no aparece en el descubrimiento y no puede recibir solicitudes.',
+    puedeSolicitarBasica: true,
+    puedeSolicitarProfesional: false,
+    solicitudAbierta: null as ReturnType<typeof solicitudBase> | null,
+  };
+}
+
+/** Una solicitud tal como la ve la persona que revisa. */
+export function expedienteDeEjemplo(cambios: Partial<ReturnType<typeof expedienteBase>> = {}) {
+  return { ...expedienteBase(), ...cambios };
+}
+
+function expedienteBase() {
+  return {
+    idSolicitudVerificacion: 1,
+    prestador: {
+      idPrestador: 7,
+      nombrePublico: 'Taller La Esperanza',
+      tipoPrestador: 'INDEPENDIENTE',
+      nivelVerificacion: 'SIN_VERIFICAR',
+      nombreCompleto: 'Liz Martínez',
+      correoElectronico: 'liz@moica.test',
+    },
+    nivelSolicitado: 'BASICA',
+    estadoSolicitud: 'PENDIENTE',
+    observacionResolucion: null as string | null,
+    idAdministradorRevisor: null as number | null,
+    fechaSolicitud: '2026-08-26T10:00:00-06:00',
+    fechaInicioRevision: null as string | null,
+    fechaResolucion: null as string | null,
+    documentos: [documentoDeVerificacionDeEjemplo()],
+  };
+}

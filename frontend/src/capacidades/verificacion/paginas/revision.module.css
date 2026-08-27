@@ -1,0 +1,112 @@
+/*
+ * Estilos propios de la cola administrativa de verificaciones.
+ *
+ * Lo que comparte con el resto de pantallas de contenido vive en
+ * `src/comun/estilos/secciones.module.css`. Reutiliza las variables neutras de
+ * `src/estilos/global.css`: la paleta de marca todavía no está aprobada.
+ * Mobile-first: la hoja base describe el teléfono y la media query amplía a
+ * tableta y escritorio.
+ */
+
+.pantalla {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+}
+
+.contenido {
+  width: 100%;
+  max-width: 52rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-3);
+}
+
+.encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+}
+
+.titulo {
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--moica-espacio-2);
+}
+
+/*
+ * Red de seguridad: si en algún idioma o con la letra muy grande la tabla no
+ * cupiera, se desplaza dentro de su propio contenedor y la página nunca se
+ * desborda en horizontal. Con los tamaños del entregable no hace falta usarlo.
+ */
+.tablaDesplazable {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabla caption {
+  padding-bottom: var(--moica-espacio-1);
+  text-align: left;
+}
+
+/*
+ * El contenido envuelve por palabras en lugar de ensanchar la tabla: con tres
+ * columnas cabe entera en un teléfono sin partir ninguna a la mitad.
+ */
+.tabla th,
+.tabla td {
+  padding: var(--moica-espacio-1) 0.375rem;
+  border-bottom: 1px solid var(--moica-borde);
+  vertical-align: top;
+}
+
+.tabla thead th {
+  color: var(--moica-texto-suave);
+  font-size: 0.875rem;
+}
+
+/* Un nombre comercial puede ser una sola palabra larga; ahí sí se parte. */
+.celdaDePrestador {
+  overflow-wrap: anywhere;
+}
+
+/* El nivel y la fecha, bajo el nombre y en segundo plano. */
+.detalleDeLaFila {
+  display: block;
+  color: var(--moica-texto-suave);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.pie {
+  color: var(--moica-texto-suave);
+  text-align: center;
+}
+
+@media (min-width: 48rem) {
+  .titulo {
+    font-size: 2rem;
+  }
+
+  .tabla th,
+  .tabla td {
+    padding: var(--moica-espacio-2) var(--moica-espacio-1);
+  }
+
+  .celdaDePrestador {
+    min-width: 10rem;
+  }
+}

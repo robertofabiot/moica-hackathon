@@ -96,9 +96,39 @@ public final class NavegadorDePrueba {
   }
 
   /**
-   * Arma la petición multipart a mano, igual que la armaría un navegador: la parte {@code archivo}
-   * con su nombre y su {@code Content-Type} propios y un campo de texto por cada entrada.
+   * Envía un formulario con varios archivos, como el expediente de una verificación.
+   *
+   * <p>A diferencia de {@link #postArchivo}, aquí cada parte trae su propio nombre de campo y los
+   * campos de texto pueden repetirse: es lo que permite mandar un {@code tipoDocumento} por cada
+   * {@code archivo}, en el mismo orden, dentro de una sola petición.
    */
+  public HttpResponse<String> postFormulario(
+      String ruta, List<ParteDeArchivo> archivos, List<CampoDeFormulario> campos) {
+    return enviarFormulario("POST", ruta, archivos, campos, true);
+  }
+
+  public HttpResponse<String> postFormularioSinTokenCsrf(
+      String ruta, List<ParteDeArchivo> archivos, List<CampoDeFormulario> campos) {
+    return enviarFormulario("POST", ruta, archivos, campos, false);
+  }
+
+  /** Una parte de archivo del formulario, con el nombre de campo que espera el servidor. */
+  public record ParteDeArchivo(
+      String nombreParte, String nombreArchivo, String tipoMime, byte[] contenido) {
+
+    public ParteDeArchivo {
+      contenido = contenido.clone();
+    }
+
+    @Override
+    public byte[] contenido() {
+      return contenido.clone();
+    }
+  }
+
+  /** Un campo de texto del formulario. Se admite repetir el mismo nombre. */
+  public record CampoDeFormulario(String nombre, String valor) {}
+
   private HttpResponse<String> enviarArchivo(
       String metodo,
       String ruta,
@@ -108,28 +138,54 @@ public final class NavegadorDePrueba {
       Map<String, String> campos,
       boolean conTokenCsrf) {
 
+    return enviarFormulario(
+        metodo,
+        ruta,
+        List.of(new ParteDeArchivo("archivo", nombreArchivo, tipoMime, contenido)),
+        campos.entrySet().stream()
+            .map(campo -> new CampoDeFormulario(campo.getKey(), campo.getValue()))
+            .toList(),
+        conTokenCsrf);
+  }
+
+  /**
+   * Arma la petición multipart a mano, igual que la armaría un navegador: cada archivo con su
+   * nombre de campo, su nombre de archivo y su {@code Content-Type} propios, y después los campos
+   * de texto en el orden en que llegan.
+   */
+  private HttpResponse<String> enviarFormulario(
+      String metodo,
+      String ruta,
+      List<ParteDeArchivo> archivos,
+      List<CampoDeFormulario> campos,
+      boolean conTokenCsrf) {
+
     String frontera = "----moica-prueba-" + UUID.randomUUID();
     ByteArrayOutputStream cuerpo = new ByteArrayOutputStream();
     try {
-      cuerpo.write(
-          ("--"
-                  + frontera
-                  + "\r\nContent-Disposition: form-data; name=\"archivo\"; filename=\""
-                  + nombreArchivo
-                  + "\"\r\nContent-Type: "
-                  + tipoMime
-                  + "\r\n\r\n")
-              .getBytes(StandardCharsets.UTF_8));
-      cuerpo.write(contenido);
-      cuerpo.write("\r\n".getBytes(StandardCharsets.UTF_8));
-      for (Map.Entry<String, String> campo : campos.entrySet()) {
+      for (ParteDeArchivo archivo : archivos) {
         cuerpo.write(
             ("--"
                     + frontera
                     + "\r\nContent-Disposition: form-data; name=\""
-                    + campo.getKey()
+                    + archivo.nombreParte()
+                    + "\"; filename=\""
+                    + archivo.nombreArchivo()
+                    + "\"\r\nContent-Type: "
+                    + archivo.tipoMime()
+                    + "\r\n\r\n")
+                .getBytes(StandardCharsets.UTF_8));
+        cuerpo.write(archivo.contenido());
+        cuerpo.write("\r\n".getBytes(StandardCharsets.UTF_8));
+      }
+      for (CampoDeFormulario campo : campos) {
+        cuerpo.write(
+            ("--"
+                    + frontera
+                    + "\r\nContent-Disposition: form-data; name=\""
+                    + campo.nombre()
                     + "\"\r\n\r\n"
-                    + campo.getValue()
+                    + campo.valor()
                     + "\r\n")
                 .getBytes(StandardCharsets.UTF_8));
       }

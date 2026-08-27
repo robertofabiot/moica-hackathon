@@ -44,6 +44,17 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Cualquier otra responde 409 y no deja nada a medias. Aprobar y rechazar exigen además ser el
  * administrador que tomó la revisión: quien no la tomó no la resuelve.
+ *
+ * <p>Las tres resoluciones —aprobar, rechazar y revocar— toman sus bloqueos en un único orden:
+ * <b>primero el perfil, después la solicitud</b>. Bloquear solo la solicitud no bastaba: aprobar
+ * una profesional y revocar la básica trabajan sobre filas distintas, así que ambas transacciones
+ * avanzaban a la vez, leían el mismo nivel antiguo del perfil y la última en escribir dejaba un
+ * nivel que contradecía las solicitudes ya resueltas. El perfil es la fila que sí comparten, y
+ * tomarlo antes de nada es lo que las pone en fila. Como todas piden lo mismo en el mismo orden,
+ * ninguna pareja puede esperarse mutuamente.
+ *
+ * <p>{@link #tomar(UsuarioAutenticado, Long)} queda fuera de ese orden a propósito: solo bloquea la
+ * solicitud y no pide nada después, así que no puede formar parte de un ciclo de espera.
  */
 @Service
 public class RevisionDeVerificacionService {
@@ -198,11 +209,11 @@ public class RevisionDeVerificacionService {
 
     exigirPermisosAdministrativos(sujeto);
 
+    Long idPrestador = bloquearElPerfilDe(idSolicitudVerificacion);
     SolicitudVerificacionPrestador solicitud = bloquear(idSolicitudVerificacion);
     exigirEstado(solicitud, EstadoSolicitudVerificacion.APROBADA);
 
     OffsetDateTime ahora = OffsetDateTime.now(reloj);
-    Long idPrestador = solicitud.getIdPrestador();
     solicitud.revocar(sujeto.idUsuario(), observacion, ahora);
 
     if (solicitud.getNivelSolicitado() == NivelVerificacionSolicitado.BASICA) {
@@ -256,6 +267,7 @@ public class RevisionDeVerificacionService {
 
     exigirPermisosAdministrativos(sujeto);
 
+    bloquearElPerfilDe(idSolicitudVerificacion);
     SolicitudVerificacionPrestador solicitud = bloquear(idSolicitudVerificacion);
     exigirEstado(solicitud, EstadoSolicitudVerificacion.EN_REVISION);
 
@@ -290,6 +302,26 @@ public class RevisionDeVerificacionService {
     return solicitudes
         .bloquearPorId(idSolicitudVerificacion)
         .orElseThrow(RevisionDeVerificacionService::solicitudNoEncontrada);
+  }
+
+  /**
+   * Primer paso de toda resolución: toma el perfil al que pertenece el expediente.
+   *
+   * <p>Se pide el dueño de la solicitud sin cargarla, se bloquea su perfil y solo después se
+   * bloquea la solicitud. Ese orden —perfil, luego solicitud— es el que respetan las tres
+   * resoluciones, y por eso ninguna pareja puede quedarse esperándose: quien llega segundo no tiene
+   * todavía ningún bloqueo que el primero necesite.
+   *
+   * @return el perfil sobre el que va a decidirse, ya bloqueado
+   */
+  private Long bloquearElPerfilDe(Long idSolicitudVerificacion) {
+    Long idPrestador =
+        solicitudes
+            .idPrestadorDe(idSolicitudVerificacion)
+            .orElseThrow(RevisionDeVerificacionService::solicitudNoEncontrada);
+
+    perfiles.bloquearParaResolverVerificacion(idPrestador);
+    return idPrestador;
   }
 
   private NivelVerificacionPrestador nivelDe(Long idPrestador) {

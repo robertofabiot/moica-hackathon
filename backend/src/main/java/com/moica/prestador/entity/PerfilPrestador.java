@@ -18,9 +18,9 @@ import java.time.OffsetDateTime;
  * que garantiza que una cuenta tenga como máximo un perfil.
  *
  * <p>Todo perfil nace {@link EstadoDisponibilidad#DISPONIBLE} y {@link
- * NivelVerificacionPrestador#SIN_VERIFICAR}. El nivel de verificación no tiene aquí ningún método
- * que lo cambie a propósito: es una proyección del flujo de verificación documental (P4V) y el
- * propietario no puede tocarla.
+ * NivelVerificacionPrestador#SIN_VERIFICAR}. El nivel de verificación solo lo cambia {@link
+ * #proyectarNivelVerificacion(NivelVerificacionPrestador)}, que invoca el flujo de verificación
+ * documental al aprobar o revocar una solicitud. Ningún endpoint del propietario llega hasta ahí.
  */
 @Entity
 @Table(name = "perfil_prestador")
@@ -105,6 +105,17 @@ public class PerfilPrestador {
 
   public void cambiarDisponibilidad(EstadoDisponibilidad disponibilidad) {
     this.disponibilidad = disponibilidad;
+  }
+
+  /**
+   * Deja vigente el nivel de verificación que decidió una persona administradora.
+   *
+   * <p>Es la única vía por la que cambia este campo, y la usa exclusivamente la capacidad {@code
+   * verificacion} al aprobar o revocar una solicitud. El propietario del perfil no tiene ningún
+   * camino hasta aquí: no existe un DTO de entrada que acepte el nivel.
+   */
+  public void proyectarNivelVerificacion(NivelVerificacionPrestador nivelVerificacion) {
+    this.nivelVerificacion = nivelVerificacion;
   }
 
   /**

@@ -1,0 +1,108 @@
+/*
+ * Estilos propios de la pantalla del perfil de prestador.
+ *
+ * Las secciones, listas y botones que comparte con el portafolio viven en
+ * `src/comun/estilos/secciones.module.css`; aquí queda lo que solo usa esta
+ * pantalla. Reutiliza las variables neutras de `src/estilos/global.css`: la
+ * paleta de marca todavía no está aprobada. Mobile-first: la hoja base describe
+ * el teléfono y la media query amplía a tableta y escritorio.
+ */
+
+.pantalla {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+}
+
+.contenido {
+  width: 100%;
+  max-width: 40rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-4);
+}
+
+.encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+}
+
+.titulo {
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+}
+
+/* Aviso de que el perfil todavía no es público mientras esté SIN_VERIFICAR. */
+.avisoDePrivacidad {
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-left-width: 4px;
+  border-left-color: var(--moica-texto-suave);
+  border-radius: 0.5rem;
+  background-color: var(--moica-fondo-suave);
+}
+
+.imagenDePerfil {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--moica-espacio-2);
+}
+
+/*
+ * Mientras hay un archivo elegido conviven dos retratos: el guardado y el local.
+ * En teléfono caben los dos en fila (2 x 8rem mas el hueco), y `wrap` los apila
+ * si el texto crece o la letra del sistema es mayor.
+ */
+.retratos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--moica-espacio-2);
+}
+
+.retratoConPie {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--moica-espacio-1);
+  margin: 0;
+  text-align: center;
+}
+
+.retrato {
+  width: 8rem;
+  height: 8rem;
+  border: 1px solid var(--moica-borde);
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--moica-fondo-suave);
+}
+
+.retratoVacio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 8rem;
+  height: 8rem;
+  border: 1px dashed var(--moica-borde);
+  border-radius: 50%;
+  background-color: var(--moica-fondo-suave);
+  color: var(--moica-texto-suave);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+.pie {
+  color: var(--moica-texto-suave);
+  text-align: center;
+}
+
+@media (min-width: 48rem) {
+  .titulo {
+    font-size: 2rem;
+  }
+}

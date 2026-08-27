@@ -19,6 +19,27 @@ Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy
 | `POST /api/auth/segundo-factor/activacion` | Confirma la activacion con el primer codigo valido | Sesion plena |
 | `POST /api/auth/segundo-factor/desactivacion` | Desactiva el segundo factor y revoca todas las sesiones | Sesion plena, sin rol administrativo |
 | `GET /api/admin/resumen` | Describe la sesion administrativa en curso | Rol administrativo con segundo factor verificado |
+| `GET /api/catalogos/departamentos` | Departamentos habilitados con sus municipios | Sesion plena |
+| `POST /api/prestador/perfil` | Crea el perfil de prestador propio | Sesion plena con cuenta `ACTIVA` |
+| `GET /api/prestador/perfil` | Devuelve el perfil propio | Sesion plena |
+| `PUT /api/prestador/perfil` | Actualiza el perfil propio | Sesion plena con cuenta `ACTIVA` |
+| `PUT /api/prestador/disponibilidad` | Cambia entre `DISPONIBLE` y `NO_DISPONIBLE` | Sesion plena con cuenta `ACTIVA` |
+| `PUT /api/prestador/perfil/imagen` | Sube o sustituye la imagen de perfil (`multipart/form-data`) | Sesion plena con cuenta `ACTIVA` |
+| `DELETE /api/prestador/perfil/imagen` | Quita la imagen de perfil | Sesion plena con cuenta `ACTIVA` |
+| `GET /api/prestador/contactos` | Lista los medios de contacto propios | Sesion plena |
+| `POST /api/prestador/contactos` | Agrega un medio de contacto | Sesion plena con cuenta `ACTIVA` |
+| `PUT /api/prestador/contactos/orden` | Reordena los contactos propios | Sesion plena con cuenta `ACTIVA` |
+| `PUT /api/prestador/contactos/{id}` | Edita un contacto propio | Sesion plena con cuenta `ACTIVA` |
+| `DELETE /api/prestador/contactos/{id}` | Elimina un contacto propio | Sesion plena con cuenta `ACTIVA` |
+| `GET /api/prestador/portafolio/trabajos` | Lista los trabajos propios con sus imagenes | Sesion plena |
+| `POST /api/prestador/portafolio/trabajos` | Agrega un trabajo al portafolio | Sesion plena con cuenta `ACTIVA` |
+| `PUT /api/prestador/portafolio/trabajos/orden` | Reordena los trabajos propios | Sesion plena con cuenta `ACTIVA` |
+| `PUT /api/prestador/portafolio/trabajos/{id}` | Edita un trabajo propio | Sesion plena con cuenta `ACTIVA` |
+| `DELETE /api/prestador/portafolio/trabajos/{id}` | Elimina un trabajo, sus imagenes y sus objetos | Sesion plena con cuenta `ACTIVA` |
+| `POST /api/prestador/portafolio/trabajos/{id}/imagenes` | Sube una imagen al trabajo (`multipart/form-data`) | Sesion plena con cuenta `ACTIVA` |
+| `PUT /api/prestador/portafolio/trabajos/{id}/imagenes/orden` | Reordena las imagenes del trabajo | Sesion plena con cuenta `ACTIVA` |
+| `PUT /api/prestador/portafolio/trabajos/{id}/imagenes/{idImagen}` | Cambia el texto alternativo de una imagen | Sesion plena con cuenta `ACTIVA` |
+| `DELETE /api/prestador/portafolio/trabajos/{id}/imagenes/{idImagen}` | Elimina una imagen y su objeto | Sesion plena con cuenta `ACTIVA` |
 | `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
 
 **Sesion plena** es la que no esta pendiente del segundo factor y pertenece a una cuenta que no esta
@@ -129,6 +150,7 @@ ordinaria ya registrada (ver [la guia de entorno local](GuiaEntornoLocal.md#rol-
 | Contrasena actual incorrecta al cambiarla o al desactivar el segundo factor | 403 | `CREDENCIALES_INVALIDAS` |
 | Codigo del segundo factor incorrecto, vencido o fuera de tolerancia | 403 | `CODIGO_INVALIDO` |
 | La cuenta esta suspendida al iniciar sesion | 403 | `CUENTA_SUSPENDIDA` |
+| La cuenta esta restringida y pide modificar su perfil o su portafolio | 403 | `CUENTA_RESTRINGIDA` |
 
 La regla es una sola: **401 significa que ya no hay sesion y 403 que la hay pero no alcanza**. Por
 eso una contrasena o un codigo equivocados no devuelven 401 aunque sean credenciales: la sesion
@@ -145,6 +167,95 @@ Dentro del 403 hay dos situaciones que piden cosas distintas, y **el codigo es l
 | La sesion alcanza, pero el dato presentado no es correcto | `CREDENCIALES_INVALIDAS`, `CODIGO_INVALIDO` | Volver a escribirlo; la sesion sigue vigente |
 
 Ningun cliente debe deducir de un 403 que la sesion termino: eso solo lo dice el 401.
+
+## Perfil de prestador, contactos y portafolio
+
+Todo lo de esta seccion opera **siempre sobre la cuenta de la sesion**. Ninguna
+ruta lleva un identificador de cuenta: operar sobre el perfil de otra persona no
+es una peticion que se pueda formular.
+
+### Quien puede que
+
+| Situacion | Lectura de lo propio | Mutacion de lo propio |
+|---|---|---|
+| Sin sesion | 401 `NO_AUTENTICADO` | 401 `NO_AUTENTICADO` |
+| Sesion provisional (falta el segundo factor) | 403 `ACCESO_DENEGADO` | 403 `ACCESO_DENEGADO` |
+| Cuenta `ACTIVA` | Si | Si |
+| Cuenta `RESTRINGIDA_TEMPORAL` | Si | 403 `CUENTA_RESTRINGIDA` |
+| Cuenta `SUSPENDIDA_TEMPORAL` o `SUSPENDIDA_PERMANENTE` | 403 `ACCESO_DENEGADO` | 403 `ACCESO_DENEGADO` |
+| Recurso de **otro** prestador | 404 `RECURSO_NO_ENCONTRADO` | 404 `RECURSO_NO_ENCONTRADO` |
+
+Un recurso ajeno responde **404 y no 403** a proposito: distinguirlos permitiria
+enumerar identificadores para averiguar que contactos o trabajos existen.
+
+### Ciclo del perfil
+
+- Cada cuenta puede tener **como maximo un perfil**. Un segundo intento responde
+  409 `PERFIL_YA_EXISTE`.
+- Consultar el perfil de una cuenta que todavia no lo creo responde 404
+  `PERFIL_NO_ENCONTRADO`; ese codigo es lo que distingue «aun no existe» de un
+  fallo, y es lo que usa la interfaz para ofrecer el formulario de creacion.
+- Todo perfil nace `DISPONIBLE` y `SIN_VERIFICAR`.
+- El municipio principal debe existir y pertenecer a un departamento
+  **habilitado**; si no, 400 `MUNICIPIO_NO_DISPONIBLE`. El mensaje no distingue
+  entre inexistente y deshabilitado: para quien elige en el formulario, ninguna
+  de las dos es una opcion valida.
+- **No existe borrar el perfil.** La definicion vigente solo autoriza crearlo y
+  actualizarlo.
+- `nivelVerificacion` es de **solo lectura**: es una proyeccion que actualizara
+  el flujo de verificacion documental (P4V). Ningun DTO de P4 lo acepta, asi que
+  enviarlo no tiene efecto.
+
+Mientras el perfil este `SIN_VERIFICAR` **no aparece en ninguna superficie
+publica**. P4 no crea todavia endpoints publicos de descubrimiento: eso llega
+con P5.
+
+### Contactos
+
+Entradas libres —un numero, un correo, un usuario o un enlace—, sin
+clasificacion por plataforma. En P4 **solo los ve y los administra su
+propietario**; se revelaran a un cliente cuando exista una solicitud aceptada,
+en el incremento que las implemente.
+
+### Orden
+
+Reordenar envia la **lista completa** de identificadores, no un movimiento:
+
+```json
+{ "idsEnOrden": [7, 3, 12] }
+```
+
+Debe traer exactamente los elementos existentes, sin repetir ninguno; si sobra,
+falta o se repite alguno, la respuesta es 400 `ORDEN_INVALIDO`. Asi la operacion
+es idempotente, no depende de en que orden lleguen dos cambios y no puede dejar
+posiciones huerfanas.
+
+### Imagenes
+
+Se suben con `multipart/form-data`. El navegador **no** sube directamente al
+almacenamiento: siempre pasa por la API.
+
+- Parte `archivo`: el binario. En la subida de una imagen de portafolio, el
+  campo `textoAlternativo` viaja en el mismo formulario.
+- Formatos admitidos: **JPEG, PNG y WebP**. SVG y PDF no se admiten en esta
+  superficie publica.
+- Maximo configurable por imagen, 5 MB por omision
+  (`MOICA_IMAGEN_TAMANO_MAXIMO`).
+- La validacion es del backend, nunca solo del navegador, y **no confia en la
+  extension ni en el `Content-Type`**: comprueba tambien la firma binaria real
+  del archivo. Una cabecera que no corresponde con el contenido se rechaza.
+
+| Situacion | Estado | Codigo |
+|---|---|---|
+| Supera el maximo por imagen | 413 | `IMAGEN_DEMASIADO_GRANDE` |
+| Formato no admitido, archivo vacio o firma que no corresponde | 400 | `IMAGEN_NO_ADMITIDA` |
+| El almacenamiento no responde o no esta configurado | 503 | `ALMACENAMIENTO_NO_DISPONIBLE` |
+| La peticion supera el tope de transporte multipart | 413 | `CONTENIDO_DEMASIADO_GRANDE` |
+
+PostgreSQL guarda **unicamente la URL publica**, nunca el binario. Las claves de
+los objetos son opacas y no se derivan del nombre original. El detalle del
+proveedor —endpoint, credenciales, bucket— no aparece en ninguna respuesta ni en
+ningun registro. Ver [Almacenamiento.md](Almacenamiento.md).
 
 ## Proteccion CSRF
 
@@ -182,4 +293,4 @@ Todos los errores comparten cuerpo. El detalle por campo solo aparece cuando el 
 }
 ```
 
-Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes ni valores internos.
+Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento ni valores internos.

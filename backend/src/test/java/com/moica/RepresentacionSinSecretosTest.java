@@ -10,6 +10,7 @@ import com.moica.auth.dto.SolicitudDeInicioSesion;
 import com.moica.auth.seguridad.PropiedadesDeSegundoFactor;
 import com.moica.auth.seguridad.PropiedadesDeSeguridad;
 import com.moica.auth.service.AutenticacionService;
+import com.moica.comun.almacenamiento.PropiedadesDeAlmacenamiento;
 import com.moica.usuario.dto.SolicitudDeRegistro;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -100,5 +101,27 @@ class RepresentacionSinSecretosTest {
             new PropiedadesDeSegundoFactor(CLAVE_DE_CIFRADO, 6, Duration.ofSeconds(30), 1)
                 .toString())
         .doesNotContain(CLAVE_DE_CIFRADO);
+  }
+
+  @Test
+  void laConfiguracionDelAlmacenamientoNoRevelaNingunaMitadDeLaCredencial() {
+    // Las dos mitades llevan centinelas distintos: si la representación filtrara
+    // solo una, la prueba diría cuál.
+    String identificadorR2 = "centinela-identificador-del-token-r2";
+    String secretoR2 = "centinela-secreto-del-token-r2";
+
+    String representacion =
+        new PropiedadesDeAlmacenamiento(
+                "cuenta", identificadorR2, secretoR2, "bucket", "https://imagenes.moica.ni")
+            .toString();
+
+    assertThat(representacion)
+        .as("el identificador del token es material de credencial, igual que su secreto")
+        .doesNotContain(identificadorR2)
+        .doesNotContain(secretoR2);
+    assertThat(representacion)
+        .as("lo que no es credencial sigue sirviendo para diagnosticar")
+        .contains("bucketPublico=bucket")
+        .contains("urlPublicaBase=https://imagenes.moica.ni");
   }
 }

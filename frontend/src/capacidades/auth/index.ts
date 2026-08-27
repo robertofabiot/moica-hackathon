@@ -3,9 +3,11 @@
  *
  * El resto de la aplicación usa solo lo que se publica aquí; nadie importa archivos internos de la
  * capacidad.
+ *
+ * La infraestructura de red ya no se publica desde aquí: vive en `src/comun/api` y cada capacidad
+ * la toma de ahí. Lo que esta capacidad publica son sus propias piezas de acceso.
  */
 
-export { ErrorDeApi, obtenerJson } from './api';
 export { crearClienteDeConsultas } from './clienteDeConsultas';
 export { default as RutaProtegida, RutaDeVerificacion } from './componentes/RutaProtegida';
 export { useSesionActual } from './hooks/useSesionActual';

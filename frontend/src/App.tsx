@@ -14,14 +14,15 @@ import {
   useVigilanciaDeSesion,
   VerificacionSegundoFactor,
 } from './capacidades/auth';
+import { PerfilPrestador, RUTA_PRESTADOR } from './capacidades/prestador';
 import Inicio from './paginas/Inicio';
 import RutaNoEncontrada from './paginas/RutaNoEncontrada';
 
 /**
  * Mapa de rutas de Moica.
  *
- * Cada incremento agrega las rutas de su propia capacidad. P2 añadió las de acceso y P3 las de
- * seguridad de la cuenta y el área administrativa.
+ * Cada incremento agrega las rutas de su propia capacidad. P2 añadió las de acceso, P3 las de
+ * seguridad de la cuenta y el área administrativa, y P4 la del perfil de prestador.
  *
  * Los envoltorios de ruta deciden a qué pantalla llevar a cada persona, no si puede hacer algo:
  * quien pida una ruta protegida de la API sin permiso recibe 401 o 403 del backend aunque llegue a
@@ -51,6 +52,14 @@ export default function App() {
         element={
           <RutaProtegida>
             <SeguridadCuenta />
+          </RutaProtegida>
+        }
+      />
+      <Route
+        path={RUTA_PRESTADOR}
+        element={
+          <RutaProtegida>
+            <PerfilPrestador />
           </RutaProtegida>
         }
       />

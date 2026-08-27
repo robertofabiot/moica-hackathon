@@ -1,4 +1,4 @@
-import { obtenerJson } from '../auth';
+import { obtenerJson } from '../../comun/api';
 import type { ResumenAdministrativo } from './tipos';
 
 /**

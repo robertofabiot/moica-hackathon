@@ -1,7 +1,7 @@
 import { ErrorDeApi } from '../api';
 import { useSegundoFactor } from '../hooks/useSeguridadCuenta';
 import type { EstadoSegundoFactor } from '../tipos';
-import estilos from '../paginas/formulario.module.css';
+import estilos from '../../../comun/estilos/formulario.module.css';
 import seccion from '../paginas/seguridad.module.css';
 import ActivacionDeSegundoFactor from './ActivacionDeSegundoFactor';
 import DesactivacionDeSegundoFactor from './DesactivacionDeSegundoFactor';

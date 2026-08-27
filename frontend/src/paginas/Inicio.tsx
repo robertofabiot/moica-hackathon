@@ -2,7 +2,6 @@ import { Link } from 'react-router';
 
 import { RUTA_ADMIN } from '../capacidades/admin';
 import {
-  ErrorDeApi,
   RUTA_INICIO_SESION,
   RUTA_REGISTRO,
   RUTA_SEGURIDAD,
@@ -10,6 +9,8 @@ import {
   useCierreSesion,
   useSesionActual,
 } from '../capacidades/auth';
+import { RUTA_PRESTADOR } from '../capacidades/prestador';
+import { ErrorDeApi } from '../comun/api';
 import estilos from './Inicio.module.css';
 
 /**
@@ -51,6 +52,9 @@ export default function Inicio() {
               </Link>
             ) : (
               <>
+                <Link className={estilos.boton} to={RUTA_PRESTADOR}>
+                  Mi perfil de prestador
+                </Link>
                 <Link className={estilos.boton} to={RUTA_SEGURIDAD}>
                   Seguridad de la cuenta
                 </Link>

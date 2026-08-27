@@ -1,0 +1,140 @@
+/*
+ * Secciones, listas y acciones que comparten las pantallas de contenido.
+ *
+ * Las usan el perfil de prestador y el portafolio, así que viven aquí y no
+ * dentro de una capacidad: ninguna capacidad importa archivos internos de otra.
+ * Reutilizan las variables neutras de `src/estilos/global.css`; la paleta de
+ * marca todavía no está aprobada. Mobile-first: la hoja base describe el
+ * teléfono y la media query amplía a tableta y escritorio.
+ */
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.75rem;
+  background-color: var(--moica-fondo);
+}
+
+.tituloDeSeccion {
+  font-size: 1.125rem;
+}
+
+.explicacion {
+  color: var(--moica-texto-suave);
+}
+
+.estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--moica-espacio-1);
+  color: var(--moica-texto-suave);
+}
+
+.etiquetaDeEstado {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--moica-borde);
+  border-radius: 999px;
+  background-color: var(--moica-fondo-suave);
+  color: var(--moica-texto);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.botonSecundario {
+  padding: 0.75rem var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+  background-color: var(--moica-fondo);
+  color: var(--moica-texto);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.botonSecundario:hover:not(:disabled) {
+  border-color: var(--moica-texto-suave);
+  background-color: var(--moica-fondo-suave);
+}
+
+.botonSecundario:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+
+/* Listas de contactos, trabajos e imágenes: sin viñetas y con separación propia. */
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.elemento {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+  background-color: var(--moica-fondo-suave);
+}
+
+/* Un dato de contacto o una URL larga se parte en lugar de desbordar la pantalla. */
+.contenidoDelElemento {
+  overflow-wrap: anywhere;
+}
+
+.tituloDelElemento {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.metadatoDelElemento {
+  color: var(--moica-texto-suave);
+  font-size: 0.875rem;
+}
+
+.accionesDelElemento {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--moica-espacio-1);
+}
+
+/* Botones pequeños de subir, bajar, editar y quitar dentro de una fila. */
+.botonPequeno {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.375rem;
+  background-color: var(--moica-fondo);
+  color: var(--moica-texto);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.botonPequeno:hover:not(:disabled) {
+  border-color: var(--moica-texto-suave);
+  background-color: var(--moica-fondo-suave);
+}
+
+.botonPequeno:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.vacio {
+  color: var(--moica-texto-suave);
+}
+
+@media (min-width: 48rem) {
+  .seccion {
+    padding: var(--moica-espacio-3);
+  }
+}

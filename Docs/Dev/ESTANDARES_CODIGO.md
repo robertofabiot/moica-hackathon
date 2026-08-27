@@ -178,6 +178,12 @@ verificación de la plantilla de PR lo exige explícitamente.
 - Prohibido en el MVP: Tailwind, MUI, Bootstrap, Redux, WebSockets, mapas,
   pasarelas de pago, OCR, biometría y proveedores externos de verificación.
 
+Dependencias de infraestructura aprobadas después del plan:
+
+| Dependencia | Para qué | Decisión |
+|---|---|---|
+| `software.amazon.awssdk:s3` | Almacenamiento de objetos en Cloudflare R2 por su compatibilidad con S3 | [Almacenamiento.md](Almacenamiento.md) |
+
 **Cómo se comprueba:** `npm ci` respeta el lockfile; la revisión del PR
 contrasta cada dependencia nueva contra el plan.
 

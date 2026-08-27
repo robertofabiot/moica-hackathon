@@ -155,30 +155,37 @@ public class EnvioDeExpedienteService {
   }
 
   private static NivelVerificacionSolicitado nivelDe(String valor) {
-    try {
-      return NivelVerificacionSolicitado.valueOf(normalizar(valor));
-    } catch (IllegalArgumentException | NullPointerException noEsDelDominio) {
-      throw new ErrorDeAplicacion(
-          HttpStatus.BAD_REQUEST,
-          "SOLICITUD_INVALIDA",
-          "El nivel solicitado debe ser BASICA o PROFESIONAL.");
+    String normalizado = normalizar(valor);
+    for (NivelVerificacionSolicitado nivel : NivelVerificacionSolicitado.values()) {
+      if (nivel.name().equals(normalizado)) {
+        return nivel;
+      }
     }
+    throw new ErrorDeAplicacion(
+        HttpStatus.BAD_REQUEST,
+        "SOLICITUD_INVALIDA",
+        "El nivel solicitado debe ser BASICA o PROFESIONAL.");
   }
 
   private static TipoDocumentoVerificacion tipoDe(String valor) {
-    try {
-      return TipoDocumentoVerificacion.valueOf(normalizar(valor));
-    } catch (IllegalArgumentException | NullPointerException noEsDelDominio) {
-      throw new ErrorDeAplicacion(
-          HttpStatus.BAD_REQUEST,
-          "SOLICITUD_INVALIDA",
-          "El tipo de cada documento debe ser IDENTIDAD, CERTIFICACION, CONSTANCIA,"
-              + " REGISTRO_NEGOCIO u OTRO_RESPALDO.");
+    String normalizado = normalizar(valor);
+    for (TipoDocumentoVerificacion tipo : TipoDocumentoVerificacion.values()) {
+      if (tipo.name().equals(normalizado)) {
+        return tipo;
+      }
     }
+    throw new ErrorDeAplicacion(
+        HttpStatus.BAD_REQUEST,
+        "SOLICITUD_INVALIDA",
+        "El tipo de cada documento debe ser IDENTIDAD, CERTIFICACION, CONSTANCIA,"
+            + " REGISTRO_NEGOCIO u OTRO_RESPALDO.");
   }
 
+  // Se recorre el dominio en lugar de llamar a `valueOf`: así un valor que no
+  // existe es una rama normal y no una excepción que haya que capturar, que es
+  // lo que exigen los estándares para NullPointerException.
   private static String normalizar(String valor) {
-    return valor.strip().toUpperCase(Locale.ROOT);
+    return (valor == null) ? "" : valor.strip().toUpperCase(Locale.ROOT);
   }
 
   /** Un archivo que ya pasó todas las comprobaciones y todavía no ha salido hacia el bucket. */

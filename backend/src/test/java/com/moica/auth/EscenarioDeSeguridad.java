@@ -50,6 +50,10 @@ public abstract class EscenarioDeSeguridad extends PruebaDeIntegracionConPostgre
 
   @BeforeEach
   protected void prepararEscenario() {
+    // Las solicitudes de verificación apuntan al administrador que las resolvió
+    // con ON DELETE RESTRICT, así que se retiran antes: si no, borrar las
+    // cuentas chocaría con esa restricción en lugar de limpiar.
+    jdbc.update("DELETE FROM solicitud_verificacion_prestador");
     // Borrar las cuentas arrastra en cascada sus sesiones, su segundo factor y
     // su rol administrativo, que es justamente lo que declara la migración.
     jdbc.update("DELETE FROM usuario");

@@ -38,6 +38,12 @@ Copy-Item .env.example .env
 | `MOICA_R2_BUCKET_PUBLICO` | Nombre del bucket publico ya aprovisionado | Backend |
 | `MOICA_R2_URL_PUBLICA_BASE` | Origen HTTPS desde el que se leen las imagenes, sin barra final | Backend |
 | `MOICA_IMAGEN_TAMANO_MAXIMO` | Maximo por imagen (por omision `5MB`) | Backend |
+| `MOICA_R2_PRIVADO_ID_CUENTA` | Identificador de la cuenta de Cloudflare del bucket privado | Backend |
+| `MOICA_R2_PRIVADO_ACCESS_KEY_ID` | Identificador del token de API del bucket privado | Backend |
+| `MOICA_R2_PRIVADO_SECRET_ACCESS_KEY` | Secreto de ese token; nunca se versiona | Backend |
+| `MOICA_R2_BUCKET_PRIVADO` | Nombre del bucket privado de expedientes ya aprovisionado | Backend |
+| `MOICA_DOCUMENTO_TAMANO_MAXIMO` | Maximo por documento del expediente (por omision `5MB`; no admite mas) | Backend |
+| `MOICA_DOCUMENTO_URL_TEMPORAL_DURACION` | Duracion del enlace temporal con el que se abre un documento (por omision `PT5M`; no admite mas de una hora) | Backend |
 
 Los valores de `.env.example` son de desarrollo local. En produccion cada variable se define en el entorno del servidor; ningun secreto se versiona.
 
@@ -92,6 +98,33 @@ no se define ninguna.
 Como crear el bucket, que permisos darle al token y como comprobar una carga
 real contra R2: [Almacenamiento.md](Almacenamiento.md). No hace falta ningun
 servicio local ni un emulador: las pruebas automaticas usan un doble en memoria.
+
+### Almacenamiento de expedientes
+
+Los documentos de verificacion se guardan en un bucket **privado** de Cloudflare
+R2, **distinto del publico y con un token distinto**. Las cuatro variables
+`MOICA_R2_PRIVADO_*` van juntas igual que las otras cinco: o se definen todas o
+no se define ninguna.
+
+- **Sin ellas** el backend arranca con normalidad; enviar un expediente o abrir
+  un documento responde `503 ALMACENAMIENTO_NO_DISPONIBLE` y **no crea ninguna
+  fila**. Es suficiente para trabajar en cualquier otra parte de Moica, incluida
+  la revision de expedientes ya existentes.
+- **A medias** el arranque se detiene con un mensaje que dice cuales faltan, sin
+  revelar ningun valor.
+- **No reutilices las credenciales del bucket publico.** El sentido de tener dos
+  superficies es que un fallo en una no pueda exponer la otra.
+- El bucket privado **no debe tener** subdominio `r2.dev` ni dominio propio: no
+  existe ninguna direccion desde la que se lea sin permiso. Por eso no hay una
+  variable de URL publica para el.
+
+`MOICA_DOCUMENTO_TAMANO_MAXIMO` solo puede bajarse de `5MB`: ese es el tope que
+impone PostgreSQL con `ck_documento_verificacion_tamano`, y un valor mayor
+detiene el arranque. `MOICA_DOCUMENTO_URL_TEMPORAL_DURACION` tampoco admite mas
+de una hora: un acceso «temporal» mas largo deja de serlo.
+
+Como aprovisionar el bucket privado y las diez comprobaciones que exige:
+[Almacenamiento.md](Almacenamiento.md).
 
 ### Rol administrativo
 

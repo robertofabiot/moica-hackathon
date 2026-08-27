@@ -236,6 +236,9 @@ stateDiagram-v2
 Reglas del flujo:
 
 - Solo puede existir una solicitud abierta —`PENDIENTE` o `EN_REVISION`— del mismo nivel por perfil.
+- Cada nivel se solicita cuando corresponde: la básica cuando el perfil está `SIN_VERIFICAR`, y la profesional cuando tiene la básica vigente y todavía no la profesional. Pedir un nivel que ya está vigente no es una renovación silenciosa sino un conflicto, y así se responde.
+- La solicitud y su expediente nacen juntos: no existe un estado `BORRADOR` ni un momento en el que exista una solicitud sin documentos. Los documentos no se editan ni se sustituyen después de enviarlos; corregir algo significa presentar una solicitud nueva.
+- Solo la persona administradora que tomó una revisión puede aprobarla o rechazarla. Revocar, en cambio, no exige haberla tomado: la aprobó otra persona en otro momento y esa revisión ya está cerrada.
 - Una solicitud rechazada puede volver a presentarse con documentos corregidos; se registra como una solicitud nueva y la anterior se conserva.
 - Si se rechaza una solicitud profesional, el perfil conserva su nivel básico.
 - La revisión es siempre manual: la ejecuta una cuenta con rol administrativo cuya sesión haya verificado el segundo factor. Moica no aprueba, rechaza ni revoca verificaciones de forma automática.
@@ -244,6 +247,14 @@ Reglas del flujo:
 #### Efectos de una revocación
 
 Si se revoca la verificación básica, el perfil vuelve a `SIN_VERIFICAR`: deja de aparecer públicamente, sus servicios dejan de admitir nuevas solicitudes y cualquier nivel profesional deja de surtir efecto. Las solicitudes ya aceptadas conservan su flujo normal —chat, cancelación, finalización y calificación— para no dejar compromisos abiertos sin cierre.
+
+«Dejar de surtir efecto» significa exactamente esto: la solicitud profesional aprobada queda también `REVOCADA`, **en la misma operación** y con el mismo motivo, la misma persona administradora y el mismo instante que la básica. No es una consecuencia diferida ni un estado intermedio: una profesional que sobreviviera diría que Moica respalda la trayectoria de alguien cuya identidad ya no respalda.
+
+Esa revocación **no se deshace sola**. Si el perfil vuelve a obtener la verificación básica, recupera `VERIFICADO_BASICO` y nada más: la insignia profesional exige una solicitud nueva, con su propio expediente y su propia revisión.
+
+Revocar la verificación profesional, en cambio, solo la afecta a ella: el perfil queda en `VERIFICADO_BASICO` y conserva todo lo que ese nivel permite.
+
+Una revocación no borra nada. La solicitud revocada y sus documentos se conservan como evidencia de qué se revisó, quién lo decidió y por qué.
 
 #### Expediente documental y privacidad
 

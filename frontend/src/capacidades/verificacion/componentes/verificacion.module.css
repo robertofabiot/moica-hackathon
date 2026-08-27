@@ -1,0 +1,105 @@
+/*
+ * Estilos propios de la verificación documental.
+ *
+ * Las secciones, listas y botones que comparte con el perfil y el portafolio
+ * viven en `src/comun/estilos/secciones.module.css`; aquí queda lo que solo usa
+ * esta capacidad. Reutiliza las variables neutras de `src/estilos/global.css`:
+ * la paleta de marca todavía no está aprobada. Mobile-first: la hoja base
+ * describe el teléfono y la media query amplía a tableta y escritorio.
+ */
+
+/*
+ * La insignia no se distingue solo por color: cada nivel lleva su texto y su
+ * símbolo, así que quien no perciba la diferencia de tono sigue leyendo cuál
+ * es. El color solo refuerza.
+ */
+.insignia {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  padding: 0.125rem 0.625rem;
+  border: 1px solid var(--moica-borde);
+  border-radius: 999px;
+  background-color: var(--moica-fondo-suave);
+  font-size: 0.875rem;
+  font-weight: 600;
+  /* Un nombre largo se parte antes que desbordar la pantalla de un teléfono. */
+  overflow-wrap: anywhere;
+}
+
+.insigniaSinVerificar {
+  color: var(--moica-texto-suave);
+}
+
+.insigniaBasica {
+  border-color: var(--moica-texto-suave);
+  color: var(--moica-texto);
+}
+
+.insigniaProfesional {
+  border-color: var(--moica-texto);
+  border-width: 2px;
+  color: var(--moica-texto);
+}
+
+.encabezadoDelNivel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--moica-espacio-1);
+}
+
+.subtitulo {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Lo que significa una insignia y lo que no. Se lee antes de solicitar nada. */
+.explicacionDeLaInsignia,
+.avisoDePrivacidad {
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-left-width: 4px;
+  border-left-color: var(--moica-texto-suave);
+  border-radius: 0.5rem;
+  background-color: var(--moica-fondo-suave);
+}
+
+.envio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+}
+
+.confirmacion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+  padding: var(--moica-espacio-2);
+  border: 2px solid var(--moica-texto);
+  border-radius: 0.5rem;
+  background-color: var(--moica-fondo-suave);
+}
+
+/* El motivo de un rechazo o de una revocación, tal como lo escribió quien revisó. */
+.motivo {
+  padding: var(--moica-espacio-2);
+  border-left: 4px solid var(--moica-error);
+  background-color: var(--moica-fondo-suave);
+  overflow-wrap: anywhere;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--moica-espacio-1);
+}
+
+@media (min-width: 48rem) {
+  .envio {
+    padding: var(--moica-espacio-3);
+  }
+}

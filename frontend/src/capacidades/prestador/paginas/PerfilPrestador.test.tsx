@@ -7,6 +7,7 @@ import { definirTiempoDeEsperaMs, TIEMPO_DE_ESPERA_MS } from '../../../comun/api
 import {
   catalogoDeEjemplo,
   cuerpoDeError,
+  estadoDeVerificacionDeEjemplo,
   instalarApiFalsa,
   perfilDeEjemplo,
   sesionDeEjemplo,
@@ -30,6 +31,14 @@ describe('Perfil de prestador', () => {
     api.responder('GET /api/catalogos/departamentos', { estado: 200, cuerpo: catalogoDeEjemplo() });
     api.responder('GET /api/prestador/contactos', { estado: 200, cuerpo: [] });
     api.responder('GET /api/prestador/portafolio/trabajos', { estado: 200, cuerpo: [] });
+    // La sección de verificación es parte de la pantalla desde P4V: sin su
+    // respuesta, el perfil se pintaría con un error que no es el que cada
+    // prueba viene a comprobar.
+    api.responder('GET /api/prestador/verificacion', {
+      estado: 200,
+      cuerpo: estadoDeVerificacionDeEjemplo(),
+    });
+    api.responder('GET /api/prestador/verificacion/solicitudes', { estado: 200, cuerpo: [] });
   });
 
   afterEach(() => {

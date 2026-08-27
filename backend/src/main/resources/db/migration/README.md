@@ -3,8 +3,9 @@
 Este directorio contiene las migraciones versionadas del esquema de PostgreSQL.
 Las tablas del diccionario de datos llegan con el incremento que las necesita;
 P2 abre el rango de identidad con `V10__crear_usuario_y_sesion.sql`, P3 lo
-completa con `V11__crear_administrador_y_segundo_factor.sql` y P4 abre el rango
-de territorio, perfiles y portafolio con `V20`–`V23`.
+completa con `V11__crear_administrador_y_segundo_factor.sql`, P4 abre el rango
+de territorio, perfiles y portafolio con `V20`–`V23` y P4V abre el de
+verificación documental con `V30`.
 
 ## Reglas
 
@@ -50,3 +51,4 @@ adelantado un rango que todavía no hace falta.
 | `V21__crear_perfil_prestador_y_contactos.sql` | P4 | Tablas `perfil_prestador` (especialización 0..1 de `usuario`) y `medio_contacto_prestador`, con sus dominios e índice por prestador |
 | `V22__crear_trabajos_de_portafolio.sql` | P4 | Tablas `trabajo_portafolio` e `imagen_trabajo_portafolio` con sus índices por prestador y por trabajo |
 | `V23__cargar_managua_y_sus_municipios.sql` | P4 | Departamento de Managua habilitado y sus nueve municipios |
+| `V30__crear_solicitudes_y_documentos_de_verificacion.sql` | P4V | Tablas `solicitud_verificacion_prestador` y `documento_verificacion_prestador`, el índice parcial `uq_solicitud_verificacion_abierta` y los índices por prestador, por estado y por solicitud |

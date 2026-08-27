@@ -91,15 +91,20 @@ public record PropiedadesDeAlmacenamiento(
 
   /**
    * Se redefine a propósito: la representación que genera el compilador para un record incluye
-   * todos sus componentes, y uno de ellos es el secreto del token de API.
+   * todos sus componentes, y dos de ellos son las mitades de una credencial.
+   *
+   * <p>El identificador del token se oculta igual que su secreto. No es el secreto, pero es
+   * material de credencial: nombra exactamente qué token usa Moica contra R2, y publicarlo en un
+   * registro o en el mensaje de una excepción convierte una fuga del secreto en una credencial
+   * completa y le ahorra la mitad del trabajo a quien la busque. Lo que no es credencial —cuenta,
+   * bucket y base pública— sigue a la vista, porque es lo que hace útil esta representación al
+   * diagnosticar un despliegue.
    */
   @Override
   public String toString() {
     return "PropiedadesDeAlmacenamiento[idCuenta="
         + idCuenta
-        + ", accessKeyId="
-        + accessKeyId
-        + ", secretAccessKey=(oculto), bucketPublico="
+        + ", accessKeyId=(oculto), secretAccessKey=(oculto), bucketPublico="
         + bucketPublico
         + ", urlPublicaBase="
         + urlPublicaBase

@@ -104,14 +104,24 @@ class RepresentacionSinSecretosTest {
   }
 
   @Test
-  void laConfiguracionDelAlmacenamientoNoRevelaElSecretoDelToken() {
+  void laConfiguracionDelAlmacenamientoNoRevelaNingunaMitadDeLaCredencial() {
+    // Las dos mitades llevan centinelas distintos: si la representación filtrara
+    // solo una, la prueba diría cuál.
+    String identificadorR2 = "centinela-identificador-del-token-r2";
     String secretoR2 = "centinela-secreto-del-token-r2";
 
-    assertThat(
-            new PropiedadesDeAlmacenamiento(
-                    "cuenta", "access-key", secretoR2, "bucket", "https://imagenes.moica.ni")
-                .toString())
-        .doesNotContain(secretoR2)
-        .contains("bucketPublico=bucket");
+    String representacion =
+        new PropiedadesDeAlmacenamiento(
+                "cuenta", identificadorR2, secretoR2, "bucket", "https://imagenes.moica.ni")
+            .toString();
+
+    assertThat(representacion)
+        .as("el identificador del token es material de credencial, igual que su secreto")
+        .doesNotContain(identificadorR2)
+        .doesNotContain(secretoR2);
+    assertThat(representacion)
+        .as("lo que no es credencial sigue sirviendo para diagnosticar")
+        .contains("bucketPublico=bucket")
+        .contains("urlPublicaBase=https://imagenes.moica.ni");
   }
 }

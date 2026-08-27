@@ -13,8 +13,9 @@ import org.springframework.http.HttpStatus;
  *
  * <p>Además del resultado visible, se afirma sobre el ciclo de vida de los objetos: la clave es
  * opaca y con su prefijo, la sustitución retira el objeto anterior solo después de persistir el
- * nuevo, la compensación retira el objeto recién subido si la persistencia falla y un proveedor
- * caído responde el error uniforme sin tocar la base.
+ * nuevo, la compensación retira el objeto recién subido si la persistencia falla, una URL que ya no
+ * pertenece a la base pública no se intenta borrar y un proveedor caído responde el error uniforme
+ * sin tocar la base.
  */
 class ImagenDePerfilIT extends EscenarioDePrestador {
 
@@ -81,6 +82,32 @@ class ImagenDePerfilIT extends EscenarioDePrestador {
     assertThat(jdbc.queryForObject("SELECT url_imagen_perfil FROM perfil_prestador", String.class))
         .isNull();
     assertThat(almacenamiento.cantidadDeObjetos()).isZero();
+  }
+
+  @Test
+  void unaUrlQueNoPerteneceALaBasePublicaNoSeIntentaBorrar() {
+    navegador.putArchivo(RUTA_IMAGEN, "foto.png", "image/png", imagenPng());
+    String claveGuardada = almacenamiento.clavesGuardadas().get(0);
+
+    // La fila conserva el dominio público anterior, tal como queda después de
+    // cambiar `moica.almacenamiento.url-publica-base`.
+    jdbc.update(
+        "UPDATE perfil_prestador SET url_imagen_perfil = ?",
+        "https://dominio-anterior.example/perfiles/abc123.png");
+
+    HttpResponse<String> respuesta = navegador.delete(RUTA_IMAGEN);
+
+    assertThat(respuesta.statusCode())
+        .as("la operación del usuario sigue siendo correcta")
+        .isEqualTo(HttpStatus.OK.value());
+    assertThat(jdbc.queryForObject("SELECT url_imagen_perfil FROM perfil_prestador", String.class))
+        .isNull();
+    assertThat(almacenamiento.clavesEliminadas())
+        .as("no se pide borrar una clave que este almacén no sabe nombrar")
+        .isEmpty();
+    assertThat(almacenamiento.contiene(claveGuardada))
+        .as("el objeto queda suelto en el bucket, pendiente de limpieza manual")
+        .isTrue();
   }
 
   @Test

@@ -91,6 +91,29 @@ orden es lo que mantiene la coherencia:
    —`Quedó pendiente de limpieza el objeto …`— y ese objeto queda suelto en el
    bucket hasta que alguien lo retire a mano. Es una fuga de espacio, nunca de
    datos ni de consistencia.
+5. **Si la URL guardada ya no pertenece a la base pública:** no se borra nada.
+   Solo se retira lo que el almacén sabe nombrar, porque pedirle al proveedor
+   que elimine una clave deducida de un texto arbitrario de la base de datos
+   sería borrar sin validar.
+
+### Qué pasa al cambiar la base pública
+
+Cambiar `MOICA_R2_URL_PUBLICA_BASE` —el paso normal al pasar del subdominio
+`r2.dev` a un dominio propio— no migra las filas ya guardadas: conservan la URL
+con el dominio anterior.
+
+- **Las imágenes existentes se siguen viendo** mientras el dominio viejo siga
+  sirviendo el bucket. Si se retira, esas filas quedan apuntando a una dirección
+  que ya no responde.
+- **Sus objetos dejan de poder retirarse solos.** `claveDe` no reconoce la URL,
+  así que sustituir o eliminar esa imagen limpia la fila pero deja el objeto en
+  el bucket. Queda registrado el aviso «Quedó sin retirar un objeto ya
+  desreferenciado…», que nombra la causa sin escribir la URL en el registro.
+- **Qué hacer:** conservar el dominio anterior mientras haya filas que lo usen,
+  o actualizar esas filas con una migración cuando el equipo decida cambiarlo, y
+  revisar el bucket por objetos sueltos. Moica **no** lleva una lista de
+  dominios históricos: sería infraestructura para un problema que el MVP todavía
+  no tiene.
 
 ### Claves
 

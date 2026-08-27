@@ -86,12 +86,28 @@ public class ImagenDePerfilService {
    * <p>Con mejor esfuerzo: la operación del usuario ya es consistente, así que un fallo aquí no se
    * convierte en error para quien la pidió ni en corrupción silenciosa; se registra y el objeto
    * queda pendiente de limpieza manual.
+   *
+   * <p>Solo se borra lo que este almacén sabe nombrar. Si la URL guardada no pertenece a la base
+   * pública configurada, {@code claveDe} no entrega clave y no se intenta nada: borrar a partir de
+   * un texto arbitrario de la base de datos sería pedirle al proveedor que retire una clave sin
+   * validar. Ocurre después de cambiar {@code moica.almacenamiento.url-publica-base}, porque las
+   * filas anteriores conservan el dominio viejo; el objeto queda suelto en el bucket y el aviso
+   * existe para que eso no pase inadvertido.
    */
   private void eliminarObjetoDesreferenciado(String url) {
     if (url == null) {
       return;
     }
-    almacenamiento.claveDe(url).ifPresent(this::eliminarSinPropagar);
+    almacenamiento.claveDe(url).ifPresentOrElse(this::eliminarSinPropagar, this::avisarUrlAjena);
+  }
+
+  private void avisarUrlAjena() {
+    // Sin la URL ni ningún dato de la cuenta: es contenido de la base de datos y
+    // el aviso solo necesita decir que hay algo que limpiar a mano.
+    LOG.warn(
+        "Quedó sin retirar un objeto ya desreferenciado del perfil: su URL no pertenece a la base"
+            + " pública configurada. Revisa si moica.almacenamiento.url-publica-base cambió y"
+            + " limpia el bucket a mano.");
   }
 
   private void eliminarSinPropagar(String clave) {

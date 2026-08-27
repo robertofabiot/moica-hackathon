@@ -163,6 +163,34 @@ class PortafolioIT extends EscenarioDePrestador {
   }
 
   @Test
+  void unaUrlQueNoPerteneceALaBasePublicaNoSeIntentaBorrar() {
+    Long idTrabajo = crearTrabajo("Con imagen de otro dominio", null);
+    Long idImagen = subirImagen(idTrabajo);
+    String claveGuardada = almacenamiento.clavesGuardadas().get(0);
+
+    // La fila conserva el dominio público anterior, tal como queda después de
+    // cambiar `moica.almacenamiento.url-publica-base`.
+    jdbc.update(
+        "UPDATE imagen_trabajo_portafolio SET url_imagen = ? WHERE id_imagen_trabajo_portafolio = ?",
+        "https://dominio-anterior.example/trabajos/abc123.png",
+        idImagen);
+
+    HttpResponse<String> respuesta = navegador.delete(rutaImagenes(idTrabajo) + "/" + idImagen);
+
+    assertThat(respuesta.statusCode())
+        .as("la operación del usuario sigue siendo correcta")
+        .isEqualTo(HttpStatus.NO_CONTENT.value());
+    assertThat(jdbc.queryForObject("SELECT count(*) FROM imagen_trabajo_portafolio", Integer.class))
+        .isZero();
+    assertThat(almacenamiento.clavesEliminadas())
+        .as("no se pide borrar una clave que este almacén no sabe nombrar")
+        .isEmpty();
+    assertThat(almacenamiento.contiene(claveGuardada))
+        .as("el objeto queda suelto en el bucket, pendiente de limpieza manual")
+        .isTrue();
+  }
+
+  @Test
   void eliminarUnTrabajoRetiraSusFilasYSusObjetos() {
     Long idTrabajo = crearTrabajo("Se va completo", null);
     subirImagen(idTrabajo);

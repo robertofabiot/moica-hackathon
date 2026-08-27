@@ -42,10 +42,9 @@
 }
 
 /*
- * La tabla es lo único que no cabe en un teléfono, así que se desplaza dentro
- * de su propio contenedor. Es lo que impide que la página entera se desborde
- * en horizontal. `tabindex` no hace falta: el navegador da foco a una región
- * desplazable, y el botón de cada fila ya es alcanzable con el teclado.
+ * Red de seguridad: si en algún idioma o con la letra muy grande la tabla no
+ * cupiera, se desplaza dentro de su propio contenedor y la página nunca se
+ * desborda en horizontal. Con los tamaños del entregable no hace falta usarlo.
  */
 .tablaDesplazable {
   width: 100%;
@@ -63,13 +62,15 @@
   text-align: left;
 }
 
+/*
+ * El contenido envuelve por palabras en lugar de ensanchar la tabla: con tres
+ * columnas cabe entera en un teléfono sin partir ninguna a la mitad.
+ */
 .tabla th,
 .tabla td {
-  padding: var(--moica-espacio-1);
+  padding: var(--moica-espacio-1) 0.375rem;
   border-bottom: 1px solid var(--moica-borde);
   vertical-align: top;
-  /* Sin esto, una fila con pocas palabras largas ensancharía la tabla entera. */
-  white-space: nowrap;
 }
 
 .tabla thead th {
@@ -77,11 +78,17 @@
   font-size: 0.875rem;
 }
 
-/* El nombre del prestador sí puede partirse: es lo más largo de cada fila. */
+/* Un nombre comercial puede ser una sola palabra larga; ahí sí se parte. */
 .celdaDePrestador {
-  white-space: normal;
   overflow-wrap: anywhere;
-  min-width: 10rem;
+}
+
+/* El nivel y la fecha, bajo el nombre y en segundo plano. */
+.detalleDeLaFila {
+  display: block;
+  color: var(--moica-texto-suave);
+  font-size: 0.875rem;
+  font-weight: 400;
 }
 
 .pie {
@@ -97,5 +104,9 @@
   .tabla th,
   .tabla td {
     padding: var(--moica-espacio-2) var(--moica-espacio-1);
+  }
+
+  .celdaDePrestador {
+    min-width: 10rem;
   }
 }

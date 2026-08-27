@@ -66,8 +66,10 @@ describe('cola de verificaciones', () => {
     renderizarConProveedores(<ColaDeVerificaciones />);
 
     expect(await screen.findByRole('table')).toBeInTheDocument();
-    expect(screen.getByRole('rowheader', { name: 'Taller La Esperanza' })).toBeInTheDocument();
-    expect(screen.getByRole('cell', { name: 'Verificación básica' })).toBeInTheDocument();
+    // El nivel y la fecha acompañan al nombre dentro de la cabecera de la fila.
+    expect(screen.getByRole('rowheader', { name: /Taller La Esperanza/ })).toHaveTextContent(
+      'Verificación básica'
+    );
     expect(screen.getByRole('cell', { name: 'Pendiente de revisión' })).toBeInTheDocument();
   });
 

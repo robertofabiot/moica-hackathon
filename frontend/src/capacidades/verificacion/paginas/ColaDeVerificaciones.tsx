@@ -84,21 +84,27 @@ export default function ColaDeVerificaciones() {
                 <thead>
                   <tr>
                     <th scope="col">Prestador</th>
-                    <th scope="col">Nivel</th>
                     <th scope="col">Estado</th>
-                    <th scope="col">Enviada</th>
                     <th scope="col">Revisión</th>
                   </tr>
                 </thead>
                 <tbody>
                   {cola.data.map((fila) => (
                     <tr key={fila.idSolicitudVerificacion}>
+                      {/*
+                        El nivel y la fecha acompañan al nombre en lugar de
+                        ocupar dos columnas propias: con cinco, la tabla no cabe
+                        en un teléfono y las palabras se parten a la mitad. Con
+                        tres se lee entera en 375 px y sigue siendo una tabla.
+                      */}
                       <th scope="row" className={propios.celdaDePrestador}>
                         {fila.prestador.nombrePublico}
+                        <span className={propios.detalleDeLaFila}>
+                          {nombreDelNivelSolicitado(fila.nivelSolicitado)} · Enviada el{' '}
+                          {fechaLegible(fila.fechaSolicitud)}
+                        </span>
                       </th>
-                      <td>{nombreDelNivelSolicitado(fila.nivelSolicitado)}</td>
                       <td>{nombreDelEstado(fila.estadoSolicitud)}</td>
-                      <td>{fechaLegible(fila.fechaSolicitud)}</td>
                       <td>
                         <button
                           className={secciones.botonPequeno}
@@ -111,10 +117,17 @@ export default function ColaDeVerificaciones() {
                             )
                           }
                           aria-expanded={seleccionada === fila.idSolicitudVerificacion}
+                          // El texto visible cabe en una celda de teléfono; el
+                          // nombre accesible sigue diciendo de qué expediente
+                          // se trata, que es lo que necesita quien no ve la
+                          // fila entera.
+                          aria-label={
+                            seleccionada === fila.idSolicitudVerificacion
+                              ? `Cerrar el expediente de ${fila.prestador.nombrePublico}`
+                              : `Abrir el expediente de ${fila.prestador.nombrePublico}`
+                          }
                         >
-                          {seleccionada === fila.idSolicitudVerificacion
-                            ? `Cerrar el expediente de ${fila.prestador.nombrePublico}`
-                            : `Abrir el expediente de ${fila.prestador.nombrePublico}`}
+                          {seleccionada === fila.idSolicitudVerificacion ? 'Cerrar' : 'Abrir'}
                         </button>
                       </td>
                     </tr>

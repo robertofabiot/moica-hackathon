@@ -235,5 +235,13 @@ terminar.
 | Que un fallo salga como error uniforme, sin filtrar el proveedor | |
 
 El doble de almacenamiento **no** demuestra la integración externa. Mientras el
-entorno no tenga credenciales, la comprobación de arriba queda pendiente y así
-debe declararse en el PR.
+entorno no tenga credenciales, lo que falte de la comprobación de arriba queda
+pendiente y así debe declararse en el PR.
+
+**Estado en el PR #9.** Los pasos 1 y 2 —carga y lectura pública— se ejecutaron
+en la revisión contra el bucket `moica-publico-dev`, junto con la carga de
+imágenes de portafolio y la persistencia de la URL en PostgreSQL. Los pasos 3 y
+4 —sustitución y eliminación— **siguen sin ejecutarse contra R2 real**, así que
+que el objeto anterior desaparezca del bucket está probado contra el doble y no
+contra el proveedor. Ejecutar esos dos pasos en un entorno con credenciales es
+todo lo que falta.

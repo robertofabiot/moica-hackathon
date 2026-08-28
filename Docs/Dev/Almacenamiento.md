@@ -436,19 +436,36 @@ Los dobles de almacenamiento **no** demuestran la integración externa. Mientras
 el entorno no tenga credenciales, lo que falte de las comprobaciones de arriba
 queda pendiente y así debe declararse en el PR.
 
-**Estado del bucket público (PR #9).** Los pasos 1 y 2 —carga y lectura
-pública— se ejecutaron en la revisión contra el bucket `moica-publico-dev`,
-junto con la carga de imágenes de portafolio y la persistencia de la URL en
-PostgreSQL. Los pasos 3 y 4 —sustitución y eliminación— **siguen sin ejecutarse
-contra R2 real**.
+**Estado del bucket público (PR #9 y validación posterior).** Los pasos 1 y 2
+—carga y lectura pública— se ejecutaron en la revisión del #9 contra el bucket
+`moica-publico-dev`, junto con la carga de imágenes de portafolio y la
+persistencia de la URL en PostgreSQL. Los pasos 3 y 4 —sustitución y
+eliminación— se ejecutaron el 28 de agosto de 2026 contra el mismo bucket, con
+el backend local y las variables `MOICA_R2_*` del entorno de desarrollo:
+
+- Sustituir un PNG por un JPEG cambió la URL (`perfiles/<32 hex>.png` →
+  `perfiles/<32 hex>.jpg`). La lectura anónima de la URL nueva respondió 200 y
+  la de la anterior, 404.
+- Eliminar la imagen dejó `urlImagenPerfil` en `null` en la API y en
+  PostgreSQL. Las dos URLs de esa prueba respondieron 404.
+- Un listado S3 del prefijo `perfiles/` confirmó que las claves de esa prueba
+  ya no estaban. La prueba no dejó objetos huérfanos.
+
+Quedaron dos objetos **previos**, ajenos a esa prueba y sin fila en
+PostgreSQL: `perfiles/bd70b56d8bce4ea780419bba44695d47.png` y
+`trabajos/a98a3766de57423da9e4de7fa4424335.png`. No se borraron: no pertenecen
+al recorrido de esta validación.
 
 **Estado del bucket privado (PR #10).** **Ninguno de los diez pasos se ha
-ejecutado contra R2 real.** El entorno de desarrollo no tiene definidas las
-variables `MOICA_R2_PRIVADO_*`, y P4V no pide secretos por ningún canal. Lo que
-sí se comprobó en local, con el bucket privado **sin configurar**, es el
-comportamiento que corresponde a esa situación: enviar un expediente responde
-`503 ALMACENAMIENTO_NO_DISPONIBLE`, no crea ninguna fila y no filtra proveedor,
-endpoint, bucket ni clave; y abrir un documento responde el mismo 503. Todo lo
-demás del flujo —cola, toma, aprobación, rechazo, revocación y niveles— se
-recorrió de extremo a extremo. Aprovisionar el bucket privado con su token y
-ejecutar los diez pasos es lo que falta.
+ejecutado contra R2 real.** El 28 de agosto de 2026 se volvió a comprobar el
+entorno de desarrollo: siguen sin definirse `MOICA_R2_PRIVADO_ID_CUENTA`,
+`MOICA_R2_PRIVADO_ACCESS_KEY_ID`, `MOICA_R2_PRIVADO_SECRET_ACCESS_KEY` y
+`MOICA_R2_BUCKET_PRIVADO`. P4V no pide secretos por ningún canal, así que esos
+diez pasos **no se dan por hechos**. Lo que sí se comprobó en local, con el
+bucket privado **sin configurar**, es el comportamiento que corresponde a esa
+situación: enviar un expediente responde `503 ALMACENAMIENTO_NO_DISPONIBLE`, no
+crea ninguna fila y no filtra proveedor, endpoint, bucket ni clave; y abrir un
+documento responde el mismo 503. Todo lo demás del flujo —cola, toma,
+aprobación, rechazo, revocación y niveles— se recorrió de extremo a extremo.
+Aprovisionar el bucket privado con su token propio y ejecutar los diez pasos
+sigue siendo lo que falta para cerrar P4V.

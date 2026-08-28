@@ -63,7 +63,7 @@ describe('área administrativa', () => {
     });
     renderizarConProveedores(<App />, '/admin');
 
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
     expect(api.ultima('GET /api/admin/resumen')).toBeUndefined();
   });
 
@@ -172,7 +172,7 @@ describe('área administrativa', () => {
 
     await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
     await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
 
     // La cuenta B entra sin recargar la aplicación y su resumen todavía no responde.
     api.responder('POST /api/auth/sesion', {

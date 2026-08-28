@@ -33,7 +33,7 @@ describe('pantalla de registro', () => {
     await persona.type(screen.getByLabelText('Nombre completo'), 'Erving Miranda');
     await persona.type(screen.getByLabelText('Correo electrónico'), 'erving@moica.test');
     await persona.type(screen.getByLabelText('Contraseña'), clave);
-    await persona.type(screen.getByLabelText('Repetir contraseña'), confirmacion);
+    await persona.type(screen.getByLabelText('Confirmar contraseña'), confirmacion);
   }
 
   it('rechaza una contraseña que no cumple la política sin llegar a llamar a la API', async () => {
@@ -41,7 +41,7 @@ describe('pantalla de registro', () => {
     abrirRegistro();
 
     await rellenar(persona, 'moica2026');
-    await persona.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+    await persona.click(screen.getByRole('button', { name: 'Registrarme' }));
 
     expect(await screen.findByText('Debe incluir al menos una letra mayúscula.')).toBeVisible();
     expect(api.ultima('POST /api/usuarios')).toBeUndefined();
@@ -52,7 +52,7 @@ describe('pantalla de registro', () => {
     abrirRegistro();
 
     await rellenar(persona, 'Moica2026$segura', 'Moica2026$distinta');
-    await persona.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+    await persona.click(screen.getByRole('button', { name: 'Registrarme' }));
 
     expect(await screen.findByText('Las dos contraseñas deben coincidir.')).toBeVisible();
     expect(api.ultima('POST /api/usuarios')).toBeUndefined();
@@ -73,7 +73,7 @@ describe('pantalla de registro', () => {
     abrirRegistro();
 
     await rellenar(persona, 'Moica2026$segura');
-    await persona.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+    await persona.click(screen.getByRole('button', { name: 'Registrarme' }));
 
     expect(
       await screen.findByText('Tu cuenta quedó creada. Inicia sesión para entrar.')
@@ -98,7 +98,7 @@ describe('pantalla de registro', () => {
     abrirRegistro();
 
     await rellenar(persona, 'Moica2026$segura');
-    await persona.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+    await persona.click(screen.getByRole('button', { name: 'Registrarme' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Ese correo ya tiene una cuenta');
   });
@@ -114,7 +114,7 @@ describe('pantalla de registro', () => {
     abrirRegistro();
 
     await rellenar(persona, 'Moica2026$segura');
-    await persona.click(screen.getByRole('button', { name: 'Crear cuenta' }));
+    await persona.click(screen.getByRole('button', { name: 'Registrarme' }));
 
     await waitFor(() =>
       expect(screen.getByLabelText('Correo electrónico')).toHaveAttribute('aria-invalid', 'true')

@@ -88,7 +88,7 @@ describe('seguridad de la cuenta', () => {
 
       await cambiarContrasena(persona);
 
-      expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+      expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
       expect(screen.getByRole('status')).toHaveTextContent('Cambiaste tus credenciales');
       expect(api.ultima('PUT /api/auth/clave')?.cuerpo).toEqual({
         claveActual: 'Moica2026$segura',
@@ -275,7 +275,7 @@ describe('seguridad de la cuenta', () => {
       await persona.type(screen.getByLabelText('Código de verificación'), '123456');
       await persona.click(screen.getByRole('button', { name: 'Desactivar el segundo factor' }));
 
-      expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+      expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
       expect(api.ultima('POST /api/auth/segundo-factor/desactivacion')?.cuerpo).toEqual({
         claveActual: 'Moica2026$segura',
         codigo: '123456',
@@ -322,7 +322,7 @@ describe('seguridad de la cuenta', () => {
 
       await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
       await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
-      expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+      expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
 
       // La cuenta B entra sin recargar y su consulta todavía no ha respondido.
       api.responder('POST /api/auth/sesion', { estado: 201, cuerpo: sesionDeEjemplo() });
@@ -366,7 +366,7 @@ describe('seguridad de la cuenta', () => {
     });
     renderizarConProveedores(<App />, '/seguridad');
 
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
   });
 
   it('lleva a verificar el segundo factor a una sesión provisional', async () => {

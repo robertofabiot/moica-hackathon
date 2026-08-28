@@ -118,7 +118,7 @@ describe('verificación del segundo factor', () => {
     await persona.type(await screen.findByLabelText('Código de verificación'), '123456');
     await persona.click(screen.getByRole('button', { name: 'Verificar y entrar' }));
 
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
     expect(screen.getByRole('status')).toHaveTextContent('Tu sesión venció');
   });
 
@@ -145,14 +145,14 @@ describe('verificación del segundo factor', () => {
 
     await persona.click(await screen.findByRole('button', { name: 'Salir de la sesión' }));
 
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
   });
 
   it('lleva a iniciar sesión a quien llega sin ninguna sesión', async () => {
     sinSesion();
     renderizarConProveedores(<App />, '/verificar-segundo-factor');
 
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
   });
 
   it('devuelve al inicio a quien ya no tiene nada que verificar', async () => {

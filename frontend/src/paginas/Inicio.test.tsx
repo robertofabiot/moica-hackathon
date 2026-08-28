@@ -44,14 +44,14 @@ describe('estado de acceso en la pantalla de inicio', () => {
     expect(screen.getByText('Erving Miranda')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeEnabled();
     expect(
-      screen.queryByRole('heading', { name: 'Iniciar sesión en Moica' })
+      screen.queryByRole('heading', { name: 'Iniciar sesión' })
     ).not.toBeInTheDocument();
   }
 
   async function reintentaYCierra(persona: ReturnType<typeof userEvent.setup>) {
     api.responder('DELETE /api/auth/sesion', { estado: 204 });
     await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
     expect(screen.queryByText('Erving Miranda')).not.toBeInTheDocument();
   }
 
@@ -81,7 +81,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
 
     await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
 
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
     expect(api.ultima('DELETE /api/auth/sesion')?.cabeceras['X-XSRF-TOKEN']).toBe(
       'token-de-prueba'
     );

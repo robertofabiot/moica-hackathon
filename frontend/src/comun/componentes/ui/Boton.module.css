@@ -1,0 +1,53 @@
+/*
+ * Botón del sistema de diseño. Las variantes leen las tokens de
+ * `src/estilos/global.css`; no hay valores literales de marca aquí.
+ */
+
+.boton {
+  padding: var(--gap-2xs) var(--gap-sm);
+  border-width: var(--border-width-xs);
+  border-style: solid;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.primario {
+  background-color: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-white);
+}
+
+.primario:hover:not(:disabled) {
+  background-color: var(--color-primary-700);
+  border-color: var(--color-primary-700);
+}
+
+.secundario {
+  background-color: var(--color-white);
+  border-color: var(--color-neutral-100);
+  color: var(--color-web-black);
+}
+
+.secundario:hover:not(:disabled) {
+  border-color: var(--color-neutral-primary);
+  background-color: var(--color-web-white);
+}
+
+.contorno {
+  background-color: transparent;
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-500);
+}
+
+.contorno:hover:not(:disabled) {
+  background-color: var(--color-primary-50);
+}
+
+.boton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}

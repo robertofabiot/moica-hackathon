@@ -1,0 +1,39 @@
+/*
+ * Campo de texto del sistema de diseño. El borde de error usa la token de
+ * alerta; el resto, neutros y Helvetica Neue.
+ */
+
+.envoltorio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-3xs);
+  width: 100%;
+}
+
+.entrada {
+  width: 100%;
+  padding: var(--gap-2xs);
+  border: var(--border-width-xs) solid var(--color-neutral-100);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-white);
+  color: var(--color-web-black);
+  font-family: var(--font-family-secondary);
+  /* 16px evita que el navegador de un teléfono acerque la pantalla al enfocar. */
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-regular);
+}
+
+.entrada:hover {
+  border-color: var(--color-neutral-primary);
+}
+
+.entradaConError {
+  border-color: var(--color-alert-error);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-alert-error);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+}

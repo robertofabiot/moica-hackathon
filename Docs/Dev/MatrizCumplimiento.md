@@ -483,6 +483,18 @@ Controles que P4V dejó funcionando, con el resultado real de cada comprobación
   [ejecución 33094908157](https://github.com/robertofabiot/moica-hackathon/actions/runs/33094908157)
   dejó en verde «Título y commits convencionales». Este cambio solo anota esos
   enlaces; el CI de su propio commit queda en un comentario del PR.
+- **Corrección de concurrencia**: la fila «Concurrencia sobre el nivel del
+  perfil» llega con el Pull Request #11, posterior a P4V. En local, `./mvnw
+  verify` sobre `5bca790` dejó 138 unitarias y 262 de integración en verde, y
+  `ConcurrenciaDeVerificacionIT` se ejecutó seis veces seguidas sin un solo
+  fallo para descartar inestabilidad. En CI, sobre ese mismo commit,
+  [ejecución 33124855278](https://github.com/robertofabiot/moica-hackathon/actions/runs/33124855278)
+  dejó en verde «Backend (Java 21)», «Frontend (Node 22)» y «Entorno local
+  (docker compose)», y
+  [ejecución 33124855452](https://github.com/robertofabiot/moica-hackathon/actions/runs/33124855452)
+  dejó en verde «Título y commits convencionales». Que el backend pase también
+  en la máquina del CI, con otros tiempos, es parte de la evidencia: la
+  coordinación de esas pruebas no depende de pausas.
 
 Una casilla vacía significa que ahí no aplica, no que fallara.
 
@@ -499,7 +511,8 @@ Una casilla vacía significa que ahí no aplica, no que fallara.
 | Propiedad y ocultación | `EnvioDeExpedienteIT` | Sí | Sí | La solicitud de otro prestador responde 404 `SOLICITUD_NO_ENCONTRADA` y su historial sale vacío. El propietario no tiene ninguna ruta que le entregue su binario |
 | Estado de cuenta | `EnvioDeExpedienteIT` | Sí | Sí | Una cuenta `RESTRINGIDA_TEMPORAL` recibe 403 `CUENTA_RESTRINGIDA` al enviar y conserva la lectura de su estado y su historial |
 | Área administrativa | `RevisionDeVerificacionIT` | Sí | Sí | Sin sesión 401; cuenta ordinaria con TOTP verificado 403; administrador sin verificar el TOTP en esa sesión 403. Solo entra el administrador con la sesión verificada |
-| Toma concurrente | `RevisionDeVerificacionIT` | Sí | Sí | Dos administradores que la toman **a la vez**, desde dos hilos con una barrera común: uno recibe 200 y el otro 409 `SOLICITUD_YA_TOMADA`, nunca los dos 200. La fila queda asignada a uno solo |
+| Toma concurrente | `RevisionDeVerificacionIT` | Sí | Sí | Dos administradores que la toman **a la vez**, desde dos hilos con una barrera común: uno recibe 200 y el otro 409 `SOLICITUD_YA_TOMADA`, nunca los dos 200. La fila queda asignada a uno solo. Cubre la misma solicitud; las carreras sobre solicitudes **distintas** del mismo perfil las cubre la fila siguiente |
+| Concurrencia sobre el nivel del perfil | `ConcurrenciaDeVerificacionIT` | Sí | Sí | Seis pruebas con el orden fijado por la prueba, no por el azar: una conexión ajena retiene `perfil_prestador` con `SELECT … FOR UPDATE`, cada petición se lanza y se espera a que `pg_stat_activity` confirme que está detenida, y al soltar la retención PostgreSQL las despierta en el orden en que llegaron. Aprobación profesional **contra** revocación básica en los dos sentidos: si aprueba primero, la revocación arrastra la profesional recién aprobada y el perfil queda `SIN_VERIFICAR`; si revoca primero, la aprobación responde 409 `VERIFICACION_BASICA_REQUERIDA` y no deja nada a medias. Edición del perfil **contra** aprobación y **contra** revocación, en ambos órdenes: se conservan a la vez el dato editado y el nivel decidido. Y la comprobación estructural de que actualizar el perfil, cambiar la disponibilidad y sustituir la imagen esperan **leyendo** la fila, no escribiéndola. Contra el código anterior a esta corrección las seis fallan, cada una con su incoherencia concreta: la profesional queda `APROBADA` con el perfil `SIN_VERIFICAR`, la aprobación responde 200 sobre una básica revocada, la edición devuelve el perfil a `SIN_VERIFICAR`, la aprobación restaura el nombre anterior y la edición revive una insignia revocada |
 | Transiciones | `RevisionDeVerificacionIT`, `RevocacionDeVerificacionIT` | Sí | Sí | Aprobar sin tomar, revocar algo que no está aprobado y resolver una revisión ajena responden 409 o 403 y no cambian nada. Solo quien tomó la revisión la resuelve |
 | Proyección de niveles | `RevisionDeVerificacionIT` | Sí | Sí | Aprobar una básica deja `VERIFICADO_BASICO`; aprobar la profesional sobre ella deja `PROFESIONAL_VERIFICADO`; rechazar una profesional conserva la básica |
 | Revocación dependiente | `RevocacionDeVerificacionIT` | Sí | Sí | Revocar la profesional degrada a `VERIFICADO_BASICO`. Revocar la básica deja el perfil `SIN_VERIFICAR` y la profesional `REVOCADA` con el **mismo motivo, administrador e instante** —comprobado comparando las tres columnas de las dos filas—. Una básica nueva no revive la profesional. Los documentos no se borran |
@@ -507,7 +520,7 @@ Una casilla vacía significa que ahí no aplica, no que fallara.
 | Acceso temporal | `RevisionDeVerificacionIT`, `AlmacenamientoPrivadoR2Test` | Sí | Sí | El endpoint responde 302 con `Cache-Control: no-store`; el enlace vale ahora y no diez minutos después. La firma real, generada con un `S3Presigner` de verdad, lleva `X-Amz-Expires=300` con `PT5M` y `900` con `PT15M`, apunta al bucket privado por estilo de ruta y no contiene el secreto |
 | Configuración ausente y a medias | `PropiedadesDeAlmacenamientoPrivadoTest`, `AlmacenamientoPrivadoR2Test`, `PropiedadesDeDocumentosTest` | Sí | Sí | Sin las cuatro variables la aplicación arranca y las operaciones documentales responden el 503 uniforme; con tres de cuatro el arranque se detiene con un mensaje que **no revela ningún valor**; el máximo por documento no admite más de 5 MB y el acceso temporal no admite más de una hora |
 | Errores sin detalle interno | `RevisionDeVerificacionIT`, `EnvioDeExpedienteIT`, `AlmacenamientoPrivadoR2Test` | Sí | Sí | Ninguna respuesta contiene `R2`, `cloudflare`, `S3`, `expedientes/` ni `X-Amz`. La representación de `PropiedadesDeAlmacenamientoPrivado` oculta el secreto **y** el identificador del token |
-| Pruebas del backend | `./mvnw verify` | Sí | Sí | 138 unitarias y 256 de integración en verde, con Spotless limpio («178 files clean») y SpotBugs en «BugInstance size is 0» |
+| Pruebas del backend | `./mvnw verify` | Sí | Sí | 138 unitarias y 262 de integración en verde —las 256 de P4V más 6 de `ConcurrenciaDeVerificacionIT`—, con Spotless limpio («179 files clean») y SpotBugs en «BugInstance size is 0» |
 | Pruebas del frontend | `npm run test` | Sí | Sí | 145 en verde, 29 de ellas de P4V |
 | Cadena completa del frontend | `format:check`, `lint`, `typecheck`, `test`, `build` y `npm audit` | Sí | Sí | Todo en verde; `npm audit` reporta 0 vulnerabilidades y el build vuelve a generar el manifiesto y el service worker |
 | Entorno local | `docker compose config -q` y `git diff --check` | Sí | Sí | Ambos sin salida |

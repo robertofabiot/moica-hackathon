@@ -16,6 +16,7 @@ import java.util.Optional;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -29,6 +30,12 @@ import org.springframework.transaction.annotation.Transactional;
  * propósito. El nivel de verificación no lo decide nadie desde aquí: {@link
  * #proyectarNivelDeVerificacion(Long, NivelVerificacionPrestador)} solo escribe lo que ya resolvió
  * una persona administradora en la capacidad {@code verificacion}.
+ *
+ * <p>Toda escritura sobre la fila del perfil la bloquea antes de leerla. Los datos editables y el
+ * nivel de verificación viven en la misma fila pero los cambian actores distintos —el propietario y
+ * la administración—, y una escritura completa de la fila a partir de una lectura anterior
+ * devolvería el valor que el otro acaba de cambiar. El bloqueo es lo que hace que quien espera lea
+ * el estado ya resuelto en vez de escribir sobre él.
  */
 @Service
 public class PerfilPrestadorService {
@@ -98,7 +105,7 @@ public class PerfilPrestadorService {
       UsuarioAutenticado sujeto, SolicitudDePerfilPrestador solicitud) {
     exigirCuentaActiva(sujeto);
 
-    PerfilPrestador perfil = perfilDe(sujeto.idUsuario());
+    PerfilPrestador perfil = bloquear(sujeto.idUsuario());
     UbicacionDeMunicipio ubicacion = municipioDisponible(solicitud.idMunicipioPrincipal());
 
     perfil.actualizar(
@@ -117,7 +124,7 @@ public class PerfilPrestadorService {
       UsuarioAutenticado sujeto, SolicitudDeDisponibilidad solicitud) {
     exigirCuentaActiva(sujeto);
 
-    PerfilPrestador perfil = perfilDe(sujeto.idUsuario());
+    PerfilPrestador perfil = bloquear(sujeto.idUsuario());
     perfil.cambiarDisponibilidad(solicitud.disponibilidad());
 
     return DatosDePerfilPrestador.de(perfil, ubicacionDe(perfil));
@@ -131,7 +138,7 @@ public class PerfilPrestadorService {
    */
   @Transactional
   public String actualizarUrlImagen(Long idPrestador, String urlImagenPerfil) {
-    PerfilPrestador perfil = perfilDe(idPrestador);
+    PerfilPrestador perfil = bloquear(idPrestador);
     String anterior = perfil.getUrlImagenPerfil();
     perfil.cambiarUrlImagenPerfil(urlImagenPerfil);
     return anterior;
@@ -150,6 +157,30 @@ public class PerfilPrestadorService {
   }
 
   /**
+   * Toma el perfil en exclusiva durante toda la transacción de quien llama.
+   *
+   * <p>Existe para que la capacidad {@code verificacion} pueda serializar sus decisiones sin
+   * conocer la entidad ni el repositorio del perfil. Resolver una solicitud lee el nivel vigente y
+   * escribe el que corresponde, y esas dos cosas solo son coherentes si nadie más cambia el perfil
+   * entremedio: aprobar una profesional y revocar la básica trabajan sobre filas de {@code
+   * solicitud_verificacion_prestador} distintas, así que el perfil es la única fila que comparten.
+   *
+   * <p>Debe invocarse **antes** de leer el perfil y antes de bloquear la solicitud, para que todas
+   * las transacciones pidan los bloqueos en el mismo orden y ninguna pareja pueda esperarse
+   * mutuamente. Después de esta llamada, las lecturas del perfil dentro de la misma transacción ya
+   * ven el estado que dejó la transacción anterior de la fila.
+   *
+   * <p>Exige una transacción en curso: un bloqueo que se soltara al volver de este método no
+   * protegería nada, y es mejor que eso falle a que pase inadvertido.
+   *
+   * @throws ErrorDeAplicacion si el perfil no existe
+   */
+  @Transactional(propagation = Propagation.MANDATORY)
+  public void bloquearParaResolverVerificacion(Long idPrestador) {
+    bloquear(idPrestador);
+  }
+
+  /**
    * Deja vigente en el perfil el nivel que resolvió una persona administradora.
    *
    * <p>No decide nada: la regla de qué nivel corresponde vive en la capacidad {@code verificacion},
@@ -162,7 +193,7 @@ public class PerfilPrestadorService {
   @Transactional
   public void proyectarNivelDeVerificacion(
       Long idPrestador, NivelVerificacionPrestador nivelVerificacion) {
-    perfilDe(idPrestador).proyectarNivelVerificacion(nivelVerificacion);
+    bloquear(idPrestador).proyectarNivelVerificacion(nivelVerificacion);
   }
 
   /**
@@ -196,6 +227,21 @@ public class PerfilPrestadorService {
 
   private PerfilPrestador perfilDe(Long idUsuario) {
     return repositorio.findById(idUsuario).orElseThrow(PerfilPrestadorService::perfilNoEncontrado);
+  }
+
+  /**
+   * El perfil, bloqueado hasta el final de la transacción, para modificarlo.
+   *
+   * <p>Lo usan todas las escrituras de esta clase: el propietario editando sus datos, cambiando su
+   * disponibilidad o su imagen, y la verificación proyectando el nivel que decidió una persona
+   * administradora. Comparten la fila, así que comparten el bloqueo y se ponen en fila; el que
+   * espera vuelve a leer lo que dejó el anterior en lugar de escribir encima de un dato que ya
+   * cambió.
+   */
+  private PerfilPrestador bloquear(Long idUsuario) {
+    return repositorio
+        .bloquearPorId(idUsuario)
+        .orElseThrow(PerfilPrestadorService::perfilNoEncontrado);
   }
 
   private UbicacionDeMunicipio ubicacionDe(PerfilPrestador perfil) {

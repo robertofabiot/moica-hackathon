@@ -60,4 +60,20 @@ public interface SolicitudVerificacionPrestadorRepository
       """)
   Optional<SolicitudVerificacionPrestador> bloquearPorId(
       @Param("idSolicitudVerificacion") Long idSolicitudVerificacion);
+
+  /**
+   * De qué perfil es una solicitud, sin traerse la solicitud.
+   *
+   * <p>Resolver un expediente necesita saberlo antes de nada, porque el perfil es la primera fila
+   * que hay que bloquear. Devuelve solo el identificador a propósito: cargar aquí la entidad la
+   * dejaría en el contexto de persistencia y el bloqueo posterior devolvería esa copia sin
+   * refrescarla, que es justo el estado antiguo del que hay que huir. El dueño de una solicitud no
+   * cambia nunca, así que leerlo sin bloqueo no puede quedar obsoleto.
+   */
+  @Query(
+      """
+      SELECT solicitud.idPrestador FROM SolicitudVerificacionPrestador solicitud
+      WHERE solicitud.idSolicitudVerificacion = :idSolicitudVerificacion
+      """)
+  Optional<Long> idPrestadorDe(@Param("idSolicitudVerificacion") Long idSolicitudVerificacion);
 }

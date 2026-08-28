@@ -1,206 +1,121 @@
 /*
  * Tokens del sistema de diseño de Moica.
  *
- * Fuente única de color, tipografía, espaciado, bordes y sombras. Los CSS
+ * Fuente única de color, tipografía, espaciado, radios y sombras. Los CSS
  * Modules de cada capacidad leen estas variables (o los alias --moica-* que
  * las apuntan) para no repetir valores literales.
  */
 
 :root {
   /* ==========================================================================
-     1. COLORES PRIMITIVOS (PRIMITIVE COLORS)
+     COLORES
      ========================================================================== */
 
-  /* Brand - Red */
-  --color-red-50: #ffcdd6;
-  --color-red-100: #ffa7b4;
-  --color-red-200: #fc8291;
-  --color-red-300: #f85f6d;
-  --color-red-400: #f33d49;
-  --color-red-500: #ed1c24;
-  --color-red-600: #d3152a;
-  --color-red-700: #b7102e;
-  --color-red-800: #9b0b2f;
-  --color-red-900: #7e072d;
+  /* Primary - Naranjas (marca, botones, acentos) */
+  --color-primary-50: #fff3e0;
+  --color-primary-100: #ffe0b2;
+  --color-primary-300: #ffb74d;
+  --color-primary-500: #f57c00; /* Botones principales, acentos */
+  --color-primary-700: #e65100;
+  --color-primary-900: #bf360c;
 
-  /* Brand - Red Wine */
-  --color-red-wine-50: #faf2f3;
-  --color-red-wine-100: #e6c2c4;
-  --color-red-wine-200: #d19195;
-  --color-red-wine-300: #bb6165;
-  --color-red-wine-400: #a33135;
-  --color-red-wine-500: #8b0304;
-  --color-red-wine-600: #710d01;
-  --color-red-wine-700: #561300;
-  --color-red-wine-800: #391300;
-  --color-red-wine-900: #1c0c00;
+  /* Secondary - Verde/cian (footer, iconos, stats) */
+  --color-secondary-50: #e0f2f1;
+  --color-secondary-100: #b2dfdb;
+  --color-secondary-500: #00897b; /* Stats, ubicación */
+  --color-secondary-700: #0d7377; /* Footer, acentos oscuros */
+  --color-secondary-900: #004d40;
 
-  /* School Color Palette */
-  --color-school-business: #ed1c24;
-  --color-school-computer-science: #00abe9;
-  --color-school-health: #00ab4e;
-  --color-school-education: #ea7924;
-  --color-school-language-institute: #7b2d89;
+  /* Neutrales (texto, bordes, fondos) */
+  --color-neutral-0: #ffffff; /* Tarjetas, texto en footer */
+  --color-neutral-50: #fef7f0; /* Fondo principal de la app */
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb; /* Bordes, divisores */
+  --color-neutral-400: #9ca3af;
+  --color-neutral-600: #6b7280; /* Texto secundario, subtítulos */
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #1a1a1a; /* Texto principal, títulos */
 
-  /* Neutrales */
-  --color-neutral-50: #edf2f9;
-  --color-neutral-100: #d2d6dc;
-  --color-neutral-200: #b6babf;
-  --color-neutral-300: #9a9ea2;
-  --color-neutral-400: #7f8285;
-  --color-neutral-500: #646568;
-  --color-neutral-600: #48494b;
-  --color-neutral-700: #2c2d2e;
-  --color-neutral-800: #1a1a1a;
-  --color-neutral-900: #111111;
-  --color-black: #000000;
-  --color-white: #ffffff;
-
-  /* Alerta y Estados (Alerts & Feedback) */
-  --color-alert-destructive-bg: #ffeef2;
-  --color-alert-destructive-light: #f64e4d;
-  --color-alert-error: #e7000b;
-  --color-alert-destructive-darker: #a90002;
-  --color-alert-accent: #00c950;
-  --color-alert-accent-2: #e96000;
-  --color-alert-warning: #f0b100; /* Muestra visual ámbar; nota de ficha: #9A9EA2 */
-  --color-alert-primary: #2b7fff;
-  --color-alert-accent-3: #8e51ff;
-
-  /* Backgrounds & Web */
-  --color-bg-light: #cce7f1;
-  --color-bg-dark: #111111;
-  --color-web-white: #f5f5f5;
-  --color-web-black: #231f20;
+  /* Semánticos */
+  --color-success-500: #4caf50; /* Badge verificado */
+  --color-warning-500: #f5a623; /* Estrellas de calificación */
+  --color-error-500: #e53935; /* Puntos de notificación */
 
   /* ==========================================================================
-     2. COLORES SEMÁNTICOS / PRIMARIOS (PRIMARY / BRAND COLORS)
+     TIPOGRAFÍA (1rem = 16px)
      ========================================================================== */
 
-  --color-primary-50: #cce7f1;
-  --color-primary-500: #0149a6;
-  --color-primary-700: #000081;
-  --color-primary-900: #220059;
-  --color-accent-secondary: #ff2205;
-
-  --color-neutral-background: #edf2f9;
-  --color-neutral-primary: #646568;
-
-  /* ==========================================================================
-     3. TIPOGRAFÍA Y TAMAÑOS DE FUENTE (FONT SIZES EN REM - Base 16px)
-     ========================================================================== */
-
-  /* Familias Tipográficas */
+  /* Familias: la ficha de color no las redefine; se mantienen las ya cerradas. */
   --font-family-primary: 'Oswald', sans-serif;
   --font-family-secondary: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 
-  /* Pesos de Fuente (Font Weights) */
-  --font-weight-light: 300;
+  --font-size-xs: 0.75rem; /* 12px - captions, tags, metadata */
+  --font-size-sm: 0.875rem; /* 14px - body pequeño, links de footer */
+  --font-size-base: 1rem; /* 16px - body, botones, inputs */
+  --font-size-md: 1.125rem; /* 18px - subtítulos, texto destacado */
+  --font-size-lg: 1.25rem; /* 20px - títulos de tarjetas */
+  --font-size-xl: 1.5rem; /* 24px - títulos de secciones */
+  --font-size-2xl: 1.75rem; /* 28px - nombres de prestadores */
+  --font-size-3xl: 2.25rem; /* 36px - títulos hero */
+  --font-size-4xl: 3rem; /* 48px - texto muy grande (ej. 404) */
+
   --font-weight-regular: 400;
   --font-weight-medium: 500;
+  --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  /* Tamaños de Fuente (Escala del sistema) */
-  --font-size-xs: 0.5rem; /*  8px */
-  --font-size-sm: 0.75rem; /* 12px */
-  --font-size-md: 1rem; /* 16px - Base */
-  --font-size-lg: 1.125rem; /* 18px */
-  --font-size-xl: 1.25rem; /* 20px */
-  --font-size-2xl: 1.5rem; /* 24px */
-  --font-size-3xl: 2rem; /* 32px */
-  --font-size-4xl: 2.25rem; /* 36px */
-  --font-size-5xl: 2.75rem; /* 44px */
-
-  /* Aliases exactos según nomenclatura del diseño (fontsize-mb) */
-  --fontsize-mb-xs: 0.5rem; /*  8px */
-  --fontsize-mb-sm: 0.75rem; /* 12px */
-  --fontsize-mb-md: 1rem; /* 16px */
-  --fontsize-mb-lg: 1.125rem; /* 18px */
-  --fontsize-mb-xl: 1.25rem; /* 20px */
-  --fontsize-mb-xxl: 1.5rem; /* 24px */
-  --fontsize-mb-xxxl: 2rem; /* 32px */
-  --fontsize-mb-xxxxl: 2.25rem; /* 36px */
-  --fontsize-mb-xxxxxl: 2.75rem; /* 44px */
-
   /* ==========================================================================
-     4. ESPACIADOS Y GAPS (SPACING & GAPS EN REM - Base 16px)
+     ESPACIADO
      ========================================================================== */
 
-  --gap-4xs: 0.25rem; /*  4px */
-  --gap-3xs: 0.5rem; /*  8px */
-  --gap-2xs: 0.75rem; /* 12px */
-  --gap-xs: 0.875rem; /* 14px */
-  --gap-sm: 1rem; /* 16px */
-  --gap-md: 1.125rem; /* 18px */
-  --gap-lg: 1.375rem; /* 22px */
-  --gap-xl: 1.5rem; /* 24px */
-  --gap-2xl: 1.625rem; /* 26px */
-  --gap-3xl: 1.75rem; /* 28px */
-  --gap-4xl: 2rem; /* 32px */
+  --gap-xs: 0.5rem; /*  8px - espacio entre icono y texto */
+  --gap-sm: 0.75rem; /* 12px - espacio interno en elementos pequeños */
+  --gap-md: 1rem; /* 16px - padding estándar de tarjetas, listas */
+  --gap-lg: 1.5rem; /* 24px - padding de secciones, tarjetas grandes */
+  --gap-xl: 2rem; /* 32px - separación entre secciones medianas */
+  --gap-2xl: 3rem; /* 48px - separación entre secciones grandes */
+  --gap-3xl: 4rem; /* 64px - separación muy grande (layouts) */
 
-  /* Aliases según nomenclatura de diseño (XXXXS-gap a XXXXL-gap) */
-  --gap-xxxxs: 0.25rem; /*  4px */
-  --gap-xxxs: 0.5rem; /*  8px */
-  --gap-xxs: 0.75rem; /* 12px */
-  --gap-xxl: 1.625rem; /* 26px */
-  --gap-xxxl: 1.75rem; /* 28px */
-  --gap-xxxxl: 2rem; /* 32px */
+  /* Grosor de borde: la ficha no lo lista; 1px y 2px cubren trazo y foco. */
+  --border-width-xs: 1px;
+  --border-width-sm: 2px;
 
   /* ==========================================================================
-     5. GROSORES DE BORDE (BORDER STROKE)
+     RADIO DE BORDES
      ========================================================================== */
 
-  --border-width-xs: 1px; /* XS-ST */
-  --border-width-sm: 2px; /* SM-ST */
-  --border-width-md: 4px; /* MD-bd */
-  --border-width-lg: 8px; /* LG-bd */
+  --radius-sm: 0.25rem; /*  4px - checkboxes, tags pequeños */
+  --radius-md: 0.5rem; /*  8px - botones, inputs estándar */
+  --radius-lg: 0.75rem; /* 12px - tarjetas pequeñas */
+  --radius-xl: 1rem; /* 16px - tarjetas principales, modales */
+  --radius-full: 9999px; /* botones pill, barras de búsqueda, avatares */
 
   /* ==========================================================================
-     6. RADIO DE BORDES (BORDER RADIUS)
+     SOMBRAS
      ========================================================================== */
 
-  --radius-2xs: 0.25rem; /*    4px (XXS-bd) */
-  --radius-xs: 0.5rem; /*    8px (XS-bd)  */
-  --radius-sm: 0.75rem; /*   12px (SM-bd)  */
-  --radius-md: 0.875rem; /*   14px (MD-bd)  */
-  --radius-lg: 1rem; /*   16px (LG-bd)  */
-  --radius-xl: 2rem; /*   32px (XL-bd)  */
-  --radius-full: 1000px; /* 1000px (XXL-bd) */
-
-  /* Aliases según nomenclatura de diseño */
-  --radius-xxs-bd: 0.25rem;
-  --radius-xs-bd: 0.5rem;
-  --radius-sm-bd: 0.75rem;
-  --radius-md-bd: 0.875rem;
-  --radius-lg-bd: 1rem;
-  --radius-xl-bd: 2rem;
-  --radius-xxl-bd: 1000px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 
   /* ==========================================================================
-     7. SOMBRAS (BOX SHADOWS)
-     ========================================================================== */
-
-  --shadow-soft-natural: 0 4px 20px 0 rgba(0, 0, 0, 0.08);
-  --shadow-hard-black: 0 6px 18px 0 rgba(0, 0, 0, 0.28);
-
-  /* ==========================================================================
-     8. ALIAS DE COMPATIBILIDAD (--moica-*)
+     ALIAS DE COMPATIBILIDAD (--moica-*)
      ==========================================================================
      Los CSS Modules existentes todavía leen estos nombres. Apuntan a las
      tokens nuevas para no romper pantallas mientras se migran una a una.
      ========================================================================== */
 
-  --moica-fondo: var(--color-white);
-  --moica-fondo-suave: var(--color-web-white);
-  --moica-texto: var(--color-web-black);
-  --moica-texto-suave: var(--color-neutral-primary);
-  --moica-borde: var(--color-neutral-100);
+  --moica-fondo: var(--color-neutral-0);
+  --moica-fondo-suave: var(--color-neutral-50);
+  --moica-texto: var(--color-neutral-900);
+  --moica-texto-suave: var(--color-neutral-600);
+  --moica-borde: var(--color-neutral-200);
   --moica-foco: var(--color-primary-500);
-  --moica-error: var(--color-alert-error);
-  --moica-espacio-1: var(--gap-3xs);
-  --moica-espacio-2: var(--gap-sm);
-  --moica-espacio-3: var(--gap-xl);
-  --moica-espacio-4: var(--gap-4xl);
+  --moica-error: var(--color-error-500);
+  --moica-espacio-1: var(--gap-xs);
+  --moica-espacio-2: var(--gap-md);
+  --moica-espacio-3: var(--gap-lg);
+  --moica-espacio-4: var(--gap-xl);
 
   color-scheme: light;
   font-family: var(--font-family-secondary);
@@ -216,11 +131,11 @@
 body {
   margin: 0;
   min-height: 100dvh;
-  background-color: var(--color-white);
-  color: var(--color-web-black);
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-900);
   /* Mobile-first: el texto base se define para telefono y crece despues. */
   font-family: var(--font-family-secondary);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-regular);
   -webkit-font-smoothing: antialiased;
 }
@@ -244,11 +159,11 @@ a {
 /* El foco siempre debe verse: es la unica guia de quien navega con teclado. */
 :focus-visible {
   outline: var(--border-width-sm) solid var(--color-primary-500);
-  outline-offset: var(--gap-4xs);
+  outline-offset: 2px;
 }
 
 @media (min-width: 48rem) {
   body {
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-md);
   }
 }

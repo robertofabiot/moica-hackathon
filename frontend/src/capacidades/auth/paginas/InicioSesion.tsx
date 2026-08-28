@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Link, useSearchParams } from 'react-router';
 
+import { Boton, Entrada } from '../../../comun/componentes/ui';
 import { ErrorDeApi } from '../api';
 import { esquemaDeInicioSesion, type CamposDeInicioSesion } from '../esquemas';
 import { useInicioSesion } from '../hooks/useAcceso';
@@ -12,8 +13,8 @@ import {
   PARAMETRO_MOTIVO,
   RUTA_REGISTRO,
 } from '../rutas';
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
-import estilos from '../../../comun/estilos/formulario.module.css';
+import estilos from './acceso.module.css';
+import { ContinuacionConRedes } from './ContinuacionConRedes';
 
 /**
  * Pantalla de inicio de sesión.
@@ -45,8 +46,8 @@ export default function InicioSesion() {
     <main className={estilos.pantalla}>
       <div className={estilos.tarjeta}>
         <header className={estilos.encabezado}>
-          <h1 className={estilos.titulo}>Iniciar sesión en Moica</h1>
-          <p className={estilos.explicacion}>Entra con el correo y la contraseña de tu cuenta.</p>
+          <h1 className={estilos.titulo}>Iniciar sesión</h1>
+          <p className={estilos.subtitulo}>¡Bienvenido de nuevo!</p>
         </header>
 
         {motivo === MOTIVO_SESION_VENCIDA && (
@@ -80,49 +81,59 @@ export default function InicioSesion() {
             <label className={estilos.etiqueta} htmlFor="correoElectronico">
               Correo electrónico
             </label>
-            <input
+            <Entrada
               id="correoElectronico"
-              className={claseDeEntrada(errors.correoElectronico !== undefined)}
               type="email"
               autoComplete="email"
-              aria-invalid={errors.correoElectronico !== undefined}
-              aria-describedby={errors.correoElectronico ? 'error-correoElectronico' : undefined}
+              mensajeDeError={errors.correoElectronico?.message}
               {...register('correoElectronico')}
             />
-            {errors.correoElectronico && (
-              <p className={estilos.error} id="error-correoElectronico">
-                {errors.correoElectronico.message}
-              </p>
-            )}
           </div>
 
           <div className={estilos.campo}>
             <label className={estilos.etiqueta} htmlFor="clave">
               Contraseña
             </label>
-            <input
+            <Entrada
               id="clave"
-              className={claseDeEntrada(errors.clave !== undefined)}
               type="password"
               autoComplete="current-password"
-              aria-invalid={errors.clave !== undefined}
-              aria-describedby={errors.clave ? 'error-clave' : undefined}
+              mensajeDeError={errors.clave?.message}
               {...register('clave')}
             />
-            {errors.clave && (
-              <p className={estilos.error} id="error-clave">
-                {errors.clave.message}
-              </p>
-            )}
           </div>
 
-          <button className={estilos.boton} type="submit" disabled={inicio.isPending}>
+          {/*
+            La sesión ya persiste en cookie HttpOnly. El recuadro es del diseño;
+            no se envía al backend porque el contrato no tiene «recordarme».
+          */}
+          <div className={estilos.opciones}>
+            <label className={estilos.recordarme}>
+              <input type="checkbox" />
+              Recordarme
+            </label>
+            <button
+              type="button"
+              className={estilos.enlaceInactivo}
+              disabled
+              title="La recuperación de contraseña no forma parte del MVP"
+            >
+              ¿Olvidaste tu contraseña?
+            </button>
+          </div>
+
+          <Boton className={estilos.enviar} type="submit" disabled={inicio.isPending}>
             {inicio.isPending ? 'Entrando…' : 'Iniciar sesión'}
-          </button>
+          </Boton>
         </form>
 
+        <ContinuacionConRedes />
+
         <p className={estilos.pie}>
-          ¿Todavía no tienes cuenta? <Link to={RUTA_REGISTRO}>Créala aquí</Link>
+          ¿No tienes cuenta?{' '}
+          <Link className={estilos.enlaceDestacado} to={RUTA_REGISTRO}>
+            Regístrate
+          </Link>
         </p>
       </div>
     </main>

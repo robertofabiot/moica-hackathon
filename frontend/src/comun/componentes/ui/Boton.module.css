@@ -4,12 +4,12 @@
  */
 
 .boton {
-  padding: var(--gap-2xs) var(--gap-sm);
+  padding: var(--gap-sm) var(--gap-md);
   border-width: var(--border-width-xs);
   border-style: solid;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-family: var(--font-family-primary);
-  font-size: var(--font-size-md);
+  font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   line-height: 1.25;
   cursor: pointer;
@@ -18,7 +18,7 @@
 .primario {
   background-color: var(--color-primary-500);
   border-color: var(--color-primary-500);
-  color: var(--color-white);
+  color: var(--color-neutral-0);
 }
 
 .primario:hover:not(:disabled) {
@@ -27,14 +27,14 @@
 }
 
 .secundario {
-  background-color: var(--color-white);
-  border-color: var(--color-neutral-100);
-  color: var(--color-web-black);
+  background-color: var(--color-neutral-0);
+  border-color: var(--color-neutral-200);
+  color: var(--color-neutral-900);
 }
 
 .secundario:hover:not(:disabled) {
-  border-color: var(--color-neutral-primary);
-  background-color: var(--color-web-white);
+  border-color: var(--color-neutral-600);
+  background-color: var(--color-neutral-50);
 }
 
 .contorno {

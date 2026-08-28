@@ -43,9 +43,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
   function permaneceAutenticadoYPuedeReintentar() {
     expect(screen.getByText('Erving Miranda')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeEnabled();
-    expect(
-      screen.queryByRole('heading', { name: 'Iniciar sesión' })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Iniciar sesión' })).not.toBeInTheDocument();
   }
 
   async function reintentaYCierra(persona: ReturnType<typeof userEvent.setup>) {

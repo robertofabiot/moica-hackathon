@@ -683,7 +683,7 @@ Controles que P6 deja funcionando, con el resultado real de cada comprobación.
 - **Local**: ejecutado en la máquina de desarrollo (Windows 11, Docker Desktop,
   Node 22, JDK compilando con `release 21`), con PostgreSQL de Testcontainers
   y, para el recorrido visual, el Compose local.
-- **CI**: [ejecución 33273539630](https://github.com/robertofabiot/moica-hackathon/actions/runs/33273539630) en verde: backend, frontend, Docker Compose y Convenciones.
+- **CI**: la ejecución de esta corrección se anota cuando termine sobre el HEAD nuevo. La [33273698349](https://github.com/robertofabiot/moica-hackathon/actions/runs/33273698349) sobre `8cc176c` quedó verde antes de esta ronda.
 - **Rama**: `feature/solicitudes-servicio` nace de `develop` en `6cd875f`. PR #17.
 
 Una casilla vacía significa que ahí no aplica, no que fallara.
@@ -699,8 +699,8 @@ Una casilla vacía significa que ahí no aplica, no que fallara.
 | Concurrencia | `ConcurrenciaDeSolicitudIT` | Sí | Sí | Aceptar y cancelar a la vez dejan un solo ganador y `estado_actual` igual al último historial. Dos aceptaciones: una 200 y una 409 |
 | Sin fugas | `SolicitudServicioIT.elCuerpoNoFiltraCorreosContactosNiSecretos` | Sí | Sí | Detalle y bandejas no llevan `correoElectronico`, `@moica.test`, `claveHash`, `secretoTotp` ni `claveAlmacenamiento` |
 | Frontend | `npm run test` | Sí | | 202 pruebas en 23 archivos. Las 23 de solicitudes cubren formulario, validación, envío, error de negocio, bandejas, vacío, carga, detalle, aceptar, rechazar, motivo, completar, historial, 403, red y cuenta `RESTRINGIDA_TEMPORAL` (sin solicitar, aceptar, rechazar ni completar; conserva cancelar; el formulario por URL no se abre) |
-| Verificación local completa | Comandos del criterio de salida | Sí | Sí | Backend: `./mvnw -B -ntp verify` — 143 unitarias, 337 de integración, Spotless limpio, SpotBugs 0. Frontend: `format:check`, `lint`, `typecheck`, `test` (197) y `build` en verde. Raíz: `git diff --check` y `docker compose --env-file .env.example config -q` se ejecutan en este mismo incremento |
-| Capturas a tres tamaños | Chrome (MCP) a 375x812, 768x1024 y 1280x800 contra Vite `:5174` y el backend P6 en `:8082` | Sí | | Recorrido del 29 de agosto de 2026: bandejas vacías, formulario con validación, envío desde el detalle público, detalle `PENDIENTE` (cliente y prestador), aceptación con confirmación, `ACEPTADA`, `COMPLETADA` con historial cronológico y `CANCELADA` con motivo. `scrollWidth === clientWidth` en 375 (375), 768 (768) y 1280 (1265 por la barra vertical, sin desborde horizontal). Las 21 capturas de ese recorrido ya están adjuntas al PR #17. No se versionan |
+| Verificación local completa | Comandos del criterio de salida | Sí | | Backend: `./mvnw -B -ntp verify` — 143 unitarias, 338 de integración, Spotless limpio, SpotBugs 0. Frontend: `format:check`, `lint`, `typecheck`, `test` (202) y `build` en verde. Raíz: `git diff --check` y `docker compose --env-file .env.example config -q` se ejecutan en este mismo incremento |
+| Capturas a tres tamaños | Chrome (MCP) a 375x812, 768x1024 y 1280x800 contra Vite `:5174` y el backend P6 en `:8082` | Sí | | Las 21 capturas del recorrido inicial ya están adjuntas al PR #17. Esta corrección añade 12 capturas de los estados visuales afectados: prestador restringido ante `PENDIENTE` (sin aceptar/rechazar), prestador restringido ante `ACEPTADA` (sin completar, con cancelar), cliente restringido en el detalle público (sin solicitar) y acceso directo a `/solicitar` (sin formulario), en 375×812, 768×1024 y 1280×800. `scrollWidth === clientWidth` en todos (en 1280, 1265 cuando hay barra vertical). Fuera del repo en `C:\Users\ervin\Desktop\moica-pr17-capturas-p6` (`p6-corr-01` a `p6-corr-12`). No se versionan |
 
 No se implementaron chat, revelación de contactos, calificaciones, notificaciones,
 pagos, mapas ni expiración automática. Aceptar solo deja el estado listo para P7.

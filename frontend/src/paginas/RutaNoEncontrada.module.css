@@ -1,36 +1,81 @@
+/*
+ * Página 404. Solo tokens de `src/estilos/global.css`.
+ */
+
 .contenedor {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--moica-espacio-2);
   min-height: 100dvh;
-  padding: var(--moica-espacio-3);
+  padding: var(--gap-xl) var(--gap-lg);
+  background-color: var(--color-neutral-50);
+}
+
+.marca {
+  margin: 0;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.18em;
+  color: var(--color-neutral-900);
+}
+
+.contenido {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-lg);
+  width: 100%;
+  max-width: 36rem;
   text-align: center;
 }
 
+.codigo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--color-neutral-900);
+}
+
+.hueco {
+  display: block;
+  width: 3.5rem;
+  height: 0.7em;
+  flex-shrink: 0;
+}
+
 .titulo {
-  font-size: 1.5rem;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
 }
 
-.explicacion {
-  max-width: 40ch;
-  color: var(--moica-texto-suave);
-}
-
-.enlace {
-  padding: var(--moica-espacio-1) var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-radius: 0.5rem;
-  text-decoration: none;
-}
-
-.enlace:hover {
-  border-color: var(--moica-texto);
+.subtitulo {
+  max-width: 38ch;
+  color: var(--color-neutral-600);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-base);
 }
 
 @media (min-width: 48rem) {
+  .codigo {
+    font-size: 8rem;
+  }
+
+  .hueco {
+    width: 6rem;
+  }
+
   .titulo {
-    font-size: 2rem;
+    font-size: var(--font-size-2xl);
   }
 }

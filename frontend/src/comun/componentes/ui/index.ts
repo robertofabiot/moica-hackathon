@@ -6,3 +6,4 @@
 export { BarraLateral, type IdentificadorDeItemDeBarraLateral } from './BarraLateral';
 export { Boton, type FormaDeBoton, type VarianteDeBoton } from './Boton';
 export { Entrada, type VarianteDeEntrada } from './Entrada';
+export { IconoCasa, IconoLupa, IconoPin } from './iconos';

@@ -57,4 +57,14 @@ describe('navegación base', () => {
 
     expect(screen.getByRole('heading', { name: 'Iniciar sesión' })).toBeInTheDocument();
   });
+
+  it('abre la exploración pública de servicios sin exigir sesión', async () => {
+    api.responder('GET /api/catalogos/categorias', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/catalogos/departamentos', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/servicios', { estado: 200, cuerpo: [] });
+
+    renderizarConProveedores(<App />, '/explorar');
+
+    expect(await screen.findByRole('heading', { name: 'Explorar servicios' })).toBeInTheDocument();
+  });
 });

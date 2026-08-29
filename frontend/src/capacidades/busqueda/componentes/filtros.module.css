@@ -1,0 +1,11 @@
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--moica-espacio-1);
+}

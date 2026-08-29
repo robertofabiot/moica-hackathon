@@ -9,7 +9,9 @@ import {
   useCierreSesion,
   useSesionActual,
 } from '../capacidades/auth';
+import { RUTA_EXPLORAR } from '../capacidades/busqueda';
 import { RUTA_PRESTADOR } from '../capacidades/prestador';
+import { RUTA_SERVICIOS } from '../capacidades/servicio';
 import { ErrorDeApi } from '../comun/api';
 import estilos from './Inicio.module.css';
 
@@ -37,6 +39,9 @@ export default function Inicio() {
       />
       <h1 className={estilos.titulo}>Moica</h1>
       <p className={estilos.lema}>La confianza se construye entre todos</p>
+      <Link className={estilos.enlace} to={RUTA_EXPLORAR}>
+        Explorar servicios
+      </Link>
 
       {sesion.isPending ? (
         <p className={estilos.estado}>Comprobando tu sesión…</p>
@@ -54,6 +59,9 @@ export default function Inicio() {
               <>
                 <Link className={estilos.boton} to={RUTA_PRESTADOR}>
                   Mi perfil de prestador
+                </Link>
+                <Link className={estilos.boton} to={RUTA_SERVICIOS}>
+                  Mis servicios
                 </Link>
                 <Link className={estilos.boton} to={RUTA_SEGURIDAD}>
                   Seguridad de la cuenta

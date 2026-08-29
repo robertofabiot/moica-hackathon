@@ -59,6 +59,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
 
     expect(await screen.findByRole('link', { name: 'Iniciar sesión' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Crear cuenta' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Explorar servicios' })).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).not.toBeInTheDocument();
   });
 

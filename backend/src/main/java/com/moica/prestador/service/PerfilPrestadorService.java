@@ -4,7 +4,9 @@ import com.moica.auth.seguridad.UsuarioAutenticado;
 import com.moica.catalogo.dto.UbicacionDeMunicipio;
 import com.moica.catalogo.service.CatalogoTerritorialService;
 import com.moica.comun.error.ErrorDeAplicacion;
+import com.moica.prestador.dto.CondicionDePublicacion;
 import com.moica.prestador.dto.DatosDePerfilPrestador;
+import com.moica.prestador.dto.DatosPublicosDePrestador;
 import com.moica.prestador.dto.ResumenDePerfilPrestador;
 import com.moica.prestador.dto.SolicitudDeDisponibilidad;
 import com.moica.prestador.dto.SolicitudDePerfilPrestador;
@@ -154,6 +156,37 @@ public class PerfilPrestadorService {
   @Transactional(readOnly = true)
   public Optional<ResumenDePerfilPrestador> resumirPerfil(Long idPrestador) {
     return repositorio.findById(idPrestador).map(ResumenDePerfilPrestador::de);
+  }
+
+  /**
+   * Superficie pública de un perfil, si ya tiene al menos verificación básica.
+   *
+   * <p>No comprueba la cuenta ni la disponibilidad: eso lo decide quien publica el descubrimiento,
+   * que es quien conoce el filtro completo. Devuelve vacío cuando el perfil no existe o sigue
+   * {@code SIN_VERIFICAR}, para responder 404 sin enumerar.
+   */
+  @Transactional(readOnly = true)
+  public Optional<DatosPublicosDePrestador> describirPerfilPublicable(Long idPrestador) {
+    return repositorio
+        .findById(idPrestador)
+        .filter(perfil -> perfil.getNivelVerificacion() != NivelVerificacionPrestador.SIN_VERIFICAR)
+        .map(perfil -> DatosPublicosDePrestador.de(perfil, ubicacionDe(perfil)));
+  }
+
+  /**
+   * Toma el perfil en exclusiva durante la transacción de quien activa un servicio.
+   *
+   * <p>Activar lee disponibilidad y verificación, y esas dos las cambian otros actores —el
+   * propietario y la administración—. Sin este bloqueo, una activación podría completar sobre un
+   * perfil que acaba de quedar no disponible o sin verificar. Debe invocarse dentro de una
+   * transacción ya abierta.
+   *
+   * @throws ErrorDeAplicacion si el perfil no existe
+   */
+  @Transactional(propagation = Propagation.MANDATORY)
+  public CondicionDePublicacion bloquearParaPublicarServicio(Long idPrestador) {
+    PerfilPrestador perfil = bloquear(idPrestador);
+    return new CondicionDePublicacion(perfil.getDisponibilidad(), perfil.getNivelVerificacion());
   }
 
   /**

@@ -366,8 +366,9 @@ de identidad real ni publiques capturas que lo muestren.
 
 ```bash
 # 1. El bucket no admite lectura anónima. En el panel de Cloudflare, el bucket
-#    privado no debe tener subdominio r2.dev ni dominio propio. Si alguna
-#    dirección respondiera, la configuración está mal.
+#    privado no debe tener subdominio r2.dev ni dominio propio. Un GET sin
+#    firma al API S3 no debe devolver 200 (R2 puede responder 400, 401 o 403).
+#    Si alguna dirección pública respondiera 200, la configuración está mal.
 
 # 2. Carga: un expediente con los tres formatos, en una sola petición
 curl -s -b galletas.txt -X POST \
@@ -436,19 +437,57 @@ Los dobles de almacenamiento **no** demuestran la integración externa. Mientras
 el entorno no tenga credenciales, lo que falte de las comprobaciones de arriba
 queda pendiente y así debe declararse en el PR.
 
-**Estado del bucket público (PR #9).** Los pasos 1 y 2 —carga y lectura
-pública— se ejecutaron en la revisión contra el bucket `moica-publico-dev`,
-junto con la carga de imágenes de portafolio y la persistencia de la URL en
-PostgreSQL. Los pasos 3 y 4 —sustitución y eliminación— **siguen sin ejecutarse
-contra R2 real**.
+**Estado del bucket público (PR #9 y validación posterior).** Los pasos 1 y 2
+—carga y lectura pública— se ejecutaron en la revisión del #9 contra el bucket
+`moica-publico-dev`, junto con la carga de imágenes de portafolio y la
+persistencia de la URL en PostgreSQL. Los pasos 3 y 4 —sustitución y
+eliminación— se ejecutaron el 28 de agosto de 2026 contra el mismo bucket, con
+el backend local y las variables `MOICA_R2_*` del entorno de desarrollo:
 
-**Estado del bucket privado (PR #10).** **Ninguno de los diez pasos se ha
-ejecutado contra R2 real.** El entorno de desarrollo no tiene definidas las
-variables `MOICA_R2_PRIVADO_*`, y P4V no pide secretos por ningún canal. Lo que
-sí se comprobó en local, con el bucket privado **sin configurar**, es el
-comportamiento que corresponde a esa situación: enviar un expediente responde
-`503 ALMACENAMIENTO_NO_DISPONIBLE`, no crea ninguna fila y no filtra proveedor,
-endpoint, bucket ni clave; y abrir un documento responde el mismo 503. Todo lo
-demás del flujo —cola, toma, aprobación, rechazo, revocación y niveles— se
-recorrió de extremo a extremo. Aprovisionar el bucket privado con su token y
-ejecutar los diez pasos es lo que falta.
+- Sustituir un PNG por un JPEG cambió la URL (`perfiles/<32 hex>.png` →
+  `perfiles/<32 hex>.jpg`). La lectura anónima de la URL nueva respondió 200 y
+  la de la anterior, 404.
+- Eliminar la imagen dejó `urlImagenPerfil` en `null` en la API y en
+  PostgreSQL. Las dos URLs de esa prueba respondieron 404.
+- Un listado S3 del prefijo `perfiles/` confirmó que las claves de esa prueba
+  ya no estaban. La prueba no dejó objetos huérfanos.
+
+Quedaron dos objetos **previos**, ajenos a esa prueba y sin fila en
+PostgreSQL: `perfiles/bd70b56d8bce4ea780419bba44695d47.png` y
+`trabajos/a98a3766de57423da9e4de7fa4424335.png`. No se borraron: no pertenecen
+al recorrido de esta validación.
+
+**Estado del bucket privado (PR #10 y validación del #12).** Los diez pasos se
+ejecutaron el 28 de agosto de 2026 contra `moica-privado-dev`, con el backend
+local, las variables `MOICA_R2_PRIVADO_*` del entorno y **archivos ficticios**
+(PNG, JPEG y PDF mínimos con firma real). No se registran claves, URLs
+prefirmadas ni secretos.
+
+1. Sin lectura anónima: un GET sin firma al API S3 respondió 400; la misma
+   clave por `MOICA_R2_URL_PUBLICA_BASE` respondió 404. Ninguno fue 200.
+2. Carga: `POST /api/prestador/verificacion/solicitudes` respondió 201 con tres
+   documentos (`IDENTIDAD` PNG, `IDENTIDAD` JPEG, `CONSTANCIA` PDF). El cuerpo
+   no lleva clave, URL ni nombre de proveedor.
+3. PostgreSQL guardó tres claves `expedientes/<32 hex>.(png|jpg|pdf)`, MIME y
+   tamaño; ninguna clave parece una URL; el nombre original no va vacío. El
+   binario no está en la base.
+4. El propietario pidió la ruta administrativa de acceso y recibió 403
+   `ACCESO_DENEGADO`.
+5. Otra cuenta que consultó esa solicitud recibió 404, no 403.
+6. Un administrador con sesión provisional (segundo factor activo y aún no
+   verificado en esa sesión) recibió 403 `ACCESO_DENEGADO`.
+7. El mismo administrador, ya con el TOTP verificado, recibió 302 y
+   `Cache-Control: no-store`. El `Location` es HTTPS hacia
+   `*.r2.cloudflarestorage.com`, con prefijo `expedientes/`, estilo de ruta y
+   `X-Amz-Expires=300`. La URL completa no se registra.
+8. Un GET a ese `Location` respondió 200 y devolvió el archivo de la prueba.
+9. Tras 330 s, el mismo `Location` respondió 403.
+10. Compensación: se arrancó el backend con un `MOICA_R2_BUCKET_PRIVADO` que no
+    existe, **solo en el proceso**, sin tocar `.env`. Repetir el envío respondió
+    `503 ALMACENAMIENTO_NO_DISPONIBLE`, sin `R2`, `cloudflare`, `S3` ni
+    `expedientes/` en el cuerpo. El número de filas de solicitud y el de
+    objetos `expedientes/` no cambió.
+
+Los tres objetos de esta prueba coinciden con las tres filas nuevas y se
+conservan: son el expediente enviado, no huérfanos. Un intento anterior en la
+misma base local dejó otros tres objetos con sus filas; no se borraron.

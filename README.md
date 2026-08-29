@@ -116,7 +116,7 @@ Verificacion documental: el prestador presenta su expediente —JPEG, PNG o PDF,
 
 Servicios y descubrimiento: el prestador administra publicaciones e imagenes; un visitante explora sin autenticarse. Solo aparecen servicios `ACTIVO` de cuentas operativas, prestadores `DISPONIBLE` y perfiles con al menos verificacion basica. Un prestador `NO_DISPONIBLE` con verificacion basica conserva perfil y portafolio publicos, pero sin servicios listados y sin contratacion. La busqueda combina texto, categoria o subcategoria y municipio. Un precio nulo se muestra como «A convenir».
 
-Solicitudes: un cliente autenticado pide un servicio ajeno; el prestador acepta o rechaza; cualquiera de los dos puede cancelar segun el estado; el prestador marca como completada. Cada transicion queda en el historial. Los contactos siguen ocultos hasta el chat. Todavia no hay mensajes, calificaciones ni pagos.
+Solicitudes: un cliente autenticado con cuenta `ACTIVA` pide un servicio ajeno; el prestador con cuenta `ACTIVA` acepta o rechaza; cualquiera de los dos puede cancelar segun el estado; el prestador con cuenta `ACTIVA` marca como completada. Una cuenta restringida conserva la lectura y la cancelacion. Cada transicion queda en el historial. Los contactos siguen ocultos hasta el chat. Todavia no hay mensajes, calificaciones ni pagos.
 
 ## Licencia
 

@@ -69,7 +69,7 @@ Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy
 | `GET /api/solicitudes/recibidas` | Bandeja de solicitudes recibidas en los servicios propios | Sesion plena |
 | `GET /api/solicitudes/{id}` | Detalle e historial de una solicitud propia | Sesion plena; solo los dos participantes |
 | `POST /api/solicitudes/{id}/aceptacion` | El prestador destinatario acepta una pendiente | Sesion plena con cuenta `ACTIVA` |
-| `POST /api/solicitudes/{id}/rechazo` | El prestador destinatario rechaza una pendiente | Sesion plena |
+| `POST /api/solicitudes/{id}/rechazo` | El prestador destinatario rechaza una pendiente | Sesion plena con cuenta `ACTIVA` |
 | `POST /api/solicitudes/{id}/cancelacion` | Cancela segun actor y estado; motivo si esta `ACEPTADA` | Sesion plena |
 | `POST /api/solicitudes/{id}/completado` | El prestador destinatario marca una aceptada como completada | Sesion plena con cuenta `ACTIVA` |
 | `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
@@ -374,9 +374,10 @@ ubicacion escrita y su historial. Un tercero recibe 404 `RECURSO_NO_ENCONTRADO`,
 igual que en el resto de recursos propios.
 
 Una cuenta `RESTRINGIDA_TEMPORAL` consulta sus bandejas, el detalle y cancela
-un compromiso existente. No crea, no acepta y no completa. Rechazar una
-pendiente si se permite: no esta en esa lista. Una cuenta suspendida no ejecuta
-acciones autenticadas de negocio: la cadena responde 403 `ACCESO_DENEGADO`.
+un compromiso existente. Enviar, aceptar, rechazar y completar exigen cuenta
+`ACTIVA`. Una restringida no puede ejecutar ninguna de esas cuatro acciones.
+Una cuenta suspendida no ejecuta acciones autenticadas de negocio: la cadena
+responde 403 `ACCESO_DENEGADO`.
 
 ### Crear
 
@@ -415,7 +416,7 @@ No se impide enviar varias solicitudes historicas al mismo servicio.
 | Estado actual | Accion | Actor | Resultado | Motivo |
 |---|---|---|---|---|
 | `PENDIENTE` | Aceptar | Prestador destinatario con cuenta `ACTIVA` | `ACEPTADA` | No |
-| `PENDIENTE` | Rechazar | Prestador destinatario | `RECHAZADA` | No |
+| `PENDIENTE` | Rechazar | Prestador destinatario con cuenta `ACTIVA` | `RECHAZADA` | No |
 | `PENDIENTE` | Cancelar | Cliente solicitante | `CANCELADA` | No |
 | `ACEPTADA` | Cancelar | Cualquiera de los dos | `CANCELADA` | Obligatorio |
 | `ACEPTADA` | Completar | Prestador destinatario con cuenta `ACTIVA` | `COMPLETADA` | No |
@@ -429,7 +430,9 @@ acciones simultaneas no dejan transiciones incompatibles.
 
 Cancelar una `ACEPTADA` sin motivo o con motivo en blanco responde 400
 `MOTIVO_OBLIGATORIO`. El tope del motivo es 2000 caracteres. Un actor o un
-estado incorrectos responden 409 `TRANSICION_NO_PERMITIDA`.
+estado incorrectos responden 409 `TRANSICION_NO_PERMITIDA`. Una cuenta
+restringida que intenta enviar, aceptar, rechazar o completar responde 403
+`CUENTA_RESTRINGIDA` y no escribe historial.
 
 Aceptar no revela correos ni contactos: solo deja el estado listo para el
 incremento del chat.

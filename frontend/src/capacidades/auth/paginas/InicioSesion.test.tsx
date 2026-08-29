@@ -80,8 +80,8 @@ describe('pantalla de inicio de sesión', () => {
     await persona.type(screen.getByLabelText('Contraseña'), 'Moica2026$segura');
     await persona.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
-    expect(await screen.findByText('Erving Miranda')).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible();
+    expect(await screen.findByRole('button', { name: 'Hola, Erving' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Regístrate' })).not.toBeInTheDocument();
   });
 
   it('normaliza el correo antes de enviarlo', async () => {
@@ -93,7 +93,7 @@ describe('pantalla de inicio de sesión', () => {
     await persona.type(screen.getByLabelText('Contraseña'), 'Moica2026$segura');
     await persona.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
-    await screen.findByText('Erving Miranda');
+    await screen.findByRole('button', { name: 'Hola, Erving' });
     expect(api.ultima('POST /api/auth/sesion')?.cuerpo).toMatchObject({
       correoElectronico: 'erving@moica.test',
     });

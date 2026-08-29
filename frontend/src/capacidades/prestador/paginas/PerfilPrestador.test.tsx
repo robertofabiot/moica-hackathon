@@ -311,6 +311,7 @@ describe('Perfil de prestador', () => {
     expect(await screen.findByDisplayValue('Taller de Ana')).toBeVisible();
 
     await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
+    await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
     await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
     expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
 
@@ -323,6 +324,7 @@ describe('Perfil de prestador', () => {
     await persona.type(screen.getByLabelText('Contraseña'), 'Moica2026$segura');
     await persona.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
+    await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
     await persona.click(await screen.findByRole('link', { name: 'Mi perfil de prestador' }));
 
     expect(await screen.findByText('Cargando tu perfil…')).toBeVisible();

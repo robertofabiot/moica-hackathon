@@ -171,6 +171,7 @@ describe('área administrativa', () => {
     expect(await screen.findByText('ana@moica.test')).toBeVisible();
 
     await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
+    await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
     await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
     expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
 
@@ -189,6 +190,7 @@ describe('área administrativa', () => {
     await persona.type(screen.getByLabelText('Contraseña'), 'Moica2026$segura');
     await persona.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
+    await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
     await persona.click(await screen.findByRole('link', { name: 'Área administrativa' }));
 
     expect(await screen.findByText('Cargando el área administrativa…')).toBeVisible();
@@ -198,17 +200,21 @@ describe('área administrativa', () => {
   });
 
   it('ofrece el área administrativa en el inicio solo a quien tiene el rol', async () => {
+    const persona = userEvent.setup();
     sesionAdministrativaVerificada();
     renderizarConProveedores(<App />, '/');
 
-    expect(await screen.findByRole('link', { name: 'Área administrativa' })).toBeVisible();
+    await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
+    expect(screen.getByRole('link', { name: 'Área administrativa' })).toBeVisible();
   });
 
   it('no ofrece el área administrativa a una cuenta ordinaria', async () => {
+    const persona = userEvent.setup();
     api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesionDeEjemplo() });
     renderizarConProveedores(<App />, '/');
 
-    expect(await screen.findByRole('link', { name: 'Seguridad de la cuenta' })).toBeVisible();
+    await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
+    expect(screen.getByRole('link', { name: 'Seguridad de la cuenta' })).toBeVisible();
     expect(screen.queryByRole('link', { name: 'Área administrativa' })).not.toBeInTheDocument();
   });
 });

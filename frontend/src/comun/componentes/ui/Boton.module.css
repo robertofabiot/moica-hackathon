@@ -4,6 +4,10 @@
  */
 
 .boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-xs);
   padding: var(--gap-sm) var(--gap-md);
   border-width: var(--border-width-xs);
   border-style: solid;
@@ -13,6 +17,18 @@
   font-weight: var(--font-weight-medium);
   line-height: 1.25;
   cursor: pointer;
+}
+
+.boton svg {
+  display: block;
+  width: 1.25em;
+  height: 1.25em;
+  flex-shrink: 0;
+}
+
+.pildora {
+  border-radius: var(--radius-full);
+  padding-inline: var(--gap-lg);
 }
 
 .primario {

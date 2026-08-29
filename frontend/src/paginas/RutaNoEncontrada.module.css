@@ -1,36 +1,209 @@
+/*
+ * Página 404. Solo tokens de `src/estilos/global.css`.
+ */
+
 .contenedor {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: var(--moica-espacio-2);
   min-height: 100dvh;
-  padding: var(--moica-espacio-3);
-  text-align: center;
+  padding: var(--gap-md) var(--gap-lg) var(--gap-xl);
+  background-color: var(--color-neutral-50);
 }
 
-.titulo {
-  font-size: 1.5rem;
-}
-
-.explicacion {
-  max-width: 40ch;
-  color: var(--moica-texto-suave);
-}
-
-.enlace {
-  padding: var(--moica-espacio-1) var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-radius: 0.5rem;
+.marca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0;
   text-decoration: none;
 }
 
-.enlace:hover {
-  border-color: var(--moica-texto);
+.logoHorizontal {
+  display: block;
+  height: clamp(5rem, 10vw, 8rem);
+  width: auto;
+  max-width: none;
+}
+
+.contenido {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-md);
+  width: 100%;
+  max-width: 42rem;
+  text-align: center;
+}
+
+.escena {
+  position: relative;
+  width: min(100%, 72rem);
+  margin: var(--gap-lg) 0 var(--gap-md);
+  overflow: visible;
+}
+
+.soloLectura {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.decoracion {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.numeros {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0;
+  padding: var(--gap-md) 10% var(--gap-xl);
+}
+
+.cuatroTeal,
+.cuatroNaranja {
+  font-family: var(--font-family-secondary);
+  font-size: clamp(10rem, 32vw, 22rem);
+  font-weight: var(--font-weight-bold);
+  line-height: 0.8;
+}
+
+.cuatroTeal {
+  color: var(--color-secondary-500);
+  transform: rotate(-4deg);
+}
+
+.cuatroNaranja {
+  color: var(--color-primary-500);
+  transform: rotate(3deg);
+}
+
+.iconoCentral {
+  width: clamp(11rem, 30vw, 22rem);
+  height: auto;
+  align-self: center;
+  margin-inline: clamp(-3rem, -4vw, -1rem);
+  transform: rotate(5deg) translateY(-5%);
+}
+
+.persona {
+  position: absolute;
+  right: 16%;
+  bottom: 4%;
+  height: clamp(7rem, 20vw, 14rem);
+  width: auto;
+  max-width: none;
+  pointer-events: none;
+  z-index: 2;
+  transform: rotate(-3deg);
+}
+
+.pregunta {
+  position: absolute;
+  right: 10%;
+  top: 28%;
+  width: clamp(2.5rem, 5vw, 4rem);
+  height: auto;
+  max-width: none;
+  pointer-events: none;
+  z-index: 3;
+  transform: rotate(8deg);
+}
+
+.sombra {
+  fill: var(--color-neutral-200);
+  opacity: 0.85;
+}
+
+.sendero {
+  fill: none;
+  stroke: var(--color-secondary-500);
+  stroke-width: 3.5;
+  stroke-dasharray: 7 9;
+  stroke-linecap: round;
+}
+
+.senderoDerecho {
+  fill: none;
+  stroke: var(--color-primary-500);
+  stroke-width: 3.5;
+  stroke-dasharray: 7 9;
+  stroke-linecap: round;
+}
+
+.marcador {
+  fill: var(--color-primary-300);
+}
+
+.cruz {
+  fill: none;
+  stroke: var(--color-neutral-0);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.destelloTeal {
+  fill: none;
+  stroke: var(--color-secondary-500);
+  stroke-width: 2.5;
+}
+
+.destelloNaranja {
+  fill: none;
+  stroke: var(--color-primary-500);
+  stroke-width: 2.5;
+}
+
+.pin {
+  fill: var(--color-secondary-500);
+}
+
+.ojoDelPin {
+  fill: var(--color-neutral-50);
+}
+
+.titulo {
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+}
+
+.subtitulo {
+  max-width: 36ch;
+  color: var(--color-neutral-600);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.accion {
+  margin-top: var(--gap-sm);
+  padding-block: var(--gap-md);
+  padding-inline: var(--gap-xl);
 }
 
 @media (min-width: 48rem) {
+  .contenedor {
+    padding-top: var(--gap-xl);
+  }
+
   .titulo {
-    font-size: 2rem;
+    font-size: var(--font-size-xl);
+  }
+
+  .subtitulo {
+    font-size: var(--font-size-base);
   }
 }

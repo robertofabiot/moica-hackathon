@@ -3,9 +3,11 @@ import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import estilos from './Boton.module.css';
 
 export type VarianteDeBoton = 'primario' | 'secundario' | 'contorno';
+export type FormaDeBoton = 'normal' | 'pildora';
 
 type PropiedadesDeBoton = ButtonHTMLAttributes<HTMLButtonElement> & {
   variante?: VarianteDeBoton;
+  forma?: FormaDeBoton;
 };
 
 /**
@@ -13,16 +15,22 @@ type PropiedadesDeBoton = ButtonHTMLAttributes<HTMLButtonElement> & {
  *
  * La variante por omisión es la primaria. `type` arranca en `button` para no
  * enviar un formulario por accidente; las acciones de envío pasan `submit`.
+ * `forma="pildora"` redondea el botón para barras de búsqueda y llamadas a la acción.
  */
 export const Boton = forwardRef<HTMLButtonElement, PropiedadesDeBoton>(function Boton(
-  { variante = 'primario', type = 'button', className, ...rest },
+  { variante = 'primario', forma = 'normal', type = 'button', className, ...rest },
   ref
 ) {
   return (
     <button
       ref={ref}
       type={type}
-      className={unirClases(estilos.boton, claseDeVariante(variante), className)}
+      className={unirClases(
+        estilos.boton,
+        claseDeVariante(variante),
+        forma === 'pildora' ? estilos.pildora : undefined,
+        className
+      )}
       {...rest}
     />
   );

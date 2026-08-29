@@ -69,7 +69,12 @@ describe('verificación del segundo factor', () => {
     await persona.type(await screen.findByLabelText('Código de verificación'), '123 456');
     await persona.click(screen.getByRole('button', { name: 'Verificar y entrar' }));
 
-    expect(await screen.findByRole('heading', { name: 'Moica' })).toBeVisible();
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Encuentra servicios confiables en tu comunidad',
+      })
+    ).toBeVisible();
+    await persona.click(screen.getByRole('button', { name: /^Hola,/ }));
     expect(screen.getByRole('link', { name: 'Seguridad de la cuenta' })).toBeVisible();
     expect(api.ultima('POST /api/auth/sesion/segundo-factor')?.cuerpo).toEqual({
       codigo: '123456',
@@ -159,16 +164,22 @@ describe('verificación del segundo factor', () => {
     api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesionDeEjemplo() });
     renderizarConProveedores(<App />, '/verificar-segundo-factor');
 
-    expect(await screen.findByRole('heading', { name: 'Moica' })).toBeVisible();
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Encuentra servicios confiables en tu comunidad',
+      })
+    ).toBeVisible();
   });
 
   it('avisa en el inicio de que la sesión sigue pendiente de verificarse', async () => {
+    const persona = userEvent.setup();
     conSesionProvisional();
     renderizarConProveedores(<App />, '/');
 
     expect(await screen.findByRole('status')).toHaveTextContent(
       'Falta verificar tu segundo factor'
     );
+    await persona.click(screen.getByRole('button', { name: /^Hola,/ }));
     expect(screen.getByRole('link', { name: 'Verificar segundo factor' })).toBeVisible();
     expect(screen.queryByRole('link', { name: 'Seguridad de la cuenta' })).not.toBeInTheDocument();
   });

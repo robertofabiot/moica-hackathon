@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { useSesionActual } from '../../auth';
@@ -32,10 +32,6 @@ export default function AccionesDeSolicitud({
   const [pendiente, setPendiente] = useState<
     'aceptar' | 'rechazar' | 'cancelar' | 'completar' | null
   >(null);
-
-  useEffect(() => {
-    setPendiente(null);
-  }, [solicitud.estadoActual]);
 
   const aceptacion = useAceptacionDeSolicitud();
   const rechazo = useRechazoDeSolicitud();
@@ -77,7 +73,11 @@ export default function AccionesDeSolicitud({
             advertencia="Al aceptar quedará lista para el chat y los contactos, que se habilitan en el siguiente incremento."
             textoDeAccion="Sí, aceptar"
             enCurso={enCurso}
-            alConfirmar={() => aceptacion.mutate(solicitud.idSolicitudServicio)}
+            alConfirmar={() =>
+              aceptacion.mutate(solicitud.idSolicitudServicio, {
+                onSuccess: () => setPendiente(null),
+              })
+            }
             alCancelar={() => setPendiente(null)}
           />
         ) : null}
@@ -87,7 +87,11 @@ export default function AccionesDeSolicitud({
             advertencia="Esta acción no se puede deshacer."
             textoDeAccion="Sí, rechazar"
             enCurso={enCurso}
-            alConfirmar={() => rechazo.mutate(solicitud.idSolicitudServicio)}
+            alConfirmar={() =>
+              rechazo.mutate(solicitud.idSolicitudServicio, {
+                onSuccess: () => setPendiente(null),
+              })
+            }
             alCancelar={() => setPendiente(null)}
           />
         ) : null}
@@ -97,7 +101,12 @@ export default function AccionesDeSolicitud({
             advertencia="El prestador dejará de verla como pendiente. Esta acción no se puede deshacer."
             textoDeAccion="Sí, cancelar"
             enCurso={enCurso}
-            alConfirmar={() => cancelacion.mutate({ idSolicitud: solicitud.idSolicitudServicio })}
+            alConfirmar={() =>
+              cancelacion.mutate(
+                { idSolicitud: solicitud.idSolicitudServicio },
+                { onSuccess: () => setPendiente(null) }
+              )
+            }
             alCancelar={() => setPendiente(null)}
           />
         ) : null}
@@ -152,7 +161,11 @@ export default function AccionesDeSolicitud({
           advertencia="Indica que el servicio ya se realizó. Esta acción no se puede deshacer."
           textoDeAccion="Sí, completar"
           enCurso={enCurso}
-          alConfirmar={() => completado.mutate(solicitud.idSolicitudServicio)}
+          alConfirmar={() =>
+            completado.mutate(solicitud.idSolicitudServicio, {
+              onSuccess: () => setPendiente(null),
+            })
+          }
           alCancelar={() => setPendiente(null)}
         />
       ) : null}
@@ -160,7 +173,10 @@ export default function AccionesDeSolicitud({
         <CancelacionConMotivo
           enCurso={enCurso}
           alConfirmar={(motivo) =>
-            cancelacion.mutate({ idSolicitud: solicitud.idSolicitudServicio, motivo })
+            cancelacion.mutate(
+              { idSolicitud: solicitud.idSolicitudServicio, motivo },
+              { onSuccess: () => setPendiente(null) }
+            )
           }
           alCancelar={() => setPendiente(null)}
         />

@@ -13,7 +13,7 @@ import tools.jackson.databind.JsonNode;
  * El catálogo territorial que consumen los formularios del perfil.
  *
  * <p>Publica únicamente los departamentos habilitados —Managua en el MVP— con sus municipios en
- * orden alfabético, y exige sesión plena como cualquier ruta no declarada.
+ * orden alfabético. Desde P5 es lectura pública para el filtro territorial.
  */
 class CatalogoTerritorialIT extends EscenarioDePrestador {
 
@@ -52,11 +52,11 @@ class CatalogoTerritorialIT extends EscenarioDePrestador {
   }
 
   @Test
-  void sinSesionElCatalogoNoSeEntrega() {
+  void sinSesionElCatalogoSiSeEntrega() {
     HttpResponse<String> respuesta = abrirNavegador().get(RUTA_CATALOGO);
 
-    assertThat(respuesta.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
-    assertThat(codigoDeError(respuesta)).isEqualTo("NO_AUTENTICADO");
+    assertThat(respuesta.statusCode()).isEqualTo(HttpStatus.OK.value());
+    assertThat(json(respuesta).get(0).get("nombre").asText()).isEqualTo("Managua");
   }
 
   private static Iterable<String> nombresDe(JsonNode municipios) {

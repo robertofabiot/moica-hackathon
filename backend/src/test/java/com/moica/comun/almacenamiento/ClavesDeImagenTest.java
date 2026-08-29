@@ -17,6 +17,9 @@ class ClavesDeImagenTest {
     assertThat(ClavesDeImagen.nueva(ClavesDeImagen.PREFIJO_TRABAJOS, TipoDeImagen.JPEG))
         .startsWith("trabajos/")
         .endsWith(".jpg");
+    assertThat(ClavesDeImagen.nueva(ClavesDeImagen.PREFIJO_SERVICIOS, TipoDeImagen.WEBP))
+        .startsWith("servicios/")
+        .endsWith(".webp");
   }
 
   @Test

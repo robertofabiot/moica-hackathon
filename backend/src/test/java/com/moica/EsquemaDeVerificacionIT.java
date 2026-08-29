@@ -33,6 +33,8 @@ class EsquemaDeVerificacionIT extends PruebaDeIntegracionConPostgres {
   @BeforeEach
   void prepararUnPerfilYUnAdministrador() {
     jdbc.update("DELETE FROM solicitud_verificacion_prestador");
+    jdbc.update("DELETE FROM imagen_servicio_publicado");
+    jdbc.update("DELETE FROM servicio_publicado");
     jdbc.update("DELETE FROM usuario");
 
     idPrestador = crearCuenta("prestador.esquema@moica.test");

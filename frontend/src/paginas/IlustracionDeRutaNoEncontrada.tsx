@@ -52,7 +52,10 @@ function DecoracionDeEscena() {
         />
         <circle className={estilos.ojoDelPin} cx="0" cy="-12" r="5.5" />
       </g>
-      <path className={estilos.senderoDerecho} d="M540 240 C 570 260 620 285 660 278 S 685 275 692 272" />
+      <path
+        className={estilos.senderoDerecho}
+        d="M540 240 C 570 260 620 285 660 278 S 685 275 692 272"
+      />
     </svg>
   );
 }

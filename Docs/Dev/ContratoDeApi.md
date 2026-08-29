@@ -332,14 +332,21 @@ Solo aparecen servicios `ACTIVO` de cuentas `ACTIVA`, prestadores `DISPONIBLE` y
 perfiles `VERIFICADO_BASICO` o `PROFESIONAL_VERIFICADO`. Un identificador que no
 cumpla eso responde 404, igual que uno inexistente.
 
+`GET /api/prestadores/{id}` es distinto: si la cuenta esta operativa y el
+perfil tiene al menos verificacion basica, el perfil y su portafolio siguen
+visibles aunque el prestador este `NO_DISPONIBLE`. En ese caso `servicios` sale
+vacio y `admiteContratacion` es falso. Sus servicios tampoco aparecen en el
+listado ni en el detalle publico.
+
 El detalle y el perfil publico llevan `significadoVerificacion` y
 `advertenciaDeInsignia`. La advertencia es la misma en todos los niveles: la
 insignia no garantiza la calidad futura. No viajan contactos, correos privados,
 documentos, numeros de identidad, observaciones administrativas ni claves de
 almacenamiento. No se inventan reputaciones ni calificaciones.
 
-`admiteContratacion` avisa si hoy se podria solicitar. Las solicitudes llegan
-en P6; este campo no abre ningun endpoint de contratacion.
+`admiteContratacion` avisa si hoy se podria solicitar. Es falso cuando el
+prestador no esta disponible. Las solicitudes llegan en P6; este campo no abre
+ningun endpoint de contratacion.
 
 `GET /api/catalogos/departamentos` y `GET /api/catalogos/categorias` son
 publicos para alimentar los filtros. La taxonomia de demostracion no se

@@ -113,7 +113,7 @@ Perfil de prestador: catalogo territorial de Managua, perfil propio con tipo, mu
 
 Verificacion documental: el prestador presenta su expediente —JPEG, PNG o PDF, hasta 5 MB por archivo— en una sola operacion, y una persona administradora con segundo factor verificado lo toma, lo aprueba, lo rechaza con motivo o revoca una verificacion ya concedida. Los documentos viven en un bucket privado de R2; PostgreSQL guarda solo una clave opaca y sus metadatos, y el archivo se abre con un enlace temporal que caduca. El nivel del perfil —`SIN_VERIFICAR`, `VERIFICADO_BASICO` o `PROFESIONAL_VERIFICADO`— lo proyecta ese flujo y nadie mas.
 
-Servicios y descubrimiento: el prestador administra publicaciones e imagenes; un visitante explora sin autenticarse. Solo aparecen servicios `ACTIVO` de cuentas operativas, prestadores `DISPONIBLE` y perfiles con al menos verificacion basica. La busqueda combina texto, categoria o subcategoria y municipio. Un precio nulo se muestra como «A convenir». Todavia no hay solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
+Servicios y descubrimiento: el prestador administra publicaciones e imagenes; un visitante explora sin autenticarse. Solo aparecen servicios `ACTIVO` de cuentas operativas, prestadores `DISPONIBLE` y perfiles con al menos verificacion basica. Un prestador `NO_DISPONIBLE` con verificacion basica conserva perfil y portafolio publicos, pero sin servicios listados y sin contratacion. La busqueda combina texto, categoria o subcategoria y municipio. Un precio nulo se muestra como «A convenir». Todavia no hay solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
 
 ## Licencia
 

@@ -45,9 +45,9 @@
 
 .enlaceNav {
   color: var(--color-neutral-800);
-  font-family: var(--font-family-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   text-decoration: none;
 }
 
@@ -72,7 +72,9 @@
 
 .enlaceDeSesion {
   color: var(--color-neutral-800);
-  font-size: var(--font-size-sm);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
   text-decoration: none;
 }
 

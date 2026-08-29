@@ -78,8 +78,9 @@
 
 .tituloDeCategorias {
   font-family: var(--font-family-primary);
-  font-size: var(--font-size-xl);
+  font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
   color: var(--color-neutral-900);
 }
 
@@ -108,9 +109,9 @@
 
 .etiquetaDeCategoria {
   text-align: center;
-  font-family: var(--font-family-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
   color: var(--color-neutral-800);
 }
 
@@ -130,6 +131,10 @@
 
   .categorias {
     padding: var(--gap-2xl) var(--gap-xl) var(--gap-3xl);
+  }
+
+  .tituloDeCategorias {
+    font-size: var(--font-size-3xl);
   }
 
   .cuadricula {

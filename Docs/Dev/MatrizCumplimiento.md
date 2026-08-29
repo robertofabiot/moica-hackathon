@@ -639,9 +639,11 @@ Controles que P5 deja funcionando, con el resultado real de cada comprobación.
   último código de integración es `dc43e32`. Este cambio documental viaja en el
   mismo PR.
 - **CI**: los cuatro checks del #16 quedaron en verde sobre `fe26f77`, antes de
-  integrar el #15; no validan el resultado combinado. Los enlaces del SHA final
-  se anotan cuando existan; no se describen de memoria ni se declaran verdes
-  todavía.
+  integrar el #15; no validan el resultado combinado. Sobre `dbea837`,
+  [CI](https://github.com/robertofabiot/moica-hackathon/actions/runs/33263780265)
+  —backend, frontend y `docker compose`— y
+  [Convenciones](https://github.com/robertofabiot/moica-hackathon/actions/runs/33263780167)
+  quedaron en verde. No se declara revisión de Roberto.
 - **Rama**: `feature/servicios-busqueda-publica` nace de `develop` en
   `f195360` e incorpora la portada del #15 mediante merge, no rebase.
 

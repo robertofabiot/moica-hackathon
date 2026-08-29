@@ -256,7 +256,7 @@ class SolicitudServicioIT extends EscenarioDeSolicitud {
   }
 
   @Test
-  void unaCuentaRestringidaConsultaYCancelaPeroNoCreaNiAceptaNiCompleta() {
+  void unaCuentaRestringidaConsultaYCancelaPeroNoCreaNiAceptaNiRechazaNiCompleta() {
     long pendiente = idDeSolicitud(enviarSolicitud(cliente, idServicio));
     long aceptada = idDeSolicitud(enviarSolicitud(cliente, idServicio));
     assertThat(aceptar(navegador, aceptada).statusCode()).isEqualTo(HttpStatus.OK.value());
@@ -279,13 +279,29 @@ class SolicitudServicioIT extends EscenarioDeSolicitud {
     assertThat(navegador.get(RUTA_SOLICITUDES + "/recibidas").statusCode())
         .isEqualTo(HttpStatus.OK.value());
     assertThat(codigoDeError(aceptar(navegador, paraAceptar))).isEqualTo("CUENTA_RESTRINGIDA");
+    assertThat(codigoDeError(rechazar(navegador, paraAceptar))).isEqualTo("CUENTA_RESTRINGIDA");
+    assertThat(estadoActualEnBase(paraAceptar)).isEqualTo("PENDIENTE");
+    assertThat(cambiosRegistrados(paraAceptar)).isEqualTo(1);
 
     jdbc.update("UPDATE usuario SET estado_cuenta = 'ACTIVA' WHERE correo_electronico = ?", CORREO);
     assertThat(aceptar(navegador, paraAceptar).statusCode()).isEqualTo(HttpStatus.OK.value());
     restringirCuenta(CORREO);
     assertThat(codigoDeError(completar(navegador, paraAceptar))).isEqualTo("CUENTA_RESTRINGIDA");
-    assertThat(rechazar(navegador, paraAceptar).statusCode())
-        .isEqualTo(HttpStatus.CONFLICT.value());
+  }
+
+  @Test
+  void unPrestadorRestringidoNoRechazaUnaPendiente() {
+    long pendiente = idDeSolicitud(enviarSolicitud(cliente, idServicio));
+    int historialInicial = cambiosRegistrados(pendiente);
+
+    restringirCuenta(CORREO);
+    HttpResponse<String> respuesta = rechazar(navegador, pendiente);
+
+    assertThat(respuesta.statusCode()).isEqualTo(HttpStatus.FORBIDDEN.value());
+    assertThat(codigoDeError(respuesta)).isEqualTo("CUENTA_RESTRINGIDA");
+    assertThat(estadoActualEnBase(pendiente)).isEqualTo("PENDIENTE");
+    assertThat(ultimoEstadoDelHistorial(pendiente)).isEqualTo("PENDIENTE");
+    assertThat(cambiosRegistrados(pendiente)).isEqualTo(historialInicial);
   }
 
   @Test

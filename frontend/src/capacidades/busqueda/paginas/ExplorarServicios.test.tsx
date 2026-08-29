@@ -93,6 +93,27 @@ describe('Explorar servicios', () => {
     expect(screen.queryByText(/teléfono/i)).not.toBeInTheDocument();
   });
 
+  it('lee el texto inicial desde la dirección y pide ese filtro', async () => {
+    api.responder('GET /api/servicios?texto=fuga', { estado: 200, cuerpo: [] });
+    renderizarConProveedores(<App />, '/explorar?texto=fuga');
+
+    expect(await screen.findByLabelText('Qué buscas')).toHaveValue('fuga');
+    expect(api.ultima('GET /api/servicios?texto=fuga')).toBeDefined();
+  });
+
+  it('limpia la dirección al quitar filtros', async () => {
+    const persona = userEvent.setup();
+    api.responder('GET /api/servicios?texto=fuga', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/servicios', { estado: 200, cuerpo: [] });
+    renderizarConProveedores(<App />, '/explorar?texto=fuga');
+    expect(await screen.findByLabelText('Qué buscas')).toHaveValue('fuga');
+
+    await persona.click(screen.getByRole('button', { name: 'Quitar filtros' }));
+
+    expect(screen.getByLabelText('Qué buscas')).toHaveValue('');
+    expect(api.ultima('GET /api/servicios')).toBeDefined();
+  });
+
   it('combina texto, categoría, subcategoría y municipio al buscar', async () => {
     const persona = userEvent.setup();
     api.responder('GET /api/servicios', { estado: 200, cuerpo: [] });

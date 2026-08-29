@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../App';
 import { definirTiempoDeEsperaMs, TIEMPO_DE_ESPERA_MS } from '../capacidades/auth/api';
 import {
+  catalogoDeCategoriasDeEjemplo,
+  catalogoDeEjemplo,
   cuerpoDeError,
   instalarApiFalsa,
   sesionDeEjemplo,
@@ -273,5 +275,84 @@ describe('estado de acceso en la pantalla de inicio', () => {
     await vi.advanceTimersByTimeAsync(5000);
 
     expect(await screen.findByRole('status')).toHaveTextContent('Tu sesión venció');
+  });
+
+  it('lleva Explorar al descubrimiento público', async () => {
+    const persona = userEvent.setup();
+    sinSesion();
+    api.responder('GET /api/catalogos/categorias', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/catalogos/departamentos', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/servicios', { estado: 200, cuerpo: [] });
+    renderizarConProveedores(<App />);
+
+    await persona.click(await screen.findByRole('link', { name: 'Explorar' }));
+
+    expect(await screen.findByRole('heading', { name: 'Explorar servicios' })).toBeVisible();
+  });
+
+  it('lleva el texto del hero a explorar y conserva el filtro', async () => {
+    const persona = userEvent.setup();
+    sinSesion();
+    api.responder('GET /api/catalogos/categorias', {
+      estado: 200,
+      cuerpo: catalogoDeCategoriasDeEjemplo(),
+    });
+    api.responder('GET /api/catalogos/departamentos', {
+      estado: 200,
+      cuerpo: catalogoDeEjemplo(),
+    });
+    api.responder('GET /api/servicios?texto=fuga', { estado: 200, cuerpo: [] });
+    renderizarConProveedores(<App />);
+
+    await persona.type(await screen.findByLabelText('Qué servicio necesitas'), 'fuga');
+    await persona.click(screen.getByRole('button', { name: 'Buscar' }));
+
+    expect(await screen.findByRole('heading', { name: 'Explorar servicios' })).toBeVisible();
+    expect(screen.getByLabelText('Qué buscas')).toHaveValue('fuga');
+    expect(api.ultima('GET /api/servicios?texto=fuga')).toBeDefined();
+  });
+
+  it('abre explorar sin consulta cuando el hero se envía vacío', async () => {
+    const persona = userEvent.setup();
+    sinSesion();
+    api.responder('GET /api/catalogos/categorias', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/catalogos/departamentos', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/servicios', { estado: 200, cuerpo: [] });
+    renderizarConProveedores(<App />);
+
+    await persona.click(await screen.findByRole('button', { name: 'Buscar' }));
+
+    expect(await screen.findByRole('heading', { name: 'Explorar servicios' })).toBeVisible();
+    expect(screen.getByLabelText('Qué buscas')).toHaveValue('');
+    expect(api.ultima('GET /api/servicios')).toBeDefined();
+  });
+
+  it('ofrece Mis servicios en el menú de una sesión plena', async () => {
+    const persona = userEvent.setup();
+    api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesionDeEjemplo() });
+    renderizarConProveedores(<App />);
+
+    await persona.click(await screen.findByRole('button', { name: 'Hola, Erving' }));
+
+    expect(screen.getByRole('link', { name: 'Mi perfil de prestador' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Mis servicios' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Seguridad de la cuenta' })).toBeVisible();
+    expect(screen.queryByRole('link', { name: 'Área administrativa' })).not.toBeInTheDocument();
+  });
+
+  it('limita el menú pendiente de segundo factor a verificarlo o salir', async () => {
+    const persona = userEvent.setup();
+    api.responder('GET /api/auth/sesion', {
+      estado: 200,
+      cuerpo: sesionDeEjemplo({ segundoFactorRequerido: true }),
+    });
+    renderizarConProveedores(<App />);
+
+    await persona.click(await screen.findByRole('button', { name: 'Hola, Erving' }));
+
+    expect(screen.getByRole('link', { name: 'Verificar segundo factor' })).toBeVisible();
+    expect(screen.queryByRole('link', { name: 'Mis servicios' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Mi perfil de prestador' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible();
   });
 });

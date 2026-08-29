@@ -1,120 +1,110 @@
-import { Link } from 'react-router';
+import { useNavigate } from 'react-router';
 
-import { RUTA_ADMIN } from '../capacidades/admin';
-import {
-  RUTA_INICIO_SESION,
-  RUTA_REGISTRO,
-  RUTA_SEGURIDAD,
-  RUTA_VERIFICACION_SEGUNDO_FACTOR,
-  useCierreSesion,
-  useSesionActual,
-} from '../capacidades/auth';
 import { RUTA_EXPLORAR } from '../capacidades/busqueda';
-import { RUTA_PRESTADOR } from '../capacidades/prestador';
-import { RUTA_SERVICIOS } from '../capacidades/servicio';
-import { ErrorDeApi } from '../comun/api';
+import { Boton, Entrada, IconoLupa, IconoPin } from '../comun/componentes/ui';
+import { EncabezadoDeInicio } from './EncabezadoDeInicio';
 import estilos from './Inicio.module.css';
 
+const CATEGORIAS_POPULARES = [
+  'Hogar',
+  'Construcción',
+  'Transporte',
+  'Tecnología',
+  'Eventos',
+  'Más',
+] as const;
+
 /**
- * Pantalla de inicio de Moica.
+ * Pantalla de aterrizaje de Moica.
  *
- * Presenta la marca y muestra el estado de acceso: quién ha iniciado sesión, qué le falta para
- * usarla y a dónde puede ir. Las pantallas de contenido llegan con sus propios incrementos.
+ * El encabezado reacciona a la sesión porque el acceso actual sigue viviendo
+ * aquí. El hero envía el texto a `/explorar`; las categorías y la ubicación
+ * siguen siendo presentacionales.
  */
 export default function Inicio() {
-  const sesion = useSesionActual();
-  const cierre = useCierreSesion();
-  const avisoDeCierre = mensajeDeCierreFallido(cierre.error);
-
-  const pendienteDeSegundoFactor = sesion.data?.sesion.pendienteDeSegundoFactor === true;
-
   return (
-    <main className={estilos.contenedor}>
-      <img
-        className={estilos.logotipo}
-        src="/icono-192.png"
-        alt="Logotipo de Moica"
-        width={96}
-        height={96}
-      />
-      <h1 className={estilos.titulo}>Moica</h1>
-      <p className={estilos.lema}>La confianza se construye entre todos</p>
-      <Link className={estilos.enlace} to={RUTA_EXPLORAR}>
-        Explorar servicios
-      </Link>
-
-      {sesion.isPending ? (
-        <p className={estilos.estado}>Comprobando tu sesión…</p>
-      ) : sesion.data ? (
-        <>
-          <div className={estilos.acceso}>
-            <p className={estilos.estado}>
-              Sesión iniciada como <strong>{sesion.data.usuario.nombreCompleto}</strong>
-            </p>
-            {pendienteDeSegundoFactor ? (
-              <Link className={estilos.boton} to={RUTA_VERIFICACION_SEGUNDO_FACTOR}>
-                Verificar segundo factor
-              </Link>
-            ) : (
-              <>
-                <Link className={estilos.boton} to={RUTA_PRESTADOR}>
-                  Mi perfil de prestador
-                </Link>
-                <Link className={estilos.boton} to={RUTA_SERVICIOS}>
-                  Mis servicios
-                </Link>
-                <Link className={estilos.boton} to={RUTA_SEGURIDAD}>
-                  Seguridad de la cuenta
-                </Link>
-                {sesion.data.usuario.esAdministrador && (
-                  <Link className={estilos.boton} to={RUTA_ADMIN}>
-                    Área administrativa
-                  </Link>
-                )}
-              </>
-            )}
-            <button
-              className={estilos.boton}
-              type="button"
-              onClick={() => cierre.solicitarCierre()}
-              disabled={cierre.isPending}
-            >
-              {cierre.isPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
-            </button>
-          </div>
-          {pendienteDeSegundoFactor && (
-            <p className={estilos.aviso} role="status">
-              Falta verificar tu segundo factor. Hasta entonces, tu sesión solo sirve para eso o
-              para salir.
-            </p>
-          )}
-          {avisoDeCierre !== null && (
-            <p className={estilos.avisoDeError} role="alert">
-              {avisoDeCierre}
-            </p>
-          )}
-        </>
-      ) : (
-        <div className={estilos.acceso}>
-          <Link className={estilos.boton} to={RUTA_INICIO_SESION}>
-            Iniciar sesión
-          </Link>
-          <Link className={estilos.enlace} to={RUTA_REGISTRO}>
-            Crear cuenta
-          </Link>
-        </div>
-      )}
-    </main>
+    <div className={estilos.pagina}>
+      <EncabezadoDeInicio />
+      <main>
+        <SeccionHero />
+        <hr className={estilos.divisorDeSeccion} />
+        <SeccionCategorias />
+      </main>
+    </div>
   );
 }
 
-/**
- * El 401 ya se traduce en navegación a «sesión vencida»; no se pinta aquí para
- * no mostrar un error de cierre sobre una sesión que acaba de olvidarse.
- */
-function mensajeDeCierreFallido(error: unknown): string | null {
-  if (error instanceof ErrorDeApi && error.estado === 401) {
-    return null;
-  }
-  return error instanceof Error ? error.message : null;
+function SeccionHero() {
+  const navegar = useNavigate();
+
+  return (
+    <section className={estilos.hero} aria-labelledby="titulo-hero">
+      <h1 id="titulo-hero" className={estilos.tituloHero}>
+        Encuentra servicios confiables en tu comunidad
+      </h1>
+      <p className={estilos.subtituloHero}>
+        Conectamos personas con trabajadores independientes y negocios locales.
+      </p>
+
+      <form
+        className={estilos.barraDeBusqueda}
+        role="search"
+        onSubmit={(evento) => {
+          evento.preventDefault();
+          const datos = new FormData(evento.currentTarget);
+          const texto = String(datos.get('servicio') ?? '').trim();
+          if (texto === '') {
+            void navegar(RUTA_EXPLORAR);
+            return;
+          }
+          void navegar(`${RUTA_EXPLORAR}?texto=${encodeURIComponent(texto)}`);
+        }}
+      >
+        <div className={estilos.campoDeBarra}>
+          <Entrada
+            variante="fusionada"
+            type="search"
+            name="servicio"
+            autoComplete="off"
+            aria-label="Qué servicio necesitas"
+            placeholder="¿Qué servicio necesitas?"
+            icono={<IconoLupa />}
+          />
+        </div>
+        <span className={estilos.divisorDeBarra} aria-hidden="true" />
+        <div className={estilos.campoDeBarra}>
+          <Entrada
+            variante="fusionada"
+            type="text"
+            name="ubicacion"
+            autoComplete="off"
+            aria-label="Ubicación"
+            placeholder="Managua, NIC"
+            defaultValue="Managua, NIC"
+            icono={<IconoPin />}
+          />
+        </div>
+        <Boton type="submit" forma="pildora">
+          Buscar
+        </Boton>
+      </form>
+    </section>
+  );
+}
+
+function SeccionCategorias() {
+  return (
+    <section className={estilos.categorias} aria-labelledby="titulo-categorias">
+      <h2 id="titulo-categorias" className={estilos.tituloDeCategorias}>
+        Categorías populares
+      </h2>
+      <ul className={estilos.cuadricula}>
+        {CATEGORIAS_POPULARES.map((categoria) => (
+          <li key={categoria} className={estilos.tarjeta}>
+            <span className={estilos.etiquetaDeCategoria}>{categoria}</span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }

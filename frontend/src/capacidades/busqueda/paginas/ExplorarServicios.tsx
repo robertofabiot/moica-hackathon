@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
 import estilos from '../../../comun/estilos/formulario.module.css';
@@ -18,15 +18,44 @@ const FILTROS_VACIOS: FiltrosDeBusqueda = {
   idMunicipio: '',
 };
 
+function filtrosDesdeParametros(params: URLSearchParams): FiltrosDeBusqueda {
+  return {
+    texto: params.get('texto') ?? '',
+    idCategoria: params.get('idCategoria') ?? '',
+    idSubcategoria: params.get('idSubcategoria') ?? '',
+    idMunicipio: params.get('idMunicipio') ?? '',
+  };
+}
+
+function parametrosDesdeFiltros(filtros: FiltrosDeBusqueda): Record<string, string> {
+  const parametros: Record<string, string> = {};
+  const texto = filtros.texto.trim();
+  if (texto !== '') {
+    parametros.texto = texto;
+  }
+  if (filtros.idCategoria !== '') {
+    parametros.idCategoria = filtros.idCategoria;
+  }
+  if (filtros.idSubcategoria !== '') {
+    parametros.idSubcategoria = filtros.idSubcategoria;
+  }
+  if (filtros.idMunicipio !== '') {
+    parametros.idMunicipio = filtros.idMunicipio;
+  }
+  return parametros;
+}
+
 /**
  * Exploración pública de servicios. No exige sesión.
  *
  * Solo el backend decide qué aparece: servicios activos de cuentas operativas, prestadores
- * disponibles y perfiles con al menos verificación básica.
+ * disponibles y perfiles con al menos verificación básica. Los filtros iniciales salen de la
+ * URL para que el hero de la portada pueda abrir esta pantalla con un texto.
  */
 export default function ExplorarServicios() {
-  const [borrador, setBorrador] = useState<FiltrosDeBusqueda>(FILTROS_VACIOS);
-  const [aplicados, setAplicados] = useState<FiltrosDeBusqueda>(FILTROS_VACIOS);
+  const [parametros, setParametros] = useSearchParams();
+  const aplicados = filtrosDesdeParametros(parametros);
+  const [borrador, setBorrador] = useState<FiltrosDeBusqueda>(aplicados);
   const resultados = useServiciosPublicos(aplicados);
 
   return (
@@ -43,10 +72,10 @@ export default function ExplorarServicios() {
         <FiltrosPublicos
           filtros={borrador}
           onCambiar={setBorrador}
-          onAplicar={() => setAplicados(borrador)}
+          onAplicar={() => setParametros(parametrosDesdeFiltros(borrador), { replace: true })}
           onLimpiar={() => {
             setBorrador(FILTROS_VACIOS);
-            setAplicados(FILTROS_VACIOS);
+            setParametros({}, { replace: true });
           }}
         />
 

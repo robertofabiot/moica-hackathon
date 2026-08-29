@@ -37,39 +37,81 @@ describe('estado de acceso en la pantalla de inicio', () => {
   async function conSesionIniciada() {
     api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesionDeEjemplo() });
     renderizarConProveedores(<App />);
-    expect(await screen.findByText('Erving Miranda')).toBeVisible();
+    expect(await screen.findByRole('button', { name: 'Hola, Erving' })).toBeVisible();
   }
 
   function permaneceAutenticadoYPuedeReintentar() {
-    expect(screen.getByText('Erving Miranda')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Hola, Erving' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeEnabled();
     expect(screen.queryByRole('heading', { name: 'Iniciar sesión' })).not.toBeInTheDocument();
   }
 
-  async function reintentaYCierra(persona: ReturnType<typeof userEvent.setup>) {
-    api.responder('DELETE /api/auth/sesion', { estado: 204 });
-    await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
-    expect(screen.queryByText('Erving Miranda')).not.toBeInTheDocument();
+  async function abrirMenuDeSesion(persona: ReturnType<typeof userEvent.setup>) {
+    if (!screen.queryByRole('button', { name: 'Cerrar sesión' })) {
+      await persona.click(screen.getByRole('button', { name: /^Hola,/ }));
+    }
   }
 
-  it('ofrece iniciar sesión y crear cuenta cuando no hay sesión', async () => {
+  async function reintentaYCierra(persona: ReturnType<typeof userEvent.setup>) {
+    api.responder('DELETE /api/auth/sesion', { estado: 204 });
+    await abrirMenuDeSesion(persona);
+    await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Hola, Erving' })).not.toBeInTheDocument();
+  }
+
+  it('ofrece iniciar sesión y registrarse cuando no hay sesión', async () => {
     sinSesion();
     renderizarConProveedores(<App />);
 
-    expect(await screen.findByRole('link', { name: 'Iniciar sesión' })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Crear cuenta' })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Explorar servicios' })).toBeVisible();
+    expect(await screen.findByRole('button', { name: 'Iniciar sesión' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Regístrate' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Explorar' })).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).not.toBeInTheDocument();
   });
 
+  it('lleva a iniciar sesión desde el encabezado', async () => {
+    const persona = userEvent.setup();
+    sinSesion();
+    renderizarConProveedores(<App />);
+
+    await persona.click(await screen.findByRole('button', { name: 'Iniciar sesión' }));
+
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
+  });
+
+  it('muestra el hero, la búsqueda y las categorías populares', async () => {
+    sinSesion();
+    renderizarConProveedores(<App />);
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Encuentra servicios confiables en tu comunidad',
+      })
+    ).toBeVisible();
+    expect(screen.getByRole('search')).toBeVisible();
+    expect(screen.getByPlaceholderText('¿Qué servicio necesitas?')).toBeVisible();
+    expect(screen.getByDisplayValue('Managua, NIC')).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Categorías populares' })).toBeVisible();
+    expect(screen.getByText('Hogar')).toBeVisible();
+    expect(screen.getByText('Construcción')).toBeVisible();
+    expect(screen.getByText('Transporte')).toBeVisible();
+    expect(screen.getByText('Tecnología')).toBeVisible();
+    expect(screen.getByText('Eventos')).toBeVisible();
+    expect(screen.getByText('Más')).toBeVisible();
+  });
+
   it('saluda a quien tiene la sesión iniciada y le ofrece cerrarla', async () => {
+    const persona = userEvent.setup();
     api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesionDeEjemplo() });
     renderizarConProveedores(<App />);
 
-    expect(await screen.findByText('Erving Miranda')).toBeVisible();
+    expect(await screen.findByRole('button', { name: 'Hola, Erving' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Regístrate' })).not.toBeInTheDocument();
+
+    await persona.click(screen.getByRole('button', { name: 'Hola, Erving' }));
     expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible();
-    expect(screen.queryByRole('link', { name: 'Crear cuenta' })).not.toBeInTheDocument();
   });
 
   it('cierra la sesión y devuelve a la pantalla de inicio de sesión', async () => {
@@ -78,7 +120,9 @@ describe('estado de acceso en la pantalla de inicio', () => {
     api.responder('DELETE /api/auth/sesion', { estado: 204 });
     renderizarConProveedores(<App />);
 
-    await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
+    await persona.click(await screen.findByRole('button', { name: 'Hola, Erving' }));
+    await abrirMenuDeSesion(persona);
+    await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
 
     expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
     expect(api.ultima('DELETE /api/auth/sesion')?.cabeceras['X-XSRF-TOKEN']).toBe(
@@ -94,10 +138,11 @@ describe('estado de acceso en la pantalla de inicio', () => {
       cuerpo: cuerpoDeError(401, 'NO_AUTENTICADO', 'Tu sesión no está activa.'),
     });
 
+    await abrirMenuDeSesion(persona);
     await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
 
     expect(await screen.findByRole('status')).toHaveTextContent('Tu sesión venció');
-    expect(screen.queryByText('Erving Miranda')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Hola, Erving' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).not.toBeInTheDocument();
   });
 
@@ -106,6 +151,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
     await conSesionIniciada();
     vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
 
+    await abrirMenuDeSesion(persona);
     await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
 
     expect(screen.queryByRole('button', { name: 'Cerrando sesión…' })).not.toBeInTheDocument();
@@ -128,6 +174,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
       vi.fn(() => new Promise<Response>(() => undefined))
     );
 
+    await abrirMenuDeSesion(persona);
     await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -142,6 +189,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
     await conSesionIniciada();
     api.rechazar('DELETE /api/auth/sesion');
 
+    await abrirMenuDeSesion(persona);
     await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -163,6 +211,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
       ),
     });
 
+    await abrirMenuDeSesion(persona);
     await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -184,6 +233,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
       ),
     });
 
+    await abrirMenuDeSesion(persona);
     await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -199,6 +249,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
     definirTiempoDeEsperaMs(20);
     api.colgar('DELETE /api/auth/sesion');
 
+    await abrirMenuDeSesion(persona);
     await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
@@ -217,7 +268,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
     api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesion });
 
     renderizarConProveedores(<App />);
-    await screen.findByText('Erving Miranda');
+    await screen.findByRole('button', { name: 'Hola, Erving' });
 
     await vi.advanceTimersByTimeAsync(5000);
 

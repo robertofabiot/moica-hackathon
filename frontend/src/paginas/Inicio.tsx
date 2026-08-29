@@ -1,3 +1,6 @@
+import { useNavigate } from 'react-router';
+
+import { RUTA_EXPLORAR } from '../capacidades/busqueda';
 import { Boton, Entrada, IconoLupa, IconoPin } from '../comun/componentes/ui';
 import { EncabezadoDeInicio } from './EncabezadoDeInicio';
 import estilos from './Inicio.module.css';
@@ -15,7 +18,8 @@ const CATEGORIAS_POPULARES = [
  * Pantalla de aterrizaje de Moica.
  *
  * El encabezado reacciona a la sesión porque el acceso actual sigue viviendo
- * aquí; el resto es la maqueta pública de exploración.
+ * aquí. El hero envía el texto a `/explorar`; las categorías y la ubicación
+ * siguen siendo presentacionales.
  */
 export default function Inicio() {
   return (
@@ -31,6 +35,8 @@ export default function Inicio() {
 }
 
 function SeccionHero() {
+  const navegar = useNavigate();
+
   return (
     <section className={estilos.hero} aria-labelledby="titulo-hero">
       <h1 id="titulo-hero" className={estilos.tituloHero}>
@@ -43,7 +49,16 @@ function SeccionHero() {
       <form
         className={estilos.barraDeBusqueda}
         role="search"
-        onSubmit={(evento) => evento.preventDefault()}
+        onSubmit={(evento) => {
+          evento.preventDefault();
+          const datos = new FormData(evento.currentTarget);
+          const texto = String(datos.get('servicio') ?? '').trim();
+          if (texto === '') {
+            void navegar(RUTA_EXPLORAR);
+            return;
+          }
+          void navegar(`${RUTA_EXPLORAR}?texto=${encodeURIComponent(texto)}`);
+        }}
       >
         <div className={estilos.campoDeBarra}>
           <Entrada

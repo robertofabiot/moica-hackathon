@@ -22,7 +22,7 @@ formatos y validación las siguen fijando `prompt.md` y el diccionario de datos.
 
 | Superficie | Qué guarda | Acceso | Incremento |
 |---|---|---|---|
-| **Pública** | Imagen de perfil e imágenes de los trabajos del portafolio | Lectura anónima por URL; escritura solo desde el backend | P4 (implementada) |
+| **Pública** | Imagen de perfil, imágenes de los trabajos del portafolio e imágenes de servicios publicados | Lectura anónima por URL; escritura solo desde el backend | P4 y P5 (implementada) |
 | **Privada** | Documentos del expediente de verificación | Sin lectura anónima; entrega por URL prefirmada de vida corta | P4V (implementada) |
 
 **No se mezclan en el mismo bucket.** Son dos buckets distintos, con dos
@@ -35,7 +35,7 @@ En PostgreSQL, cada superficie guarda algo distinto, según el diccionario de
 datos:
 
 - Pública: **la URL** (`perfil_prestador.url_imagen_perfil`,
-  `imagen_trabajo_portafolio.url_imagen`).
+  `imagen_trabajo_portafolio.url_imagen`, `imagen_servicio_publicado.url_imagen`).
 - Privada: **una clave opaca** y metadatos
   (`documento_verificacion_prestador.clave_almacenamiento`), nunca una URL
   permanente.
@@ -179,8 +179,8 @@ que un navegador pueda pedir sin permiso. Lo único que sale de él es una URL
 
 ### Claves
 
-Opacas y no adivinables: `perfiles/<32 hex>.<ext>`, `trabajos/<32 hex>.<ext>` y
-`expedientes/<32 hex>.<ext>`.
+Opacas y no adivinables: `perfiles/<32 hex>.<ext>`, `trabajos/<32 hex>.<ext>`,
+`servicios/<32 hex>.<ext>` y `expedientes/<32 hex>.<ext>`.
 
 - El nombre original **no** se usa: puede llevar rutas, caracteres de control o
   datos personales.

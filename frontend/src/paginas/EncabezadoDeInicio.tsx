@@ -11,13 +11,15 @@ import {
   useCierreSesion,
   useSesionActual,
 } from '../capacidades/auth';
+import { RUTA_EXPLORAR } from '../capacidades/busqueda';
 import { RUTA_PRESTADOR } from '../capacidades/prestador';
+import { RUTA_SERVICIOS } from '../capacidades/servicio';
 import { ErrorDeApi } from '../comun/api';
 import { Boton } from '../comun/componentes/ui';
 import estilos from './EncabezadoDeInicio.module.css';
 
 const ENLACES_DE_NAVEGACION = [
-  { etiqueta: 'Explorar', destino: '/' },
+  { etiqueta: 'Explorar', destino: RUTA_EXPLORAR },
   { etiqueta: 'Cómo funciona', destino: '#como-funciona' },
   { etiqueta: 'Para empresas', destino: '#para-empresas' },
   { etiqueta: 'Sobre Moica', destino: '#sobre-moica' },
@@ -145,6 +147,11 @@ function AccionesConSesion({
               <li>
                 <Link className={estilos.opcionDeSesion} to={RUTA_PRESTADOR}>
                   Mi perfil de prestador
+                </Link>
+              </li>
+              <li>
+                <Link className={estilos.opcionDeSesion} to={RUTA_SERVICIOS}>
+                  Mis servicios
                 </Link>
               </li>
               <li>

@@ -31,6 +31,9 @@ class BootstrapDeAdministradorIT extends PruebaDeIntegracionConPostgres {
 
   @BeforeEach
   void limpiarCuentas() {
+    jdbc.update("DELETE FROM solicitud_verificacion_prestador");
+    jdbc.update("DELETE FROM imagen_servicio_publicado");
+    jdbc.update("DELETE FROM servicio_publicado");
     jdbc.update("DELETE FROM usuario");
   }
 

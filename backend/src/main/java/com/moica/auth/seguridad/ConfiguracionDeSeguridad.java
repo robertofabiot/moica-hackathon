@@ -92,6 +92,18 @@ public class ConfiguracionDeSeguridad {
                     // petición de nadie: sin esto, un 404 se convertiría en 403.
                     .requestMatchers("/error")
                     .permitAll()
+                    // Descubrimiento público de P5: solo estos GET. No se abren
+                    // rutas propias, administrativas ni mutables.
+                    .requestMatchers(HttpMethod.GET, "/api/catalogos/departamentos")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/catalogos/categorias")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/servicios")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/servicios/*")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/prestadores/*")
+                    .permitAll()
                     // Lo único que puede hacer una sesión provisional: mirar en
                     // qué estado está, presentar su código y marcharse. Es
                     // también lo único que le queda a una cuenta suspendida.

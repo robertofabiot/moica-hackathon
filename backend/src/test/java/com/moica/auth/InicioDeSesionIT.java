@@ -39,6 +39,9 @@ class InicioDeSesionIT extends PruebaDeIntegracionConPostgres {
   @BeforeEach
   void registrarUnaCuenta() {
     jdbc.update("DELETE FROM sesion");
+    jdbc.update("DELETE FROM solicitud_verificacion_prestador");
+    jdbc.update("DELETE FROM imagen_servicio_publicado");
+    jdbc.update("DELETE FROM servicio_publicado");
     jdbc.update("DELETE FROM usuario");
 
     navegador = new NavegadorDePrueba(puerto, mapeador);

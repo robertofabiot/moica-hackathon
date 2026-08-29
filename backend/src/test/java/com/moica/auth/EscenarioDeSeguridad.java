@@ -54,6 +54,10 @@ public abstract class EscenarioDeSeguridad extends PruebaDeIntegracionConPostgre
     // con ON DELETE RESTRICT, así que se retiran antes: si no, borrar las
     // cuentas chocaría con esa restricción en lugar de limpiar.
     jdbc.update("DELETE FROM solicitud_verificacion_prestador");
+    // Los servicios apuntan al perfil con ON DELETE RESTRICT: hay que
+    // retirarlos antes de borrar las cuentas.
+    jdbc.update("DELETE FROM imagen_servicio_publicado");
+    jdbc.update("DELETE FROM servicio_publicado");
     // Borrar las cuentas arrastra en cascada sus sesiones, su segundo factor y
     // su rol administrativo, que es justamente lo que declara la migración.
     jdbc.update("DELETE FROM usuario");

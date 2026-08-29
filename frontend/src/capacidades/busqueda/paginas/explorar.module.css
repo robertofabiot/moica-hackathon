@@ -1,0 +1,120 @@
+/*
+ * Descubrimiento público: listado, detalle y perfil visible.
+ *
+ * Mobile-first. Las variables salen de `src/estilos/global.css`.
+ */
+
+.pantalla {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+}
+
+.contenido {
+  width: 100%;
+  max-width: 40rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-4);
+}
+
+.encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+}
+
+.titulo {
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.aviso {
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-left-width: 4px;
+  border-radius: 0.5rem;
+  background-color: var(--moica-fondo-suave);
+}
+
+.avisoDisponible {
+  border-left-color: var(--moica-texto);
+}
+
+.avisoNoDisponible {
+  border-left-color: var(--moica-texto-suave);
+}
+
+.galeria {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--moica-espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.imagen {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+  object-fit: cover;
+  background-color: var(--moica-fondo-suave);
+}
+
+.portafolio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trabajo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+  background-color: var(--moica-fondo-suave);
+}
+
+.miniaturas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6rem, 1fr));
+  gap: var(--moica-espacio-1);
+}
+
+.miniatura {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.375rem;
+  object-fit: cover;
+}
+
+.pie {
+  color: var(--moica-texto-suave);
+}
+
+@media (min-width: 48rem) {
+  .contenido {
+    max-width: 46rem;
+  }
+
+  .galeria {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 80rem) {
+  .contenido {
+    max-width: 52rem;
+  }
+}

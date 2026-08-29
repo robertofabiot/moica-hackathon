@@ -365,3 +365,144 @@ function expedienteBase() {
     documentos: [documentoDeVerificacionDeEjemplo()],
   };
 }
+
+/** Tres categorías de demostración, como las carga V90. */
+export function catalogoDeCategoriasDeEjemplo() {
+  return [
+    {
+      idCategoriaServicio: 1,
+      nombre: 'Hogar y mantenimiento',
+      descripcion: 'Oficios del hogar.',
+      subcategorias: [
+        { idSubcategoriaServicio: 1, nombre: 'Plomería', descripcion: null },
+        { idSubcategoriaServicio: 2, nombre: 'Electricidad', descripcion: null },
+        { idSubcategoriaServicio: 3, nombre: 'Carpintería', descripcion: null },
+      ],
+    },
+    {
+      idCategoriaServicio: 2,
+      nombre: 'Belleza y cuidado personal',
+      descripcion: 'Cuidado personal.',
+      subcategorias: [
+        { idSubcategoriaServicio: 4, nombre: 'Maquillaje', descripcion: null },
+        { idSubcategoriaServicio: 5, nombre: 'Barbería/peluquería', descripcion: null },
+        { idSubcategoriaServicio: 6, nombre: 'Uñas', descripcion: null },
+      ],
+    },
+    {
+      idCategoriaServicio: 3,
+      nombre: 'Tecnología y servicios digitales',
+      descripcion: 'Tecnología.',
+      subcategorias: [
+        { idSubcategoriaServicio: 7, nombre: 'Reparación de computadoras', descripcion: null },
+        { idSubcategoriaServicio: 8, nombre: 'Diseño gráfico', descripcion: null },
+        { idSubcategoriaServicio: 9, nombre: 'Soporte técnico', descripcion: null },
+      ],
+    },
+  ];
+}
+
+/** Superficie pública de un prestador, sin contactos. */
+export function prestadorPublicoDeEjemplo(
+  cambios: Partial<ReturnType<typeof prestadorPublicoBase>> = {}
+) {
+  return { ...prestadorPublicoBase(), ...cambios };
+}
+
+function prestadorPublicoBase() {
+  return {
+    idPrestador: 1,
+    nombrePublico: 'Taller La Esperanza',
+    urlImagenPerfil: null as string | null,
+    descripcion: 'Reparaciones eléctricas a domicilio con diez años de experiencia.',
+    tipoPrestador: 'INDEPENDIENTE' as const,
+    municipioPrincipal: {
+      idMunicipio: 3,
+      nombreMunicipio: 'Managua',
+      nombreDepartamento: 'Managua',
+    },
+    descripcionCobertura: 'Distritos I y II de Managua.',
+    disponibilidad: 'DISPONIBLE' as const,
+    nivelVerificacion: 'VERIFICADO_BASICO' as const,
+    significadoVerificacion:
+      'Una persona administradora revisó y aprobó la documentación oficial de identidad de quien ofrece este servicio.',
+    advertenciaDeInsignia:
+      'Una insignia confirma que Moica revisó la documentación presentada en un momento determinado. No garantiza la calidad futura del trabajo ni sustituye el criterio de quien contrata.',
+  };
+}
+
+/** Resumen público de un servicio, como aparece en el listado. */
+export function servicioPublicoDeEjemplo(
+  cambios: Partial<ReturnType<typeof servicioPublicoBase>> = {}
+) {
+  return { ...servicioPublicoBase(), ...cambios };
+}
+
+function servicioPublicoBase() {
+  return {
+    idServicioPublicado: 10,
+    nombre: 'Reparación de fugas',
+    descripcion: 'Reparo tuberías y fugas en el hogar.',
+    precioReferencia: null as number | null,
+    idCategoriaServicio: 1,
+    nombreCategoria: 'Hogar y mantenimiento',
+    idSubcategoriaServicio: 1,
+    nombreSubcategoria: 'Plomería',
+    imagenPrincipal: null as ReturnType<typeof imagenDeServicioDeEjemplo> | null,
+    prestador: prestadorPublicoDeEjemplo(),
+  };
+}
+
+/** Detalle público de un servicio. */
+export function detallePublicoDeServicioDeEjemplo(
+  cambios: Partial<ReturnType<typeof detallePublicoBase>> = {}
+) {
+  return { ...detallePublicoBase(), ...cambios };
+}
+
+function detallePublicoBase() {
+  const resumen = servicioPublicoBase();
+  return {
+    ...resumen,
+    imagenes: [] as ReturnType<typeof imagenDeServicioDeEjemplo>[],
+    admiteContratacion: true,
+  };
+}
+
+/** Un servicio tal como lo ve su propietario. */
+export function servicioPropioDeEjemplo(
+  cambios: Partial<ReturnType<typeof servicioPropioBase>> = {}
+) {
+  return { ...servicioPropioBase(), ...cambios };
+}
+
+function servicioPropioBase() {
+  return {
+    idServicioPublicado: 10,
+    nombre: 'Reparación de fugas',
+    descripcion: 'Reparo tuberías y fugas en el hogar.',
+    precioReferencia: null as number | null,
+    estado: 'INACTIVO' as 'ACTIVO' | 'INACTIVO',
+    idCategoriaServicio: 1,
+    nombreCategoria: 'Hogar y mantenimiento',
+    idSubcategoriaServicio: 1,
+    nombreSubcategoria: 'Plomería',
+    imagenes: [] as ReturnType<typeof imagenDeServicioDeEjemplo>[],
+    fechaCreacion: '2026-08-28T10:00:00-06:00',
+    fechaActualizacion: '2026-08-28T10:00:00-06:00',
+  };
+}
+
+/** Una imagen de un servicio publicado. */
+export function imagenDeServicioDeEjemplo(
+  idImagenServicioPublicado = 1,
+  textoAlternativo: string | null = 'Tubería reparada'
+) {
+  return {
+    idImagenServicioPublicado,
+    urlImagen: `https://imagenes.moica.test/servicios/abc${idImagenServicioPublicado}.png`,
+    textoAlternativo,
+    ordenVisualizacion: idImagenServicioPublicado - 1,
+    fechaCreacion: '2026-08-28T10:00:00-06:00',
+  };
+}

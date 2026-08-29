@@ -1,0 +1,27 @@
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: var(--moica-espacio-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.miniatura {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+  object-fit: cover;
+  background-color: var(--moica-fondo-suave);
+}
+
+.previsualizacion {
+  margin-top: var(--moica-espacio-1);
+  width: 100%;
+  max-width: 12rem;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+  object-fit: cover;
+}

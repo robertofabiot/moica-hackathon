@@ -21,8 +21,9 @@
 
 .logoHorizontal {
   display: block;
-  height: 3.25rem;
+  height: 4.25rem;
   width: auto;
+  max-width: none;
 }
 
 .contenido {
@@ -66,7 +67,8 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: var(--gap-md) 4.5rem var(--gap-xl);
+  gap: clamp(1.25rem, 6vw, 4.5rem);
+  padding: var(--gap-md) 14% var(--gap-xl);
 }
 
 .cuatroTeal,
@@ -89,21 +91,13 @@
   width: clamp(6.75rem, 22vw, 15rem);
   height: auto;
   align-self: center;
-  margin-inline: -0.15em;
-}
-
-.grupoNaranja {
-  position: relative;
-  display: inline-flex;
-  align-items: flex-end;
-  overflow: visible;
 }
 
 .persona {
   position: absolute;
-  left: -18%;
-  bottom: -8%;
-  height: clamp(8.5rem, 28vw, 16rem);
+  right: 7%;
+  bottom: 6%;
+  height: clamp(8.5rem, 26vw, 15rem);
   width: auto;
   max-width: none;
   pointer-events: none;
@@ -112,9 +106,9 @@
 
 .pregunta {
   position: absolute;
-  right: -3.5rem;
-  top: 0;
-  width: clamp(2.75rem, 9vw, 5rem);
+  right: 1.5%;
+  top: 16%;
+  width: clamp(2.75rem, 8vw, 4.75rem);
   height: auto;
   max-width: none;
   pointer-events: none;
@@ -192,7 +186,7 @@
   }
 
   .logoHorizontal {
-    height: 3.75rem;
+    height: 5rem;
   }
 
   .titulo {

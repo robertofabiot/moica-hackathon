@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router';
 
 import persona404 from '../assets/ilustraciones/ilustracion_persona404.png';
 import signoPregunta from '../assets/ilustraciones/signo_pregunta.png';
-import logoHorizontal from '../assets/logos/moica-horizontal.svg';
+import logoHorizontal from '../assets/logos/moica-horizontal.png';
 import iconoMoica from '../assets/logos/moica-icono.svg';
 import { Boton, IconoCasa } from '../comun/componentes/ui';
 import { IlustracionDeRutaNoEncontrada } from './IlustracionDeRutaNoEncontrada';
@@ -11,8 +11,8 @@ import estilos from './RutaNoEncontrada.module.css';
 /**
  * Respuesta a una dirección que no existe.
  *
- * El lockup horizontal va arriba. El 404 usa el icono de marca como «0» y las
- * ilustraciones oficiales se posan sobre los números.
+ * El lockup horizontal (PNG de marca) va arriba. El 404 usa el icono como
+ * «0» y las ilustraciones se abren hacia los lados de los números.
  */
 export default function RutaNoEncontrada() {
   const navegar = useNavigate();

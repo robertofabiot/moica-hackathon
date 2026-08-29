@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router';
 
-import logoHorizontal from '../assets/logos/moica-horizontal.svg';
+import logoHorizontal from '../assets/logos/moica-horizontal.png';
 import { RUTA_ADMIN } from '../capacidades/admin';
 import {
   RUTA_INICIO_SESION,

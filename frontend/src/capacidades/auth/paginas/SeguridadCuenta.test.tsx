@@ -190,6 +190,7 @@ describe('seguridad de la cuenta', () => {
 
       expect(memoriaDeLasMutaciones(cliente)).not.toContain(SECRETO_DE_ACTIVACION);
 
+      await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
       await persona.click(await screen.findByRole('link', { name: 'Seguridad de la cuenta' }));
 
       expect(
@@ -325,6 +326,7 @@ describe('seguridad de la cuenta', () => {
       expect(await screen.findByText('Activo')).toBeVisible();
 
       await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
+      await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
       await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
       expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
 
@@ -337,6 +339,7 @@ describe('seguridad de la cuenta', () => {
       await persona.type(screen.getByLabelText('Contraseña'), 'Moica2026$segura');
       await persona.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
 
+      await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
       await persona.click(await screen.findByRole('link', { name: 'Seguridad de la cuenta' }));
 
       expect(await screen.findByText('Consultando el estado de tu segundo factor…')).toBeVisible();

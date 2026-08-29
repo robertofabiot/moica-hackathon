@@ -86,7 +86,6 @@ function SeccionCategorias() {
       <ul className={estilos.cuadricula}>
         {CATEGORIAS_POPULARES.map((categoria) => (
           <li key={categoria} className={estilos.tarjeta}>
-            <span className={estilos.espacioDeIcono} />
             <span className={estilos.etiquetaDeCategoria}>{categoria}</span>
           </li>
         ))}

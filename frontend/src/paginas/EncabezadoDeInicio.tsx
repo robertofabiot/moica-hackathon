@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 
 import logoHorizontal from '../assets/logos/moica-horizontal.png';
@@ -25,8 +26,8 @@ const ENLACES_DE_NAVEGACION = [
 /**
  * Navegación superior de la aterrizaje.
  *
- * Sin sesión muestra entrar y registrarse. Con sesión conserva el acceso al
- * perfil, la seguridad y el cierre: esa lógica aún no tiene otra pantalla.
+ * Sin sesión muestra entrar y registrarse. Con sesión, el encabezado solo
+ * saluda por el primer nombre; el resto de la cuenta queda en un menú.
  */
 export function EncabezadoDeInicio() {
   const sesion = useSesionActual();
@@ -117,35 +118,67 @@ function AccionesConSesion({
   cerrando: boolean;
   alCerrar: () => void;
 }) {
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const primerNombre = primerNombreDe(nombreCompleto);
+
   return (
-    <>
-      <p className={estilos.estado}>
-        Sesión iniciada como <strong>{nombreCompleto}</strong>
-      </p>
-      {pendienteDeSegundoFactor ? (
-        <Link className={estilos.enlaceDeSesion} to={RUTA_VERIFICACION_SEGUNDO_FACTOR}>
-          Verificar segundo factor
-        </Link>
-      ) : (
-        <>
-          <Link className={estilos.enlaceDeSesion} to={RUTA_PRESTADOR}>
-            Mi perfil de prestador
-          </Link>
-          <Link className={estilos.enlaceDeSesion} to={RUTA_SEGURIDAD}>
-            Seguridad de la cuenta
-          </Link>
-          {esAdministrador && (
-            <Link className={estilos.enlaceDeSesion} to={RUTA_ADMIN}>
-              Área administrativa
-            </Link>
+    <div className={estilos.menuDeSesion}>
+      <button
+        type="button"
+        className={estilos.saludo}
+        aria-expanded={menuAbierto}
+        aria-haspopup="true"
+        onClick={() => setMenuAbierto((abierto) => !abierto)}
+      >
+        Hola, {primerNombre}
+      </button>
+      {menuAbierto ? (
+        <ul className={estilos.panelDeSesion}>
+          {pendienteDeSegundoFactor ? (
+            <li>
+              <Link className={estilos.opcionDeSesion} to={RUTA_VERIFICACION_SEGUNDO_FACTOR}>
+                Verificar segundo factor
+              </Link>
+            </li>
+          ) : (
+            <>
+              <li>
+                <Link className={estilos.opcionDeSesion} to={RUTA_PRESTADOR}>
+                  Mi perfil de prestador
+                </Link>
+              </li>
+              <li>
+                <Link className={estilos.opcionDeSesion} to={RUTA_SEGURIDAD}>
+                  Seguridad de la cuenta
+                </Link>
+              </li>
+              {esAdministrador ? (
+                <li>
+                  <Link className={estilos.opcionDeSesion} to={RUTA_ADMIN}>
+                    Área administrativa
+                  </Link>
+                </li>
+              ) : null}
+            </>
           )}
-        </>
-      )}
-      <Boton variante="secundario" onClick={alCerrar} disabled={cerrando}>
-        {cerrando ? 'Cerrando sesión…' : 'Cerrar sesión'}
-      </Boton>
-    </>
+          <li>
+            <button
+              type="button"
+              className={estilos.opcionDeSesion}
+              onClick={alCerrar}
+              disabled={cerrando}
+            >
+              {cerrando ? 'Cerrando sesión…' : 'Cerrar sesión'}
+            </button>
+          </li>
+        </ul>
+      ) : null}
+    </div>
   );
+}
+
+function primerNombreDe(nombreCompleto: string): string {
+  return nombreCompleto.trim().split(/\s+/)[0] || nombreCompleto;
 }
 
 function mensajeDeCierreFallido(error: unknown): string | null {

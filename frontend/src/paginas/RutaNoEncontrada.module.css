@@ -15,22 +15,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: var(--gap-md);
+  margin-top: var(--gap-sm);
   text-decoration: none;
 }
 
-.logoVertical {
+.logoHorizontal {
   display: block;
-  height: 7rem;
+  height: 3.25rem;
   width: auto;
 }
 
 .contenido {
   display: flex;
-  flex: 1;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: var(--gap-md);
   width: 100%;
   max-width: 42rem;
@@ -39,8 +37,8 @@
 
 .escena {
   position: relative;
-  width: min(100%, 42rem);
-  margin: 0;
+  width: min(100%, 72rem);
+  margin: var(--gap-lg) 0 var(--gap-md);
   overflow: visible;
 }
 
@@ -68,13 +66,13 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: var(--gap-sm) 3.5rem var(--gap-lg);
+  padding: var(--gap-md) 4.5rem var(--gap-xl);
 }
 
 .cuatroTeal,
 .cuatroNaranja {
   font-family: var(--font-family-secondary);
-  font-size: clamp(5.5rem, 22vw, 9rem);
+  font-size: clamp(7.5rem, 28vw, 18rem);
   font-weight: var(--font-weight-bold);
   line-height: 0.8;
 }
@@ -88,10 +86,10 @@
 }
 
 .iconoCentral {
-  width: clamp(5.5rem, 18vw, 8rem);
+  width: clamp(6.75rem, 22vw, 15rem);
   height: auto;
   align-self: center;
-  margin-inline: -0.2em;
+  margin-inline: -0.15em;
 }
 
 .grupoNaranja {
@@ -105,7 +103,7 @@
   position: absolute;
   left: -18%;
   bottom: -8%;
-  height: clamp(6.5rem, 24vw, 9.75rem);
+  height: clamp(8.5rem, 28vw, 16rem);
   width: auto;
   max-width: none;
   pointer-events: none;
@@ -114,9 +112,9 @@
 
 .pregunta {
   position: absolute;
-  right: -2.75rem;
+  right: -3.5rem;
   top: 0;
-  width: clamp(2.15rem, 8vw, 3.4rem);
+  width: clamp(2.75rem, 9vw, 5rem);
   height: auto;
   max-width: none;
   pointer-events: none;
@@ -193,8 +191,8 @@
     padding-top: var(--gap-xl);
   }
 
-  .logoVertical {
-    height: 8.25rem;
+  .logoHorizontal {
+    height: 3.75rem;
   }
 
   .titulo {

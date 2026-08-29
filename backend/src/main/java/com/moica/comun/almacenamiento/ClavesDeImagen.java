@@ -10,8 +10,8 @@ import java.util.UUID;
  * aleatorio —generado con aleatoriedad criptográfica— y la extensión del formato real detectado, no
  * la que dijera el archivo.
  *
- * <p>Los prefijos separan las superficies: las imágenes de perfil y las de trabajos conviven en el
- * mismo bucket público pero no se confunden entre sí ni con nada futuro.
+ * <p>Los prefijos separan las superficies: las imágenes de perfil, las de trabajos y las de
+ * servicios conviven en el mismo bucket público pero no se confunden entre sí.
  */
 public final class ClavesDeImagen {
 
@@ -20,6 +20,9 @@ public final class ClavesDeImagen {
 
   /** Prefijo de las imágenes de trabajos del portafolio. */
   public static final String PREFIJO_TRABAJOS = "trabajos/";
+
+  /** Prefijo de las imágenes de servicios publicados. */
+  public static final String PREFIJO_SERVICIOS = "servicios/";
 
   private ClavesDeImagen() {}
 

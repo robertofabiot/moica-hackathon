@@ -34,6 +34,7 @@ MOICA conecta a personas que necesitan contratar un servicio (mantenimiento, rep
 
 * **Verificacion en dos niveles** — identidad revisada por una persona antes de aparecer en la busqueda publica
 * **Portafolio propio** — el prestador elige que trabajos muestra, con sus imagenes y en el orden que decida
+* **Servicios y descubrimiento** — el prestador publica oficios; un visitante explora sin registrarse
 * **Calificaciones reales** — reputacion bidireccional y visible para todos
 * **Cero cobros iniciales** — sin membresia ni pago por contacto
 * **Sesiones seguras** — JWT + cookie `HttpOnly`, revocacion inmediata y proteccion CSRF
@@ -108,11 +109,11 @@ Ciclo de acceso completo: registro, inicio de sesion, sesion persistida con expi
 
 Seguridad de la cuenta: cambio de contraseña que revoca todas las sesiones, segundo factor TOTP con su ciclo completo, sesion provisional hasta verificar el codigo y area `/admin` protegida por rol y segundo factor verificado.
 
-Perfil de prestador: catalogo territorial de Managua, perfil propio con tipo, municipio principal, presentacion y cobertura, disponibilidad, medios de contacto y portafolio de trabajos con imagenes. Las imagenes publicas se guardan en Cloudflare R2 (ver [`Docs/Dev/Almacenamiento.md`](Docs/Dev/Almacenamiento.md)); PostgreSQL solo conserva su URL. Todo perfil nace `SIN_VERIFICAR` y permanece privado: no aparece en ninguna superficie publica.
+Perfil de prestador: catalogo territorial de Managua, perfil propio con tipo, municipio principal, presentacion y cobertura, disponibilidad, medios de contacto y portafolio de trabajos con imagenes. Las imagenes publicas se guardan en Cloudflare R2 (ver [`Docs/Dev/Almacenamiento.md`](Docs/Dev/Almacenamiento.md)); PostgreSQL solo conserva su URL. Todo perfil nace `SIN_VERIFICAR` y permanece privado hasta que una persona administradora apruebe al menos la verificacion basica.
 
 Verificacion documental: el prestador presenta su expediente —JPEG, PNG o PDF, hasta 5 MB por archivo— en una sola operacion, y una persona administradora con segundo factor verificado lo toma, lo aprueba, lo rechaza con motivo o revoca una verificacion ya concedida. Los documentos viven en un bucket privado de R2; PostgreSQL guarda solo una clave opaca y sus metadatos, y el archivo se abre con un enlace temporal que caduca. El nivel del perfil —`SIN_VERIFICAR`, `VERIFICADO_BASICO` o `PROFESIONAL_VERIFICADO`— lo proyecta ese flujo y nadie mas.
 
-Todavia no hay servicios, descubrimiento publico, solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
+Servicios y descubrimiento: el prestador administra publicaciones e imagenes; un visitante explora sin autenticarse. Solo aparecen servicios `ACTIVO` de cuentas operativas, prestadores `DISPONIBLE` y perfiles con al menos verificacion basica. La busqueda combina texto, categoria o subcategoria y municipio. Un precio nulo se muestra como «A convenir». Todavia no hay solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
 
 ## Licencia
 

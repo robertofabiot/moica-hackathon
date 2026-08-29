@@ -5,7 +5,8 @@ Las tablas del diccionario de datos llegan con el incremento que las necesita;
 P2 abre el rango de identidad con `V10__crear_usuario_y_sesion.sql`, P3 lo
 completa con `V11__crear_administrador_y_segundo_factor.sql`, P4 abre el rango
 de territorio, perfiles y portafolio con `V20`–`V23` y P4V abre el de
-verificación documental con `V30`.
+verificación documental con `V30`. P5 abre servicios y catálogos de oficio con
+`V31` y carga la taxonomía de demostración con `V90`.
 
 ## Reglas
 
@@ -52,3 +53,5 @@ adelantado un rango que todavía no hace falta.
 | `V22__crear_trabajos_de_portafolio.sql` | P4 | Tablas `trabajo_portafolio` e `imagen_trabajo_portafolio` con sus índices por prestador y por trabajo |
 | `V23__cargar_managua_y_sus_municipios.sql` | P4 | Departamento de Managua habilitado y sus nueve municipios |
 | `V30__crear_solicitudes_y_documentos_de_verificacion.sql` | P4V | Tablas `solicitud_verificacion_prestador` y `documento_verificacion_prestador`, el índice parcial `uq_solicitud_verificacion_abierta` y los índices por prestador, por estado y por solicitud |
+| `V31__crear_categorias_y_servicios_publicados.sql` | P5 | Tablas `categoria_servicio`, `subcategoria_servicio`, `servicio_publicado` e `imagen_servicio_publicado`, con dominio `ACTIVO`/`INACTIVO`, precio opcional `numeric(12,2)` y los índices de propiedad, listado y filtros públicos |
+| `V90__cargar_taxonomia_de_demostracion.sql` | P5 | Tres categorías de demostración —hogar, belleza y tecnología— con tres subcategorías cada una. No es una taxonomía exhaustiva |

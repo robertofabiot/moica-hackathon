@@ -19,7 +19,7 @@ Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy
 | `POST /api/auth/segundo-factor/activacion` | Confirma la activacion con el primer codigo valido | Sesion plena |
 | `POST /api/auth/segundo-factor/desactivacion` | Desactiva el segundo factor y revoca todas las sesiones | Sesion plena, sin rol administrativo |
 | `GET /api/admin/resumen` | Describe la sesion administrativa en curso | Rol administrativo con segundo factor verificado |
-| `GET /api/catalogos/departamentos` | Departamentos habilitados con sus municipios | Sesion plena |
+| `GET /api/catalogos/departamentos` | Departamentos habilitados con sus municipios | Cualquiera |
 | `POST /api/prestador/perfil` | Crea el perfil de prestador propio | Sesion plena con cuenta `ACTIVA` |
 | `GET /api/prestador/perfil` | Devuelve el perfil propio | Sesion plena |
 | `PUT /api/prestador/perfil` | Actualiza el perfil propio | Sesion plena con cuenta `ACTIVA` |
@@ -51,6 +51,19 @@ Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy
 | `POST /api/admin/verificaciones/{id}/rechazo` | Rechaza con motivo obligatorio | Rol administrativo con segundo factor verificado |
 | `POST /api/admin/verificaciones/{id}/revocacion` | Revoca una verificacion concedida, con motivo obligatorio | Rol administrativo con segundo factor verificado |
 | `GET /api/admin/verificaciones/{id}/documentos/{idDocumento}/acceso` | Redirige a un acceso temporal al documento | Rol administrativo con segundo factor verificado |
+| `GET /api/catalogos/categorias` | Categorias de servicio con sus subcategorias | Cualquiera |
+| `GET /api/prestador/servicios` | Lista los servicios propios, activos e inactivos | Sesion plena |
+| `POST /api/prestador/servicios` | Prepara un servicio propio, siempre inactivo | Sesion plena con cuenta `ACTIVA` |
+| `GET /api/prestador/servicios/{id}` | Devuelve un servicio propio | Sesion plena |
+| `PUT /api/prestador/servicios/{id}` | Edita nombre, descripcion, subcategoria y precio | Sesion plena con cuenta `ACTIVA` |
+| `PUT /api/prestador/servicios/{id}/estado` | Activa o desactiva un servicio propio | Sesion plena con cuenta `ACTIVA` |
+| `POST /api/prestador/servicios/{id}/imagenes` | Sube una imagen al servicio (`multipart/form-data`) | Sesion plena con cuenta `ACTIVA` |
+| `PUT /api/prestador/servicios/{id}/imagenes/orden` | Reordena las imagenes del servicio | Sesion plena con cuenta `ACTIVA` |
+| `PUT /api/prestador/servicios/{id}/imagenes/{idImagen}` | Cambia el texto alternativo de una imagen | Sesion plena con cuenta `ACTIVA` |
+| `DELETE /api/prestador/servicios/{id}/imagenes/{idImagen}` | Elimina una imagen y su objeto | Sesion plena con cuenta `ACTIVA` |
+| `GET /api/servicios` | Lista publica con filtros `texto`, `idCategoria`, `idSubcategoria` e `idMunicipio` | Cualquiera |
+| `GET /api/servicios/{id}` | Detalle publico de un servicio visible | Cualquiera |
+| `GET /api/prestadores/{id}` | Perfil publico, portafolio y servicios activos | Cualquiera |
 | `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
 
 **Sesion plena** es la que no esta pendiente del segundo factor y pertenece a una cuenta que no esta
@@ -222,8 +235,9 @@ enumerar identificadores para averiguar que contactos o trabajos existen.
   prestador lo acepta, asi que enviarlo no tiene efecto.
 
 Mientras el perfil este `SIN_VERIFICAR` **no aparece en ninguna superficie
-publica**. P4V tampoco crea endpoints publicos de descubrimiento: eso llega con
-P5.
+publica**. El descubrimiento de P5 solo entrega perfiles con al menos
+verificacion basica, cuenta `ACTIVA` y —para listar un servicio— prestador
+`DISPONIBLE` y servicio `ACTIVO`.
 
 ### Contactos
 
@@ -270,7 +284,66 @@ almacenamiento: siempre pasa por la API.
 PostgreSQL guarda **unicamente la URL publica**, nunca el binario. Las claves de
 los objetos son opacas y no se derivan del nombre original. El detalle del
 proveedor —endpoint, credenciales, bucket— no aparece en ninguna respuesta ni en
-ningun registro. Ver [Almacenamiento.md](Almacenamiento.md).
+ningun registro. Ver [Almacenamiento.md](Almacenamiento.md). Las imagenes de
+servicio reutilizan el mismo almacén publico y el mismo tope; su prefijo es
+`servicios/`.
+
+## Servicios publicados y descubrimiento
+
+La gestion propia opera **siempre sobre la cuenta de la sesion**. El
+descubrimiento es publico: Spring Security abre unicamente los `GET` de
+catalogos, listado, detalle y perfil publico. No se abren rutas propias,
+administrativas ni mutables.
+
+### Quien puede que (gestion propia)
+
+La misma matriz de lectura y mutacion del perfil. Un servicio o imagen de
+**otro** prestador responde 404 `RECURSO_NO_ENCONTRADO`, no 403.
+
+No existe `DELETE` del servicio: se desactiva. Borrar fisicamente no es una
+peticion que se pueda formular.
+
+### Ciclo de un servicio propio
+
+- Crear exige cuenta `ACTIVA` y perfil existente. El servicio **nace
+  `INACTIVO`**, aunque el perfil ya este verificado: activar es una decision
+  posterior.
+- Un perfil `SIN_VERIFICAR` puede preparar servicios; permanecen inactivos.
+- Activar exige, leidos con el perfil bloqueado para no competir con un cambio
+  de disponibilidad o una revocacion:
+  - cuenta `ACTIVA` (ya comprobada al exigir modificar);
+  - prestador `DISPONIBLE`;
+  - al menos `VERIFICADO_BASICO`.
+- Sin verificacion basica, 409 `VERIFICACION_BASICA_REQUERIDA`. Sin
+  disponibilidad, 409 `PRESTADOR_NO_DISPONIBLE`.
+- Desactivar no exige verificacion ni disponibilidad.
+- La subcategoria debe existir; si no, 400 `SUBCATEGORIA_NO_DISPONIBLE`.
+- `precioReferencia` es opcional. Nulo se conserva nulo; «A convenir» es solo
+  presentacion. Si viaja, debe ser mayor que cero y con como maximo dos
+  decimales.
+
+### Descubrimiento publico
+
+`GET /api/servicios` combina `texto`, `idCategoria`, `idSubcategoria` e
+`idMunicipio`. Los parametros ausentes o vacios no filtran. El orden es
+determinista: nombre y, si empatan, identificador. No hay paginacion.
+
+Solo aparecen servicios `ACTIVO` de cuentas `ACTIVA`, prestadores `DISPONIBLE` y
+perfiles `VERIFICADO_BASICO` o `PROFESIONAL_VERIFICADO`. Un identificador que no
+cumpla eso responde 404, igual que uno inexistente.
+
+El detalle y el perfil publico llevan `significadoVerificacion` y
+`advertenciaDeInsignia`. La advertencia es la misma en todos los niveles: la
+insignia no garantiza la calidad futura. No viajan contactos, correos privados,
+documentos, numeros de identidad, observaciones administrativas ni claves de
+almacenamiento. No se inventan reputaciones ni calificaciones.
+
+`admiteContratacion` avisa si hoy se podria solicitar. Las solicitudes llegan
+en P6; este campo no abre ningun endpoint de contratacion.
+
+`GET /api/catalogos/departamentos` y `GET /api/catalogos/categorias` son
+publicos para alimentar los filtros. La taxonomia de demostracion no se
+presenta como exhaustiva.
 
 ## Verificacion documental del prestador
 

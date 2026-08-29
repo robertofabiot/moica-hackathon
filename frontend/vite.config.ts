@@ -9,9 +9,10 @@ import { defineConfig } from 'vitest/config';
 // llama a rutas relativas y Vite las reenvia a Spring Boot.
 export default defineConfig(({ mode }) => {
   // El puerto del backend sale del mismo `.env` de la raiz que usa el resto del
-  // monorepo, para no mantener dos definiciones del mismo valor.
+  // monorepo. Si ya esta definido en el proceso, ese valor gana: permite
+  // apuntar un Vite extra a otro backend local sin tocar el archivo.
   const entorno = loadEnv(mode, '..', '');
-  const destinoApi = `http://localhost:${entorno.MOICA_BACKEND_PORT ?? '8080'}`;
+  const destinoApi = `http://localhost:${process.env.MOICA_BACKEND_PORT ?? entorno.MOICA_BACKEND_PORT ?? '8080'}`;
 
   return {
     plugins: [

@@ -1,7 +1,7 @@
 /**
  * Punto de entrada de la capacidad de descubrimiento público.
  *
- * Un visitante explora sin registrarse. Contratar no vive aquí.
+ * Un visitante explora sin registrarse. Solicitar un servicio vive en la capacidad de solicitud.
  */
 
 export { default as DetalleDeServicio } from './paginas/DetalleDeServicio';

@@ -31,6 +31,14 @@ import {
   RUTA_SERVICIOS,
   ServiciosPropios,
 } from './capacidades/servicio';
+import {
+  DetalleDeSolicitud,
+  MisSolicitudes,
+  NuevaSolicitud,
+  RUTA_DETALLE_SOLICITUD,
+  RUTA_NUEVA_SOLICITUD,
+  RUTA_SOLICITUDES,
+} from './capacidades/solicitud';
 import { ColaDeVerificaciones, RUTA_ADMIN_VERIFICACIONES } from './capacidades/verificacion';
 import Inicio from './paginas/Inicio';
 import RutaNoEncontrada from './paginas/RutaNoEncontrada';
@@ -40,7 +48,8 @@ import RutaNoEncontrada from './paginas/RutaNoEncontrada';
  *
  * Cada incremento agrega las rutas de su propia capacidad. P2 añadió las de acceso, P3 las de
  * seguridad de la cuenta y el área administrativa, P4 la del perfil de prestador, P4V la cola
- * administrativa de verificaciones y P5 el descubrimiento público y la gestión de servicios.
+ * administrativa de verificaciones, P5 el descubrimiento público y la gestión de servicios, y P6
+ * el ciclo de solicitudes.
  *
  * Los envoltorios de ruta deciden a qué pantalla llevar a cada persona, no si puede hacer algo:
  * quien pida una ruta protegida de la API sin permiso recibe 401 o 403 del backend aunque llegue a
@@ -105,6 +114,30 @@ export default function App() {
         element={
           <RutaProtegida>
             <EditarServicio />
+          </RutaProtegida>
+        }
+      />
+      <Route
+        path={RUTA_SOLICITUDES}
+        element={
+          <RutaProtegida>
+            <MisSolicitudes />
+          </RutaProtegida>
+        }
+      />
+      <Route
+        path={RUTA_DETALLE_SOLICITUD}
+        element={
+          <RutaProtegida>
+            <DetalleDeSolicitud />
+          </RutaProtegida>
+        }
+      />
+      <Route
+        path={RUTA_NUEVA_SOLICITUD}
+        element={
+          <RutaProtegida>
+            <NuevaSolicitud />
           </RutaProtegida>
         }
       />

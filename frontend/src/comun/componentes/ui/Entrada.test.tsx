@@ -6,6 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 
 import { Entrada } from './Entrada';
+import estilos from './Entrada.module.css';
 
 describe('Entrada', () => {
   it('anuncia el mensaje de error debajo del campo', () => {
@@ -29,6 +30,28 @@ describe('Entrada', () => {
     await persona.click(screen.getByRole('button', { name: 'Enviar' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Escribe un nombre.');
+  });
+
+  it('pinta el icono a la izquierda del campo', () => {
+    render(
+      <>
+        <label htmlFor="servicio">Servicio</label>
+        <Entrada id="servicio" icono={<span data-testid="icono-lupa" />} />
+      </>
+    );
+
+    expect(screen.getByTestId('icono-lupa')).toBeInTheDocument();
+  });
+
+  it('quita el borde propio en la variante fusionada', () => {
+    render(
+      <>
+        <label htmlFor="ubicacion">Ubicación</label>
+        <Entrada id="ubicacion" variante="fusionada" />
+      </>
+    );
+
+    expect(screen.getByLabelText('Ubicación')).toHaveClass(estilos.fusionada ?? '');
   });
 });
 

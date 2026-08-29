@@ -5,4 +5,4 @@
 
 export { BarraLateral, type IdentificadorDeItemDeBarraLateral } from './BarraLateral';
 export { Boton, type FormaDeBoton, type VarianteDeBoton } from './Boton';
-export { Entrada } from './Entrada';
+export { Entrada, type VarianteDeEntrada } from './Entrada';

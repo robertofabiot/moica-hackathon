@@ -1,9 +1,13 @@
-import { forwardRef, useId, type InputHTMLAttributes } from 'react';
+import { forwardRef, useId, type InputHTMLAttributes, type ReactNode } from 'react';
 
 import estilos from './Entrada.module.css';
 
+export type VarianteDeEntrada = 'predeterminada' | 'fusionada';
+
 type PropiedadesDeEntrada = InputHTMLAttributes<HTMLInputElement> & {
   mensajeDeError?: string;
+  icono?: ReactNode;
+  variante?: VarianteDeEntrada;
 };
 
 /**
@@ -12,9 +16,21 @@ type PropiedadesDeEntrada = InputHTMLAttributes<HTMLInputElement> & {
  * El `ref` llega hasta el `input` nativo. Si hay `mensajeDeError`, se anuncia
  * debajo y queda enlazado con `aria-describedby` sin pisar una pista que el
  * padre ya hubiera pasado.
+ *
+ * `variante="fusionada"` quita el borde propio para meter el campo dentro de
+ * una barra de búsqueda. El `icono` se pinta a la izquierda, fuera del mensaje
+ * de error, para que un aviso no desplace la lupa.
  */
 export const Entrada = forwardRef<HTMLInputElement, PropiedadesDeEntrada>(function Entrada(
-  { mensajeDeError, className, id, 'aria-describedby': descritoPor, ...rest },
+  {
+    mensajeDeError,
+    icono,
+    variante = 'predeterminada',
+    className,
+    id,
+    'aria-describedby': descritoPor,
+    ...rest
+  },
   ref
 ) {
   const idGenerado = useId();
@@ -23,6 +39,9 @@ export const Entrada = forwardRef<HTMLInputElement, PropiedadesDeEntrada>(functi
   const tieneError = mensajeDeError !== undefined && mensajeDeError !== '';
 
   const clases = [estilos.entrada];
+  if (variante === 'fusionada') {
+    clases.push(estilos.fusionada);
+  }
   if (tieneError) {
     clases.push(estilos.entradaConError);
   }
@@ -32,14 +51,21 @@ export const Entrada = forwardRef<HTMLInputElement, PropiedadesDeEntrada>(functi
 
   return (
     <div className={estilos.envoltorio}>
-      <input
-        {...rest}
-        ref={ref}
-        id={idDelCampo}
-        className={clases.filter((parte) => parte !== undefined && parte !== '').join(' ')}
-        aria-invalid={tieneError}
-        aria-describedby={unirIds(descritoPor, tieneError ? idDeError : undefined)}
-      />
+      <div className={estilos.fila}>
+        {icono !== undefined && (
+          <span className={estilos.icono} aria-hidden="true">
+            {icono}
+          </span>
+        )}
+        <input
+          {...rest}
+          ref={ref}
+          id={idDelCampo}
+          className={clases.filter((parte) => parte !== undefined && parte !== '').join(' ')}
+          aria-invalid={tieneError}
+          aria-describedby={unirIds(descritoPor, tieneError ? idDeError : undefined)}
+        />
+      </div>
       {tieneError && (
         <p className={estilos.error} id={idDeError} role="alert">
           {mensajeDeError}

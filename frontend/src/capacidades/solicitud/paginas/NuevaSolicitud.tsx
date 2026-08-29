@@ -1,7 +1,9 @@
 import { Link, useNavigate, useParams } from 'react-router';
 
+import { useSesionActual } from '../../auth';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import FormularioDeSolicitud from '../componentes/FormularioDeSolicitud';
+import { cuentaEstaActiva } from '../presentacion';
 import { rutaDeSolicitud } from '../rutas';
 import propios from './solicitudes.module.css';
 
@@ -10,8 +12,10 @@ export default function NuevaSolicitud() {
   const { idServicio } = useParams();
   const identificador = Number(idServicio);
   const navegar = useNavigate();
+  const sesion = useSesionActual();
+  const identificadorValido = Number.isInteger(identificador) && identificador > 0;
 
-  if (!Number.isInteger(identificador) || identificador <= 0) {
+  if (!identificadorValido) {
     return (
       <main className={propios.pantalla}>
         <div className={propios.contenido}>
@@ -20,6 +24,31 @@ export default function NuevaSolicitud() {
           </p>
           <p className={propios.pie}>
             <Link to="/explorar">Volver a explorar</Link>
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (sesion.isPending) {
+    return (
+      <main className={propios.pantalla}>
+        <p className={secciones.estado} role="status">
+          Comprobando tu sesión…
+        </p>
+      </main>
+    );
+  }
+
+  if (!cuentaEstaActiva(sesion.data?.usuario.estadoCuenta)) {
+    return (
+      <main className={propios.pantalla}>
+        <div className={propios.contenido}>
+          <p className={secciones.estado} role="status">
+            Tu cuenta está restringida y por ahora no puede enviar solicitudes.
+          </p>
+          <p className={propios.pie}>
+            <Link to={`/explorar/servicios/${identificador}`}>Volver al servicio</Link>
           </p>
         </div>
       </main>

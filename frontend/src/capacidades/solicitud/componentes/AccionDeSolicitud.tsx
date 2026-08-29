@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 
 import { rutaDeInicioSesion, useSesionActual } from '../../auth';
 import estilos from '../../../comun/estilos/formulario.module.css';
+import { cuentaEstaActiva } from '../presentacion';
 import { rutaDeNuevaSolicitud } from '../rutas';
 import propios from '../paginas/solicitudes.module.css';
 
@@ -66,6 +67,14 @@ export default function AccionDeSolicitud({
     return (
       <p className={estilos.aviso} role="status">
         No puedes solicitar un servicio publicado por tu propia cuenta.
+      </p>
+    );
+  }
+
+  if (!cuentaEstaActiva(sesion.data.usuario.estadoCuenta)) {
+    return (
+      <p className={estilos.aviso} role="status">
+        Tu cuenta está restringida y por ahora no puede enviar solicitudes.
       </p>
     );
   }

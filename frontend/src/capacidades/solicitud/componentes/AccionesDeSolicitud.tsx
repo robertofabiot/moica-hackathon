@@ -14,6 +14,7 @@ import {
   useCompletadoDeSolicitud,
   useRechazoDeSolicitud,
 } from '../hooks/useSolicitudes';
+import { cuentaEstaActiva } from '../presentacion';
 import type { DatosDeSolicitudServicio } from '../tipos';
 import propios from '../paginas/solicitudes.module.css';
 
@@ -27,6 +28,7 @@ export default function AccionesDeSolicitud({
 }) {
   const sesion = useSesionActual();
   const idUsuario = sesion.data?.usuario.idUsuario;
+  const cuentaActiva = cuentaEstaActiva(sesion.data?.usuario.estadoCuenta);
   const esCliente = idUsuario === solicitud.idCliente;
   const esPrestador = idUsuario === solicitud.idPrestador;
   const [pendiente, setPendiente] = useState<
@@ -67,7 +69,7 @@ export default function AccionesDeSolicitud({
             {mensaje}
           </p>
         )}
-        {esPrestador && pendiente === 'aceptar' ? (
+        {esPrestador && cuentaActiva && pendiente === 'aceptar' ? (
           <Confirmacion
             titulo="¿Aceptar esta solicitud?"
             advertencia="Al aceptar quedará lista para el chat y los contactos, que se habilitan en el siguiente incremento."
@@ -81,7 +83,7 @@ export default function AccionesDeSolicitud({
             alCancelar={() => setPendiente(null)}
           />
         ) : null}
-        {esPrestador && pendiente === 'rechazar' ? (
+        {esPrestador && cuentaActiva && pendiente === 'rechazar' ? (
           <Confirmacion
             titulo="¿Rechazar esta solicitud?"
             advertencia="Esta acción no se puede deshacer."
@@ -110,9 +112,14 @@ export default function AccionesDeSolicitud({
             alCancelar={() => setPendiente(null)}
           />
         ) : null}
+        {pendiente === null && esPrestador && !cuentaActiva ? (
+          <p className={secciones.explicacion} role="status">
+            Tu cuenta está restringida y por ahora no puede aceptar ni rechazar solicitudes.
+          </p>
+        ) : null}
         {pendiente === null && (
           <div className={propios.acciones}>
-            {esPrestador ? (
+            {esPrestador && cuentaActiva ? (
               <>
                 <button
                   className={estilos.boton}
@@ -155,7 +162,7 @@ export default function AccionesDeSolicitud({
           {mensaje}
         </p>
       )}
-      {pendiente === 'completar' ? (
+      {esPrestador && cuentaActiva && pendiente === 'completar' ? (
         <Confirmacion
           titulo="¿Marcar como completada?"
           advertencia="Indica que el servicio ya se realizó. Esta acción no se puede deshacer."
@@ -181,9 +188,14 @@ export default function AccionesDeSolicitud({
           alCancelar={() => setPendiente(null)}
         />
       ) : null}
+      {pendiente === null && esPrestador && !cuentaActiva ? (
+        <p className={secciones.explicacion} role="status">
+          Tu cuenta está restringida y por ahora no puede completar solicitudes.
+        </p>
+      ) : null}
       {pendiente === null && (
         <div className={propios.acciones}>
-          {esPrestador ? (
+          {esPrestador && cuentaActiva ? (
             <button
               className={estilos.boton}
               type="button"

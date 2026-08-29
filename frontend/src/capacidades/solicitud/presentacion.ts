@@ -1,4 +1,10 @@
+import type { EstadoCuenta } from '../auth';
 import type { EstadoSolicitud } from './tipos';
+
+/** Enviar, aceptar, rechazar y completar exigen cuenta activa. Cancelar no. */
+export function cuentaEstaActiva(estadoCuenta: EstadoCuenta | undefined): boolean {
+  return estadoCuenta === 'ACTIVA';
+}
 
 const ESTADOS: Record<EstadoSolicitud, string> = {
   PENDIENTE: 'Pendiente',

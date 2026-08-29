@@ -1,0 +1,106 @@
+/*
+ * Encabezado de la aterrizaje. Solo tokens de `src/estilos/global.css`.
+ */
+
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+  padding: var(--gap-md) var(--gap-lg);
+  background-color: var(--color-neutral-0);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logotipo {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.navegacion {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--gap-xs) var(--gap-md);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.enlaceNav {
+  color: var(--color-neutral-800);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}
+
+.enlaceNav:hover {
+  color: var(--color-primary-700);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--gap-sm);
+}
+
+.estado {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.enlaceDeSesion {
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+}
+
+.enlaceDeSesion:hover {
+  color: var(--color-primary-700);
+}
+
+.aviso,
+.avisoDeError {
+  width: calc(100% - var(--gap-lg) * 2);
+  max-width: 72rem;
+  margin: var(--gap-md) auto 0;
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.avisoDeError {
+  border-left-width: var(--border-width-sm);
+  border-left-color: var(--color-error-500);
+}
+
+@media (min-width: 64rem) {
+  .encabezado {
+    display: grid;
+    grid-template-columns: minmax(8rem, 1fr) auto minmax(8rem, 1fr);
+    align-items: center;
+    padding-inline: var(--gap-xl);
+  }
+
+  .navegacion {
+    width: auto;
+  }
+
+  .acciones {
+    justify-self: end;
+  }
+}

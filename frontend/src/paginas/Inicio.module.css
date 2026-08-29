@@ -78,9 +78,8 @@
 
 .tituloDeCategorias {
   font-family: var(--font-family-primary);
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
-  letter-spacing: -0.02em;
   color: var(--color-neutral-900);
 }
 
@@ -131,10 +130,6 @@
 
   .categorias {
     padding: var(--gap-2xl) var(--gap-xl) var(--gap-3xl);
-  }
-
-  .tituloDeCategorias {
-    font-size: var(--font-size-3xl);
   }
 
   .cuadricula {

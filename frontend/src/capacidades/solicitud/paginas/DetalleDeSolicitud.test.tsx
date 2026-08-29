@@ -243,6 +243,70 @@ describe('Detalle de solicitud', () => {
     expect(await screen.findByRole('alert')).toBeVisible();
   });
 
+  it('un prestador restringido no ve aceptar ni rechazar una pendiente', async () => {
+    api.responder('GET /api/auth/sesion', {
+      estado: 200,
+      cuerpo: sesionDeEjemplo({ idUsuario: 1, estadoCuenta: 'RESTRINGIDA_TEMPORAL' }),
+    });
+    api.responder('GET /api/solicitudes/21', {
+      estado: 200,
+      cuerpo: solicitudDeServicioDeEjemplo(),
+    });
+
+    renderizarConProveedores(<App />, '/solicitudes/21');
+
+    expect(
+      await screen.findByText(
+        'Tu cuenta está restringida y por ahora no puede aceptar ni rechazar solicitudes.'
+      )
+    ).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Aceptar' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Rechazar' })).not.toBeInTheDocument();
+    expect(api.ultima('POST /api/solicitudes/21/rechazo')).toBeUndefined();
+    expect(api.ultima('POST /api/solicitudes/21/aceptacion')).toBeUndefined();
+  });
+
+  it('un cliente restringido conserva cancelar una pendiente', async () => {
+    api.responder('GET /api/auth/sesion', {
+      estado: 200,
+      cuerpo: sesionDeEjemplo({ idUsuario: 2, estadoCuenta: 'RESTRINGIDA_TEMPORAL' }),
+    });
+    api.responder('GET /api/solicitudes/21', {
+      estado: 200,
+      cuerpo: solicitudDeServicioDeEjemplo(),
+    });
+
+    renderizarConProveedores(<App />, '/solicitudes/21');
+
+    expect(await screen.findByRole('button', { name: 'Cancelar solicitud' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Aceptar' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Rechazar' })).not.toBeInTheDocument();
+  });
+
+  it('un prestador restringido conserva cancelar y no completa una aceptada', async () => {
+    api.responder('GET /api/auth/sesion', {
+      estado: 200,
+      cuerpo: sesionDeEjemplo({ idUsuario: 1, estadoCuenta: 'RESTRINGIDA_TEMPORAL' }),
+    });
+    api.responder('GET /api/solicitudes/21', {
+      estado: 200,
+      cuerpo: solicitudDeServicioDeEjemplo({ estadoActual: 'ACEPTADA' }),
+    });
+
+    renderizarConProveedores(<App />, '/solicitudes/21');
+
+    expect(
+      await screen.findByText(
+        'Tu cuenta está restringida y por ahora no puede completar solicitudes.'
+      )
+    ).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Cancelar con motivo' })).toBeVisible();
+    expect(
+      screen.queryByRole('button', { name: 'Marcar como completada' })
+    ).not.toBeInTheDocument();
+    expect(api.ultima('POST /api/solicitudes/21/completado')).toBeUndefined();
+  });
+
   it('una rechazada no muestra acciones de cambio', async () => {
     api.responder('GET /api/auth/sesion', {
       estado: 200,

@@ -122,4 +122,34 @@ describe('Nueva solicitud', () => {
     ).toBeVisible();
     expect(screen.queryByRole('link', { name: 'Solicitar este servicio' })).not.toBeInTheDocument();
   });
+
+  it('una cuenta restringida no ve solicitar en el detalle público', async () => {
+    api.responder('GET /api/auth/sesion', {
+      estado: 200,
+      cuerpo: sesionDeEjemplo({ idUsuario: 2, estadoCuenta: 'RESTRINGIDA_TEMPORAL' }),
+    });
+
+    renderizarConProveedores(<App />, '/explorar/servicios/10');
+
+    expect(
+      await screen.findByText('Tu cuenta está restringida y por ahora no puede enviar solicitudes.')
+    ).toBeVisible();
+    expect(screen.queryByRole('link', { name: 'Solicitar este servicio' })).not.toBeInTheDocument();
+  });
+
+  it('una cuenta restringida no abre el formulario por la URL', async () => {
+    api.responder('GET /api/auth/sesion', {
+      estado: 200,
+      cuerpo: sesionDeEjemplo({ idUsuario: 2, estadoCuenta: 'RESTRINGIDA_TEMPORAL' }),
+    });
+
+    renderizarConProveedores(<App />, '/explorar/servicios/10/solicitar');
+
+    expect(
+      await screen.findByText('Tu cuenta está restringida y por ahora no puede enviar solicitudes.')
+    ).toBeVisible();
+    expect(screen.queryByLabelText('Qué necesitas')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Enviar solicitud' })).not.toBeInTheDocument();
+    expect(api.ultima('POST /api/solicitudes')).toBeUndefined();
+  });
 });

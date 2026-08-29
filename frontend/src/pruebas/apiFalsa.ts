@@ -146,6 +146,8 @@ export interface OpcionesDeSesion {
   diasParaExpirar?: number;
   esAdministrador?: boolean;
   idUsuario?: number;
+  estadoCuenta?:
+    'ACTIVA' | 'RESTRINGIDA_TEMPORAL' | 'SUSPENDIDA_TEMPORAL' | 'SUSPENDIDA_PERMANENTE';
   /** La cuenta tiene el segundo factor activo. */
   segundoFactorRequerido?: boolean;
   /** Esta sesión ya presentó un código válido. */
@@ -163,6 +165,7 @@ export function sesionDeEjemplo(opciones: OpcionesDeSesion = {}) {
     diasParaExpirar = 7,
     esAdministrador = false,
     idUsuario = 1,
+    estadoCuenta = 'ACTIVA',
     segundoFactorRequerido = false,
     segundoFactorVerificado = false,
   } = opciones;
@@ -174,7 +177,7 @@ export function sesionDeEjemplo(opciones: OpcionesDeSesion = {}) {
       idUsuario,
       nombreCompleto: 'Erving Miranda',
       correoElectronico: 'erving@moica.test',
-      estadoCuenta: 'ACTIVA',
+      estadoCuenta,
       esAdministrador,
       fechaRegistro: new Date(ahora).toISOString(),
     },

@@ -147,6 +147,22 @@ public class PerfilPrestadorService {
   }
 
   /**
+   * Disponibilidad y verificación vigentes de un perfil, sin bloquearlo.
+   *
+   * <p>Lo usa la capacidad {@code solicitud} al decidir si un servicio puede recibir una
+   * contratación nueva. Devuelve vacío si el perfil no existe.
+   */
+  @Transactional(readOnly = true)
+  public Optional<CondicionDePublicacion> condicionDe(Long idPrestador) {
+    return repositorio
+        .findById(idPrestador)
+        .map(
+            perfil ->
+                new CondicionDePublicacion(
+                    perfil.getDisponibilidad(), perfil.getNivelVerificacion()));
+  }
+
+  /**
    * Describe un perfil para otra capacidad, sin entregarle la entidad ni su repositorio.
    *
    * <p>Lo usa la revisión de expedientes, que necesita saber a qué perfil pertenece una solicitud y

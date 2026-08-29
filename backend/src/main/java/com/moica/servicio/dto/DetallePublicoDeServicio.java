@@ -9,8 +9,8 @@ import java.util.List;
 /**
  * Detalle público de un servicio visible.
  *
- * <p>{@code admiteContratacion} avisa si hoy se podría solicitar; las solicitudes llegan en P6.
- * {@code precioReferencia} nulo se presenta como «A convenir» en la interfaz, no en este campo.
+ * <p>{@code admiteContratacion} avisa si hoy se podría solicitar. No revela contactos. {@code
+ * precioReferencia} nulo se presenta como «A convenir» en la interfaz, no en este campo.
  */
 public record DetallePublicoDeServicio(
     Long idServicioPublicado,

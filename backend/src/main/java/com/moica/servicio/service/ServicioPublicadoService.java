@@ -10,6 +10,7 @@ import com.moica.prestador.dto.CondicionDePublicacion;
 import com.moica.prestador.service.PerfilPrestadorService;
 import com.moica.servicio.dto.DatosDeImagenDeServicio;
 import com.moica.servicio.dto.DatosDeServicioPublicado;
+import com.moica.servicio.dto.ReferenciaDeServicio;
 import com.moica.servicio.dto.SolicitudDeEstadoDeServicio;
 import com.moica.servicio.dto.SolicitudDeServicio;
 import com.moica.servicio.entity.EstadoServicio;
@@ -19,6 +20,7 @@ import com.moica.servicio.repository.ImagenServicioPublicadoRepository;
 import com.moica.servicio.repository.ServicioPublicadoRepository;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
@@ -209,6 +211,24 @@ public class ServicioPublicadoService {
     String url = imagen.getUrlImagen();
     imagenes.delete(imagen);
     return url;
+  }
+
+  /**
+   * Identifica un servicio para otra capacidad, exista o no visible en el descubrimiento.
+   *
+   * <p>Devuelve vacío si no hay fila. Quien pregunta decide si eso es 404 o un rechazo de negocio.
+   */
+  @Transactional(readOnly = true)
+  public Optional<ReferenciaDeServicio> referenciar(Long idServicioPublicado) {
+    return servicios.findById(idServicioPublicado).map(ReferenciaDeServicio::de);
+  }
+
+  /** Identificadores de los servicios de un prestador, para armar su bandeja de recibidas. */
+  @Transactional(readOnly = true)
+  public List<Long> idsDeServiciosDe(Long idPrestador) {
+    return servicios.findByIdPrestadorOrderByNombreAscIdServicioPublicadoAsc(idPrestador).stream()
+        .map(ServicioPublicado::getIdServicioPublicado)
+        .toList();
   }
 
   /**

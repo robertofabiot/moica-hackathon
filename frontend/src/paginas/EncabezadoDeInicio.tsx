@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router';
 
+import logoHorizontal from '../assets/logos/moica-horizontal.svg';
 import { RUTA_ADMIN } from '../capacidades/admin';
 import {
   RUTA_INICIO_SESION,
@@ -37,13 +38,7 @@ export function EncabezadoDeInicio() {
     <>
       <header className={estilos.encabezado}>
         <Link className={estilos.marca} to="/">
-          <img
-            className={estilos.logotipo}
-            src="/icono-192.png"
-            alt="Logotipo de Moica"
-            width={40}
-            height={40}
-          />
+          <img className={estilos.logotipo} src={logoHorizontal} alt="Logotipo de Moica" />
         </Link>
 
         <nav className={estilos.navegacion} aria-label="Navegación principal">

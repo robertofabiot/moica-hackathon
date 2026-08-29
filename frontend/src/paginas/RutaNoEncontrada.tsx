@@ -1,5 +1,9 @@
 import { Link, useNavigate } from 'react-router';
 
+import persona404 from '../assets/ilustraciones/ilustracion_persona404.png';
+import signoPregunta from '../assets/ilustraciones/signo_pregunta.png';
+import iconoMoica from '../assets/logos/moica-icono.svg';
+import logoVertical from '../assets/logos/moica-vertical.svg';
 import { Boton, IconoCasa } from '../comun/componentes/ui';
 import { IlustracionDeRutaNoEncontrada } from './IlustracionDeRutaNoEncontrada';
 import estilos from './RutaNoEncontrada.module.css';
@@ -7,9 +11,8 @@ import estilos from './RutaNoEncontrada.module.css';
 /**
  * Respuesta a una dirección que no existe.
  *
- * El mosaico de marca hace de «0» en el 404. El sendero, la persona y el pin
- * reconstruyen el mockup: no hay un vector original de esa ilustración en el
- * repositorio.
+ * El lockup vertical va arriba. El 404 usa el icono de marca como «0» y las
+ * ilustraciones oficiales se posan sobre los números.
  */
 export default function RutaNoEncontrada() {
   const navegar = useNavigate();
@@ -17,21 +20,15 @@ export default function RutaNoEncontrada() {
   return (
     <main className={estilos.contenedor}>
       <Link className={estilos.marca} to="/" aria-label="Moica, ir al inicio">
-        <img
-          className={estilos.iconoDeMarca}
-          src="/logotipo-mosaico.png"
-          alt=""
-          width={40}
-          height={40}
-        />
-        <span className={estilos.nombreDeMarca}>MOICA</span>
+        <img className={estilos.logoVertical} src={logoVertical} alt="" />
       </Link>
 
       <div className={estilos.contenido}>
-        <h1 className={estilos.escena}>
-          <span className={estilos.soloLectura}>404</span>
-          <IlustracionDeRutaNoEncontrada />
-        </h1>
+        <IlustracionDeRutaNoEncontrada
+          icono={iconoMoica}
+          persona={persona404}
+          pregunta={signoPregunta}
+        />
 
         <h2 className={estilos.titulo}>Ups, parece que nos desconectamos</h2>
         <p className={estilos.subtitulo}>

@@ -23,8 +23,9 @@
 }
 
 .logotipo {
-  width: 2.5rem;
+  display: block;
   height: 2.5rem;
+  width: auto;
 }
 
 .navegacion {

@@ -50,7 +50,7 @@ describe('vigilancia de la sesión', () => {
   }
 
   async function esperarElInicioDeSesionConMotivo(texto: string) {
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
     expect(screen.getByRole('status')).toHaveTextContent(texto);
     expect(screen.queryByText('Cerrando tu sesión…')).not.toBeInTheDocument();
   }

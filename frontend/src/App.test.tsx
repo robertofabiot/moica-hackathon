@@ -49,12 +49,12 @@ describe('navegación base', () => {
   it('abre la pantalla de registro en su propia ruta', () => {
     renderizarConProveedores(<App />, '/registro');
 
-    expect(screen.getByRole('heading', { name: 'Crear cuenta en Moica' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Crear cuenta' })).toBeInTheDocument();
   });
 
   it('abre la pantalla de inicio de sesión en su propia ruta', () => {
     renderizarConProveedores(<App />, '/iniciar-sesion');
 
-    expect(screen.getByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Iniciar sesión' })).toBeInTheDocument();
   });
 });

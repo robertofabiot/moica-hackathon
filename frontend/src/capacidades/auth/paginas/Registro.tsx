@@ -2,12 +2,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router';
 
+import { Boton, Entrada } from '../../../comun/componentes/ui';
 import { ErrorDeApi } from '../api';
 import { esquemaDeRegistro, type CamposDeRegistro } from '../esquemas';
 import { useRegistro } from '../hooks/useAcceso';
 import { RUTA_INICIO_SESION } from '../rutas';
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
-import estilos from '../../../comun/estilos/formulario.module.css';
+import estilos from './acceso.module.css';
+import { ContinuacionConRedes } from './ContinuacionConRedes';
 
 /**
  * Pantalla de creación de cuenta.
@@ -57,10 +58,8 @@ export default function Registro() {
     <main className={estilos.pantalla}>
       <div className={estilos.tarjeta}>
         <header className={estilos.encabezado}>
-          <h1 className={estilos.titulo}>Crear cuenta en Moica</h1>
-          <p className={estilos.explicacion}>
-            Con una cuenta puedes contratar servicios y, cuando quieras, ofrecer los tuyos.
-          </p>
+          <h1 className={estilos.titulo}>Crear cuenta</h1>
+          <p className={estilos.subtitulo}>Únete a Moica</p>
         </header>
 
         {mensajeGeneral !== null && (
@@ -74,95 +73,71 @@ export default function Registro() {
             <label className={estilos.etiqueta} htmlFor="nombreCompleto">
               Nombre completo
             </label>
-            <input
+            <Entrada
               id="nombreCompleto"
-              className={claseDeEntrada(errors.nombreCompleto !== undefined)}
               type="text"
               autoComplete="name"
-              aria-invalid={errors.nombreCompleto !== undefined}
-              aria-describedby={errors.nombreCompleto ? 'error-nombreCompleto' : undefined}
+              mensajeDeError={errors.nombreCompleto?.message}
               {...register('nombreCompleto')}
             />
-            {errors.nombreCompleto && (
-              <p className={estilos.error} id="error-nombreCompleto">
-                {errors.nombreCompleto.message}
-              </p>
-            )}
           </div>
 
           <div className={estilos.campo}>
             <label className={estilos.etiqueta} htmlFor="correoElectronico">
               Correo electrónico
             </label>
-            <input
+            <Entrada
               id="correoElectronico"
-              className={claseDeEntrada(errors.correoElectronico !== undefined)}
               type="email"
               autoComplete="email"
-              aria-invalid={errors.correoElectronico !== undefined}
-              aria-describedby={errors.correoElectronico ? 'error-correoElectronico' : undefined}
+              mensajeDeError={errors.correoElectronico?.message}
               {...register('correoElectronico')}
             />
-            {errors.correoElectronico && (
-              <p className={estilos.error} id="error-correoElectronico">
-                {errors.correoElectronico.message}
-              </p>
-            )}
           </div>
 
           <div className={estilos.campo}>
             <label className={estilos.etiqueta} htmlFor="clave">
               Contraseña
             </label>
-            <input
+            <Entrada
               id="clave"
-              className={claseDeEntrada(errors.clave !== undefined)}
               type="password"
               autoComplete="new-password"
-              aria-invalid={errors.clave !== undefined}
-              aria-describedby={errors.clave ? 'error-clave' : 'pista-clave'}
+              aria-describedby="pista-clave"
+              mensajeDeError={errors.clave?.message}
               {...register('clave')}
             />
             <p className={estilos.pista} id="pista-clave">
               De 8 a 72 caracteres, con al menos una mayúscula, una minúscula, un número y un
               símbolo.
             </p>
-            {errors.clave && (
-              <p className={estilos.error} id="error-clave">
-                {errors.clave.message}
-              </p>
-            )}
           </div>
 
           <div className={estilos.campo}>
             <label className={estilos.etiqueta} htmlFor="confirmacionDeClave">
-              Repetir contraseña
+              Confirmar contraseña
             </label>
-            <input
+            <Entrada
               id="confirmacionDeClave"
-              className={claseDeEntrada(errors.confirmacionDeClave !== undefined)}
               type="password"
               autoComplete="new-password"
-              aria-invalid={errors.confirmacionDeClave !== undefined}
-              aria-describedby={
-                errors.confirmacionDeClave ? 'error-confirmacionDeClave' : undefined
-              }
+              mensajeDeError={errors.confirmacionDeClave?.message}
               {...register('confirmacionDeClave')}
             />
-            {errors.confirmacionDeClave && (
-              <p className={estilos.error} id="error-confirmacionDeClave">
-                {errors.confirmacionDeClave.message}
-              </p>
-            )}
           </div>
 
-          <button className={estilos.boton} type="submit" disabled={registro.isPending}>
-            {registro.isPending ? 'Creando la cuenta…' : 'Crear cuenta'}
-          </button>
+          <Boton className={estilos.enviar} type="submit" disabled={registro.isPending}>
+            {registro.isPending ? 'Creando la cuenta…' : 'Registrarme'}
+          </Boton>
         </form>
 
+        <ContinuacionConRedes />
+
         <p className={estilos.pie}>
-          ¿Ya tienes cuenta? <Link to={RUTA_INICIO_SESION}>Inicia sesión</Link>
+          ¿Ya tienes cuenta?{' '}
+          <Link className={estilos.enlaceDestacado} to={RUTA_INICIO_SESION}>
+            Iniciar sesión
+          </Link>
         </p>
       </div>
     </main>

@@ -175,9 +175,15 @@ public class SolicitudServicioService {
         solicitud, sujeto, EstadoSolicitud.PENDIENTE, EstadoSolicitud.ACEPTADA, null);
   }
 
-  /** El prestador destinatario rechaza una solicitud {@code PENDIENTE}. */
+  /**
+   * El prestador destinatario rechaza una solicitud {@code PENDIENTE}.
+   *
+   * <p>Exige cuenta {@code ACTIVA}.
+   */
   @Transactional
   public DatosDeSolicitudServicio rechazar(UsuarioAutenticado sujeto, Long idSolicitudServicio) {
+    exigirCuentaActiva(
+        sujeto, "Tu cuenta está restringida y por ahora no puede rechazar solicitudes.");
     SolicitudServicio solicitud = solicitudBloqueada(sujeto, idSolicitudServicio);
     exigirPrestador(sujeto, solicitud);
     return transicionar(

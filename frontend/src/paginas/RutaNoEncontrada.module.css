@@ -7,7 +7,7 @@
   flex-direction: column;
   align-items: center;
   min-height: 100dvh;
-  padding: var(--gap-lg) var(--gap-lg) var(--gap-xl);
+  padding: var(--gap-md) var(--gap-lg) var(--gap-xl);
   background-color: var(--color-neutral-50);
 }
 
@@ -15,13 +15,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: var(--gap-sm);
+  margin-top: 0;
   text-decoration: none;
 }
 
 .logoHorizontal {
   display: block;
-  height: 4.25rem;
+  height: clamp(5rem, 10vw, 8rem);
   width: auto;
   max-width: none;
 }
@@ -67,52 +67,58 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  gap: clamp(1.25rem, 6vw, 4.5rem);
-  padding: var(--gap-md) 14% var(--gap-xl);
+  gap: 0;
+  padding: var(--gap-md) 10% var(--gap-xl);
 }
 
 .cuatroTeal,
 .cuatroNaranja {
   font-family: var(--font-family-secondary);
-  font-size: clamp(7.5rem, 28vw, 18rem);
+  font-size: clamp(10rem, 32vw, 22rem);
   font-weight: var(--font-weight-bold);
   line-height: 0.8;
 }
 
 .cuatroTeal {
   color: var(--color-secondary-500);
+  transform: rotate(-4deg);
 }
 
 .cuatroNaranja {
   color: var(--color-primary-500);
+  transform: rotate(3deg);
 }
 
 .iconoCentral {
-  width: clamp(6.75rem, 22vw, 15rem);
+  width: clamp(11rem, 30vw, 22rem);
   height: auto;
   align-self: center;
+  margin-inline: clamp(-3rem, -4vw, -1rem);
+  transform: rotate(5deg) translateY(-5%);
 }
 
 .persona {
   position: absolute;
-  right: 7%;
-  bottom: 6%;
-  height: clamp(8.5rem, 26vw, 15rem);
+  right: 16%;
+  bottom: 4%;
+  height: clamp(7rem, 20vw, 14rem);
   width: auto;
   max-width: none;
   pointer-events: none;
   z-index: 2;
+  transform: rotate(-3deg);
 }
 
 .pregunta {
   position: absolute;
-  right: 1.5%;
-  top: 16%;
-  width: clamp(2.75rem, 8vw, 4.75rem);
+  right: 10%;
+  top: 28%;
+  width: clamp(2.5rem, 5vw, 4rem);
   height: auto;
   max-width: none;
   pointer-events: none;
   z-index: 3;
+  transform: rotate(8deg);
 }
 
 .sombra {
@@ -123,6 +129,14 @@
 .sendero {
   fill: none;
   stroke: var(--color-secondary-500);
+  stroke-width: 3.5;
+  stroke-dasharray: 7 9;
+  stroke-linecap: round;
+}
+
+.senderoDerecho {
+  fill: none;
+  stroke: var(--color-primary-500);
   stroke-width: 3.5;
   stroke-dasharray: 7 9;
   stroke-linecap: round;
@@ -139,16 +153,16 @@
   stroke-linecap: round;
 }
 
-.chispaTeal {
+.destelloTeal {
   fill: none;
   stroke: var(--color-secondary-500);
-  stroke-width: 3;
+  stroke-width: 2.5;
 }
 
-.chispaNaranja {
+.destelloNaranja {
   fill: none;
   stroke: var(--color-primary-500);
-  stroke-width: 3;
+  stroke-width: 2.5;
 }
 
 .pin {
@@ -185,9 +199,6 @@
     padding-top: var(--gap-xl);
   }
 
-  .logoHorizontal {
-    height: 5rem;
-  }
 
   .titulo {
     font-size: var(--font-size-xl);

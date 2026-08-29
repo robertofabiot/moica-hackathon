@@ -37,21 +37,22 @@ function DecoracionDeEscena() {
         <circle className={estilos.marcador} r="11" />
         <path className={estilos.cruz} d="M-4.5 -4.5 4.5 4.5 M4.5 -4.5 -4.5 4.5" />
       </g>
-      <g className={estilos.chispaTeal} strokeLinecap="round">
-        <line x1="168" y1="28" x2="168" y2="48" />
-        <line x1="159" y1="38" x2="177" y2="38" />
+      <g className={estilos.destelloTeal} strokeLinecap="round">
+        <line x1="148" y1="24" x2="158" y2="38" />
+        <line x1="172" y1="20" x2="182" y2="34" />
       </g>
-      <g className={estilos.chispaNaranja} strokeLinecap="round">
-        <line x1="548" y1="26" x2="548" y2="46" />
-        <line x1="539" y1="36" x2="557" y2="36" />
+      <g className={estilos.destelloNaranja} strokeLinecap="round">
+        <line x1="568" y1="38" x2="578" y2="24" />
+        <line x1="590" y1="34" x2="600" y2="20" />
       </g>
-      <g transform="translate(700 118)">
+      <g transform="translate(692 252)">
         <path
           className={estilos.pin}
           d="M0 -26 C11 -26 16 -15 16 -10 C16 1 0 20 0 20 C0 20 -16 1 -16 -10 C-16 -15 -11 -26 0 -26 Z"
         />
         <circle className={estilos.ojoDelPin} cx="0" cy="-12" r="5.5" />
       </g>
+      <path className={estilos.senderoDerecho} d="M540 240 C 570 260 620 285 660 278 S 685 275 692 272" />
     </svg>
   );
 }

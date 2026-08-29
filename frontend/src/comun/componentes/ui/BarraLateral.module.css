@@ -1,0 +1,93 @@
+/*
+ * Barra lateral de navegación. Solo tokens de `src/estilos/global.css`.
+ */
+
+.barra {
+  position: fixed;
+  inset: 0 auto 0 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--font-size-xl) + var(--gap-md) * 2);
+  height: 100dvh;
+  padding-block: var(--gap-xl);
+  overflow-y: auto;
+  background-color: var(--color-neutral-0);
+  border-right: var(--border-width-xs) solid var(--color-neutral-200);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-lg);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.itemActivo::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: var(--border-width-sm);
+  height: calc(var(--font-size-xl) + var(--gap-md) * 2);
+  transform: translateY(-50%);
+  background-color: var(--color-primary-500);
+  border-radius: var(--radius-full);
+}
+
+.control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gap-md);
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: var(--color-neutral-600);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.control:hover {
+  color: var(--color-primary-500);
+}
+
+.controlActivo {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-500);
+}
+
+.icono {
+  display: flex;
+}
+
+.icono svg {
+  display: block;
+  width: var(--font-size-xl);
+  height: var(--font-size-xl);
+}
+
+.aviso {
+  position: absolute;
+  top: var(--gap-sm);
+  right: var(--gap-sm);
+  width: var(--gap-xs);
+  height: var(--gap-xs);
+  border-radius: var(--radius-full);
+  background-color: var(--color-error-500);
+}

@@ -294,7 +294,7 @@ describe('Perfil de prestador', () => {
 
     renderizarConProveedores(<App />, '/prestador');
 
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
     expect(
       screen.queryByRole('heading', { name: 'Tu perfil de prestador' })
     ).not.toBeInTheDocument();
@@ -312,7 +312,7 @@ describe('Perfil de prestador', () => {
 
     await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
     await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
-    expect(await screen.findByRole('heading', { name: 'Iniciar sesión en Moica' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
 
     // La cuenta B entra sin recargar y su perfil todavía no responde.
     api.responder('POST /api/auth/sesion', { estado: 201, cuerpo: sesionDeEjemplo() });

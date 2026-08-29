@@ -1,38 +1,124 @@
 /*
- * Estilos base de Moica.
+ * Tokens del sistema de diseño de Moica.
  *
- * Deliberadamente neutros: la paleta y la tipografia definitivas todavia no
- * estan aprobadas. `Docs/Design/IdentidadYConceptoDeMarca.md` presenta once
- * opciones de color como tentativas, asi que aqui solo hay grises, tipografia
- * del sistema y el logotipo ya entregado. Cuando el equipo de diseno cierre la
- * identidad, estos valores se sustituyen en un solo lugar.
+ * Fuente única de color, tipografía, espaciado, radios y sombras. Los CSS
+ * Modules de cada capacidad leen estas variables (o los alias --moica-* que
+ * las apuntan) para no repetir valores literales.
  */
 
 :root {
-  --moica-fondo: #ffffff;
-  --moica-fondo-suave: #f5f5f3;
-  --moica-texto: #1d1d1b;
-  --moica-texto-suave: #55554f;
-  --moica-borde: #dcdcd6;
-  --moica-foco: #1d1d1b;
-  /*
-   * Color de estado, no de identidad: solo sirve para senalar que algo salio
-   * mal en un formulario. Contraste 5.9:1 sobre el fondo, suficiente para AA.
-   */
-  --moica-error: #b3261e;
+  /* ==========================================================================
+     COLORES
+     ========================================================================== */
 
-  --moica-espacio-1: 0.5rem;
-  --moica-espacio-2: 1rem;
-  --moica-espacio-3: 1.5rem;
-  --moica-espacio-4: 2rem;
+  /* Primary - Naranjas (marca, botones, acentos) */
+  --color-primary-50: #fff3e0;
+  --color-primary-100: #ffe0b2;
+  --color-primary-300: #ffb74d;
+  --color-primary-500: #f57c00; /* Botones principales, acentos */
+  --color-primary-700: #e65100;
+  --color-primary-900: #bf360c;
+
+  /* Secondary - Verde/cian (footer, iconos, stats) */
+  --color-secondary-50: #e0f2f1;
+  --color-secondary-100: #b2dfdb;
+  --color-secondary-500: #00897b; /* Stats, ubicación */
+  --color-secondary-700: #0d7377; /* Footer, acentos oscuros */
+  --color-secondary-900: #004d40;
+
+  /* Neutrales (texto, bordes, fondos) */
+  --color-neutral-0: #ffffff; /* Tarjetas, texto en footer */
+  --color-neutral-50: #fef7f0; /* Fondo principal de la app */
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb; /* Bordes, divisores */
+  --color-neutral-400: #9ca3af;
+  --color-neutral-600: #6b7280; /* Texto secundario, subtítulos */
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #1a1a1a; /* Texto principal, títulos */
+
+  /* Semánticos */
+  --color-success-500: #4caf50; /* Badge verificado */
+  --color-warning-500: #f5a623; /* Estrellas de calificación */
+  --color-error-500: #e53935; /* Puntos de notificación */
+
+  /* ==========================================================================
+     TIPOGRAFÍA (1rem = 16px)
+     ========================================================================== */
+
+  /* Familias: la ficha de color no las redefine; se mantienen las ya cerradas. */
+  --font-family-primary: 'Oswald', sans-serif;
+  --font-family-secondary: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  --font-size-xs: 0.75rem; /* 12px - captions, tags, metadata */
+  --font-size-sm: 0.875rem; /* 14px - body pequeño, links de footer */
+  --font-size-base: 1rem; /* 16px - body, botones, inputs */
+  --font-size-md: 1.125rem; /* 18px - subtítulos, texto destacado */
+  --font-size-lg: 1.25rem; /* 20px - títulos de tarjetas */
+  --font-size-xl: 1.5rem; /* 24px - títulos de secciones */
+  --font-size-2xl: 1.75rem; /* 28px - nombres de prestadores */
+  --font-size-3xl: 2.25rem; /* 36px - títulos hero */
+  --font-size-4xl: 3rem; /* 48px - texto muy grande (ej. 404) */
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ==========================================================================
+     ESPACIADO
+     ========================================================================== */
+
+  --gap-xs: 0.5rem; /*  8px - espacio entre icono y texto */
+  --gap-sm: 0.75rem; /* 12px - espacio interno en elementos pequeños */
+  --gap-md: 1rem; /* 16px - padding estándar de tarjetas, listas */
+  --gap-lg: 1.5rem; /* 24px - padding de secciones, tarjetas grandes */
+  --gap-xl: 2rem; /* 32px - separación entre secciones medianas */
+  --gap-2xl: 3rem; /* 48px - separación entre secciones grandes */
+  --gap-3xl: 4rem; /* 64px - separación muy grande (layouts) */
+
+  /* Grosor de borde: la ficha no lo lista; 1px y 2px cubren trazo y foco. */
+  --border-width-xs: 1px;
+  --border-width-sm: 2px;
+
+  /* ==========================================================================
+     RADIO DE BORDES
+     ========================================================================== */
+
+  --radius-sm: 0.25rem; /*  4px - checkboxes, tags pequeños */
+  --radius-md: 0.5rem; /*  8px - botones, inputs estándar */
+  --radius-lg: 0.75rem; /* 12px - tarjetas pequeñas */
+  --radius-xl: 1rem; /* 16px - tarjetas principales, modales */
+  --radius-full: 9999px; /* botones pill, barras de búsqueda, avatares */
+
+  /* ==========================================================================
+     SOMBRAS
+     ========================================================================== */
+
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  /* ==========================================================================
+     ALIAS DE COMPATIBILIDAD (--moica-*)
+     ==========================================================================
+     Los CSS Modules existentes todavía leen estos nombres. Apuntan a las
+     tokens nuevas para no romper pantallas mientras se migran una a una.
+     ========================================================================== */
+
+  --moica-fondo: var(--color-neutral-0);
+  --moica-fondo-suave: var(--color-neutral-50);
+  --moica-texto: var(--color-neutral-900);
+  --moica-texto-suave: var(--color-neutral-600);
+  --moica-borde: var(--color-neutral-200);
+  --moica-foco: var(--color-primary-500);
+  --moica-error: var(--color-error-500);
+  --moica-espacio-1: var(--gap-xs);
+  --moica-espacio-2: var(--gap-md);
+  --moica-espacio-3: var(--gap-lg);
+  --moica-espacio-4: var(--gap-xl);
 
   color-scheme: light;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
+  font-family: var(--font-family-secondary);
   line-height: 1.5;
 }
 
@@ -45,10 +131,12 @@
 body {
   margin: 0;
   min-height: 100dvh;
-  background-color: var(--moica-fondo);
-  color: var(--moica-texto);
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-900);
   /* Mobile-first: el texto base se define para telefono y crece despues. */
-  font-size: 1rem;
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -70,12 +158,12 @@ a {
 
 /* El foco siempre debe verse: es la unica guia de quien navega con teclado. */
 :focus-visible {
-  outline: 2px solid var(--moica-foco);
+  outline: var(--border-width-sm) solid var(--color-primary-500);
   outline-offset: 2px;
 }
 
 @media (min-width: 48rem) {
   body {
-    font-size: 1.0625rem;
+    font-size: var(--font-size-md);
   }
 }

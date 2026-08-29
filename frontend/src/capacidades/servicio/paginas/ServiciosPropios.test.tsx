@@ -108,6 +108,18 @@ describe('Servicios propios', () => {
     });
   });
 
+  it('conserva la subcategoría al editar cuando el catálogo llega después', async () => {
+    const servicio = servicioPropioDeEjemplo();
+    api.responder('GET /api/prestador/servicios/10', { estado: 200, cuerpo: servicio });
+
+    renderizarConProveedores(<App />, '/prestador/servicios/10');
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Subcategoría')).toHaveValue('1');
+    });
+    expect(screen.getByLabelText('Categoría')).toHaveValue('1');
+  });
+
   it('sube una imagen con previsualización y texto alternativo', async () => {
     const persona = userEvent.setup();
     const servicio = servicioPropioDeEjemplo();

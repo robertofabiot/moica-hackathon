@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { ErrorDeApi } from '../../../comun/api';
@@ -40,6 +40,7 @@ export default function FormularioDeServicio({
     register,
     handleSubmit,
     setError,
+    setValue,
     formState: { errors },
   } = useForm<CamposDeServicio, unknown, DatosValidadosDeServicio>({
     resolver: zodResolver(esquemaDeServicio),
@@ -70,6 +71,15 @@ export default function FormularioDeServicio({
         ?.subcategorias ?? []
     );
   }, [categorias.data, idCategoria]);
+
+  // El <select> nativo pierde el valor si las opciones todavía no existen. Cuando llega el
+  // catálogo, se vuelve a aplicar la subcategoría guardada.
+  useEffect(() => {
+    if (servicio === undefined || !categorias.isSuccess) {
+      return;
+    }
+    setValue('idSubcategoriaServicio', String(servicio.idSubcategoriaServicio));
+  }, [categorias.isSuccess, servicio, setValue]);
 
   const enviar = handleSubmit((campos) => {
     const datos = {

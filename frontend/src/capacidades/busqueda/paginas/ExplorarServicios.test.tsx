@@ -154,9 +154,7 @@ describe('Explorar servicios', () => {
     expect(await screen.findByRole('heading', { name: 'Reparación de fugas' })).toBeVisible();
     expect(screen.getByText('A convenir')).toBeVisible();
     expect(screen.getByText(/No garantiza la calidad futura del trabajo/)).toBeVisible();
-    expect(
-      screen.getByText(/La solicitud de contratación llega en un próximo incremento/)
-    ).toBeVisible();
-    expect(screen.queryByRole('button', { name: /solicitar/i })).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Iniciar sesión para solicitar' })).toBeVisible();
+    expect(screen.queryByRole('link', { name: 'Solicitar este servicio' })).not.toBeInTheDocument();
   });
 });

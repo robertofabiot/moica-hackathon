@@ -53,6 +53,8 @@ public abstract class EscenarioDeSeguridad extends PruebaDeIntegracionConPostgre
     // Las solicitudes de verificación apuntan al administrador que las resolvió
     // con ON DELETE RESTRICT, así que se retiran antes: si no, borrar las
     // cuentas chocaría con esa restricción en lugar de limpiar.
+    jdbc.update("DELETE FROM cambio_estado_solicitud");
+    jdbc.update("DELETE FROM solicitud_servicio");
     jdbc.update("DELETE FROM solicitud_verificacion_prestador");
     // Los servicios apuntan al perfil con ON DELETE RESTRICT: hay que
     // retirarlos antes de borrar las cuentas.

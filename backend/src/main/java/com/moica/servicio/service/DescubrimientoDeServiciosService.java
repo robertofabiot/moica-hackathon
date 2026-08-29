@@ -5,6 +5,7 @@ import com.moica.catalogo.service.CatalogoDeServiciosService;
 import com.moica.comun.error.ErrorDeAplicacion;
 import com.moica.portafolio.service.TrabajoPortafolioService;
 import com.moica.prestador.dto.DatosPublicosDePrestador;
+import com.moica.prestador.entity.EstadoDisponibilidad;
 import com.moica.prestador.service.PerfilPrestadorService;
 import com.moica.servicio.dto.DatosDeImagenDeServicio;
 import com.moica.servicio.dto.DetallePublicoDeServicio;
@@ -24,9 +25,12 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * Lectura pública de servicios y prestadores.
  *
- * <p>Solo entrega lo que un visitante puede ver: servicio {@code ACTIVO}, cuenta {@code ACTIVA},
+ * <p>El listado y el detalle solo entregan un servicio {@code ACTIVO} de cuenta {@code ACTIVA},
  * prestador {@code DISPONIBLE} y verificación al menos básica. Un identificador que no cumpla eso
  * responde 404, igual que uno inexistente.
+ *
+ * <p>El perfil de un prestador verificado con cuenta operativa sigue visible si no está disponible:
+ * el portafolio permanece, los servicios no se listan y {@code admiteContratacion} queda en falso.
  */
 @Service
 public class DescubrimientoDeServiciosService {
@@ -76,8 +80,8 @@ public class DescubrimientoDeServiciosService {
   /**
    * Perfil público de un prestador verificado con cuenta operativa.
    *
-   * <p>Si no está disponible, el perfil y el portafolio siguen visibles y los servicios activos se
-   * listan, pero {@code admiteContratacion} queda en falso.
+   * <p>Si no está disponible, el perfil y el portafolio siguen visibles, los servicios no se listan
+   * y {@code admiteContratacion} queda en falso.
    */
   @Transactional(readOnly = true)
   public PerfilPublicoDePrestador perfilPublico(Long idPrestador) {
@@ -88,12 +92,14 @@ public class DescubrimientoDeServiciosService {
             .orElseThrow(this::prestadorNoEncontrado);
 
     List<ResumenPublicoDeServicio> publicados =
-        servicios
-            .findByIdPrestadorAndEstadoOrderByNombreAscIdServicioPublicadoAsc(
-                idPrestador, EstadoServicio.ACTIVO)
-            .stream()
-            .map(servicio -> aResumen(servicio, prestador))
-            .toList();
+        prestador.disponibilidad() == EstadoDisponibilidad.DISPONIBLE
+            ? servicios
+                .findByIdPrestadorAndEstadoOrderByNombreAscIdServicioPublicadoAsc(
+                    idPrestador, EstadoServicio.ACTIVO)
+                .stream()
+                .map(servicio -> aResumen(servicio, prestador))
+                .toList()
+            : List.of();
 
     return PerfilPublicoDePrestador.de(
         prestador, portafolio.listarPublicos(idPrestador), publicados);

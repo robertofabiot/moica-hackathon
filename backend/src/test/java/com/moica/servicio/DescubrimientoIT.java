@@ -169,6 +169,35 @@ class DescubrimientoIT extends EscenarioDeServicio {
   }
 
   @Test
+  void unPerfilNoDisponibleSigueVisibleSinServiciosNiContratacion() {
+    NavegadorDePrueba admin = administradora(CORREO_ADMIN);
+    aprobarBasica(admin);
+    navegador.post(
+        RUTA_TRABAJOS,
+        Map.of("titulo", "Cambio de tubería", "descripcion", "Trabajo anterior documentado."));
+    long idServicio = idDe(crearServicio("Servicio actual"));
+    assertThat(activar(idServicio).statusCode()).isEqualTo(HttpStatus.OK.value());
+    dejarDisponible("NO_DISPONIBLE");
+
+    Long idPrestador = idDe(CORREO);
+    NavegadorDePrueba visitante = abrirNavegador();
+    HttpResponse<String> respuesta = visitante.get(RUTA_PRESTADORES_PUBLICOS + "/" + idPrestador);
+
+    assertThat(respuesta.statusCode()).isEqualTo(HttpStatus.OK.value());
+    JsonNode cuerpo = json(respuesta);
+    assertThat(cuerpo.get("prestador").get("nombrePublico").asText())
+        .isEqualTo("Taller La Esperanza");
+    assertThat(cuerpo.get("portafolio")).hasSize(1);
+    assertThat(cuerpo.get("portafolio").get(0).get("titulo").asText())
+        .isEqualTo("Cambio de tubería");
+    assertThat(cuerpo.get("servicios")).isEmpty();
+    assertThat(cuerpo.get("admiteContratacion").asBoolean()).isFalse();
+    assertThat(visitante.get(RUTA_SERVICIOS_PUBLICOS + "/" + idServicio).statusCode())
+        .isEqualTo(HttpStatus.NOT_FOUND.value());
+    assertThat(nombresDe(json(visitante.get(RUTA_SERVICIOS_PUBLICOS)))).isEmpty();
+  }
+
+  @Test
   void unPerfilSinVerificarResponde404EnPublico() {
     Long idPrestador = idDe(CORREO);
 

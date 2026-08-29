@@ -7,19 +7,30 @@
   flex-direction: column;
   align-items: center;
   min-height: 100dvh;
-  padding: var(--gap-xl) var(--gap-lg);
+  padding: var(--gap-lg) var(--gap-lg) var(--gap-xl);
   background-color: var(--color-neutral-50);
 }
 
 .marca {
-  width: 100%;
-  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: var(--gap-sm);
+  margin-top: var(--gap-md);
+  text-decoration: none;
+}
+
+.iconoDeMarca {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.nombreDeMarca {
   font-family: var(--font-family-primary);
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
-  letter-spacing: 0.18em;
-  text-align: center;
-  color: var(--color-neutral-900);
+  letter-spacing: 0.04em;
+  color: var(--color-primary-500);
 }
 
 .contenido {
@@ -28,48 +39,152 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: var(--gap-lg);
+  gap: var(--gap-md);
   width: 100%;
-  max-width: 36rem;
+  max-width: 40rem;
   text-align: center;
 }
 
-.codigo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.escena {
+  position: relative;
+  width: min(100%, 38rem);
   margin: 0;
-  font-family: var(--font-family-primary);
-  font-size: clamp(var(--font-size-4xl), 22vw, 8rem);
-  font-weight: var(--font-weight-bold);
-  line-height: 0.9;
-  letter-spacing: -0.04em;
-  color: var(--color-neutral-900);
 }
 
-.hueco {
+.soloLectura {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.dibujo {
   display: block;
-  width: clamp(3rem, 14vw, 6rem);
-  height: 0.7em;
-  flex-shrink: 0;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.sombra {
+  fill: var(--color-neutral-200);
+  opacity: 0.85;
+}
+
+.sendero {
+  fill: none;
+  stroke: var(--color-secondary-500);
+  stroke-width: 3.5;
+  stroke-dasharray: 7 9;
+  stroke-linecap: round;
+}
+
+.marcador {
+  fill: var(--color-primary-300);
+}
+
+.cruz {
+  fill: none;
+  stroke: var(--color-neutral-0);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+.chispaTeal {
+  fill: none;
+  stroke: var(--color-secondary-500);
+  stroke-width: 3;
+}
+
+.chispaNaranja {
+  fill: none;
+  stroke: var(--color-primary-500);
+  stroke-width: 3;
+}
+
+.cifraTeal,
+.cifraNaranja {
+  font-family: var(--font-family-secondary);
+  font-size: 200px;
+  font-weight: var(--font-weight-bold);
+}
+
+.cifraTeal {
+  fill: var(--color-secondary-500);
+}
+
+.cifraNaranja {
+  fill: var(--color-primary-500);
+}
+
+.cabello {
+  fill: var(--color-neutral-900);
+}
+
+.rostro {
+  fill: var(--color-primary-100);
+}
+
+.camisa,
+.pin {
+  fill: var(--color-secondary-500);
+}
+
+.pantalon {
+  fill: var(--color-primary-300);
+}
+
+.brazo {
+  fill: none;
+  stroke: var(--color-secondary-500);
+  stroke-width: 8;
+  stroke-linecap: round;
+}
+
+.interrogacion {
+  fill: var(--color-neutral-0);
+  font-family: var(--font-family-secondary);
+  font-size: 18px;
+  font-weight: var(--font-weight-bold);
+  text-anchor: middle;
+}
+
+.ojoDelPin {
+  fill: var(--color-neutral-50);
 }
 
 .titulo {
-  font-family: var(--font-family-primary);
-  font-size: var(--font-size-xl);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-neutral-900);
 }
 
 .subtitulo {
-  max-width: 38ch;
+  max-width: 36ch;
   color: var(--color-neutral-600);
   font-family: var(--font-family-secondary);
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.accion {
+  margin-top: var(--gap-sm);
+  padding-block: var(--gap-md);
+  padding-inline: var(--gap-xl);
 }
 
 @media (min-width: 48rem) {
+  .contenedor {
+    padding-top: var(--gap-xl);
+  }
+
   .titulo {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
+  }
+
+  .subtitulo {
+    font-size: var(--font-size-base);
   }
 }

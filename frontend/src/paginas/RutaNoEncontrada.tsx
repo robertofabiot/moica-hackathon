@@ -1,34 +1,46 @@
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 
 import { Boton, IconoCasa } from '../comun/componentes/ui';
+import { IlustracionDeRutaNoEncontrada } from './IlustracionDeRutaNoEncontrada';
 import estilos from './RutaNoEncontrada.module.css';
 
 /**
  * Respuesta a una dirección que no existe.
  *
- * El 404 deja un hueco central para una ilustración posterior; la salida
- * vuelve al inicio con el botón principal, no con un enlace de texto.
+ * El mosaico de marca hace de «0» en el 404. El sendero, la persona y el pin
+ * reconstruyen el mockup: no hay un vector original de esa ilustración en el
+ * repositorio.
  */
 export default function RutaNoEncontrada() {
   const navegar = useNavigate();
 
   return (
     <main className={estilos.contenedor}>
-      <p className={estilos.marca}>MOICA</p>
+      <Link className={estilos.marca} to="/" aria-label="Moica, ir al inicio">
+        <img
+          className={estilos.iconoDeMarca}
+          src="/logotipo-mosaico.png"
+          alt=""
+          width={40}
+          height={40}
+        />
+        <span className={estilos.nombreDeMarca}>MOICA</span>
+      </Link>
 
       <div className={estilos.contenido}>
-        <h1 className={estilos.codigo} aria-label="404">
-          <span aria-hidden="true">4</span>
-          <span className={estilos.hueco} aria-hidden="true" />
-          <span aria-hidden="true">4</span>
+        <h1 className={estilos.escena}>
+          <span className={estilos.soloLectura}>404</span>
+          <IlustracionDeRutaNoEncontrada />
         </h1>
 
         <h2 className={estilos.titulo}>Ups, parece que nos desconectamos</h2>
         <p className={estilos.subtitulo}>
-          La página que buscas no está disponible, pero todavía hay muchas conexiones por encontrar.
+          La página que buscas no está disponible,
+          <br />
+          pero todavía hay muchas conexiones por encontrar.
         </p>
 
-        <Boton forma="pildora" onClick={() => navegar('/')}>
+        <Boton className={estilos.accion} forma="pildora" onClick={() => navegar('/')}>
           <IconoCasa />
           Volver a explorar
         </Boton>

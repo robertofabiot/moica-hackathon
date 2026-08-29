@@ -26,4 +26,12 @@ describe('Boton', () => {
 
     expect(screen.getByRole('button', { name: 'Cancelar' })).toHaveClass(estilos.secundario ?? '');
   });
+
+  it('aplica la forma de píldora cuando se pide', () => {
+    render(<Boton forma="pildora">Volver a explorar</Boton>);
+
+    expect(screen.getByRole('button', { name: 'Volver a explorar' })).toHaveClass(
+      estilos.pildora ?? ''
+    );
+  });
 });

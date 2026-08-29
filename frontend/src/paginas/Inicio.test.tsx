@@ -53,13 +53,44 @@ describe('estado de acceso en la pantalla de inicio', () => {
     expect(screen.queryByText('Erving Miranda')).not.toBeInTheDocument();
   }
 
-  it('ofrece iniciar sesión y crear cuenta cuando no hay sesión', async () => {
+  it('ofrece iniciar sesión y registrarse cuando no hay sesión', async () => {
     sinSesion();
     renderizarConProveedores(<App />);
 
-    expect(await screen.findByRole('link', { name: 'Iniciar sesión' })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Crear cuenta' })).toBeVisible();
+    expect(await screen.findByRole('button', { name: 'Iniciar sesión' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Regístrate' })).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).not.toBeInTheDocument();
+  });
+
+  it('lleva a iniciar sesión desde el encabezado', async () => {
+    const persona = userEvent.setup();
+    sinSesion();
+    renderizarConProveedores(<App />);
+
+    await persona.click(await screen.findByRole('button', { name: 'Iniciar sesión' }));
+
+    expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
+  });
+
+  it('muestra el hero, la búsqueda y las categorías populares', async () => {
+    sinSesion();
+    renderizarConProveedores(<App />);
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Encuentra servicios confiables en tu comunidad',
+      })
+    ).toBeVisible();
+    expect(screen.getByRole('search')).toBeVisible();
+    expect(screen.getByPlaceholderText('¿Qué servicio necesitas?')).toBeVisible();
+    expect(screen.getByDisplayValue('Managua, NIC')).toBeVisible();
+    expect(screen.getByRole('heading', { name: 'Categorías populares' })).toBeVisible();
+    expect(screen.getByText('Hogar')).toBeVisible();
+    expect(screen.getByText('Construcción')).toBeVisible();
+    expect(screen.getByText('Transporte')).toBeVisible();
+    expect(screen.getByText('Tecnología')).toBeVisible();
+    expect(screen.getByText('Eventos')).toBeVisible();
+    expect(screen.getByText('Más')).toBeVisible();
   });
 
   it('saluda a quien tiene la sesión iniciada y le ofrece cerrarla', async () => {
@@ -68,7 +99,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
 
     expect(await screen.findByText('Erving Miranda')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible();
-    expect(screen.queryByRole('link', { name: 'Crear cuenta' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Regístrate' })).not.toBeInTheDocument();
   });
 
   it('cierra la sesión y devuelve a la pantalla de inicio de sesión', async () => {

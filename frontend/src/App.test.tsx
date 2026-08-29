@@ -26,24 +26,33 @@ describe('navegación base', () => {
   it('muestra la pantalla de inicio en la ruta raíz', () => {
     renderizarConProveedores(<App />, '/');
 
-    expect(screen.getByRole('heading', { name: 'Moica' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Encuentra servicios confiables en tu comunidad' })
+    ).toBeInTheDocument();
     expect(screen.getByAltText('Logotipo de Moica')).toBeInTheDocument();
   });
 
   it('muestra una explicación cuando la dirección no existe', () => {
     renderizarConProveedores(<App />, '/una-direccion-que-no-existe');
 
-    expect(screen.getByRole('heading', { name: 'Página no encontrada' })).toBeInTheDocument();
-    expect(screen.queryByRole('heading', { name: 'Moica' })).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '404' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Ups, parece que nos desconectamos' })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('heading', { name: 'Encuentra servicios confiables en tu comunidad' })
+    ).not.toBeInTheDocument();
   });
 
   it('permite volver al inicio desde una dirección inexistente', async () => {
     const persona = userEvent.setup();
     renderizarConProveedores(<App />, '/una-direccion-que-no-existe');
 
-    await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
+    await persona.click(screen.getByRole('button', { name: 'Volver a explorar' }));
 
-    expect(screen.getByRole('heading', { name: 'Moica' })).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'Encuentra servicios confiables en tu comunidad' })
+    ).toBeInTheDocument();
   });
 
   it('abre la pantalla de registro en su propia ruta', () => {

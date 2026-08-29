@@ -182,7 +182,11 @@ describe('seguridad de la cuenta', () => {
       expect(await screen.findByText(SECRETO_DE_ACTIVACION)).toBeVisible();
 
       await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
-      expect(await screen.findByRole('heading', { name: 'Moica' })).toBeVisible();
+      expect(
+        await screen.findByRole('heading', {
+          name: 'Encuentra servicios confiables en tu comunidad',
+        })
+      ).toBeVisible();
 
       expect(memoriaDeLasMutaciones(cliente)).not.toContain(SECRETO_DE_ACTIVACION);
 

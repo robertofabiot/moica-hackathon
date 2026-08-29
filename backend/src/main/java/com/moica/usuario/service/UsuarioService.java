@@ -3,6 +3,7 @@ package com.moica.usuario.service;
 import com.moica.comun.error.ErrorDeAplicacion;
 import com.moica.usuario.dto.DatosDeUsuario;
 import com.moica.usuario.dto.SolicitudDeRegistro;
+import com.moica.usuario.entity.EstadoCuenta;
 import com.moica.usuario.entity.Usuario;
 import com.moica.usuario.repository.UsuarioRepository;
 import java.util.Locale;
@@ -98,6 +99,20 @@ public class UsuarioService {
    *
    * @throws ErrorDeAplicacion si la cuenta no existe
    */
+  /**
+   * Una cuenta operativa puede aparecer en el descubrimiento público.
+   *
+   * <p>Hoy solo {@link EstadoCuenta#ACTIVA} lo es: una cuenta restringida no acepta contrataciones
+   * nuevas y una suspendida no opera. Devuelve {@code false} si la cuenta no existe.
+   */
+  @Transactional(readOnly = true)
+  public boolean esCuentaOperativa(Long idUsuario) {
+    return repositorio
+        .findById(idUsuario)
+        .map(usuario -> usuario.getEstadoCuenta() == EstadoCuenta.ACTIVA)
+        .orElse(false);
+  }
+
   @Transactional(readOnly = true)
   public DatosDeUsuario obtener(Long idUsuario) {
     return repositorio

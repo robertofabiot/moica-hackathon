@@ -47,6 +47,19 @@ public class TrabajoPortafolioService {
     this.perfiles = perfiles;
   }
 
+  /**
+   * Los trabajos públicos de un prestador, en su orden.
+   *
+   * <p>No comprueba visibilidad: eso lo decide el descubrimiento, que es quien sabe si el perfil
+   * puede mostrarse. Aquí solo se lee lo que cuelga del identificador.
+   */
+  @Transactional(readOnly = true)
+  public List<DatosDeTrabajo> listarPublicos(Long idPrestador) {
+    return trabajos.findByIdPrestadorOrderByOrdenVisualizacionAscIdTrabajoAsc(idPrestador).stream()
+        .map(this::aDatos)
+        .toList();
+  }
+
   /** Los trabajos propios en su orden, cada uno con sus imágenes en el suyo. */
   @Transactional(readOnly = true)
   public List<DatosDeTrabajo> listar(UsuarioAutenticado sujeto) {

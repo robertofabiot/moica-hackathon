@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Catálogos territoriales que consumen los formularios.
  *
- * <p>Exige sesión plena como cualquier ruta no declarada: hoy solo lo necesita quien crea o edita
- * su perfil de prestador. Cuando llegue el descubrimiento público (P5) se decidirá si se abre.
+ * <p>Es lectura pública desde P5: el filtro territorial del descubrimiento no exige sesión. Las
+ * escrituras de catálogo no existen; este controlador solo publica departamentos habilitados.
  */
 @RestController
 @RequestMapping("/api/catalogos")

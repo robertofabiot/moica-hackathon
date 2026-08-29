@@ -46,8 +46,8 @@ export function EncabezadoDeInicio() {
           />
         </Link>
 
-        <nav aria-label="Navegación principal">
-          <ul className={estilos.navegacion}>
+        <nav className={estilos.navegacion} aria-label="Navegación principal">
+          <ul className={estilos.listaNav}>
             {ENLACES_DE_NAVEGACION.map((enlace) => (
               <li key={enlace.etiqueta}>
                 {enlace.destino.startsWith('#') ? (

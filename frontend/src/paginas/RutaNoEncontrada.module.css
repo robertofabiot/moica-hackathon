@@ -12,11 +12,13 @@
 }
 
 .marca {
+  width: 100%;
   margin: 0;
   font-family: var(--font-family-primary);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   letter-spacing: 0.18em;
+  text-align: center;
   color: var(--color-neutral-900);
 }
 
@@ -38,7 +40,7 @@
   justify-content: center;
   margin: 0;
   font-family: var(--font-family-primary);
-  font-size: var(--font-size-4xl);
+  font-size: clamp(var(--font-size-4xl), 22vw, 8rem);
   font-weight: var(--font-weight-bold);
   line-height: 0.9;
   letter-spacing: -0.04em;
@@ -47,7 +49,7 @@
 
 .hueco {
   display: block;
-  width: 3.5rem;
+  width: clamp(3rem, 14vw, 6rem);
   height: 0.7em;
   flex-shrink: 0;
 }
@@ -67,14 +69,6 @@
 }
 
 @media (min-width: 48rem) {
-  .codigo {
-    font-size: 8rem;
-  }
-
-  .hueco {
-    width: 6rem;
-  }
-
   .titulo {
     font-size: var(--font-size-2xl);
   }

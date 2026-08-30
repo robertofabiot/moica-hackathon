@@ -21,6 +21,7 @@
 - [Caracteristicas](#caracteristicas)
 - [Arquitectura](#arquitectura)
 - [Instalacion rapida](#instalacion-rapida)
+- [Datos y despliegue](#datos-y-despliegue)
 - [Estructura del repositorio](#estructura-del-repositorio)
 - [Documentacion](#documentacion)
 - [Estado actual](#estado-actual)
@@ -81,6 +82,19 @@ para los documentos de verificacion (`MOICA_R2_PRIVADO_*`). Sin esas variables
 la aplicacion arranca igual, pero las operaciones con archivos responden
 `ALMACENAMIENTO_NO_DISPONIBLE`. Como aprovisionar cada bucket y su token:
 [`Docs/Dev/Almacenamiento.md`](Docs/Dev/Almacenamiento.md).
+
+## Datos y despliegue
+
+En desarrollo, PostgreSQL corre en local mediante Docker Compose; no hay base
+de datos remota. Cloudflare R2 es almacenamiento remoto de objetos para las
+imagenes publicas y los expedientes de verificacion, y no sustituye a
+PostgreSQL: la base conserva los datos y, de cada archivo, solo su URL publica
+o su clave opaca.
+
+La arquitectura productiva prevista usa Docker, configuracion por variables de
+entorno y frontend y API bajo un mismo origen. El proveedor, la base remota,
+los Dockerfiles y el procedimiento de despliegue corresponden al incremento
+P11 y todavia no estan implementados.
 
 ## Estructura del repositorio
 

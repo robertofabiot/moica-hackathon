@@ -1,89 +1,303 @@
 /*
- * Estilos de la sección de seguridad de la cuenta.
- *
- * Reutiliza las variables neutras de `src/estilos/global.css`, igual que las
- * pantallas de acceso: la paleta de marca todavía no está aprobada. Mobile-first:
- * la hoja base describe el teléfono y la media query amplía a tableta y
- * escritorio.
+ * Pantalla de configuración de la cuenta.
+ * Solo tokens de `src/estilos/global.css`. Mobile-first: la hoja base describe
+ * el teléfono y la media query amplía paddings a tableta y escritorio.
  */
 
-.pantalla {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* Oculta la barra lateral en escritorio: las pestañas ya cubren la navegación.
+   Para activarla en móvil, basta añadir un @media que le ponga display:block. */
+.barraLateralMovil {
+  display: none;
+}
+
+.pagina {
   min-height: 100dvh;
-  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+  padding: var(--gap-md);
 }
 
-.contenido {
+.columna {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
   width: 100%;
-  max-width: 34rem;
-  display: flex;
-  flex-direction: column;
-  gap: var(--moica-espacio-4);
+  max-width: 52rem;
+  margin: 0 auto;
 }
 
-.encabezado {
+.tarjetaPrincipal {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-1);
+  gap: var(--gap-lg);
+  padding: var(--gap-lg);
+  background-color: var(--color-neutral-0);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
 }
 
 .titulo {
-  font-size: 1.5rem;
-  letter-spacing: -0.01em;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
 }
 
-.explicacion {
-  color: var(--moica-texto-suave);
+.tituloDeGrupo {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.barraDeTabs {
+  display: flex;
+  gap: var(--gap-xl);
+  overflow-x: auto;
+  border-bottom: var(--border-width-xs) solid var(--color-neutral-200);
+}
+
+.tab {
+  flex-shrink: 0;
+  padding: var(--gap-sm) 0;
+  margin-bottom: calc(-1 * var(--border-width-xs));
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--color-neutral-600);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--color-neutral-900);
+}
+
+.tabActiva {
+  color: var(--color-primary-500);
+  border-bottom-color: var(--color-primary-500);
+}
+
+.tabActiva:hover {
+  color: var(--color-primary-500);
+}
+
+.filas {
+  display: flex;
+  flex-direction: column;
+}
+
+.filaDeConfiguracion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--gap-md);
+  padding-block: var(--gap-md);
+}
+
+.datosDeFila {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  min-width: 0;
+}
+
+.etiquetaDeFila {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+}
+
+.valorDeFila {
+  color: var(--color-neutral-900);
+  font-weight: var(--font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.accionDeFila {
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-secondary-500);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.accionDeFila:hover {
+  color: var(--color-secondary-700);
+}
+
+.accionInactiva {
+  flex-shrink: 0;
+  color: var(--color-neutral-400);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.divisor {
+  width: 100%;
+  height: 0;
+  margin: 0;
+  border: none;
+  border-top: var(--border-width-xs) solid var(--color-neutral-200);
+}
+
+.seccionDeFormulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  padding-bottom: var(--gap-md);
+}
+
+.bloqueDeSelect {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding-block: var(--gap-md);
+}
+
+.selectPresentacional {
+  width: 100%;
+  padding: var(--gap-sm) var(--gap-xl) var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--gap-md) center;
+  background-size: 1rem;
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-base);
+  appearance: none;
+}
+
+.selectPresentacional:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.etiqueta {
+  color: var(--color-neutral-900);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.pista {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.aviso {
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-left-width: var(--border-width-sm);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.avisoDeError {
+  border-left-color: var(--color-error-500);
+}
+
+.avisoAdministrativo {
+  padding: var(--gap-md);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-primary-500);
+  background: var(--color-primary-50);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.botonDeFormulario {
+  width: 100%;
+}
+
+.botonDestructivo {
+  border-color: var(--color-error-500);
+  color: var(--color-error-500);
+}
+
+.botonDestructivo:hover:not(:disabled) {
+  background-color: var(--color-neutral-0);
+  border-color: var(--color-error-500);
+  color: var(--color-error-500);
 }
 
 .seccion {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-2);
-  padding: var(--moica-espacio-3) var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-radius: 0.75rem;
-  background-color: var(--moica-fondo);
+  gap: var(--gap-md);
+  padding: var(--gap-lg);
+  background-color: var(--color-neutral-0);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
 }
 
 .tituloDeSeccion {
-  font-size: 1.125rem;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.explicacion {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
 }
 
 .estado {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  gap: var(--moica-espacio-1);
-  color: var(--moica-texto-suave);
+  gap: var(--gap-xs);
+  color: var(--color-neutral-600);
 }
 
 .etiquetaDeEstado {
-  padding: 0.125rem 0.5rem;
-  border: 1px solid var(--moica-borde);
-  border-radius: 999px;
-  background-color: var(--moica-fondo-suave);
-  color: var(--moica-texto);
-  font-size: 0.875rem;
-  font-weight: 600;
+  padding: 0.125rem var(--gap-xs);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-900);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .acciones {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-2);
+  gap: var(--gap-md);
 }
 
 /* La clave manual puede ser larga: se parte en lugar de desbordar la pantalla. */
 .claveManual {
-  padding: var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-radius: 0.5rem;
-  background-color: var(--moica-fondo-suave);
+  padding: var(--gap-md);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-50);
   font-family: ui-monospace, SFMono-Regular, 'Cascadia Mono', Menlo, Consolas, monospace;
-  font-size: 1rem;
+  font-size: var(--font-size-base);
   letter-spacing: 0.05em;
   overflow-wrap: anywhere;
   word-break: break-all;
@@ -92,10 +306,10 @@
 .codigoQr {
   display: flex;
   justify-content: center;
-  padding: var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-radius: 0.5rem;
-  background-color: #ffffff;
+  padding: var(--gap-lg);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background: var(--color-neutral-0);
 }
 
 .codigoQr svg {
@@ -107,23 +321,19 @@
 .pasos {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-1);
+  gap: var(--gap-xs);
   margin: 0;
   padding-left: 1.25rem;
-  color: var(--moica-texto-suave);
-}
-
-.pie {
-  color: var(--moica-texto-suave);
-  text-align: center;
+  color: var(--color-neutral-600);
 }
 
 @media (min-width: 48rem) {
-  .titulo {
-    font-size: 2rem;
+  .pagina {
+    padding: var(--gap-xl);
   }
 
+  .tarjetaPrincipal,
   .seccion {
-    padding: var(--moica-espacio-3);
+    padding: var(--gap-xl);
   }
 }

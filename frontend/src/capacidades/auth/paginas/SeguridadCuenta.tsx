@@ -1,6 +1,6 @@
-import { Link } from 'react-router';
-
+import { BarraLateral } from '../../../comun/componentes/ui';
 import CambioDeClave from '../componentes/CambioDeClave';
+import PestaniasDeConfiguracion from '../componentes/PestaniasDeConfiguracion';
 import SegundoFactorDeLaCuenta from '../componentes/SegundoFactorDeLaCuenta';
 import estilos from './seguridad.module.css';
 
@@ -12,22 +12,81 @@ import estilos from './seguridad.module.css';
  */
 export default function SeguridadCuenta() {
   return (
-    <main className={estilos.pantalla}>
-      <div className={estilos.contenido}>
-        <header className={estilos.encabezado}>
-          <h1 className={estilos.titulo}>Seguridad de tu cuenta</h1>
-          <p className={estilos.explicacion}>
-            Desde aquí cambias tu contraseña y decides si Moica te pide un segundo factor al entrar.
-          </p>
-        </header>
-
-        <CambioDeClave />
-        <SegundoFactorDeLaCuenta />
-
-        <p className={estilos.pie}>
-          <Link to="/">Volver al inicio</Link>
-        </p>
+    <>
+      <div className={estilos.barraLateralMovil}>
+        <BarraLateral
+          itemActivo="configuracion"
+          destinos={{ inicio: '/', configuracion: '/seguridad', perfil: '/prestador' }}
+        />
       </div>
-    </main>
+      <main className={estilos.pagina}>
+        <div className={estilos.columna}>
+          <div className={estilos.tarjetaPrincipal}>
+            <h1 className={estilos.titulo}>Configuración</h1>
+            <PestaniasDeConfiguracion />
+
+            <h2 className={estilos.tituloDeGrupo}>Seguridad de tu cuenta</h2>
+
+            <div className={estilos.filas}>
+              <div className={estilos.filaDeConfiguracion}>
+                <div className={estilos.datosDeFila}>
+                  <p className={estilos.etiquetaDeFila}>Correo electrónico</p>
+                  <p className={estilos.valorDeFila}>usuario@ejemplo.com</p>
+                </div>
+                <span className={estilos.accionInactiva}>Próximamente</span>
+              </div>
+
+              <hr className={estilos.divisor} />
+
+              <CambioDeClave />
+
+              <hr className={estilos.divisor} />
+
+              <div className={estilos.filaDeConfiguracion}>
+                <div className={estilos.datosDeFila}>
+                  <p className={estilos.etiquetaDeFila}>Número de teléfono</p>
+                  <p className={estilos.valorDeFila}>+505 0000 0000</p>
+                </div>
+                <span className={estilos.accionInactiva}>Próximamente</span>
+              </div>
+
+              <hr className={estilos.divisor} />
+
+              <div className={estilos.bloqueDeSelect}>
+                <label className={estilos.etiquetaDeFila} htmlFor="idioma">
+                  Idioma
+                </label>
+                <select
+                  id="idioma"
+                  className={estilos.selectPresentacional}
+                  defaultValue="es"
+                  disabled
+                >
+                  <option value="es">Español</option>
+                </select>
+              </div>
+
+              <hr className={estilos.divisor} />
+
+              <div className={estilos.bloqueDeSelect}>
+                <label className={estilos.etiquetaDeFila} htmlFor="zonaHoraria">
+                  Zona horaria
+                </label>
+                <select
+                  id="zonaHoraria"
+                  className={estilos.selectPresentacional}
+                  defaultValue="america-managua"
+                  disabled
+                >
+                  <option value="america-managua">(UTC-6) Centroamérica</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <SegundoFactorDeLaCuenta />
+        </div>
+      </main>
+    </>
   );
 }

@@ -11,6 +11,7 @@
 }
 
 .fila {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--gap-xs);
@@ -62,6 +63,37 @@
 
 .entradaConError {
   border-color: var(--color-error-500);
+}
+
+/* Deja espacio a la derecha para el botón de mostrar/ocultar contraseña. */
+.entradaConToggle {
+  padding-right: 2.75rem;
+}
+
+.toggleDeContrasena {
+  position: absolute;
+  right: var(--gap-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-neutral-400);
+  cursor: pointer;
+}
+
+.toggleDeContrasena:hover {
+  color: var(--color-neutral-600);
+}
+
+.toggleDeContrasena svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .error {

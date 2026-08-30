@@ -13,10 +13,12 @@ import estilos from './seguridad.module.css';
 export default function SeguridadCuenta() {
   return (
     <>
-      <BarraLateral
-        itemActivo="configuracion"
-        destinos={{ inicio: '/', configuracion: '/seguridad', perfil: '/prestador' }}
-      />
+      <div className={estilos.barraLateralMovil}>
+        <BarraLateral
+          itemActivo="configuracion"
+          destinos={{ inicio: '/', configuracion: '/seguridad', perfil: '/prestador' }}
+        />
+      </div>
       <main className={estilos.pagina}>
         <div className={estilos.columna}>
           <div className={estilos.tarjetaPrincipal}>

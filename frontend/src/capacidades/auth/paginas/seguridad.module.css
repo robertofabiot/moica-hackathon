@@ -4,9 +4,14 @@
  * el teléfono y la media query amplía paddings a tableta y escritorio.
  */
 
+/* Oculta la barra lateral en escritorio: las pestañas ya cubren la navegación.
+   Para activarla en móvil, basta añadir un @media que le ponga display:block. */
+.barraLateralMovil {
+  display: none;
+}
+
 .pagina {
   min-height: 100dvh;
-  margin-left: calc(var(--font-size-xl) + var(--gap-md) * 2);
   padding: var(--gap-md);
 }
 

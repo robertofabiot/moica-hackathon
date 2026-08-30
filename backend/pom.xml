@@ -17,6 +17,15 @@
   <name>moica-backend</name>
   <description>API REST de Moica: monolito modular con Spring Boot</description>
 
+  <licenses>
+    <license>
+      <name>Licencia de código disponible para inspección</name>
+      <url>https://github.com/robertofabiot/moica-hackathon/blob/develop/LICENSE</url>
+      <distribution>manual</distribution>
+      <comments>Source-available. No es open source. El texto vinculante está en LICENSE en la raíz del repositorio.</comments>
+    </license>
+  </licenses>
+
   <properties>
     <java.version>21</java.version>
     <spotless.version>3.9.0</spotless.version>

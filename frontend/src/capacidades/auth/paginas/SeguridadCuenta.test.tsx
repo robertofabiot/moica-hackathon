@@ -57,6 +57,7 @@ describe('seguridad de la cuenta', () => {
       const persona = userEvent.setup();
       await abrirSeguridad();
 
+      await desplegarCambioDeClave(persona);
       await persona.type(screen.getByLabelText('Contraseña actual'), 'Moica2026$segura');
       await persona.type(screen.getByLabelText('Contraseña nueva'), 'corta');
       await persona.type(screen.getByLabelText('Repetir contraseña nueva'), 'corta');
@@ -72,6 +73,7 @@ describe('seguridad de la cuenta', () => {
       const persona = userEvent.setup();
       await abrirSeguridad();
 
+      await desplegarCambioDeClave(persona);
       await persona.type(screen.getByLabelText('Contraseña actual'), 'Moica2026$segura');
       await persona.type(screen.getByLabelText('Contraseña nueva'), 'Moica2026$nueva');
       await persona.type(screen.getByLabelText('Repetir contraseña nueva'), 'Moica2026$otra');
@@ -181,7 +183,7 @@ describe('seguridad de la cuenta', () => {
       await persona.click(await screen.findByRole('button', { name: 'Activar el segundo factor' }));
       expect(await screen.findByText(SECRETO_DE_ACTIVACION)).toBeVisible();
 
-      await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
+      await persona.click(screen.getByRole('link', { name: 'Inicio' }));
       expect(
         await screen.findByRole('heading', {
           name: 'Encuentra servicios confiables en tu comunidad',
@@ -325,7 +327,7 @@ describe('seguridad de la cuenta', () => {
       const { cliente } = await abrirSeguridad();
       expect(await screen.findByText('Activo')).toBeVisible();
 
-      await persona.click(screen.getByRole('link', { name: 'Volver al inicio' }));
+      await persona.click(screen.getByRole('link', { name: 'Inicio' }));
       await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
       await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
       expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
@@ -388,7 +390,12 @@ describe('seguridad de la cuenta', () => {
     ).toBeVisible();
   });
 
+  async function desplegarCambioDeClave(persona: ReturnType<typeof userEvent.setup>) {
+    await persona.click(screen.getByRole('button', { name: 'Cambiar' }));
+  }
+
   async function cambiarContrasena(persona: ReturnType<typeof userEvent.setup>) {
+    await desplegarCambioDeClave(persona);
     await persona.type(screen.getByLabelText('Contraseña actual'), 'Moica2026$segura');
     await persona.type(screen.getByLabelText('Contraseña nueva'), 'Moica2026$nueva');
     await persona.type(screen.getByLabelText('Repetir contraseña nueva'), 'Moica2026$nueva');

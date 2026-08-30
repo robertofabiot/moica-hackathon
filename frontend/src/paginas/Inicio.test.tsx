@@ -336,6 +336,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
 
     expect(screen.getByRole('link', { name: 'Mi perfil de prestador' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Mis servicios' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Mis solicitudes' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Seguridad de la cuenta' })).toBeVisible();
     expect(screen.queryByRole('link', { name: 'Área administrativa' })).not.toBeInTheDocument();
   });
@@ -352,6 +353,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
 
     expect(screen.getByRole('link', { name: 'Verificar segundo factor' })).toBeVisible();
     expect(screen.queryByRole('link', { name: 'Mis servicios' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Mis solicitudes' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Mi perfil de prestador' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible();
   });

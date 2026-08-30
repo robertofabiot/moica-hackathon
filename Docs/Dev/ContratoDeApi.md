@@ -64,6 +64,14 @@ Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy
 | `GET /api/servicios` | Lista publica con filtros `texto`, `idCategoria`, `idSubcategoria` e `idMunicipio` | Cualquiera |
 | `GET /api/servicios/{id}` | Detalle publico de un servicio visible | Cualquiera |
 | `GET /api/prestadores/{id}` | Perfil publico, portafolio y servicios activos | Cualquiera |
+| `POST /api/solicitudes` | Envia una solicitud a un servicio ajeno | Sesion plena con cuenta `ACTIVA` |
+| `GET /api/solicitudes/enviadas` | Bandeja de solicitudes enviadas como cliente | Sesion plena |
+| `GET /api/solicitudes/recibidas` | Bandeja de solicitudes recibidas en los servicios propios | Sesion plena |
+| `GET /api/solicitudes/{id}` | Detalle e historial de una solicitud propia | Sesion plena; solo los dos participantes |
+| `POST /api/solicitudes/{id}/aceptacion` | El prestador destinatario acepta una pendiente | Sesion plena con cuenta `ACTIVA` |
+| `POST /api/solicitudes/{id}/rechazo` | El prestador destinatario rechaza una pendiente | Sesion plena con cuenta `ACTIVA` |
+| `POST /api/solicitudes/{id}/cancelacion` | Cancela segun actor y estado; motivo si esta `ACEPTADA` | Sesion plena |
+| `POST /api/solicitudes/{id}/completado` | El prestador destinatario marca una aceptada como completada | Sesion plena con cuenta `ACTIVA` |
 | `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
 
 **Sesion plena** es la que no esta pendiente del segundo factor y pertenece a una cuenta que no esta
@@ -345,12 +353,96 @@ documentos, numeros de identidad, observaciones administrativas ni claves de
 almacenamiento. No se inventan reputaciones ni calificaciones.
 
 `admiteContratacion` avisa si hoy se podria solicitar. Es falso cuando el
-prestador no esta disponible. Las solicitudes llegan en P6; este campo no abre
-ningun endpoint de contratacion.
+prestador no esta disponible. Solicitar vive en `/api/solicitudes`; este campo
+no revela contactos.
 
 `GET /api/catalogos/departamentos` y `GET /api/catalogos/categorias` son
 publicos para alimentar los filtros. La taxonomia de demostracion no se
 presenta como exhaustiva.
+
+## Solicitudes de servicio
+
+El ciclo de contratacion opera sobre la sesion. Las acciones son explicitas
+—aceptar, rechazar, cancelar, completar— y no un cambio generico de estado. No
+hay `DELETE`. El chat, la revelacion de contactos y las calificaciones no
+viven aqui.
+
+### Quien puede que
+
+Solo el cliente solicitante y el prestador destinatario leen una solicitud, su
+ubicacion escrita y su historial. Un tercero recibe 404 `RECURSO_NO_ENCONTRADO`,
+igual que en el resto de recursos propios.
+
+Una cuenta `RESTRINGIDA_TEMPORAL` consulta sus bandejas, el detalle y cancela
+un compromiso existente. Enviar, aceptar, rechazar y completar exigen cuenta
+`ACTIVA`. Una restringida no puede ejecutar ninguna de esas cuatro acciones.
+Una cuenta suspendida no ejecuta acciones autenticadas de negocio: la cadena
+responde 403 `ACCESO_DENEGADO`.
+
+### Crear
+
+`POST /api/solicitudes` exige sesion plena y cuenta `ACTIVA`. En la misma
+transaccion nace `PENDIENTE` y el cambio inicial del historial
+(`estadoAnterior` nulo, actor = cliente). Las pendientes no expiran.
+
+El cuerpo `SolicitudDeContratacion`:
+
+| Campo | Obligatorio | Limite |
+|---|---|---|
+| `idServicioPublicado` | Si | Identificador existente |
+| `descripcionNecesidad` | Si | Texto, maximo 3000 caracteres de aplicacion |
+| `idMunicipio` | Si | Municipio de un departamento habilitado |
+| `indicacionUbicacion` | Si | Texto, maximo 2000 caracteres de aplicacion |
+| `fechaPreferida` | No | `DATE` (`YYYY-MM-DD`). No se exige que sea futura |
+
+Rechazos al crear:
+
+| Situacion | HTTP | Codigo |
+|---|---|---|
+| Sin sesion | 401 | `NO_AUTENTICADO` |
+| Cuenta restringida | 403 | `CUENTA_RESTRINGIDA` |
+| Servicio inexistente | 404 | `RECURSO_NO_ENCONTRADO` |
+| Servicio propio | 409 | `SERVICIO_PROPIO` |
+| Servicio `INACTIVO` | 409 | `SERVICIO_INACTIVO` |
+| Perfil sin verificacion basica | 409 | `VERIFICACION_BASICA_REQUERIDA` |
+| Prestador no disponible o cuenta no operativa | 409 | `PRESTADOR_NO_DISPONIBLE` |
+| Municipio de un departamento no habilitado | 400 | `MUNICIPIO_NO_DISPONIBLE` |
+| Descripcion o ubicacion vacias | 400 | `VALIDACION` |
+
+No se impide enviar varias solicitudes historicas al mismo servicio.
+
+### Transiciones
+
+| Estado actual | Accion | Actor | Resultado | Motivo |
+|---|---|---|---|---|
+| `PENDIENTE` | Aceptar | Prestador destinatario con cuenta `ACTIVA` | `ACEPTADA` | No |
+| `PENDIENTE` | Rechazar | Prestador destinatario con cuenta `ACTIVA` | `RECHAZADA` | No |
+| `PENDIENTE` | Cancelar | Cliente solicitante | `CANCELADA` | No |
+| `ACEPTADA` | Cancelar | Cualquiera de los dos | `CANCELADA` | Obligatorio |
+| `ACEPTADA` | Completar | Prestador destinatario con cuenta `ACTIVA` | `COMPLETADA` | No |
+
+`RECHAZADA`, `CANCELADA` y `COMPLETADA` son definitivos. No se reabren.
+
+Cada transicion ocurre en una transaccion, bloquea la fila, actualiza
+`estadoActual` y escribe `CambioEstadoSolicitud` con el mismo instante. El
+estado vigente coincide siempre con el ultimo cambio del historial. Dos
+acciones simultaneas no dejan transiciones incompatibles.
+
+Cancelar una `ACEPTADA` sin motivo o con motivo en blanco responde 400
+`MOTIVO_OBLIGATORIO`. El tope del motivo es 2000 caracteres. Un actor o un
+estado incorrectos responden 409 `TRANSICION_NO_PERMITIDA`. Una cuenta
+restringida que intenta enviar, aceptar, rechazar o completar responde 403
+`CUENTA_RESTRINGIDA` y no escribe historial.
+
+Aceptar no revela correos ni contactos: solo deja el estado listo para el
+incremento del chat.
+
+### Lectura
+
+`GET /api/solicitudes/enviadas` y `GET /api/solicitudes/recibidas` ordenan de
+la mas reciente a la mas antigua. El detalle incluye el historial
+cronologico. Ningun cuerpo lleva `correoElectronico`, contactos externos,
+documentos, hashes, secretos TOTP ni claves de almacenamiento.
 
 ## Verificacion documental del prestador
 
@@ -534,4 +626,4 @@ Todos los errores comparten cuerpo. El detalle por campo solo aparece cuando el 
 }
 ```
 
-Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ADMITIDO`, `DOCUMENTO_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ENCONTRADO`, `EXPEDIENTE_INCOMPLETO`, `SOLICITUD_ABIERTA_DUPLICADA`, `SOLICITUD_NO_ENCONTRADA`, `SOLICITUD_YA_TOMADA`, `NIVEL_YA_VIGENTE`, `VERIFICACION_BASICA_REQUERIDA`, `TRANSICION_NO_PERMITIDA`, `REVISION_DE_OTRO_ADMINISTRADOR`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento, URL prefirmadas ni valores internos.
+Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ADMITIDO`, `DOCUMENTO_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ENCONTRADO`, `EXPEDIENTE_INCOMPLETO`, `SOLICITUD_ABIERTA_DUPLICADA`, `SOLICITUD_NO_ENCONTRADA`, `SOLICITUD_YA_TOMADA`, `NIVEL_YA_VIGENTE`, `VERIFICACION_BASICA_REQUERIDA`, `TRANSICION_NO_PERMITIDA`, `REVISION_DE_OTRO_ADMINISTRADOR`, `SERVICIO_PROPIO`, `SERVICIO_INACTIVO`, `PRESTADOR_NO_DISPONIBLE`, `MOTIVO_OBLIGATORIO`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento, URL prefirmadas ni valores internos.

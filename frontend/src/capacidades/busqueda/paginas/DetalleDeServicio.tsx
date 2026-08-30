@@ -3,13 +3,14 @@ import { Link, useParams } from 'react-router';
 import { ErrorDeApi } from '../../../comun/api';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
+import { AccionDeSolicitud } from '../../solicitud';
 import InsigniaResponsable from '../componentes/InsigniaResponsable';
 import { useServicioPublico } from '../hooks/useBusquedaPublica';
 import { nombreDelTipoPrestador, precioVisible } from '../presentacion';
 import { RUTA_EXPLORAR, rutaDePrestadorPublico } from '../rutas';
 import propios from './explorar.module.css';
 
-/** Detalle público de un servicio visible, sin contactos ni solicitudes. */
+/** Detalle público de un servicio visible. La solicitud se envía desde aquí. */
 export default function DetalleDeServicio() {
   const { idServicio } = useParams();
   const identificador = Number(idServicio);
@@ -106,16 +107,11 @@ export default function DetalleDeServicio() {
           <InsigniaResponsable prestador={prestador} />
         </section>
 
-        <p
-          className={`${propios.aviso} ${
-            servicio.admiteContratacion ? propios.avisoDisponible : propios.avisoNoDisponible
-          }`}
-          role="status"
-        >
-          {servicio.admiteContratacion
-            ? 'Este prestador está disponible. La solicitud de contratación llega en un próximo incremento; hoy solo puedes ver su perfil público.'
-            : 'Este prestador no está disponible para contratar ahora.'}
-        </p>
+        <AccionDeSolicitud
+          idServicio={servicio.idServicioPublicado}
+          idPrestador={prestador.idPrestador}
+          admiteContratacion={servicio.admiteContratacion}
+        />
 
         <p className={propios.pie}>
           <Link to={RUTA_EXPLORAR}>Volver a explorar</Link>

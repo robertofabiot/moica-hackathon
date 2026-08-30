@@ -188,7 +188,7 @@ cd backend
 
 En Windows PowerShell se usa `.\mvnw.cmd` en lugar de `./mvnw`.
 
-La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`: `V10__crear_usuario_y_sesion.sql` crea las tablas `usuario` y `sesion`; `V11__crear_administrador_y_segundo_factor.sql` agrega `administrador`, `segundo_factor_usuario` y el indice que permite revocar de una vez todas las sesiones de una cuenta; y el rango `V20`–`V23` agrega el territorio (`departamento`, `municipio`), el perfil de prestador con sus contactos y el portafolio, y carga Managua con sus nueve municipios.
+La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`. Los rangos posteriores a `V23` —verificacion (`V30`), servicios y taxonomia (`V31`, `V90`) y solicitudes (`V40`)— se aplican en el mismo arranque. `spring.flyway.out-of-order=true` permite insertar una version intermedia, como `V40`, cuando `V90` ya esta aplicada en un entorno existente.
 
 El arranque lo describe asi:
 

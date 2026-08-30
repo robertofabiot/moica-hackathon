@@ -145,6 +145,9 @@ export function cuerpoDeError(
 export interface OpcionesDeSesion {
   diasParaExpirar?: number;
   esAdministrador?: boolean;
+  idUsuario?: number;
+  estadoCuenta?:
+    'ACTIVA' | 'RESTRINGIDA_TEMPORAL' | 'SUSPENDIDA_TEMPORAL' | 'SUSPENDIDA_PERMANENTE';
   /** La cuenta tiene el segundo factor activo. */
   segundoFactorRequerido?: boolean;
   /** Esta sesión ya presentó un código válido. */
@@ -161,6 +164,8 @@ export function sesionDeEjemplo(opciones: OpcionesDeSesion = {}) {
   const {
     diasParaExpirar = 7,
     esAdministrador = false,
+    idUsuario = 1,
+    estadoCuenta = 'ACTIVA',
     segundoFactorRequerido = false,
     segundoFactorVerificado = false,
   } = opciones;
@@ -169,10 +174,10 @@ export function sesionDeEjemplo(opciones: OpcionesDeSesion = {}) {
 
   return {
     usuario: {
-      idUsuario: 1,
+      idUsuario,
       nombreCompleto: 'Erving Miranda',
       correoElectronico: 'erving@moica.test',
-      estadoCuenta: 'ACTIVA',
+      estadoCuenta,
       esAdministrador,
       fechaRegistro: new Date(ahora).toISOString(),
     },
@@ -490,6 +495,70 @@ function servicioPropioBase() {
     imagenes: [] as ReturnType<typeof imagenDeServicioDeEjemplo>[],
     fechaCreacion: '2026-08-28T10:00:00-06:00',
     fechaActualizacion: '2026-08-28T10:00:00-06:00',
+  };
+}
+
+/** Una solicitud de servicio tal como la ven sus participantes. */
+export function solicitudDeServicioDeEjemplo(
+  cambios: Partial<ReturnType<typeof solicitudDeServicioBase>> = {}
+) {
+  return { ...solicitudDeServicioBase(), ...cambios };
+}
+
+function solicitudDeServicioBase() {
+  return {
+    idSolicitudServicio: 21,
+    idServicioPublicado: 10,
+    nombreServicio: 'Reparación de fugas',
+    idCliente: 2,
+    nombreCliente: 'Ana Cliente',
+    idPrestador: 1,
+    nombrePublicoPrestador: 'Taller La Esperanza',
+    idMunicipio: 3,
+    nombreMunicipio: 'Managua',
+    nombreDepartamento: 'Managua',
+    descripcionNecesidad: 'Se fugará el lavamanos del baño principal.',
+    indicacionUbicacion: 'De la UCA dos cuadras al lago, portón verde.',
+    fechaPreferida: '2026-09-15' as string | null,
+    estadoActual: 'PENDIENTE' as
+      'PENDIENTE' | 'ACEPTADA' | 'RECHAZADA' | 'CANCELADA' | 'COMPLETADA',
+    fechaCreacion: '2026-08-29T10:00:00-06:00',
+    fechaActualizacion: '2026-08-29T10:00:00-06:00',
+    historial: [
+      {
+        idCambioEstadoSolicitud: 1,
+        estadoAnterior: null as string | null,
+        estadoNuevo: 'PENDIENTE',
+        idActor: 2,
+        nombreActor: 'Ana Cliente',
+        motivo: null as string | null,
+        fechaCambio: '2026-08-29T10:00:00-06:00',
+      },
+    ],
+  };
+}
+
+export function resumenDeSolicitudDeEjemplo(
+  cambios: Partial<ReturnType<typeof resumenDeSolicitudBase>> = {}
+) {
+  return { ...resumenDeSolicitudBase(), ...cambios };
+}
+
+function resumenDeSolicitudBase() {
+  const detalle = solicitudDeServicioBase();
+  return {
+    idSolicitudServicio: detalle.idSolicitudServicio,
+    idServicioPublicado: detalle.idServicioPublicado,
+    nombreServicio: detalle.nombreServicio,
+    idCliente: detalle.idCliente,
+    nombreCliente: detalle.nombreCliente,
+    idPrestador: detalle.idPrestador,
+    nombrePublicoPrestador: detalle.nombrePublicoPrestador,
+    idMunicipio: detalle.idMunicipio,
+    nombreMunicipio: detalle.nombreMunicipio,
+    estadoActual: detalle.estadoActual,
+    fechaPreferida: detalle.fechaPreferida,
+    fechaCreacion: detalle.fechaCreacion,
   };
 }
 

@@ -6,13 +6,17 @@ P2 abre el rango de identidad con `V10__crear_usuario_y_sesion.sql`, P3 lo
 completa con `V11__crear_administrador_y_segundo_factor.sql`, P4 abre el rango
 de territorio, perfiles y portafolio con `V20`–`V23` y P4V abre el de
 verificación documental con `V30`. P5 abre servicios y catálogos de oficio con
-`V31` y carga la taxonomía de demostración con `V90`.
+`V31` y carga la taxonomía de demostración con `V90`. P6 abre el ciclo de
+solicitudes con `V40`.
 
 ## Reglas
 
 - Un archivo por migración, con el nombre `V<numero>__<descripcion>.sql`
   (dos guiones bajos), en minúsculas y con palabras separadas por guion bajo.
   Ejemplo: `V10__crear_usuario_y_sesion.sql`.
+- Flyway aplica migraciones fuera de orden (`spring.flyway.out-of-order=true`)
+  porque los rangos reservados pueden insertar una versión intermedia —como
+  `V40`— después de que `V90` ya esté aplicada en un entorno existente.
 - Una migración aplicada **nunca se edita**. Si algo debe cambiar, se agrega una
   migración nueva. Flyway guarda el checksum de cada archivo aplicado y falla si
   detecta que uno cambió.
@@ -54,4 +58,5 @@ adelantado un rango que todavía no hace falta.
 | `V23__cargar_managua_y_sus_municipios.sql` | P4 | Departamento de Managua habilitado y sus nueve municipios |
 | `V30__crear_solicitudes_y_documentos_de_verificacion.sql` | P4V | Tablas `solicitud_verificacion_prestador` y `documento_verificacion_prestador`, el índice parcial `uq_solicitud_verificacion_abierta` y los índices por prestador, por estado y por solicitud |
 | `V31__crear_categorias_y_servicios_publicados.sql` | P5 | Tablas `categoria_servicio`, `subcategoria_servicio`, `servicio_publicado` e `imagen_servicio_publicado`, con dominio `ACTIVO`/`INACTIVO`, precio opcional `numeric(12,2)` y los índices de propiedad, listado y filtros públicos |
+| `V40__crear_solicitudes_e_historial_de_estados.sql` | P6 | Tablas `solicitud_servicio` y `cambio_estado_solicitud`, dominio `PENDIENTE`/`ACEPTADA`/`RECHAZADA`/`CANCELADA`/`COMPLETADA`, transición inicial con `estado_anterior` nulo e índices de bandeja, propiedad, estado e historial |
 | `V90__cargar_taxonomia_de_demostracion.sql` | P5 | Tres categorías de demostración —hogar, belleza y tecnología— con tres subcategorías cada una. No es una taxonomía exhaustiva |

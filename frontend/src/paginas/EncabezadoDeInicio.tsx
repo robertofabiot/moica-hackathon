@@ -14,6 +14,7 @@ import {
 import { RUTA_EXPLORAR } from '../capacidades/busqueda';
 import { RUTA_PRESTADOR } from '../capacidades/prestador';
 import { RUTA_SERVICIOS } from '../capacidades/servicio';
+import { RUTA_SOLICITUDES } from '../capacidades/solicitud';
 import { ErrorDeApi } from '../comun/api';
 import { Boton } from '../comun/componentes/ui';
 import estilos from './EncabezadoDeInicio.module.css';
@@ -152,6 +153,11 @@ function AccionesConSesion({
               <li>
                 <Link className={estilos.opcionDeSesion} to={RUTA_SERVICIOS}>
                   Mis servicios
+                </Link>
+              </li>
+              <li>
+                <Link className={estilos.opcionDeSesion} to={RUTA_SOLICITUDES}>
+                  Mis solicitudes
                 </Link>
               </li>
               <li>

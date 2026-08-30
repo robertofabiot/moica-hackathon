@@ -137,7 +137,7 @@ export default function PrestadorPublico() {
           role="status"
         >
           {admiteContratacion
-            ? 'Está disponible. Pedir el servicio llega en un próximo incremento; hoy no se revelan contactos.'
+            ? 'Está disponible. Puedes solicitar un servicio desde su detalle. Los contactos siguen ocultos hasta que acepte.'
             : 'No está disponible para contratar ahora. No se muestran contactos.'}
         </p>
 

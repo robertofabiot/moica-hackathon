@@ -23,9 +23,10 @@ public enum EstadoCuenta {
    * Indica si el estado impide usar la aplicación.
    *
    * <p>Las dos suspensiones bloquean la cuenta, así que su sesión no sirve para nada salvo
-   * consultarla y cerrarla. {@link #RESTRINGIDA_TEMPORAL} no bloquea: limita funciones concretas, y
-   * ninguna de las que existen hoy —cambiar la propia contraseña y administrar el propio segundo
-   * factor— tiene sentido limitar, porque son precisamente las que protegen la cuenta.
+   * consultarla y cerrarla. {@link #RESTRINGIDA_TEMPORAL} no bloquea: limita funciones concretas.
+   * Hoy puede consultar su historial de solicitudes y cancelar un compromiso existente, pero no
+   * crear, aceptar ni completar. Cambiar la contraseña y administrar el segundo factor siguen
+   * disponibles, porque son las que protegen la cuenta.
    *
    * <p>La expiración automática de una suspensión temporal no se resuelve aquí: la proyección la
    * actualiza la moderación cuando la medida vence (P10B). Este método lee el estado vigente, no lo

@@ -35,6 +35,7 @@ MOICA conecta a personas que necesitan contratar un servicio (mantenimiento, rep
 * **Verificacion en dos niveles** — identidad revisada por una persona antes de aparecer en la busqueda publica
 * **Portafolio propio** — el prestador elige que trabajos muestra, con sus imagenes y en el orden que decida
 * **Servicios y descubrimiento** — el prestador publica oficios; un visitante explora sin registrarse
+* **Solicitudes con historial** — el cliente pide, el prestador acepta o rechaza, y cada cambio queda registrado
 * **Calificaciones reales** — reputacion bidireccional y visible para todos
 * **Cero cobros iniciales** — sin membresia ni pago por contacto
 * **Sesiones seguras** — JWT + cookie `HttpOnly`, revocacion inmediata y proteccion CSRF
@@ -113,7 +114,9 @@ Perfil de prestador: catalogo territorial de Managua, perfil propio con tipo, mu
 
 Verificacion documental: el prestador presenta su expediente —JPEG, PNG o PDF, hasta 5 MB por archivo— en una sola operacion, y una persona administradora con segundo factor verificado lo toma, lo aprueba, lo rechaza con motivo o revoca una verificacion ya concedida. Los documentos viven en un bucket privado de R2; PostgreSQL guarda solo una clave opaca y sus metadatos, y el archivo se abre con un enlace temporal que caduca. El nivel del perfil —`SIN_VERIFICAR`, `VERIFICADO_BASICO` o `PROFESIONAL_VERIFICADO`— lo proyecta ese flujo y nadie mas.
 
-Servicios y descubrimiento: el prestador administra publicaciones e imagenes; un visitante explora sin autenticarse. Solo aparecen servicios `ACTIVO` de cuentas operativas, prestadores `DISPONIBLE` y perfiles con al menos verificacion basica. Un prestador `NO_DISPONIBLE` con verificacion basica conserva perfil y portafolio publicos, pero sin servicios listados y sin contratacion. La busqueda combina texto, categoria o subcategoria y municipio. Un precio nulo se muestra como «A convenir». Todavia no hay solicitudes, chat ni calificaciones: cada uno llega con su propio incremento del plan.
+Servicios y descubrimiento: el prestador administra publicaciones e imagenes; un visitante explora sin autenticarse. Solo aparecen servicios `ACTIVO` de cuentas operativas, prestadores `DISPONIBLE` y perfiles con al menos verificacion basica. Un prestador `NO_DISPONIBLE` con verificacion basica conserva perfil y portafolio publicos, pero sin servicios listados y sin contratacion. La busqueda combina texto, categoria o subcategoria y municipio. Un precio nulo se muestra como «A convenir».
+
+Solicitudes: un cliente autenticado con cuenta `ACTIVA` pide un servicio ajeno; el prestador con cuenta `ACTIVA` acepta o rechaza; cualquiera de los dos puede cancelar segun el estado; el prestador con cuenta `ACTIVA` marca como completada. Una cuenta restringida conserva la lectura y la cancelacion. Cada transicion queda en el historial. Los contactos siguen ocultos hasta el chat. Todavia no hay mensajes, calificaciones ni pagos.
 
 ## Licencia
 

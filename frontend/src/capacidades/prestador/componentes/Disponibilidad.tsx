@@ -7,8 +7,8 @@ import type { PerfilPrestador } from '../tipos';
 /**
  * Interruptor de disponibilidad.
  *
- * Estar no disponible no oculta el perfil: deja de aceptar solicitudes nuevas. Esa consecuencia
- * llegará con el incremento de solicitudes, así que aquí se explica sin prometer más.
+ * Estar no disponible no oculta el perfil: el backend rechaza solicitudes nuevas hacia sus
+ * servicios. El perfil y el portafolio siguen visibles.
  */
 export default function Disponibilidad({ perfil }: { perfil: PerfilPrestador }) {
   const cambio = useDisponibilidad();

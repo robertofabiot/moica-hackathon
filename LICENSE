@@ -1,21 +1,48 @@
-MIT License
-
+Licencia de código disponible para inspección
 Copyright (c) 2026 Nova Studios
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Moica no es software de código abierto (open source). El código se publica
+únicamente para que pueda verse e inspeccionarse.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+1. Permiso concedido
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Se concede a cualquier persona permiso, gratuito y no exclusivo, para:
+
+  a) ver, leer y estudiar el código fuente y la documentación de este
+     repositorio;
+  b) clonar el repositorio, o crear un fork en GitHub, con el único fin de
+     inspeccionarlo;
+  c) ejecutarlo en local solo para evaluarlo (por ejemplo un jurado o una
+     revisión académica), sin modificar el código.
+
+2. Lo que no se permite
+
+Sin autorización previa y por escrito de Nova Studios queda prohibido:
+
+  a) modificar el código o crear obras derivadas;
+  b) usar el software en producción o para prestar un servicio a terceros;
+  c) distribuir, sublicenciar, vender, alquilar o monetizar el software o
+     cualquier parte de él;
+  d) incorporar el código, o extractos de él, en otro producto.
+
+Un fork o un clon no amplían estos permisos: siguen limitados a la
+inspección y a la evaluación sin cambios.
+
+3. Dependencias de terceros
+
+Las bibliotecas y herramientas de las que depende Moica conservan sus
+propias licencias. Esta licencia cubre únicamente el código y la
+documentación originales de Nova Studios.
+
+4. Ausencia de garantía
+
+EL SOFTWARE SE ENTREGA «TAL CUAL», SIN GARANTÍAS DE NINGÚN TIPO, EXPRESAS
+O IMPLÍCITAS, INCLUIDAS LAS DE COMERCIABILIDAD, IDONEIDAD PARA UN FIN
+PARTICULAR Y NO INFRACCIÓN. EN NINGÚN CASO LOS AUTORES O LOS TITULARES
+DEL COPYRIGHT SERÁN RESPONSABLES DE RECLAMACIÓN, DAÑO U OTRA OBLIGACIÓN
+DERIVADA DEL SOFTWARE O DE SU USO.
+
+5. Permisos distintos
+
+Para cualquier uso no descrito en el apartado 1, hay que pedir permiso
+por escrito a Nova Studios, titulares del copyright.

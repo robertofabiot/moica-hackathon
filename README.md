@@ -7,7 +7,7 @@
 
 *Hackathon Nicaragua 2026 — Categoria Avanzado · Universidad Americana (UAM) · Equipo Nova Studios*
 
-[![Licencia: MIT](https://img.shields.io/badge/licencia-MIT-blue.svg)](LICENSE)
+[![Licencia: inspeccion](https://img.shields.io/badge/licencia-inspeccion-lightgrey.svg)](LICENSE)
 [![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)](backend/pom.xml)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0-6DB33F?logo=springboot&logoColor=white)](backend/pom.xml)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white)](frontend/package.json)
@@ -120,4 +120,7 @@ Solicitudes: un cliente autenticado con cuenta `ACTIVA` pide un servicio ajeno; 
 
 ## Licencia
 
-Este proyecto se distribuye bajo los terminos de la Licencia MIT. Para mas informacion, consulte el archivo [`LICENSE`](LICENSE).
+Moica no es codigo abierto. El codigo se publica para que pueda verse e
+inspeccionarse, no para modificarlo, distribuirlo ni usarlo con fines
+comerciales. El texto completo esta en [`LICENSE`](LICENSE). Las
+dependencias de terceros conservan sus propias licencias.

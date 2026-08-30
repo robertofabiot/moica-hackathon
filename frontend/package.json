@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "PWA mobile-first de Moica",
   "private": true,
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "engines": {
     "node": ">=22.12.0"

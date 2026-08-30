@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { Boton, Entrada } from '../../../comun/componentes/ui';
 import { ErrorDeApi } from '../api';
 import { esquemaDeCambioDeClave, type CamposDeCambioDeClave } from '../esquemas';
 import { useCambioDeClave } from '../hooks/useSeguridadCuenta';
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import seccion from '../paginas/seguridad.module.css';
+import estilos from '../paginas/seguridad.module.css';
 
 /**
  * Formulario de cambio de contraseña.
@@ -15,6 +15,7 @@ import seccion from '../paginas/seguridad.module.css';
  * el hook lleva de vuelta al inicio de sesión explicando por qué.
  */
 export default function CambioDeClave() {
+  const [editando, setEditando] = useState(false);
   const cambio = useCambioDeClave();
 
   const {
@@ -49,89 +50,94 @@ export default function CambioDeClave() {
     fallo instanceof ErrorDeApi && fallo.errores.length === 0 ? fallo.message : null;
 
   return (
-    <section className={seccion.seccion} aria-labelledby="titulo-contrasena">
-      <h2 className={seccion.tituloDeSeccion} id="titulo-contrasena">
-        Contraseña
-      </h2>
-      <p className={seccion.explicacion}>
-        Al cambiarla se cierran todas tus sesiones, también las de otros dispositivos. Tendrás que
-        volver a entrar.
-      </p>
-
-      {mensajeGeneral !== null && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
-          {mensajeGeneral}
-        </p>
-      )}
-
-      <form className={estilos.formulario} onSubmit={enviar} noValidate>
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="claveActual">
-            Contraseña actual
-          </label>
-          <input
-            id="claveActual"
-            className={claseDeEntrada(errors.claveActual !== undefined)}
-            type="password"
-            autoComplete="current-password"
-            aria-invalid={errors.claveActual !== undefined}
-            aria-describedby={errors.claveActual ? 'error-claveActual' : undefined}
-            {...register('claveActual')}
-          />
-          {errors.claveActual && (
-            <p className={estilos.error} id="error-claveActual">
-              {errors.claveActual.message}
-            </p>
-          )}
+    <section aria-labelledby="titulo-contrasena">
+      <div className={estilos.filaDeConfiguracion}>
+        <div className={estilos.datosDeFila}>
+          <h2 className={estilos.etiquetaDeFila} id="titulo-contrasena">
+            Contraseña
+          </h2>
+          <p className={estilos.valorDeFila}>********</p>
         </div>
-
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="claveNueva">
-            Contraseña nueva
-          </label>
-          <input
-            id="claveNueva"
-            className={claseDeEntrada(errors.claveNueva !== undefined)}
-            type="password"
-            autoComplete="new-password"
-            aria-invalid={errors.claveNueva !== undefined}
-            aria-describedby={errors.claveNueva ? 'error-claveNueva' : 'pista-claveNueva'}
-            {...register('claveNueva')}
-          />
-          <p className={estilos.pista} id="pista-claveNueva">
-            De 8 a 72 caracteres, con al menos una mayúscula, una minúscula, un número y un símbolo.
-          </p>
-          {errors.claveNueva && (
-            <p className={estilos.error} id="error-claveNueva">
-              {errors.claveNueva.message}
-            </p>
-          )}
-        </div>
-
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="confirmacionDeClave">
-            Repetir contraseña nueva
-          </label>
-          <input
-            id="confirmacionDeClave"
-            className={claseDeEntrada(errors.confirmacionDeClave !== undefined)}
-            type="password"
-            autoComplete="new-password"
-            aria-invalid={errors.confirmacionDeClave !== undefined}
-            aria-describedby={errors.confirmacionDeClave ? 'error-confirmacionDeClave' : undefined}
-            {...register('confirmacionDeClave')}
-          />
-          {errors.confirmacionDeClave && (
-            <p className={estilos.error} id="error-confirmacionDeClave">
-              {errors.confirmacionDeClave.message}
-            </p>
-          )}
-        </div>
-
-        <button className={estilos.boton} type="submit" disabled={cambio.isPending}>
-          {cambio.isPending ? 'Cambiando la contraseña…' : 'Cambiar contraseña'}
+        <button
+          type="button"
+          className={estilos.accionDeFila}
+          aria-expanded={editando}
+          aria-controls="formulario-cambio-clave"
+          onClick={() => setEditando((abierto) => !abierto)}
+        >
+          {editando ? 'Cancelar' : 'Cambiar'}
         </button>
-      </form>
+      </div>
+
+      {editando && (
+        <div className={estilos.seccionDeFormulario} id="formulario-cambio-clave">
+          <p className={estilos.explicacion}>
+            Al cambiarla se cierran todas tus sesiones, también las de otros dispositivos. Tendrás
+            que volver a entrar.
+          </p>
+
+          {mensajeGeneral !== null && (
+            <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+              {mensajeGeneral}
+            </p>
+          )}
+
+          <form className={estilos.formulario} onSubmit={enviar} noValidate>
+            <div className={estilos.campo}>
+              <label className={estilos.etiqueta} htmlFor="claveActual">
+                Contraseña actual
+              </label>
+              <Entrada
+                id="claveActual"
+                type="password"
+                autoComplete="current-password"
+                mensajeDeError={errors.claveActual?.message}
+                {...register('claveActual')}
+              />
+            </div>
+
+            <div className={estilos.campo}>
+              <label className={estilos.etiqueta} htmlFor="claveNueva">
+                Contraseña nueva
+              </label>
+              <Entrada
+                id="claveNueva"
+                type="password"
+                autoComplete="new-password"
+                aria-describedby="pista-claveNueva"
+                mensajeDeError={errors.claveNueva?.message}
+                {...register('claveNueva')}
+              />
+              <p className={estilos.pista} id="pista-claveNueva">
+                De 8 a 72 caracteres, con al menos una mayúscula, una minúscula, un número y un
+                símbolo.
+              </p>
+            </div>
+
+            <div className={estilos.campo}>
+              <label className={estilos.etiqueta} htmlFor="confirmacionDeClave">
+                Repetir contraseña nueva
+              </label>
+              <Entrada
+                id="confirmacionDeClave"
+                type="password"
+                autoComplete="new-password"
+                mensajeDeError={errors.confirmacionDeClave?.message}
+                {...register('confirmacionDeClave')}
+              />
+            </div>
+
+            <Boton
+              className={estilos.botonDeFormulario}
+              variante="primario"
+              type="submit"
+              disabled={cambio.isPending}
+            >
+              {cambio.isPending ? 'Cambiando la contraseña…' : 'Cambiar contraseña'}
+            </Boton>
+          </form>
+        </div>
+      )}
     </section>
   );
 }

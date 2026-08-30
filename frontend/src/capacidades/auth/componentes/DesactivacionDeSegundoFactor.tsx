@@ -1,12 +1,11 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
+import { Boton, Entrada } from '../../../comun/componentes/ui';
 import { ErrorDeApi } from '../api';
 import { esquemaDeDesactivacion, type CamposDeDesactivacion } from '../esquemas';
 import { useDesactivacionDeSegundoFactor } from '../hooks/useSeguridadCuenta';
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import seccion from '../paginas/seguridad.module.css';
+import estilos from '../paginas/seguridad.module.css';
 
 /**
  * Desactivación del segundo factor.
@@ -32,7 +31,7 @@ export default function DesactivacionDeSegundoFactor() {
   const fallo = desactivacion.error;
 
   return (
-    <div className={seccion.acciones}>
+    <div className={estilos.acciones}>
       <p className={estilos.pista}>
         Al desactivarlo se cierran todas tus sesiones y tu cuenta vuelve a protegerse solo con la
         contraseña.
@@ -49,46 +48,37 @@ export default function DesactivacionDeSegundoFactor() {
           <label className={estilos.etiqueta} htmlFor="claveActualParaDesactivar">
             Contraseña actual
           </label>
-          <input
+          <Entrada
             id="claveActualParaDesactivar"
-            className={claseDeEntrada(errors.claveActual !== undefined)}
             type="password"
             autoComplete="current-password"
-            aria-invalid={errors.claveActual !== undefined}
-            aria-describedby={errors.claveActual ? 'error-claveActualParaDesactivar' : undefined}
+            mensajeDeError={errors.claveActual?.message}
             {...register('claveActual')}
           />
-          {errors.claveActual && (
-            <p className={estilos.error} id="error-claveActualParaDesactivar">
-              {errors.claveActual.message}
-            </p>
-          )}
         </div>
 
         <div className={estilos.campo}>
           <label className={estilos.etiqueta} htmlFor="codigoParaDesactivar">
             Código de verificación
           </label>
-          <input
+          <Entrada
             id="codigoParaDesactivar"
-            className={claseDeEntrada(errors.codigo !== undefined)}
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            aria-invalid={errors.codigo !== undefined}
-            aria-describedby={errors.codigo ? 'error-codigoParaDesactivar' : undefined}
+            mensajeDeError={errors.codigo?.message}
             {...register('codigo')}
           />
-          {errors.codigo && (
-            <p className={estilos.error} id="error-codigoParaDesactivar">
-              {errors.codigo.message}
-            </p>
-          )}
         </div>
 
-        <button className={estilos.boton} type="submit" disabled={desactivacion.isPending}>
+        <Boton
+          className={`${estilos.botonDeFormulario} ${estilos.botonDestructivo}`}
+          variante="contorno"
+          type="submit"
+          disabled={desactivacion.isPending}
+        >
           {desactivacion.isPending ? 'Desactivando…' : 'Desactivar el segundo factor'}
-        </button>
+        </Boton>
       </form>
     </div>
   );

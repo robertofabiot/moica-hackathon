@@ -20,7 +20,7 @@
   <licenses>
     <license>
       <name>Licencia de código disponible para inspección</name>
-      <url>https://github.com/robertofabiot/moica-hackathon/blob/develop/LICENSE</url>
+      <url>https://github.com/robertofabiot/moica-hackathon/blob/HEAD/LICENSE</url>
       <distribution>manual</distribution>
       <comments>Source-available. No es open source. El texto vinculante está en LICENSE en la raíz del repositorio.</comments>
     </license>

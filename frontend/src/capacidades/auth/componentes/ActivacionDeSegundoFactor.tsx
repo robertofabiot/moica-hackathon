@@ -3,15 +3,14 @@ import { QRCodeSVG } from 'qrcode.react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
+import { Boton, Entrada } from '../../../comun/componentes/ui';
 import { ErrorDeApi } from '../api';
 import { esquemaDeCodigoTotp, type CamposDeCodigoTotp } from '../esquemas';
 import {
   useActivacionDeSegundoFactor,
   useConfirmacionDeSegundoFactor,
 } from '../hooks/useSeguridadCuenta';
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import seccion from '../paginas/seguridad.module.css';
+import estilos from '../paginas/seguridad.module.css';
 
 /**
  * Activación del segundo factor, en sus dos pasos.
@@ -48,20 +47,21 @@ export default function ActivacionDeSegundoFactor() {
 
   if (!activacion.data) {
     return (
-      <div className={seccion.acciones}>
+      <div className={estilos.acciones}>
         {activacion.error instanceof ErrorDeApi && (
           <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
             {activacion.error.message}
           </p>
         )}
-        <button
-          className={estilos.boton}
+        <Boton
+          className={estilos.botonDeFormulario}
+          variante="primario"
           type="button"
           onClick={() => activacion.mutate()}
           disabled={activacion.isPending}
         >
           {activacion.isPending ? 'Preparando la activación…' : 'Activar el segundo factor'}
-        </button>
+        </Boton>
       </div>
     );
   }
@@ -70,8 +70,8 @@ export default function ActivacionDeSegundoFactor() {
   const falloAlConfirmar = confirmacion.error;
 
   return (
-    <div className={seccion.acciones}>
-      <ol className={seccion.pasos}>
+    <div className={estilos.acciones}>
+      <ol className={estilos.pasos}>
         <li>Abre tu aplicación autenticadora y agrega una cuenta nueva.</li>
         <li>Escanea el código o escribe la clave a mano.</li>
         <li>
@@ -80,7 +80,7 @@ export default function ActivacionDeSegundoFactor() {
         </li>
       </ol>
 
-      <div className={seccion.codigoQr}>
+      <div className={estilos.codigoQr}>
         <QRCodeSVG
           value={datos.uriDeConfiguracion}
           size={192}
@@ -92,7 +92,7 @@ export default function ActivacionDeSegundoFactor() {
         <span className={estilos.etiqueta} id="etiqueta-clave-manual">
           Clave para escribir a mano
         </span>
-        <p className={seccion.claveManual} aria-labelledby="etiqueta-clave-manual">
+        <p className={estilos.claveManual} aria-labelledby="etiqueta-clave-manual">
           {datos.claveManual}
         </p>
         <p className={estilos.pista}>
@@ -112,26 +112,24 @@ export default function ActivacionDeSegundoFactor() {
           <label className={estilos.etiqueta} htmlFor="codigo">
             Código de verificación
           </label>
-          <input
+          <Entrada
             id="codigo"
-            className={claseDeEntrada(errors.codigo !== undefined)}
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            aria-invalid={errors.codigo !== undefined}
-            aria-describedby={errors.codigo ? 'error-codigo' : undefined}
+            mensajeDeError={errors.codigo?.message}
             {...register('codigo')}
           />
-          {errors.codigo && (
-            <p className={estilos.error} id="error-codigo">
-              {errors.codigo.message}
-            </p>
-          )}
         </div>
 
-        <button className={estilos.boton} type="submit" disabled={confirmacion.isPending}>
+        <Boton
+          className={estilos.botonDeFormulario}
+          variante="primario"
+          type="submit"
+          disabled={confirmacion.isPending}
+        >
           {confirmacion.isPending ? 'Comprobando el código…' : 'Confirmar activación'}
-        </button>
+        </Boton>
       </form>
     </div>
   );

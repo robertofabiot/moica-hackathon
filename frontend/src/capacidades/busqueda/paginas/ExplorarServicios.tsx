@@ -1,9 +1,13 @@
-import { useEffect, useMemo, useState, type SVGProps } from 'react';
+import { useEffect, useMemo, useRef, useState, type SVGProps } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
 import logoHorizontal from '../../../assets/logos/moica-horizontal.png';
 import logoIcono from '../../../assets/logos/moica-icono.svg';
-import { RUTA_INICIO_SESION, useSesionActual } from '../../auth';
+import { RUTA_ADMIN } from '../../admin';
+import { RUTA_INICIO_SESION, RUTA_SEGURIDAD, useCierreSesion, useSesionActual } from '../../auth';
+import { RUTA_PRESTADOR } from '../../prestador';
+import { RUTA_SERVICIOS } from '../../servicio';
+import { RUTA_SOLICITUDES } from '../../solicitud';
 import { ErrorDeApi } from '../../../comun/api';
 import { Boton, Entrada, IconoLupa, IconoPin, PieDePagina } from '../../../comun/componentes/ui';
 import FiltrosPublicos from '../componentes/FiltrosPublicos';
@@ -242,21 +246,121 @@ function BarraDeExploracion({
           <IconoCampana />
           <span className={propios.puntoDeAviso} aria-hidden="true" />
         </button>
-        {inicial === null ? (
+        {usuario === undefined || inicial === null ? (
           <Link className={propios.avatar} to={RUTA_INICIO_SESION} aria-label="Iniciar sesión">
             <IconoUsuario />
           </Link>
         ) : (
-          <Link
-            className={propios.avatar}
-            to="/"
-            aria-label={`Cuenta de ${usuario?.nombreCompleto ?? ''}`}
-          >
-            {inicial}
-          </Link>
+          <MenuUsuarioAvatar usuario={usuario} inicial={inicial} />
         )}
       </div>
     </header>
+  );
+}
+
+function MenuUsuarioAvatar({
+  usuario,
+  inicial,
+}: {
+  usuario: { nombreCompleto: string; esAdministrador?: boolean };
+  inicial: string;
+}) {
+  const [abierto, setAbierto] = useState(false);
+  const cierre = useCierreSesion();
+  const contenedorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function manejarClicFuera(evento: MouseEvent) {
+      if (contenedorRef.current && !contenedorRef.current.contains(evento.target as Node)) {
+        setAbierto(false);
+      }
+    }
+    if (abierto) {
+      document.addEventListener('mousedown', manejarClicFuera);
+    }
+    return () => {
+      document.removeEventListener('mousedown', manejarClicFuera);
+    };
+  }, [abierto]);
+
+  return (
+    <div ref={contenedorRef} className={propios.menuUsuarioContenedor}>
+      <button
+        type="button"
+        className={propios.avatarBoton}
+        aria-expanded={abierto}
+        aria-haspopup="true"
+        aria-label={`Cuenta de ${usuario.nombreCompleto}`}
+        onClick={() => setAbierto((prev) => !prev)}
+      >
+        {inicial}
+      </button>
+
+      {abierto && (
+        <ul className={propios.panelDeSesion} role="menu">
+          <li>
+            <Link
+              className={propios.opcionDeSesion}
+              to={RUTA_PRESTADOR}
+              onClick={() => setAbierto(false)}
+            >
+              Mi perfil de prestador
+            </Link>
+          </li>
+          <li>
+            <Link
+              className={propios.opcionDeSesion}
+              to={RUTA_SERVICIOS}
+              onClick={() => setAbierto(false)}
+            >
+              Mis servicios
+            </Link>
+          </li>
+          <li>
+            <Link
+              className={propios.opcionDeSesion}
+              to={RUTA_SOLICITUDES}
+              onClick={() => setAbierto(false)}
+            >
+              Mis solicitudes
+            </Link>
+          </li>
+          <li>
+            <Link
+              className={propios.opcionDeSesion}
+              to={RUTA_SEGURIDAD}
+              onClick={() => setAbierto(false)}
+            >
+              Seguridad de la cuenta
+            </Link>
+          </li>
+          {usuario.esAdministrador && (
+            <li>
+              <Link
+                className={propios.opcionDeSesion}
+                to={RUTA_ADMIN}
+                onClick={() => setAbierto(false)}
+              >
+                Área administrativa
+              </Link>
+            </li>
+          )}
+          <li>
+            <button
+              type="button"
+              className={propios.opcionDeSesion}
+              onClick={() => {
+                setAbierto(false);
+                cierre.solicitarCierre();
+              }}
+              disabled={cierre.isPending}
+            >
+              {cierre.isPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
+            </button>
+          </li>
+        </ul>
+      )}
+    </div>
   );
 }
 

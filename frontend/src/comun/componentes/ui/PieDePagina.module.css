@@ -39,11 +39,10 @@
 
 .logotipo {
   display: block;
-  height: 3.5rem;
+  height: 2.5rem;
   width: auto;
   max-width: none;
-  /* El lockup bn es oscuro: se invierte para leerse sobre el verde petróleo. */
-  filter: brightness(0) invert(1);
+  object-fit: contain;
 }
 
 .lema {

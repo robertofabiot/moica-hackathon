@@ -1,7 +1,7 @@
 import { useState, type ReactNode, type SVGProps } from 'react';
 import { Link } from 'react-router';
 
-import logoBn from '../../../assets/logos/moica-bn.svg';
+import logoHorizontalBlanco from '../../../assets/logos/moica-horizontal-blanco.png';
 import estilos from './PieDePagina.module.css';
 
 const COLUMNAS_DE_ENLACES = [
@@ -54,7 +54,7 @@ export function PieDePagina() {
         <div className={estilos.superior}>
           <div className={estilos.lockup}>
             <Link className={estilos.marca} to="/" aria-label="Moica, ir al inicio">
-              <img className={estilos.logotipo} src={logoBn} alt="" />
+              <img className={estilos.logotipo} src={logoHorizontalBlanco} alt="" />
             </Link>
             <p className={estilos.lema}>
               La confianza se construye entre todos. Únete a la comunidad.

@@ -51,3 +51,18 @@ export interface DatosDeContratacion {
   indicacionUbicacion: string;
   fechaPreferida: string | null;
 }
+
+export interface MensajeSolicitud {
+  idMensajeSolicitud: number;
+  idSolicitudServicio: number;
+  idRemitente: number;
+  nombreRemitente: string;
+  contenido: string;
+  fechaEnvio: string;
+}
+
+export interface ContactoRevelado {
+  idMedioContactoPrestador: number;
+  contenido: string;
+  ordenVisualizacion: number;
+}

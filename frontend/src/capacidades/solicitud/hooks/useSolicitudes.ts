@@ -46,12 +46,28 @@ export function useSolicitudesRecibidas() {
   });
 }
 
+/**
+ * Cada cuánto se vuelve a pedir el detalle mientras la solicitud sigue abierta.
+ *
+ * Veinte segundos, cuatro veces más espaciado que el hilo: aquí no se persigue una conversación,
+ * sino enterarse de que la contraparte aceptó, canceló o completó. Sin esto, quien tiene la
+ * pantalla abierta seguiría viendo el estado viejo —y el chat habilitado o no— hasta recargar a
+ * mano toda la aplicación.
+ */
+export const INTERVALO_DE_DETALLE_MS = 20_000;
+
 export function useSolicitud(idSolicitud: number | undefined) {
   return useQuery({
     queryKey: claveDeSolicitud(idSolicitud ?? 0),
     queryFn: () => obtenerSolicitud(idSolicitud as number),
     enabled: idSolicitud !== undefined,
     retry: false,
+    // Un estado definitivo ya no cambia: ahí el temporizador se apaga solo.
+    refetchInterval: (consulta) => {
+      const estado = consulta.state.data?.estadoActual;
+      return estado === 'PENDIENTE' || estado === 'ACEPTADA' ? INTERVALO_DE_DETALLE_MS : false;
+    },
+    refetchIntervalInBackground: false,
   });
 }
 

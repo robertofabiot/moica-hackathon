@@ -1,4 +1,4 @@
-import { useState, type SVGProps } from 'react';
+import { useEffect, useState, type SVGProps } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
 import logoHorizontal from '../../../assets/logos/moica-horizontal.png';
@@ -60,20 +60,29 @@ export default function ExplorarServicios() {
   const [borrador, setBorrador] = useState<FiltrosDeBusqueda>(aplicados);
   const resultados = useServiciosPublicos(aplicados);
 
-  function aplicar(siguientes: FiltrosDeBusqueda = borrador) {
-    setBorrador(siguientes);
-    setParametros(parametrosDesdeFiltros(siguientes), { replace: true });
+  useEffect(() => {
+    setBorrador(filtrosDesdeParametros(parametros));
+  }, [parametros]);
+
+  function aplicar(siguientes?: FiltrosDeBusqueda) {
+    const destino = siguientes ?? borrador;
+    setBorrador(destino);
+    setParametros(parametrosDesdeFiltros(destino), { replace: true });
   }
 
   return (
     <div className={propios.paginaExplorar}>
-      <BarraDeExploracion filtros={borrador} onCambiar={setBorrador} onAplicar={() => aplicar()} />
+      <BarraDeExploracion
+        filtros={borrador}
+        onCambiar={setBorrador}
+        onAplicar={(siguientes) => aplicar(siguientes)}
+      />
 
       <div className={propios.cuerpoExplorar}>
         <FiltrosPublicos
           filtros={borrador}
           onCambiar={setBorrador}
-          onAplicar={(siguientes) => aplicar(siguientes ?? borrador)}
+          onAplicar={(siguientes) => aplicar(siguientes)}
           onLimpiar={() => {
             setBorrador(FILTROS_VACIOS);
             setParametros({}, { replace: true });
@@ -134,7 +143,7 @@ function BarraDeExploracion({
 }: {
   filtros: FiltrosDeBusqueda;
   onCambiar: (filtros: FiltrosDeBusqueda) => void;
-  onAplicar: () => void;
+  onAplicar: (siguientes?: FiltrosDeBusqueda) => void;
 }) {
   const sesion = useSesionActual();
   const departamentos = useDepartamentosPublicos();
@@ -153,7 +162,7 @@ function BarraDeExploracion({
         role="search"
         onSubmit={(evento) => {
           evento.preventDefault();
-          onAplicar();
+          onAplicar(filtros);
         }}
       >
         <div className={propios.campoDeBusqueda}>
@@ -177,7 +186,11 @@ function BarraDeExploracion({
             className={propios.selectDeCiudad}
             aria-label="Ciudad"
             value={filtros.idMunicipio}
-            onChange={(evento) => onCambiar({ ...filtros, idMunicipio: evento.target.value })}
+            onChange={(evento) => {
+              const siguientes = { ...filtros, idMunicipio: evento.target.value };
+              onCambiar(siguientes);
+              onAplicar(siguientes);
+            }}
           >
             <option value="">Managua, NIC</option>
             {(departamentos.data ?? []).flatMap((departamento) =>

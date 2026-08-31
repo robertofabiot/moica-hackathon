@@ -279,7 +279,7 @@
   flex-direction: column;
   gap: var(--gap-lg);
   width: 100%;
-  max-width: 80rem;
+  max-width: 96rem;
   margin: 0 auto;
   padding: var(--gap-lg) var(--gap-md) var(--gap-2xl);
 }
@@ -358,13 +358,31 @@
 }
 
 @media (min-width: 64rem) {
+  .barraSuperior {
+    padding-inline: var(--gap-2xl);
+  }
+
   .cuerpoExplorar {
     grid-template-columns: 16.5rem minmax(0, 1fr);
+    gap: var(--gap-2xl);
     padding-inline: var(--gap-2xl);
   }
 
   .tituloDeResultados {
     font-size: var(--font-size-2xl);
+  }
+}
+
+@media (min-width: 90rem) {
+  .barraSuperior {
+    padding-inline: 3rem;
+  }
+
+  .cuerpoExplorar {
+    max-width: 105rem;
+    grid-template-columns: 17.5rem minmax(0, 1fr);
+    gap: 3rem;
+    padding-inline: 3rem;
   }
 }
 

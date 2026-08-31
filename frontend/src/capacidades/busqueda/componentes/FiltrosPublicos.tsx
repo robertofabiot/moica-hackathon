@@ -63,12 +63,15 @@ export default function FiltrosPublicos({
   const catalogo = categorias.data ?? [];
 
   function elegirCategoria(clave: (typeof CATEGORIAS_VISUALES)[number]['clave']) {
+    const idCat = clave === 'mas' ? '' : idCatalogoDe(clave, catalogo);
+    const siguienteId = filtros.idCategoria === idCat ? '' : idCat;
     const siguientes: FiltrosDeBusqueda = {
       ...filtros,
-      idCategoria: clave === 'mas' ? '' : idCatalogoDe(clave, catalogo),
+      idCategoria: siguienteId,
       idSubcategoria: '',
     };
     onCambiar(siguientes);
+    onAplicar(siguientes);
   }
 
   function verTodas() {
@@ -127,9 +130,13 @@ export default function FiltrosPublicos({
             id="filtro-municipio"
             className={propios.desplegable}
             value={filtros.idMunicipio}
-            onChange={(evento) => onCambiar({ ...filtros, idMunicipio: evento.target.value })}
+            onChange={(evento) => {
+              const siguientes = { ...filtros, idMunicipio: evento.target.value };
+              onCambiar(siguientes);
+              onAplicar(siguientes);
+            }}
           >
-            <option value="">Managua, NIC</option>
+            <option value="">Todos los municipios</option>
             {(departamentos.data ?? []).flatMap((departamento) =>
               departamento.municipios.map((municipio) => (
                 <option key={municipio.idMunicipio} value={municipio.idMunicipio}>

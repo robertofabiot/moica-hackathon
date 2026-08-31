@@ -7,7 +7,7 @@ completa con `V11__crear_administrador_y_segundo_factor.sql`, P4 abre el rango
 de territorio, perfiles y portafolio con `V20`–`V23` y P4V abre el de
 verificación documental con `V30`. P5 abre servicios y catálogos de oficio con
 `V31` y carga la taxonomía de demostración con `V90`. P6 abre el ciclo de
-solicitudes con `V40`.
+solicitudes con `V40` y P7 suma sus mensajes con `V41`.
 
 ## Reglas
 
@@ -59,4 +59,5 @@ adelantado un rango que todavía no hace falta.
 | `V30__crear_solicitudes_y_documentos_de_verificacion.sql` | P4V | Tablas `solicitud_verificacion_prestador` y `documento_verificacion_prestador`, el índice parcial `uq_solicitud_verificacion_abierta` y los índices por prestador, por estado y por solicitud |
 | `V31__crear_categorias_y_servicios_publicados.sql` | P5 | Tablas `categoria_servicio`, `subcategoria_servicio`, `servicio_publicado` e `imagen_servicio_publicado`, con dominio `ACTIVO`/`INACTIVO`, precio opcional `numeric(12,2)` y los índices de propiedad, listado y filtros públicos |
 | `V40__crear_solicitudes_e_historial_de_estados.sql` | P6 | Tablas `solicitud_servicio` y `cambio_estado_solicitud`, dominio `PENDIENTE`/`ACEPTADA`/`RECHAZADA`/`CANCELADA`/`COMPLETADA`, transición inicial con `estado_anterior` nulo e índices de bandeja, propiedad, estado e historial |
+| `V41__crear_mensajes_de_solicitud.sql` | P7 | Tabla `mensaje_solicitud`, con FK `RESTRICT` hacia `solicitud_servicio` y `usuario`, la restricción `ck_mensaje_solicitud_contenido` que rechaza un mensaje en blanco y el índice `ix_mensaje_solicitud_id_solicitud` para leer el hilo en orden estable. Sin tabla `conversacion` |
 | `V90__cargar_taxonomia_de_demostracion.sql` | P5 | Tres categorías de demostración —hogar, belleza y tecnología— con tres subcategorías cada una. No es una taxonomía exhaustiva |

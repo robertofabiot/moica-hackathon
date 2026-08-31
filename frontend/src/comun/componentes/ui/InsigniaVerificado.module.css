@@ -1,0 +1,41 @@
+/*
+ * Insignia de verificado. Solo tokens de `src/estilos/global.css`.
+ */
+
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  padding: 0.125rem var(--gap-sm) 0.125rem 0.125rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-500);
+  font-family: var(--font-family-primary);
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+.sello {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background-color: var(--color-success-500);
+  color: var(--color-neutral-0);
+}
+
+.sello svg {
+  display: block;
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.etiqueta {
+  padding-right: 0.125rem;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-secondary-700);
+}

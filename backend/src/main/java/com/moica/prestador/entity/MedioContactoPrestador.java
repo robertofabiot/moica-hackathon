@@ -16,8 +16,9 @@ import java.time.OffsetDateTime;
  * El contenido es una entrada libre —número, correo, usuario, enlace o indicación escrita— que
  * Moica no clasifica por plataforma (definición 5.4).
  *
- * <p>En P4 solo lo consulta y administra su propietario: para terceros permanece oculto hasta que
- * exista una solicitud aceptada, regla que aplicará el incremento de solicitudes.
+ * <p>Solo lo consulta y administra su propietario. Para un tercero permanece oculto salvo que sea
+ * el cliente de una solicitud que el prestador aceptó: esa revelación la resuelve la capacidad
+ * {@code chat}, que pide las entradas a {@code MedioContactoService} después de autorizar.
  */
 @Entity
 @Table(name = "medio_contacto_prestador")

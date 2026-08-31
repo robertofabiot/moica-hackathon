@@ -37,6 +37,7 @@ MOICA conecta a personas que necesitan contratar un servicio (mantenimiento, rep
 * **Portafolio propio** — el prestador elige que trabajos muestra, con sus imagenes y en el orden que decida
 * **Servicios y descubrimiento** — el prestador publica oficios; un visitante explora sin registrarse
 * **Solicitudes con historial** — el cliente pide, el prestador acepta o rechaza, y cada cambio queda registrado
+* **Chat y contactos tras aceptar** — mensajes de texto entre los dos participantes y revelacion controlada de los contactos externos
 * **Calificaciones reales** — reputacion bidireccional y visible para todos
 * **Cero cobros iniciales** — sin membresia ni pago por contacto
 * **Sesiones seguras** — JWT + cookie `HttpOnly`, revocacion inmediata y proteccion CSRF
@@ -131,7 +132,9 @@ Verificacion documental: el prestador presenta su expediente —JPEG, PNG o PDF,
 
 Servicios y descubrimiento: el prestador administra publicaciones e imagenes; un visitante explora sin autenticarse. Solo aparecen servicios `ACTIVO` de cuentas operativas, prestadores `DISPONIBLE` y perfiles con al menos verificacion basica. Un prestador `NO_DISPONIBLE` con verificacion basica conserva perfil y portafolio publicos, pero sin servicios listados y sin contratacion. La busqueda combina texto, categoria o subcategoria y municipio. Un precio nulo se muestra como «A convenir».
 
-Solicitudes: un cliente autenticado con cuenta `ACTIVA` pide un servicio ajeno; el prestador con cuenta `ACTIVA` acepta o rechaza; cualquiera de los dos puede cancelar segun el estado; el prestador con cuenta `ACTIVA` marca como completada. Una cuenta restringida conserva la lectura y la cancelacion. Cada transicion queda en el historial. Los contactos siguen ocultos hasta el chat. Todavia no hay mensajes, calificaciones ni pagos.
+Solicitudes: un cliente autenticado con cuenta `ACTIVA` pide un servicio ajeno; el prestador con cuenta `ACTIVA` acepta o rechaza; cualquiera de los dos puede cancelar segun el estado; el prestador con cuenta `ACTIVA` marca como completada. Una cuenta restringida conserva la lectura y la cancelacion. Cada transicion queda en el historial.
+
+Chat y contactos: aceptar una solicitud abre un hilo de mensajes de texto entre sus dos participantes y revela al cliente los medios de contacto externos del prestador. El hilo es la solicitud, sin entidad contenedora: se lee mientras la solicitud haya llegado a estar aceptada y solo admite mensajes nuevos mientras siga `ACEPTADA`; al cancelar o completar, el historial queda en solo lectura y los contactos ya revelados no vuelven a ocultarse. Una cancelacion desde `PENDIENTE` nunca abre hilo. Una cuenta restringida lee, pero no escribe. Un tercero recibe 404 y no puede confirmar que el hilo exista; el prestador tampoco recibe la revelacion de contactos, que pertenece al cliente. La interfaz se actualiza por short polling, sin WebSockets. El chat es solo de texto: sin imagenes, audios, archivos, edicion, reacciones ni cifrado de extremo a extremo. Todavia no hay calificaciones, pagos ni mapas.
 
 ## Licencia
 

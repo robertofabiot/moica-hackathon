@@ -6,8 +6,8 @@ import java.time.OffsetDateTime;
 /**
  * Vista de un medio de contacto para su propietario.
  *
- * <p>En P4 nadie más lo recibe: para terceros los contactos permanecen ocultos hasta que exista una
- * solicitud aceptada.
+ * <p>Nadie más lo recibe. Al cliente de una solicitud aceptada se le entrega {@link
+ * ContactoRevelado}, que es más corto: la revelación no necesita saber cuándo se creó la entrada.
  */
 public record DatosDeMedioContacto(
     Long idMedioContactoPrestador,

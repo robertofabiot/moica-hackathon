@@ -72,6 +72,9 @@ Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy
 | `POST /api/solicitudes/{id}/rechazo` | El prestador destinatario rechaza una pendiente | Sesion plena con cuenta `ACTIVA` |
 | `POST /api/solicitudes/{id}/cancelacion` | Cancela segun actor y estado; motivo si esta `ACEPTADA` | Sesion plena |
 | `POST /api/solicitudes/{id}/completado` | El prestador destinatario marca una aceptada como completada | Sesion plena con cuenta `ACTIVA` |
+| `GET /api/solicitudes/{id}/mensajes` | Hilo de mensajes de la solicitud, en orden cronologico | Sesion plena; solo los dos participantes, y solo si llego a estar `ACEPTADA` |
+| `POST /api/solicitudes/{id}/mensajes` | Agrega un mensaje al hilo | Sesion plena con cuenta `ACTIVA`; solo los dos participantes y solo mientras esta `ACEPTADA` |
+| `GET /api/solicitudes/{id}/contactos` | Contactos externos del prestador revelados por la aceptacion | Sesion plena; **solo el cliente** participante, y solo si llego a estar `ACEPTADA` |
 | `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
 
 **Sesion plena** es la que no esta pendiente del segundo factor y pertenece a una cuenta que no esta
@@ -250,9 +253,10 @@ verificacion basica, cuenta `ACTIVA` y —para listar un servicio— prestador
 ### Contactos
 
 Entradas libres —un numero, un correo, un usuario o un enlace—, sin
-clasificacion por plataforma. En P4 **solo los ve y los administra su
-propietario**; se revelaran a un cliente cuando exista una solicitud aceptada,
-en el incremento que las implemente.
+clasificacion por plataforma. Aqui **solo los ve y los administra su
+propietario**. A un cliente se le revelan por
+`GET /api/solicitudes/{id}/contactos` cuando el prestador acepta su solicitud;
+esta ruta no cambia.
 
 ### Orden
 
@@ -364,8 +368,9 @@ presenta como exhaustiva.
 
 El ciclo de contratacion opera sobre la sesion. Las acciones son explicitas
 —aceptar, rechazar, cancelar, completar— y no un cambio generico de estado. No
-hay `DELETE`. El chat, la revelacion de contactos y las calificaciones no
-viven aqui.
+hay `DELETE`. Las calificaciones no viven aqui. El chat y la revelacion de
+contactos cuelgan de la solicitud, pero en su propia superficie autorizada: ver
+«Chat y contactos de una solicitud».
 
 ### Quien puede que
 
@@ -443,6 +448,103 @@ incremento del chat.
 la mas reciente a la mas antigua. El detalle incluye el historial
 cronologico. Ningun cuerpo lleva `correoElectronico`, contactos externos,
 documentos, hashes, secretos TOTP ni claves de almacenamiento.
+
+Aceptar habilita el hilo de mensajes y la revelacion de contactos, pero ninguno
+de los dos viaja en estos cuerpos: viven en su propia superficie autorizada, la
+de la seccion siguiente.
+
+## Chat y contactos de una solicitud
+
+El hilo es la solicitud: no hay recurso `conversacion` ni identificador de hilo.
+Cada mensaje cuelga de `/api/solicitudes/{id}`, y el estado del chat se deriva
+del estado de esa solicitud. Solo hay leer y escribir: **no existe `PUT`,
+`PATCH` ni `DELETE`** de un mensaje. Tampoco imagenes, audios, archivos,
+reacciones ni confirmaciones de lectura.
+
+La actualizacion es por **short polling** desde el navegador —cinco segundos el
+hilo, veinte el detalle—. El MVP no usa WebSockets.
+
+### Cuando existe el hilo
+
+El estado vigente no basta para saberlo. Una solicitud `CANCELADA` puede venir
+de `PENDIENTE`, y entonces nunca hubo hilo, o de `ACEPTADA`, y entonces su
+historial queda visible en solo lectura. Lo que decide es si la solicitud
+**llego a estar `ACEPTADA` alguna vez**, cosa que solo sabe su historial de
+cambios.
+
+| Estado de la solicitud | Leer el hilo | Enviar | Contactos externos |
+|---|---|---|---|
+| `PENDIENTE` | 409 `CHAT_NO_HABILITADO` | 409 `CHAT_NO_HABILITADO` | 409 `CONTACTOS_NO_REVELADOS` |
+| `ACEPTADA` | Los dos participantes | Los dos, con cuenta `ACTIVA` | Solo el cliente participante |
+| `RECHAZADA` | 409 `CHAT_NO_HABILITADO` | 409 `CHAT_NO_HABILITADO` | 409 `CONTACTOS_NO_REVELADOS` |
+| `CANCELADA` desde `PENDIENTE` | 409 `CHAT_NO_HABILITADO` | 409 `CHAT_NO_HABILITADO` | 409 `CONTACTOS_NO_REVELADOS` |
+| `CANCELADA` tras `ACEPTADA` | Los dos, solo lectura | 409 `CHAT_SOLO_LECTURA` | Sigue revelado al cliente |
+| `COMPLETADA` | Los dos, solo lectura | 409 `CHAT_SOLO_LECTURA` | Sigue revelado al cliente |
+
+Cancelar o completar **no vuelve a ocultar** los contactos: el compromiso
+existio. Y ni la disponibilidad del prestador ni una revocacion posterior de su
+verificacion cierran un hilo ya abierto; eso dejaria un compromiso aceptado sin
+forma de coordinarse.
+
+### Quien puede que
+
+Un tercero recibe **404 `RECURSO_NO_ENCONTRADO`** en las tres rutas, igual que
+en el resto de recursos propios: no puede confirmar que el hilo, los mensajes o
+los contactos existan.
+
+En `/contactos` el **prestador tambien recibe 404**. La revelacion es un recurso
+del cliente; el prestador administra sus propios medios en
+`GET /api/prestador/contactos`. Asi esa ruta responde 200 a una sola persona.
+
+Una cuenta `RESTRINGIDA_TEMPORAL` **lee** el hilo y conserva la revelacion, pero
+al enviar recibe 403 `CUENTA_RESTRINGIDA`. Una cuenta suspendida no llega:
+la cadena responde 403 `ACCESO_DENEGADO`.
+
+### Enviar un mensaje
+
+`POST /api/solicitudes/{id}/mensajes` con el cuerpo `MensajeAEnviar`:
+
+| Campo | Obligatorio | Limite |
+|---|---|---|
+| `contenido` | Si | Texto, maximo 2000 caracteres de aplicacion |
+
+El diccionario modela `contenido` como `TEXT` sin maximo; los 2000 caracteres
+son un limite de la aplicacion, como en el resto de textos libres de Moica. El
+contenido se recorta antes de validarlo, de modo que un mensaje de espacios
+queda vacio y responde 400 `VALIDACION`. La base lo respalda con
+`ck_mensaje_solicitud_contenido`.
+
+**El remitente sale siempre de la sesion.** El cuerpo no lo lleva y un
+`idRemitente` enviado por el navegador se ignora: escribir en nombre de otra
+persona no es una peticion que se pueda formular.
+
+La respuesta es 201 con el mensaje creado: identificador, solicitud, remitente,
+su `nombreCompleto` —el mismo que ya viaja en el historial—, contenido e
+instante. Nunca correo, estado de cuenta ni datos administrativos.
+
+El envio **bloquea la fila de la solicitud** antes de comprobar su estado y no
+la suelta hasta confirmar. Por eso solo hay dos desenlaces posibles cuando
+alguien escribe justo mientras la solicitud se cierra: o el mensaje queda
+confirmado antes de la transicion, o la transicion gana y el envio responde 409.
+Nunca aparece un mensaje con instante posterior al cierre.
+
+### Leer el hilo
+
+`GET /api/solicitudes/{id}/mensajes` devuelve la lista completa ordenada por
+`fechaEnvio` y, a igualdad de instante, por `idMensajeSolicitud`: el orden es
+estable entre dos lecturas.
+
+### Contactos revelados
+
+`GET /api/solicitudes/{id}/contactos` devuelve las entradas libres que el
+prestador configuro como `MedioContactoPrestador`, en su orden de
+visualizacion. **Una lista vacia es una respuesta legitima:** significa que el
+prestador no publico ningun contacto, no que falte permiso.
+
+Solo se revelan esas entradas. Nunca el correo de la cuenta ni ningun dato
+tomado de la autenticacion. No existe ninguna ruta para consultar los contactos
+de un prestador cualquiera, y el descubrimiento publico, el perfil publico, las
+bandejas y el detalle de la solicitud siguen sin llevarlos.
 
 ## Verificacion documental del prestador
 
@@ -626,4 +728,4 @@ Todos los errores comparten cuerpo. El detalle por campo solo aparece cuando el 
 }
 ```
 
-Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ADMITIDO`, `DOCUMENTO_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ENCONTRADO`, `EXPEDIENTE_INCOMPLETO`, `SOLICITUD_ABIERTA_DUPLICADA`, `SOLICITUD_NO_ENCONTRADA`, `SOLICITUD_YA_TOMADA`, `NIVEL_YA_VIGENTE`, `VERIFICACION_BASICA_REQUERIDA`, `TRANSICION_NO_PERMITIDA`, `REVISION_DE_OTRO_ADMINISTRADOR`, `SERVICIO_PROPIO`, `SERVICIO_INACTIVO`, `PRESTADOR_NO_DISPONIBLE`, `MOTIVO_OBLIGATORIO`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento, URL prefirmadas ni valores internos.
+Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ADMITIDO`, `DOCUMENTO_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ENCONTRADO`, `EXPEDIENTE_INCOMPLETO`, `SOLICITUD_ABIERTA_DUPLICADA`, `SOLICITUD_NO_ENCONTRADA`, `SOLICITUD_YA_TOMADA`, `NIVEL_YA_VIGENTE`, `VERIFICACION_BASICA_REQUERIDA`, `TRANSICION_NO_PERMITIDA`, `REVISION_DE_OTRO_ADMINISTRADOR`, `SERVICIO_PROPIO`, `SERVICIO_INACTIVO`, `PRESTADOR_NO_DISPONIBLE`, `MOTIVO_OBLIGATORIO`, `CHAT_NO_HABILITADO`, `CHAT_SOLO_LECTURA`, `CONTACTOS_NO_REVELADOS`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento, URL prefirmadas ni valores internos.

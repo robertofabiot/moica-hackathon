@@ -22,8 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * Los medios de contacto del prestador de la sesión.
  *
- * <p>En P4 solo existen para su propietario: la consulta por terceros llega con las solicitudes
- * aceptadas de incrementos posteriores.
+ * <p>Aquí solo los ve y los administra su propietario. A un cliente se le revelan por {@code GET
+ * /api/solicitudes/{id}/contactos} cuando el prestador acepta su solicitud; esa es otra superficie,
+ * con su propia autorización, y estas rutas no cambian.
  */
 @RestController
 @RequestMapping("/api/prestador/contactos")

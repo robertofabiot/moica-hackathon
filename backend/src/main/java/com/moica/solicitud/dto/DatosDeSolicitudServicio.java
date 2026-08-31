@@ -10,7 +10,9 @@ import java.util.List;
  * Detalle de una solicitud para sus dos participantes.
  *
  * <p>Incluye la ubicación escrita y el historial cronológico. No lleva correos, contactos externos,
- * documentos ni secretos: aceptar deja el estado listo para revelarlos en un incremento posterior.
+ * documentos ni secretos: los contactos que revela la aceptación viajan por su propia superficie
+ * autorizada, {@code GET /api/solicitudes/{id}/contactos}, y no por aquí. El historial es además lo
+ * que permite saber si la solicitud llegó a estar aceptada y, por tanto, si tiene hilo.
  */
 public record DatosDeSolicitudServicio(
     Long idSolicitudServicio,

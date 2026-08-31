@@ -193,8 +193,8 @@ function BarraDeExploracion({
             variante="fusionada"
             type="search"
             autoComplete="off"
-            aria-label="Qué buscas"
-            placeholder="¿Qué servicio necesitas?"
+            aria-label="Buscar servicios"
+            placeholder="Buscar servicios..."
             value={filtros.texto}
             onChange={(evento) => onCambiar({ ...filtros, texto: evento.target.value })}
             icono={<IconoLupa />}
@@ -225,8 +225,11 @@ function BarraDeExploracion({
             )}
           </select>
         </div>
-        <Boton type="submit" forma="pildora">
-          Buscar
+        <Boton type="submit" forma="pildora" className={propios.botonBuscar} aria-label="Buscar">
+          <span className={propios.textoBuscar}>Buscar</span>
+          <span className={propios.iconoBuscar} aria-hidden="true">
+            <IconoLupa />
+          </span>
         </Boton>
       </form>
 

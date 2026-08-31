@@ -126,8 +126,8 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: var(--gap-sm);
-  padding: var(--gap-sm) var(--gap-md);
+  gap: var(--gap-xs);
+  padding: 0.5rem var(--gap-sm);
   background-color: var(--color-neutral-0);
   border-bottom: var(--border-width-xs) solid var(--color-neutral-200);
 }
@@ -141,7 +141,7 @@
 
 .logoIcono {
   display: block;
-  height: 2.25rem;
+  height: 2rem;
   width: auto;
 }
 
@@ -157,7 +157,7 @@
   align-items: center;
   gap: var(--gap-xs);
   min-width: 0;
-  padding: var(--gap-xs) var(--gap-xs) var(--gap-xs) var(--gap-md);
+  padding: 0.2rem 0.25rem 0.2rem var(--gap-sm);
   border: var(--border-width-xs) solid var(--color-neutral-200);
   border-radius: var(--radius-full);
   background-color: var(--color-neutral-0);
@@ -165,8 +165,37 @@
 }
 
 .campoDeBusqueda {
-  flex: 1 1 6rem;
+  flex: 1 1 auto;
   min-width: 0;
+}
+
+.botonBuscar {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2.125rem !important;
+  height: 2.125rem !important;
+  min-width: 2.125rem !important;
+  padding: 0 !important;
+  border-radius: var(--radius-full) !important;
+}
+
+.textoBuscar {
+  display: none;
+}
+
+.iconoBuscar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+.iconoBuscar svg {
+  display: block;
+  width: 1.125rem;
+  height: 1.125rem;
 }
 
 .divisorDePildora {
@@ -324,7 +353,7 @@
 @media (min-width: 48rem) {
   .barraSuperior {
     gap: var(--gap-md);
-    padding-inline: var(--gap-xl);
+    padding: var(--gap-sm) var(--gap-xl);
   }
 
   .logoIcono {
@@ -333,6 +362,29 @@
 
   .logoCompleto {
     display: block;
+  }
+
+  .pildoraDeBusqueda {
+    padding: var(--gap-xs) var(--gap-xs) var(--gap-xs) var(--gap-md);
+  }
+
+  .campoDeBusqueda {
+    flex: 1 1 6rem;
+  }
+
+  .botonBuscar {
+    width: auto !important;
+    height: auto !important;
+    min-width: auto !important;
+    padding: var(--gap-sm) var(--gap-xl) !important;
+  }
+
+  .textoBuscar {
+    display: inline;
+  }
+
+  .iconoBuscar {
+    display: none;
   }
 
   .divisorDePildora,

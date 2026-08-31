@@ -8,5 +8,18 @@ export { Boton, type FormaDeBoton, type VarianteDeBoton } from './Boton';
 export { Entrada, type VarianteDeEntrada } from './Entrada';
 export { EstrellasCalificacion } from './EstrellasCalificacion';
 export { IconoCasa, IconoLupa, IconoPin } from './iconos';
+export {
+  IconoBelleza,
+  IconoConstruccion,
+  IconoDeCategoria,
+  IconoEducacion,
+  IconoEventos,
+  IconoHogar,
+  IconoMasCategorias,
+  IconoTecnologia,
+  IconoTransporte,
+  identificadorDeCategoriaVisual,
+  type IdentificadorDeCategoriaVisual,
+} from './iconosDeCategorias';
 export { InsigniaVerificado } from './InsigniaVerificado';
 export { PieDePagina } from './PieDePagina';

@@ -1,0 +1,228 @@
+/*
+ * Pie de página institucional. Solo tokens de `src/estilos/global.css`.
+ * Mobile-first: columnas apiladas; desde 48rem, cuadrícula horizontal.
+ */
+
+.pie {
+  background-color: var(--color-secondary-700);
+  color: var(--color-neutral-0);
+}
+
+.interior {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xl);
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--gap-xl) var(--gap-lg);
+}
+
+.superior {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xl);
+}
+
+.lockup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--gap-md);
+  max-width: 22rem;
+}
+
+.marca {
+  display: flex;
+  text-decoration: none;
+  color: inherit;
+}
+
+.logotipo {
+  display: block;
+  height: 2.5rem;
+  width: auto;
+  max-width: none;
+  object-fit: contain;
+}
+
+.lema {
+  margin: 0;
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  line-height: 1.45;
+  color: var(--color-neutral-0);
+}
+
+.columnas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.columna {
+  margin: 0;
+  border: none;
+  border-bottom: var(--border-width-xs) solid
+    color-mix(in srgb, var(--color-neutral-0) 15%, transparent);
+}
+
+.columna:last-child {
+  border-bottom: none;
+}
+
+.titulo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0;
+  padding-block: var(--gap-md);
+  list-style: none;
+  cursor: pointer;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-0);
+}
+
+.titulo::-webkit-details-marker {
+  display: none;
+}
+
+.titulo::after {
+  content: '';
+  width: 0.45rem;
+  height: 0.45rem;
+  flex-shrink: 0;
+  border-right: var(--border-width-sm) solid currentColor;
+  border-bottom: var(--border-width-sm) solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+}
+
+.columna[open] .titulo::after {
+  transform: rotate(-135deg);
+  translate: 0 0.2rem;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin: 0;
+  padding: 0 0 var(--gap-md);
+  list-style: none;
+}
+
+.enlace {
+  color: var(--color-neutral-0);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  text-decoration: none;
+  opacity: 0.85;
+}
+
+.enlace:hover {
+  opacity: 1;
+}
+
+.redes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+  margin: 0;
+  padding: 0 0 var(--gap-md);
+  list-style: none;
+}
+
+.redSocial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: var(--border-width-xs) solid color-mix(in srgb, var(--color-neutral-0) 15%, transparent);
+  border-radius: var(--radius-full);
+  color: var(--color-neutral-0);
+  opacity: 0.85;
+}
+
+.redSocial:hover {
+  opacity: 1;
+}
+
+.redSocial svg {
+  display: block;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.divisor {
+  width: 100%;
+  height: 0;
+  margin: 0;
+  border: none;
+  border-top: var(--border-width-xs) solid
+    color-mix(in srgb, var(--color-neutral-0) 15%, transparent);
+}
+
+.derechos {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-neutral-0);
+  opacity: 0.85;
+}
+
+@media (min-width: 48rem) {
+  .interior {
+    gap: var(--gap-2xl);
+    padding: var(--gap-3xl) var(--gap-2xl);
+  }
+
+  .superior {
+    display: grid;
+    grid-template-columns: minmax(14rem, 1.4fr) minmax(0, 3.6fr);
+    gap: var(--gap-2xl);
+    align-items: start;
+  }
+
+  .columnas {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--gap-xl);
+  }
+
+  .columna {
+    border-bottom: none;
+  }
+
+  .titulo {
+    padding-block: 0;
+    padding-bottom: var(--gap-md);
+    cursor: default;
+    pointer-events: none;
+  }
+
+  .titulo::after {
+    display: none;
+  }
+
+  /*
+   * En escritorio las columnas siempre se ven: el acordeón es solo de teléfono.
+   * `::details-content` abre el panel aunque el disclosure nativo esté cerrado.
+   */
+  .columna::details-content {
+    display: block;
+    content-visibility: visible;
+  }
+
+  .lista,
+  .redes {
+    padding-bottom: 0;
+  }
+}

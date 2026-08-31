@@ -1,0 +1,31 @@
+/*
+ * Calificación por estrellas. Solo tokens de `src/estilos/global.css`.
+ */
+
+.estrellas {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  font-family: var(--font-family-primary);
+  line-height: 1.2;
+}
+
+.icono {
+  display: block;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  color: var(--color-warning-500);
+}
+
+.puntuacion {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+}
+
+.resenas {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-neutral-600);
+}

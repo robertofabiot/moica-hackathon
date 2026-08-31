@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -95,12 +95,15 @@ describe('estado de acceso en la pantalla de inicio', () => {
     expect(screen.getByPlaceholderText('¿Qué servicio necesitas?')).toBeVisible();
     expect(screen.getByDisplayValue('Managua, NIC')).toBeVisible();
     expect(screen.getByRole('heading', { name: 'Categorías populares' })).toBeVisible();
-    expect(screen.getByText('Hogar')).toBeVisible();
-    expect(screen.getByText('Construcción')).toBeVisible();
-    expect(screen.getByText('Transporte')).toBeVisible();
-    expect(screen.getByText('Tecnología')).toBeVisible();
-    expect(screen.getByText('Eventos')).toBeVisible();
-    expect(screen.getByText('Más')).toBeVisible();
+    const categorias = within(screen.getByRole('region', { name: 'Categorías populares' }));
+    expect(categorias.getByText('Hogar')).toBeVisible();
+    expect(categorias.getByText('Construcción')).toBeVisible();
+    expect(categorias.getByText('Transporte')).toBeVisible();
+    expect(categorias.getByText('Tecnología')).toBeVisible();
+    expect(categorias.getByText('Eventos')).toBeVisible();
+    expect(categorias.getByText('Más')).toBeVisible();
+    expect(screen.getByRole('contentinfo')).toBeVisible();
+    expect(screen.getByText('© 2026 Moica. Todos los derechos reservados.')).toBeVisible();
   });
 
   it('saluda a quien tiene la sesión iniciada y le ofrece cerrarla', async () => {

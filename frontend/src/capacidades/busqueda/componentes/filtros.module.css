@@ -1,11 +1,169 @@
-.formulario {
+/*
+ * Barra de categorías y filtros de exploración. Solo tokens de
+ * `src/estilos/global.css`. Mobile-first: las categorías se deslizan en fila
+ * hasta 48rem, cuando pasan a columna.
+ */
+
+.barra {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-2);
+  gap: var(--gap-lg);
+  min-width: 0;
 }
 
-.acciones {
+.seccion {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--moica-espacio-1);
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.encabezadoDeSeccion {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+}
+
+.tituloDeSeccion {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+}
+
+.verTodas {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary-500);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.verTodas:hover {
+  color: var(--color-primary-700);
+}
+
+.listaDeCategorias {
+  display: flex;
+  flex-direction: row;
+  gap: var(--gap-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.listaDeCategorias::-webkit-scrollbar {
+  display: none;
+}
+
+.botonCategoria {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  width: max-content;
+  padding: var(--gap-sm) var(--gap-md);
+  border: none;
+  border-radius: var(--radius-md);
+  background-color: transparent;
+  color: var(--color-neutral-800);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.2;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.botonCategoria:hover {
+  background-color: var(--color-neutral-100);
+}
+
+.botonCategoriaActivo {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.botonCategoriaActivo:hover {
+  background-color: var(--color-primary-50);
+}
+
+.iconoDeCategoria {
+  display: flex;
+  flex-shrink: 0;
+  color: inherit;
+}
+
+.iconoDeCategoria svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.etiqueta {
+  color: var(--color-neutral-800);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.desplegable {
+  width: 100%;
+  padding: var(--gap-sm) 2.25rem var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--gap-sm) center;
+  background-size: 1rem;
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-base);
+  appearance: none;
+  cursor: pointer;
+}
+
+.desplegable:hover {
+  border-color: var(--color-neutral-600);
+}
+
+.quitar {
+  align-self: flex-start;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-neutral-600);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.quitar:hover {
+  color: var(--color-primary-700);
+}
+
+@media (min-width: 48rem) {
+  .listaDeCategorias {
+    flex-direction: column;
+    overflow-x: visible;
+  }
+
+  .botonCategoria {
+    width: 100%;
+  }
 }

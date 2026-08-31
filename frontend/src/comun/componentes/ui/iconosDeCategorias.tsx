@@ -132,7 +132,7 @@ const ICONOS: Record<IdentificadorDeCategoriaVisual, () => ReactElement> = {
 /**
  * Elige el icono temático a partir del nombre de categoría que envía el catálogo.
  */
-export function identificadorDeCategoriaVisual(nombre: string): IdentificadorDeCategoriaVisual {
+function identificadorDeCategoriaVisual(nombre: string): IdentificadorDeCategoriaVisual {
   const normalizado = nombre.toLowerCase();
   if (normalizado.includes('hogar')) {
     return 'hogar';
@@ -158,11 +158,7 @@ export function identificadorDeCategoriaVisual(nombre: string): IdentificadorDeC
   return 'mas';
 }
 
-export function IconoDeCategoria({
-  identificador,
-}: {
-  identificador: IdentificadorDeCategoriaVisual;
-}) {
-  const Icono = ICONOS[identificador];
+export function IconoDeCategoria({ nombreCategoria }: { nombreCategoria: string }) {
+  const Icono = ICONOS[identificadorDeCategoriaVisual(nombreCategoria)];
   return <Icono />;
 }

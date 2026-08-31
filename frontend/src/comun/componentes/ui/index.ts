@@ -18,8 +18,6 @@ export {
   IconoMasCategorias,
   IconoTecnologia,
   IconoTransporte,
-  identificadorDeCategoriaVisual,
-  type IdentificadorDeCategoriaVisual,
 } from './iconosDeCategorias';
 export { InsigniaVerificado } from './InsigniaVerificado';
 export { PieDePagina } from './PieDePagina';

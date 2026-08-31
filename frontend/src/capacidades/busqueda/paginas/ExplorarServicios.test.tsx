@@ -86,8 +86,8 @@ describe('Explorar servicios', () => {
 
     expect(await screen.findByRole('heading', { name: 'Reparación de fugas' })).toBeVisible();
     expect(screen.getByText('A convenir')).toBeVisible();
-    expect(screen.getByText('C$ 450.00')).toBeVisible();
-    expect(screen.getAllByText('Verificado Básico').length).toBeGreaterThan(0);
+    expect(screen.getByText('C$450')).toBeVisible();
+    expect(screen.getAllByText('Verificado').length).toBeGreaterThan(0);
     expect(screen.queryByText(/@moica\.test/)).not.toBeInTheDocument();
     expect(screen.queryByText(/correo/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/teléfono/i)).not.toBeInTheDocument();
@@ -114,10 +114,10 @@ describe('Explorar servicios', () => {
     expect(api.ultima('GET /api/servicios')).toBeDefined();
   });
 
-  it('combina texto, categoría, subcategoría y municipio al buscar', async () => {
+  it('combina texto, categoría y municipio al buscar', async () => {
     const persona = userEvent.setup();
     api.responder('GET /api/servicios', { estado: 200, cuerpo: [] });
-    api.responder('GET /api/servicios?texto=fuga&idCategoria=1&idSubcategoria=1&idMunicipio=3', {
+    api.responder('GET /api/servicios?texto=fuga&idCategoria=1&idMunicipio=3', {
       estado: 200,
       cuerpo: [servicioPublicoDeEjemplo()],
     });
@@ -126,15 +126,12 @@ describe('Explorar servicios', () => {
     await screen.findByText(/No hay servicios que coincidan/);
 
     await persona.type(screen.getByLabelText('Qué buscas'), 'fuga');
-    await persona.selectOptions(screen.getByLabelText('Categoría'), '1');
-    await persona.selectOptions(screen.getByLabelText('Subcategoría'), '1');
-    await persona.selectOptions(screen.getByLabelText('Municipio'), '3');
+    await persona.click(screen.getByRole('button', { name: 'Hogar' }));
+    await persona.selectOptions(screen.getByLabelText('Ubicación'), '3');
     await persona.click(screen.getByRole('button', { name: 'Buscar' }));
 
     expect(await screen.findByRole('heading', { name: 'Reparación de fugas' })).toBeVisible();
-    expect(
-      api.ultima('GET /api/servicios?texto=fuga&idCategoria=1&idSubcategoria=1&idMunicipio=3')
-    ).toBeDefined();
+    expect(api.ultima('GET /api/servicios?texto=fuga&idCategoria=1&idMunicipio=3')).toBeDefined();
   });
 
   it('abre el detalle con la advertencia de la insignia', async () => {

@@ -3,7 +3,6 @@ import { Link } from 'react-router';
 import {
   EstrellasCalificacion,
   IconoDeCategoria,
-  identificadorDeCategoriaVisual,
   InsigniaVerificado,
 } from '../../../comun/componentes/ui';
 import { CALIFICACION_DE_MUESTRA, precioEnTarjeta, RESENAS_DE_MUESTRA } from '../presentacion';
@@ -22,9 +21,7 @@ export default function TarjetaDeServicio({ servicio }: { servicio: ResumenPubli
         {servicio.imagenPrincipal === null ? (
           <div className={estilos.sinImagen}>
             <span className={estilos.iconoDeRespaldo}>
-              <IconoDeCategoria
-                identificador={identificadorDeCategoriaVisual(servicio.nombreCategoria)}
-              />
+              <IconoDeCategoria nombreCategoria={servicio.nombreCategoria} />
             </span>
           </div>
         ) : (

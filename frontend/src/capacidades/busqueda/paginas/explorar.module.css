@@ -103,13 +103,268 @@
   color: var(--moica-texto-suave);
 }
 
+.avisoDeError {
+  border-left-color: var(--color-error-500);
+}
+
+/*
+ * Layout definitivo de `/explorar`: barra superior, sidebar y pie.
+ * Las clases de arriba siguen sirviendo al detalle y al perfil público.
+ */
+
+.paginaExplorar {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background-color: var(--color-neutral-50);
+}
+
+.barraSuperior {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--gap-sm);
+  padding: var(--gap-sm) var(--gap-md);
+  background-color: var(--color-neutral-0);
+  border-bottom: var(--border-width-xs) solid var(--color-neutral-200);
+}
+
+.marca {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logoIcono {
+  display: block;
+  height: 2.25rem;
+  width: auto;
+}
+
+.logoCompleto {
+  display: none;
+  height: 2.25rem;
+  width: auto;
+  max-width: none;
+}
+
+.pildoraDeBusqueda {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  min-width: 0;
+  padding: var(--gap-xs) var(--gap-xs) var(--gap-xs) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-0);
+  box-shadow: var(--shadow-sm);
+}
+
+.campoDeBusqueda {
+  flex: 1 1 6rem;
+  min-width: 0;
+}
+
+.divisorDePildora {
+  display: none;
+  width: var(--border-width-xs);
+  height: 1.5rem;
+  flex-shrink: 0;
+  background-color: var(--color-neutral-200);
+}
+
+.campoDeCiudad {
+  display: none;
+  align-items: center;
+  gap: var(--gap-xs);
+  flex: 0 1 9rem;
+  min-width: 0;
+  color: var(--color-neutral-400);
+}
+
+.iconoDeCiudad {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.iconoDeCiudad svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.selectDeCiudad {
+  flex: 1;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background-color: transparent;
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.accionesDeBarra {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+}
+
+.botonIcono {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: var(--color-neutral-600);
+  cursor: pointer;
+}
+
+.botonIcono:hover {
+  color: var(--color-primary-700);
+  background-color: var(--color-primary-50);
+}
+
+.botonIcono svg {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.puntoDeAviso {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.5rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-error-500);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-700);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+.avatar svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.cuerpoExplorar {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: var(--gap-lg) var(--gap-md) var(--gap-2xl);
+}
+
+.principalExplorar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  min-width: 0;
+}
+
+.encabezadoDeResultados {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.tituloDeResultados {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.estado,
+.vacio {
+  color: var(--color-neutral-600);
+}
+
+.reintentar {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary-700);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 @media (min-width: 48rem) {
+  .barraSuperior {
+    gap: var(--gap-md);
+    padding-inline: var(--gap-xl);
+  }
+
+  .logoIcono {
+    display: none;
+  }
+
+  .logoCompleto {
+    display: block;
+  }
+
+  .divisorDePildora,
+  .campoDeCiudad {
+    display: flex;
+  }
+
+  .cuerpoExplorar {
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    gap: var(--gap-xl);
+    align-items: start;
+    padding-inline: var(--gap-xl);
+  }
+
   .contenido {
     max-width: 46rem;
   }
 
   .galeria {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 64rem) {
+  .cuerpoExplorar {
+    grid-template-columns: 16.5rem minmax(0, 1fr);
+    padding-inline: var(--gap-2xl);
+  }
+
+  .tituloDeResultados {
+    font-size: var(--font-size-2xl);
   }
 }
 

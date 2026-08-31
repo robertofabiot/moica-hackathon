@@ -3,8 +3,14 @@
  */
 
 .pagina {
+  display: flex;
+  flex-direction: column;
   min-height: 100dvh;
   background-color: var(--color-neutral-50);
+}
+
+.principal {
+  flex: 1 0 auto;
 }
 
 .hero {

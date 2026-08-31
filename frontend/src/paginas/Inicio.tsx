@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router';
 
 import { RUTA_EXPLORAR } from '../capacidades/busqueda';
-import { Boton, Entrada, IconoLupa, IconoPin } from '../comun/componentes/ui';
+import { Boton, Entrada, IconoLupa, IconoPin, PieDePagina } from '../comun/componentes/ui';
 import { EncabezadoDeInicio } from './EncabezadoDeInicio';
 import estilos from './Inicio.module.css';
 
@@ -25,11 +25,12 @@ export default function Inicio() {
   return (
     <div className={estilos.pagina}>
       <EncabezadoDeInicio />
-      <main>
+      <main className={estilos.principal}>
         <SeccionHero />
         <hr className={estilos.divisorDeSeccion} />
         <SeccionCategorias />
       </main>
+      <PieDePagina />
     </div>
   );
 }

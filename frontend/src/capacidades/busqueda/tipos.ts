@@ -84,6 +84,7 @@ export interface FiltrosDeBusqueda {
   idCategoria: string;
   idSubcategoria: string;
   idMunicipio: string;
+  precioMaximo?: string;
 }
 
 export interface DepartamentoPublico {

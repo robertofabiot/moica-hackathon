@@ -1,4 +1,4 @@
-import { useEffect, useState, type SVGProps } from 'react';
+import { useEffect, useMemo, useState, type SVGProps } from 'react';
 import { Link, useSearchParams } from 'react-router';
 
 import logoHorizontal from '../../../assets/logos/moica-horizontal.png';
@@ -18,6 +18,7 @@ const FILTROS_VACIOS: FiltrosDeBusqueda = {
   idCategoria: '',
   idSubcategoria: '',
   idMunicipio: '',
+  precioMaximo: '',
 };
 
 function filtrosDesdeParametros(params: URLSearchParams): FiltrosDeBusqueda {
@@ -26,6 +27,7 @@ function filtrosDesdeParametros(params: URLSearchParams): FiltrosDeBusqueda {
     idCategoria: params.get('idCategoria') ?? '',
     idSubcategoria: params.get('idSubcategoria') ?? '',
     idMunicipio: params.get('idMunicipio') ?? '',
+    precioMaximo: params.get('precioMaximo') ?? '',
   };
 }
 
@@ -43,6 +45,9 @@ function parametrosDesdeFiltros(filtros: FiltrosDeBusqueda): Record<string, stri
   }
   if (filtros.idMunicipio !== '') {
     parametros.idMunicipio = filtros.idMunicipio;
+  }
+  if (filtros.precioMaximo && filtros.precioMaximo !== '' && filtros.precioMaximo !== 'cualquiera') {
+    parametros.precioMaximo = filtros.precioMaximo;
   }
   return parametros;
 }
@@ -63,6 +68,24 @@ export default function ExplorarServicios() {
   useEffect(() => {
     setBorrador(filtrosDesdeParametros(parametros));
   }, [parametros]);
+
+  const serviciosFiltrados = useMemo(() => {
+    const todos = resultados.data ?? [];
+    if (
+      !aplicados.precioMaximo ||
+      aplicados.precioMaximo === '' ||
+      aplicados.precioMaximo === 'cualquiera'
+    ) {
+      return todos;
+    }
+    const tope = Number(aplicados.precioMaximo);
+    if (Number.isNaN(tope)) {
+      return todos;
+    }
+    return todos.filter(
+      (servicio) => servicio.precioReferencia !== null && Number(servicio.precioReferencia) <= tope
+    );
+  }, [resultados.data, aplicados.precioMaximo]);
 
   function aplicar(siguientes?: FiltrosDeBusqueda) {
     const destino = siguientes ?? borrador;
@@ -115,15 +138,15 @@ export default function ExplorarServicios() {
             </p>
           )}
 
-          {resultados.data !== undefined && resultados.data.length === 0 && (
+          {resultados.data !== undefined && serviciosFiltrados.length === 0 && (
             <p className={propios.vacio}>
               No hay servicios que coincidan con esos filtros. Prueba otra combinación.
             </p>
           )}
 
-          {resultados.data !== undefined && resultados.data.length > 0 && (
+          {serviciosFiltrados.length > 0 && (
             <ul className={lista.lista}>
-              {resultados.data.map((servicio) => (
+              {serviciosFiltrados.map((servicio) => (
                 <TarjetaDeServicio key={servicio.idServicioPublicado} servicio={servicio} />
               ))}
             </ul>

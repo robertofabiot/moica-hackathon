@@ -151,7 +151,17 @@ export default function FiltrosPublicos({
           <label className={propios.etiqueta} htmlFor="filtro-precio">
             Precio
           </label>
-          <select id="filtro-precio" className={propios.desplegable} defaultValue="cualquiera">
+          <select
+            id="filtro-precio"
+            className={propios.desplegable}
+            value={filtros.precioMaximo ?? 'cualquiera'}
+            onChange={(evento) => {
+              const valor = evento.target.value;
+              const siguientes = { ...filtros, precioMaximo: valor === 'cualquiera' ? '' : valor };
+              onCambiar(siguientes);
+              onAplicar(siguientes);
+            }}
+          >
             {RANGOS_DE_PRECIO.map((rango) => (
               <option key={rango.valor} value={rango.valor}>
                 {rango.etiqueta}

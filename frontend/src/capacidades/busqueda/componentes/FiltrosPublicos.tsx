@@ -62,9 +62,19 @@ export default function FiltrosPublicos({
   const departamentos = useDepartamentosPublicos();
   const catalogo = categorias.data ?? [];
 
-  function elegirCategoria(clave: (typeof CATEGORIAS_VISUALES)[number]['clave']) {
-    const idCat = clave === 'mas' ? '' : idCatalogoDe(clave, catalogo);
-    const siguienteId = filtros.idCategoria === idCat ? '' : idCat;
+  function elegirCategoria(categoria: (typeof CATEGORIAS_VISUALES)[number]) {
+    if (categoria.clave === 'mas') {
+      const siguientes: FiltrosDeBusqueda = { ...filtros, idCategoria: '', idSubcategoria: '' };
+      onCambiar(siguientes);
+      onAplicar(siguientes);
+      return;
+    }
+
+    const idCat = idCatalogoDe(categoria.clave, catalogo);
+    const valorCategoria = idCat !== '' ? idCat : categoria.clave;
+    const activa = categoriaEstaActiva(categoria.clave, filtros.idCategoria, catalogo);
+    const siguienteId = activa ? '' : valorCategoria;
+
     const siguientes: FiltrosDeBusqueda = {
       ...filtros,
       idCategoria: siguienteId,
@@ -104,7 +114,7 @@ export default function FiltrosPublicos({
                     activa ? propios.botonCategoriaActivo : undefined
                   )}
                   aria-pressed={activa}
-                  onClick={() => elegirCategoria(categoria.clave)}
+                  onClick={() => elegirCategoria(categoria)}
                 >
                   <span className={propios.iconoDeCategoria}>
                     <categoria.Icono />
@@ -178,6 +188,13 @@ export default function FiltrosPublicos({
   );
 }
 
+function normalizarTexto(texto: string): string {
+  return texto
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
 function idCatalogoDe(
   clave: (typeof CATEGORIAS_VISUALES)[number]['clave'],
   catalogo: CategoriaPublica[]
@@ -186,7 +203,9 @@ function idCatalogoDe(
   if (definicion === undefined || definicion.patron === null) {
     return '';
   }
-  const coincidencia = catalogo.find((categoria) => definicion.patron.test(categoria.nombre));
+  const coincidencia = catalogo.find((categoria) =>
+    definicion.patron.test(normalizarTexto(categoria.nombre))
+  );
   return coincidencia === undefined ? '' : String(coincidencia.idCategoriaServicio);
 }
 
@@ -195,10 +214,14 @@ function categoriaEstaActiva(
   idCategoria: string,
   catalogo: CategoriaPublica[]
 ): boolean {
-  if (clave === 'mas' || idCategoria === '') {
+  if (clave === 'mas' || !idCategoria) {
     return false;
   }
-  return idCatalogoDe(clave, catalogo) === idCategoria;
+  if (idCategoria === clave) {
+    return true;
+  }
+  const id = idCatalogoDe(clave, catalogo);
+  return id !== '' && id === idCategoria;
 }
 
 function unirClases(...partes: Array<string | undefined>): string {

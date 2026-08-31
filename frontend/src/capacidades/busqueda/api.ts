@@ -16,7 +16,11 @@ export async function buscarServiciosPublicos(
     parametros.set('texto', filtros.texto.trim());
   }
   if (filtros.idCategoria !== '') {
-    parametros.set('idCategoria', filtros.idCategoria);
+    if (/^\d+$/.test(filtros.idCategoria)) {
+      parametros.set('idCategoria', filtros.idCategoria);
+    } else {
+      parametros.set('idCategoria', '9999');
+    }
   }
   if (filtros.idSubcategoria !== '') {
     parametros.set('idSubcategoria', filtros.idSubcategoria);

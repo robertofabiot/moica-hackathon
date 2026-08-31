@@ -1,4 +1,4 @@
-import { useId, useState, type FormEvent } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 
 import { useSesionActual } from '../../auth';
 import { ErrorDeApi } from '../../../comun/api';
@@ -42,6 +42,18 @@ export default function ChatDeSolicitud({ solicitud }: { solicitud: DatosDeSolic
   const envio = useEnvioDeMensaje(solicitud.idSolicitudServicio);
   const [borrador, setBorrador] = useState('');
   const idDelCampo = useId();
+  const contenedorDelHilo = useRef<HTMLDivElement>(null);
+  const totalDeMensajes = mensajes.data?.length ?? 0;
+
+  // Un chat se lee por el final. El hilo tiene su propio desplazamiento, así que
+  // sin esto se abriría en el mensaje más antiguo y lo recién llegado quedaría
+  // fuera de vista, justo lo que el short polling viene a traer.
+  useEffect(() => {
+    const nodo = contenedorDelHilo.current;
+    if (nodo !== null) {
+      nodo.scrollTop = nodo.scrollHeight;
+    }
+  }, [totalDeMensajes]);
 
   if (!habilitado) {
     return null;
@@ -97,6 +109,7 @@ export default function ChatDeSolicitud({ solicitud }: { solicitud: DatosDeSolic
 
       {hilo !== undefined && hilo.length > 0 ? (
         <div
+          ref={contenedorDelHilo}
           className={chat.hilo}
           role="log"
           aria-live="polite"

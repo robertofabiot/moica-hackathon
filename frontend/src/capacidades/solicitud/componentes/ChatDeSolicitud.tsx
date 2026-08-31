@@ -24,6 +24,11 @@ const MAXIMO_CARACTERES = 2000;
  * No se pinta hasta que la solicitud fue aceptada alguna vez, y deja de admitir escritura en cuanto
  * se cancela o se completa. Ocultar el formulario no autoriza nada: el backend vuelve a decidir
  * quién lee y quién escribe en cada petición.
+ *
+ * Vive dentro de la capacidad `solicitud` y no en una capacidad `chat` propia —como sí ocurre en el
+ * backend— porque aquí la dependencia va al revés: es el detalle de la solicitud quien monta el
+ * chat, y el chat necesita el detalle para saber si el hilo existe. Separarlo dejaría a las dos
+ * capacidades importándose entre sí.
  */
 export default function ChatDeSolicitud({ solicitud }: { solicitud: DatosDeSolicitudServicio }) {
   const sesion = useSesionActual();

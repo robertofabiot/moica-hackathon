@@ -82,8 +82,8 @@ export default function AccionDeSolicitud({
   return (
     <div className={propios.confirmacion}>
       <p className={estilos.aviso} role="status">
-        Este prestador está disponible. Al aceptar se habilitarán el chat y los contactos; hoy solo
-        queda el registro de la solicitud.
+        Este prestador está disponible. Si acepta tu solicitud, se abrirá el chat y verás sus medios
+        de contacto.
       </p>
       <Link
         className={`${estilos.boton} ${propios.enlaceBoton}`}

@@ -5,6 +5,8 @@ import { ErrorDeApi } from '../../../comun/api';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import AccionesDeSolicitud from '../componentes/AccionesDeSolicitud';
+import ChatDeSolicitud from '../componentes/ChatDeSolicitud';
+import ContactosDelPrestador from '../componentes/ContactosDelPrestador';
 import { useSolicitud } from '../hooks/useSolicitudes';
 import { diaVisible, fechaVisible, nombreDelEstado } from '../presentacion';
 import { RUTA_SOLICITUDES } from '../rutas';
@@ -96,6 +98,9 @@ export default function DetalleDeSolicitud() {
           </h2>
           <AccionesDeSolicitud solicitud={solicitud} />
         </section>
+
+        <ChatDeSolicitud solicitud={solicitud} />
+        <ContactosDelPrestador solicitud={solicitud} />
 
         <section className={secciones.seccion} aria-labelledby="titulo-historial">
           <h2 className={secciones.tituloDeSeccion} id="titulo-historial">

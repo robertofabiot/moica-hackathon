@@ -72,7 +72,7 @@ export default function AccionesDeSolicitud({
         {esPrestador && cuentaActiva && pendiente === 'aceptar' ? (
           <Confirmacion
             titulo="¿Aceptar esta solicitud?"
-            advertencia="Al aceptar quedará lista para el chat y los contactos, que se habilitan en el siguiente incremento."
+            advertencia="Al aceptar se abrirá el chat con el cliente y se le revelarán tus medios de contacto."
             textoDeAccion="Sí, aceptar"
             enCurso={enCurso}
             alConfirmar={() =>

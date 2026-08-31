@@ -26,6 +26,7 @@ class EsquemaDeIdentidadIT extends PruebaDeIntegracionConPostgres {
   @BeforeEach
   void limpiarIdentidades() {
     jdbc.update("DELETE FROM sesion");
+    jdbc.update("DELETE FROM mensaje_solicitud");
     jdbc.update("DELETE FROM cambio_estado_solicitud");
     jdbc.update("DELETE FROM solicitud_servicio");
     jdbc.update("DELETE FROM solicitud_verificacion_prestador");

@@ -575,3 +575,64 @@ export function imagenDeServicioDeEjemplo(
     fechaCreacion: '2026-08-28T10:00:00-06:00',
   };
 }
+
+/**
+ * Historial de una solicitud que llegó a estar aceptada.
+ *
+ * Es lo que distingue un hilo habilitado de uno que nunca existió: el estado vigente por sí solo no
+ * basta, igual que en el backend.
+ */
+export function historialConAceptacion() {
+  return [
+    {
+      idCambioEstadoSolicitud: 1,
+      estadoAnterior: null as string | null,
+      estadoNuevo: 'PENDIENTE',
+      idActor: 2,
+      nombreActor: 'Ana Cliente',
+      motivo: null as string | null,
+      fechaCambio: '2026-08-29T10:00:00-06:00',
+    },
+    {
+      idCambioEstadoSolicitud: 2,
+      estadoAnterior: 'PENDIENTE' as string | null,
+      estadoNuevo: 'ACEPTADA',
+      idActor: 1,
+      nombreActor: 'Erving Miranda',
+      motivo: null as string | null,
+      fechaCambio: '2026-08-29T11:00:00-06:00',
+    },
+  ];
+}
+
+/** Una solicitud que pasó por `ACEPTADA` y quedó en el estado indicado. */
+export function solicitudConHiloDeEjemplo(
+  estadoActual: 'ACEPTADA' | 'CANCELADA' | 'COMPLETADA' = 'ACEPTADA'
+) {
+  return solicitudDeServicioDeEjemplo({ estadoActual, historial: historialConAceptacion() });
+}
+
+/** Un mensaje del hilo tal como lo devuelve la API. */
+export function mensajeDeEjemplo(cambios: Partial<ReturnType<typeof mensajeBase>> = {}) {
+  return { ...mensajeBase(), ...cambios };
+}
+
+function mensajeBase() {
+  return {
+    idMensajeSolicitud: 1,
+    idSolicitudServicio: 21,
+    idRemitente: 2,
+    nombreRemitente: 'Ana Cliente',
+    contenido: '¿A qué hora puede llegar?',
+    fechaEnvio: '2026-08-29T11:05:00-06:00',
+  };
+}
+
+/** Un medio de contacto revelado al cliente de una solicitud aceptada. */
+export function contactoReveladoDeEjemplo(
+  idMedioContactoPrestador = 1,
+  contenido = 'WhatsApp 8888-8888',
+  ordenVisualizacion = 0
+) {
+  return { idMedioContactoPrestador, contenido, ordenVisualizacion };
+}

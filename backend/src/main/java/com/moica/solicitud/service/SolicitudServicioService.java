@@ -12,6 +12,7 @@ import com.moica.servicio.entity.EstadoServicio;
 import com.moica.servicio.service.ServicioPublicadoService;
 import com.moica.solicitud.dto.DatosDeCambioEstadoSolicitud;
 import com.moica.solicitud.dto.DatosDeSolicitudServicio;
+import com.moica.solicitud.dto.ParticipacionEnSolicitud;
 import com.moica.solicitud.dto.ResumenDeSolicitudServicio;
 import com.moica.solicitud.dto.SolicitudDeCancelacion;
 import com.moica.solicitud.dto.SolicitudDeContratacion;
@@ -26,6 +27,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -36,7 +38,9 @@ import org.springframework.transaction.annotation.Transactional;
  * bloquean la fila para que dos acciones simultáneas no dejen estado e historial divergentes.
  *
  * <p>Solo los dos participantes leen la solicitud. Un tercero recibe 404, igual que en el resto de
- * recursos propios. Aceptar no revela contactos: eso corresponde a un incremento posterior.
+ * recursos propios. Aceptar habilita el hilo de mensajes y la revelación de contactos, pero ni los
+ * mensajes ni los contactos viajan en estos DTO: viven en su propia superficie autorizada, que
+ * atiende la capacidad {@code chat}.
  */
 @Service
 public class SolicitudServicioService {
@@ -218,6 +222,39 @@ public class SolicitudServicioService {
     throw transicionNoPermitida();
   }
 
+  /**
+   * Quiénes participan en una solicitud y en qué condición está su hilo.
+   *
+   * <p>Es la colaboración estrecha que consume la capacidad {@code chat}: el hilo de mensajes y la
+   * revelación de contactos necesitan decidir sobre participantes y estado, y esa regla vive aquí,
+   * donde vive el estado, en lugar de reescribirse en cada superficie. Lo que cruza la frontera es
+   * este DTO, no la entidad ni el repositorio.
+   *
+   * @throws ErrorDeAplicacion 404 si la solicitud no existe o el sujeto no participa en ella
+   */
+  @Transactional(readOnly = true)
+  public ParticipacionEnSolicitud participacionDe(
+      UsuarioAutenticado sujeto, Long idSolicitudServicio) {
+    return participacionDe(solicitudVisible(sujeto, idSolicitudServicio));
+  }
+
+  /**
+   * Lo mismo que {@link #participacionDe}, pero con la fila de la solicitud bloqueada hasta el
+   * final de la transacción que llama.
+   *
+   * <p>Es lo que impide que enviar un mensaje y cerrar la solicitud se crucen: ambas operaciones
+   * pasan por el mismo bloqueo, así que o el mensaje se confirma antes de la transición o la
+   * transición gana y el envío ve el estado nuevo y se rechaza. Exige transacción abierta a
+   * propósito: un bloqueo que se suelta al volver no protegería la escritura posterior.
+   *
+   * @throws ErrorDeAplicacion 404 si la solicitud no existe o el sujeto no participa en ella
+   */
+  @Transactional(propagation = Propagation.MANDATORY)
+  public ParticipacionEnSolicitud participacionBloqueada(
+      UsuarioAutenticado sujeto, Long idSolicitudServicio) {
+    return participacionDe(solicitudBloqueada(sujeto, idSolicitudServicio));
+  }
+
   /** El prestador destinatario marca una solicitud {@code ACEPTADA} como completada. */
   @Transactional
   public DatosDeSolicitudServicio completar(UsuarioAutenticado sujeto, Long idSolicitudServicio) {
@@ -270,6 +307,21 @@ public class SolicitudServicioService {
       throw noEncontrada();
     }
     return solicitud;
+  }
+
+  private ParticipacionEnSolicitud participacionDe(SolicitudServicio solicitud) {
+    return new ParticipacionEnSolicitud(
+        solicitud.getIdSolicitudServicio(),
+        solicitud.getIdCliente(),
+        servicioDe(solicitud).idPrestador(),
+        solicitud.getEstadoActual(),
+        llegoAAceptada(solicitud));
+  }
+
+  private boolean llegoAAceptada(SolicitudServicio solicitud) {
+    return solicitud.getEstadoActual() == EstadoSolicitud.ACEPTADA
+        || cambios.existsByIdSolicitudServicioAndEstadoNuevo(
+            solicitud.getIdSolicitudServicio(), EstadoSolicitud.ACEPTADA);
   }
 
   private boolean esParticipante(UsuarioAutenticado sujeto, SolicitudServicio solicitud) {

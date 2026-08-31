@@ -1,0 +1,136 @@
+/*
+ * Hilo de mensajes y contactos revelados dentro del detalle de una solicitud.
+ *
+ * Reutiliza las tokens de `src/estilos/global.css`; no hay ningún color literal
+ * ni paleta paralela. La sección exterior, los títulos y los avisos siguen
+ * siendo los compartidos (`secciones.module.css` y `formulario.module.css`),
+ * para que el chat se lea como una parte más de la pantalla y no como un
+ * bloque aparte.
+ *
+ * Mobile-first: la hoja base describe el teléfono y las media queries amplían a
+ * tableta y escritorio.
+ */
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+/*
+ * El hilo tiene su propio desplazamiento vertical para que una conversación
+ * larga no empuje el resto del detalle fuera de la pantalla.
+ */
+.hilo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  max-height: 18rem;
+  overflow-y: auto;
+  padding: var(--gap-xs);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-50);
+}
+
+.mensaje {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  max-width: 90%;
+  padding: var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-0);
+  /* Un enlace o una palabra larga se parten en lugar de desbordar. */
+  overflow-wrap: anywhere;
+}
+
+/*
+ * Propio y ajeno se distinguen por tres cosas a la vez —lado, borde y fondo— y
+ * además cada mensaje dice quién lo escribió: quien no perciba el color sigue
+ * sabiendo de quién es.
+ */
+.propio {
+  align-self: flex-end;
+  border-color: var(--color-primary-300);
+  background-color: var(--color-primary-50);
+}
+
+.ajeno {
+  align-self: flex-start;
+}
+
+.autor {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Los saltos de línea que escribió la persona se conservan. */
+.texto {
+  white-space: pre-wrap;
+}
+
+.instante {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.area {
+  resize: vertical;
+  min-height: 3.5rem;
+}
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+}
+
+.contador {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+}
+
+.contactos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.contacto {
+  padding: var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-50);
+  /* Un número, un usuario o un enlace largo se parten sin desbordar. */
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 48rem) {
+  .hilo {
+    max-height: 24rem;
+    padding: var(--gap-sm);
+  }
+
+  .mensaje {
+    max-width: 80%;
+  }
+}
+
+@media (min-width: 80rem) {
+  .hilo {
+    max-height: 28rem;
+  }
+}

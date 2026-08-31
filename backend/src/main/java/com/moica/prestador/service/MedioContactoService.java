@@ -3,6 +3,7 @@ package com.moica.prestador.service;
 import com.moica.auth.seguridad.UsuarioAutenticado;
 import com.moica.comun.dto.SolicitudDeOrden;
 import com.moica.comun.error.ErrorDeAplicacion;
+import com.moica.prestador.dto.ContactoRevelado;
 import com.moica.prestador.dto.DatosDeMedioContacto;
 import com.moica.prestador.dto.SolicitudDeMedioContacto;
 import com.moica.prestador.entity.MedioContactoPrestador;
@@ -103,6 +104,25 @@ public class MedioContactoService {
     }
 
     return orden.idsEnOrden().stream().map(porId::get).map(DatosDeMedioContacto::de).toList();
+  }
+
+  /**
+   * Los contactos de un prestador, en su orden de visualización, para revelarlos a un tercero
+   * autorizado.
+   *
+   * <p>No lleva sesión a propósito: **no autoriza nada**. Es la capacidad que atiende la solicitud
+   * quien comprueba antes que quien pregunta es el cliente participante y que la solicitud llegó a
+   * estar aceptada; aquí solo se entregan las entradas ya decididas. Por eso no hay ningún endpoint
+   * que lo exponga directamente: llamar a este método sin esa comprobación previa sería revelar
+   * contactos de cualquier prestador.
+   */
+  @Transactional(readOnly = true)
+  public List<ContactoRevelado> revelarContactosDe(Long idPrestador) {
+    return repositorio
+        .findByIdPrestadorOrderByOrdenVisualizacionAscIdMedioContactoPrestadorAsc(idPrestador)
+        .stream()
+        .map(ContactoRevelado::de)
+        .toList();
   }
 
   private List<MedioContactoPrestador> contactosDe(UsuarioAutenticado sujeto) {

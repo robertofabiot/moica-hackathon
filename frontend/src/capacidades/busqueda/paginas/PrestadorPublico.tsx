@@ -84,7 +84,7 @@ export default function PrestadorPublico() {
 }
 
 function PerfilCargado({ perfil }: { perfil: PerfilPublico }) {
-  const { prestador, portafolio, servicios, admiteContratacion, reputacionPrestador } = perfil;
+  const { prestador, portafolio, servicios, admiteContratacion } = perfil;
 
   return (
     <MarcoDePagina>

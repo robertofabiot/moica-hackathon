@@ -43,7 +43,9 @@
   color: var(--color-neutral-600);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-bold);
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .gatillo:hover .iconoAyuda {
@@ -101,7 +103,7 @@
 }
 
 .significado {
-  color: var(--color-neutral-700);
+  color: var(--color-neutral-800);
   margin: 0;
 }
 

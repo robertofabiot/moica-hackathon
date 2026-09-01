@@ -5,6 +5,7 @@ import { ErrorDeApi } from '../../../comun/api';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import AccionesDeSolicitud from '../componentes/AccionesDeSolicitud';
+import CalificacionDeSolicitud from '../componentes/CalificacionDeSolicitud';
 import ChatDeSolicitud from '../componentes/ChatDeSolicitud';
 import ContactosDelPrestador from '../componentes/ContactosDelPrestador';
 import { useSolicitud } from '../hooks/useSolicitudes';
@@ -101,6 +102,7 @@ export default function DetalleDeSolicitud() {
 
         <ChatDeSolicitud solicitud={solicitud} />
         <ContactosDelPrestador solicitud={solicitud} />
+        <CalificacionDeSolicitud solicitud={solicitud} />
 
         <section className={secciones.seccion} aria-labelledby="titulo-historial">
           <h2 className={secciones.tituloDeSeccion} id="titulo-historial">

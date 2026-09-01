@@ -518,3 +518,12 @@
     max-width: 52rem;
   }
 }
+
+/* Reputacion del prestador en su perfil publico. */
+.reputacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-xs) var(--gap-sm);
+  margin: 0;
+}

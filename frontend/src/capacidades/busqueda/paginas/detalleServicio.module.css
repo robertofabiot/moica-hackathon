@@ -557,3 +557,20 @@
     top: var(--gap-lg);
   }
 }
+
+/* La ficha sin nota: la estrella pasa a ser decoracion, no un dato. */
+.iconoApagado {
+  color: var(--color-neutral-400);
+}
+
+.sinResenas {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-600);
+}
+
+.totalDeResenas {
+  margin: 0 0 var(--gap-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-600);
+}

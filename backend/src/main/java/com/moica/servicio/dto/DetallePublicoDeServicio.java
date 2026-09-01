@@ -1,5 +1,6 @@
 package com.moica.servicio.dto;
 
+import com.moica.calificacion.dto.ReputacionPorRol;
 import com.moica.catalogo.dto.ClasificacionDeServicio;
 import com.moica.prestador.dto.DatosPublicosDePrestador;
 import com.moica.servicio.entity.ServicioPublicado;
@@ -11,6 +12,10 @@ import java.util.List;
  *
  * <p>{@code admiteContratacion} avisa si hoy se podría solicitar. No revela contactos. {@code
  * precioReferencia} nulo se presenta como «A convenir» en la interfaz, no en este campo.
+ *
+ * <p>{@code reputacionPrestador} es el agregado de quien publica el servicio, con su promedio, su
+ * cantidad y su desglose por estrellas. No lleva comentarios ni identidades de quienes calificaron:
+ * en público solo sale el agregado.
  */
 public record DetallePublicoDeServicio(
     Long idServicioPublicado,
@@ -23,7 +28,8 @@ public record DetallePublicoDeServicio(
     String nombreSubcategoria,
     List<DatosDeImagenDeServicio> imagenes,
     boolean admiteContratacion,
-    DatosPublicosDePrestador prestador) {
+    DatosPublicosDePrestador prestador,
+    ReputacionPorRol reputacionPrestador) {
 
   public DetallePublicoDeServicio {
     imagenes = List.copyOf(imagenes);
@@ -33,7 +39,8 @@ public record DetallePublicoDeServicio(
       ServicioPublicado servicio,
       ClasificacionDeServicio clasificacion,
       List<DatosDeImagenDeServicio> imagenes,
-      DatosPublicosDePrestador prestador) {
+      DatosPublicosDePrestador prestador,
+      ReputacionPorRol reputacionPrestador) {
     return new DetallePublicoDeServicio(
         servicio.getIdServicioPublicado(),
         servicio.getNombre(),
@@ -45,6 +52,7 @@ public record DetallePublicoDeServicio(
         clasificacion.nombreSubcategoria(),
         imagenes,
         true,
-        prestador);
+        prestador,
+        reputacionPrestador);
   }
 }

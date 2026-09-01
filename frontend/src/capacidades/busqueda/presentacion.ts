@@ -1,8 +1,11 @@
 /**
- * Cómo se lee un precio o un tipo de prestador en las pantallas públicas.
+ * Cómo se lee un precio, una reputación o un tipo de prestador en las pantallas
+ * públicas.
  *
  * «A convenir» es solo presentación: la API sigue enviando `precioReferencia: null`.
  */
+
+import type { ReputacionPorRol } from './tipos';
 
 export function precioVisible(precioReferencia: number | null): string {
   return precioReferencia === null ? 'A convenir' : `C$ ${precioReferencia.toFixed(2)}`;
@@ -25,20 +28,38 @@ export function precioEnTarjeta(precioReferencia: number | null): {
 }
 
 /**
- * Maqueta visual de reputación. El listado público todavía no publica
- * calificaciones; no se inventa una nota distinta por servicio.
+ * Cómo se lee una reputación real.
+ *
+ * El backend envía `promedio: null` cuando la persona todavía no recibió
+ * calificaciones. Ese caso NO se presenta como `0.0`: una cuenta sin actividad
+ * no tiene una nota pésima, no tiene nota. Calificar es opcional y no hacerlo no
+ * penaliza a nadie.
  */
-export const CALIFICACION_DE_MUESTRA = 4.8;
-export const RESENAS_DE_MUESTRA = 102;
+export const SIN_CALIFICACIONES = 'Sin calificaciones';
 
-/** Recuento de la ficha de detalle, alineado a la maqueta (120 reseñas). */
-export const RESENAS_DE_FICHA_DE_MUESTRA = 120;
+/** «1 calificación» frente a «2 calificaciones». */
+export function conteoDeCalificaciones(cantidad: number): string {
+  return cantidad === 1 ? '1 calificación' : `${cantidad} calificaciones`;
+}
 
-export const DESGLOSE_DE_RESENAS_DE_MUESTRA = [
-  { estrellas: 5, cantidad: 80 },
-  { estrellas: 4, cantidad: 30 },
-  { estrellas: 3, cantidad: 10 },
-] as const;
+/** La nota con un decimal, o `null` si todavía no hay ninguna calificación. */
+export function notaVisible(promedio: number | null): string | null {
+  return promedio === null ? null : promedio.toFixed(1);
+}
+
+/**
+ * Frase completa para lectores de pantalla, para no depender de las estrellas.
+ *
+ * Es el texto que va en `aria-label`: quien no ve el icono debe recibir la misma
+ * información que quien sí lo ve.
+ */
+export function etiquetaDeReputacion(reputacion: ReputacionPorRol): string {
+  const nota = notaVisible(reputacion.promedio);
+  if (nota === null) {
+    return `${SIN_CALIFICACIONES} todavía`;
+  }
+  return `Calificación ${nota} de 5, ${conteoDeCalificaciones(reputacion.cantidad)}`;
+}
 
 export function nombreDelTipoPrestador(tipo: 'INDEPENDIENTE' | 'EMPRENDIMIENTO' | 'PYME'): string {
   switch (tipo) {

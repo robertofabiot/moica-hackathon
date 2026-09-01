@@ -5,12 +5,18 @@ import {
   IconoDeCategoria,
   InsigniaVerificado,
 } from '../../../comun/componentes/ui';
-import { CALIFICACION_DE_MUESTRA, precioEnTarjeta, RESENAS_DE_MUESTRA } from '../presentacion';
+import { precioEnTarjeta } from '../presentacion';
 import { rutaDeDetalleDeServicio } from '../rutas';
 import type { ResumenPublicoDeServicio } from '../tipos';
 import estilos from './tarjeta.module.css';
 
-/** Tarjeta de un servicio visible: foto o icono, nota, precio e insignia. */
+/**
+ * Tarjeta de un servicio visible: foto o icono, nota, precio e insignia.
+ *
+ * La nota es la del **prestador que publica**, no la del servicio: no existe una
+ * reputación por servicio, así que todas las tarjetas de un mismo prestador
+ * muestran la misma cifra.
+ */
 export default function TarjetaDeServicio({ servicio }: { servicio: ResumenPublicoDeServicio }) {
   const precio = precioEnTarjeta(servicio.precioReferencia);
   const estaVerificado = servicio.prestador.nivelVerificacion !== 'SIN_VERIFICAR';
@@ -39,8 +45,12 @@ export default function TarjetaDeServicio({ servicio }: { servicio: ResumenPubli
           </div>
           <div className={estilos.filaMeta}>
             <EstrellasCalificacion
-              calificacion={CALIFICACION_DE_MUESTRA}
-              totalResenas={RESENAS_DE_MUESTRA}
+              calificacion={servicio.reputacionPrestador.promedio}
+              totalCalificaciones={
+                servicio.reputacionPrestador.cantidad === 0
+                  ? undefined
+                  : servicio.reputacionPrestador.cantidad
+              }
             />
             <p className={estilos.precio}>
               {precio.prefijo === null ? (

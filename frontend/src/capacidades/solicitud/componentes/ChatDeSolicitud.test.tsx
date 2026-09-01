@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../../../App';
 import {
   cuerpoDeError,
+  estadoDeCalificacionDeEjemplo,
   instalarApiFalsa,
   mensajeDeEjemplo,
   sesionDeEjemplo,
@@ -31,6 +32,11 @@ describe('Chat de una solicitud', () => {
     api.responder('GET /api/solicitudes/enviadas', { estado: 200, cuerpo: [] });
     api.responder('GET /api/solicitudes/recibidas', { estado: 200, cuerpo: [] });
     api.responder('GET /api/solicitudes/21/contactos', { estado: 200, cuerpo: [] });
+    // El detalle monta también la calificación de P8; aquí se prueba el hilo.
+    api.responder('GET /api/solicitudes/21/calificacion', {
+      estado: 200,
+      cuerpo: estadoDeCalificacionDeEjemplo({ puedeCalificar: false, solicitudCompletada: false }),
+    });
   });
 
   afterEach(() => {

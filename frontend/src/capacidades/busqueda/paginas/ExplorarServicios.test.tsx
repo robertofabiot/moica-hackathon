@@ -9,6 +9,7 @@ import {
   cuerpoDeError,
   detallePublicoDeServicioDeEjemplo,
   instalarApiFalsa,
+  reputacionVaciaDeEjemplo,
   servicioPublicoDeEjemplo,
   type ApiFalsa,
 } from '../../../pruebas/apiFalsa';
@@ -153,5 +154,65 @@ describe('Explorar servicios', () => {
     expect(screen.getByText(/No garantiza la calidad futura del trabajo/)).toBeVisible();
     expect(screen.getByRole('link', { name: 'Iniciar sesión para solicitar' })).toBeVisible();
     expect(screen.queryByRole('link', { name: 'Solicitar este servicio' })).not.toBeInTheDocument();
+  });
+  it('la tarjeta muestra la reputación real del prestador', async () => {
+    api.responder('GET /api/servicios', {
+      estado: 200,
+      cuerpo: [servicioPublicoDeEjemplo()],
+    });
+
+    renderizarConProveedores(<App />, '/explorar');
+
+    expect(await screen.findByRole('heading', { name: 'Reparación de fugas' })).toBeVisible();
+    expect(screen.getByLabelText('Calificación 4.3 de 5, 3 calificaciones')).toBeVisible();
+    expect(screen.getByText('4.3')).toBeVisible();
+    expect(screen.getByText('(3)')).toBeVisible();
+  });
+
+  it('una tarjeta sin calificaciones lo dice y no inventa un cero', async () => {
+    api.responder('GET /api/servicios', {
+      estado: 200,
+      cuerpo: [
+        servicioPublicoDeEjemplo({
+          nombre: 'Cambio de tomacorrientes',
+          reputacionPrestador: reputacionVaciaDeEjemplo(),
+        }),
+      ],
+    });
+
+    renderizarConProveedores(<App />, '/explorar');
+
+    expect(await screen.findByRole('heading', { name: 'Cambio de tomacorrientes' })).toBeVisible();
+    expect(screen.getByLabelText('Sin calificaciones todavía')).toBeVisible();
+    expect(screen.getByText('Sin calificaciones')).toBeVisible();
+    expect(screen.queryByText('0.0')).not.toBeInTheDocument();
+  });
+
+  it('dos servicios del mismo prestador comparten la misma reputación', async () => {
+    api.responder('GET /api/servicios', {
+      estado: 200,
+      cuerpo: [
+        servicioPublicoDeEjemplo(),
+        servicioPublicoDeEjemplo({ idServicioPublicado: 11, nombre: 'Destape de drenajes' }),
+      ],
+    });
+
+    renderizarConProveedores(<App />, '/explorar');
+
+    expect(await screen.findByRole('heading', { name: 'Destape de drenajes' })).toBeVisible();
+    expect(screen.getAllByLabelText('Calificación 4.3 de 5, 3 calificaciones')).toHaveLength(2);
+  });
+
+  it('no queda ninguna cifra ficticia de la maqueta anterior', async () => {
+    api.responder('GET /api/servicios', {
+      estado: 200,
+      cuerpo: [servicioPublicoDeEjemplo()],
+    });
+
+    renderizarConProveedores(<App />, '/explorar');
+
+    await screen.findByRole('heading', { name: 'Reparación de fugas' });
+    expect(screen.queryByText('4.8')).not.toBeInTheDocument();
+    expect(screen.queryByText('(102)')).not.toBeInTheDocument();
   });
 });

@@ -17,14 +17,20 @@ import { AccionDeSolicitud } from '../../solicitud';
 import InsigniaResponsable from '../componentes/InsigniaResponsable';
 import { useServicioPublico } from '../hooks/useBusquedaPublica';
 import {
-  CALIFICACION_DE_MUESTRA,
-  DESGLOSE_DE_RESENAS_DE_MUESTRA,
+  conteoDeCalificaciones,
+  etiquetaDeReputacion,
   nombreDelTipoPrestador,
+  notaVisible,
   precioEnTarjeta,
-  RESENAS_DE_FICHA_DE_MUESTRA,
+  SIN_CALIFICACIONES,
 } from '../presentacion';
 import { RUTA_EXPLORAR, rutaDePrestadorPublico } from '../rutas';
-import type { DetallePublicoDeServicio, ImagenPublicaDeServicio, PrestadorPublico } from '../tipos';
+import type {
+  DetallePublicoDeServicio,
+  ImagenPublicaDeServicio,
+  PrestadorPublico,
+  ReputacionPorRol,
+} from '../tipos';
 import estilos from './detalleServicio.module.css';
 
 const GARANTIAS = [
@@ -118,7 +124,7 @@ function DetalleCargado({ servicio }: { servicio: DetallePublicoDeServicio }) {
               <FichaDeContratacion servicio={servicio} />
             </div>
             <div className={estilos.bloqueResenas}>
-              <DesgloseDeResenas />
+              <DesgloseDeResenas reputacion={servicio.reputacionPrestador} />
             </div>
           </div>
         </div>
@@ -218,7 +224,8 @@ function FichaDeContratacion({ servicio }: { servicio: DetallePublicoDeServicio 
   const [guardado, setGuardado] = useState(false);
   const prestador = servicio.prestador;
   const precio = precioEnTarjeta(servicio.precioReferencia);
-  const nota = CALIFICACION_DE_MUESTRA.toFixed(1);
+  const reputacion = servicio.reputacionPrestador;
+  const nota = notaVisible(reputacion.promedio);
 
   return (
     <section className={estilos.tarjeta} aria-labelledby="titulo-ficha-servicio">
@@ -227,17 +234,28 @@ function FichaDeContratacion({ servicio }: { servicio: DetallePublicoDeServicio 
       </h1>
 
       <div className={estilos.metadatos}>
-        <p
-          className={estilos.calificacion}
-          aria-label={`Calificación ${nota} de 5, ${RESENAS_DE_FICHA_DE_MUESTRA} reseñas`}
-        >
-          <IconoEstrella className={estilos.iconoEstrella} />
-          <span className={estilos.nota} aria-hidden="true">
-            {nota}
-          </span>
-          <span className={estilos.conteo} aria-hidden="true">
-            ({RESENAS_DE_FICHA_DE_MUESTRA} reseñas)
-          </span>
+        <p className={estilos.calificacion} aria-label={etiquetaDeReputacion(reputacion)}>
+          <IconoEstrella
+            className={
+              nota === null
+                ? `${estilos.iconoEstrella} ${estilos.iconoApagado}`
+                : estilos.iconoEstrella
+            }
+          />
+          {nota === null ? (
+            <span className={estilos.conteo} aria-hidden="true">
+              {SIN_CALIFICACIONES}
+            </span>
+          ) : (
+            <>
+              <span className={estilos.nota} aria-hidden="true">
+                {nota}
+              </span>
+              <span className={estilos.conteo} aria-hidden="true">
+                ({conteoDeCalificaciones(reputacion.cantidad)})
+              </span>
+            </>
+          )}
         </p>
         <p className={estilos.ubicacion}>
           <IconoPin className={estilos.iconoPin} />
@@ -327,43 +345,62 @@ function TarjetaDePrestador({ prestador }: { prestador: PrestadorPublico }) {
   );
 }
 
-function DesgloseDeResenas() {
-  const total = DESGLOSE_DE_RESENAS_DE_MUESTRA.reduce((suma, fila) => suma + fila.cantidad, 0);
-  const nota = CALIFICACION_DE_MUESTRA.toFixed(1);
+/**
+ * Reseñas del prestador: promedio y desglose por estrellas, con datos reales.
+ *
+ * Sin ninguna calificación no dibuja barras vacías ni un `0.0`: dice que todavía
+ * no hay ninguna. Inventar actividad, aunque fuese en cero, contaría una
+ * historia que no ocurrió.
+ */
+function DesgloseDeResenas({ reputacion }: { reputacion: ReputacionPorRol }) {
+  const nota = notaVisible(reputacion.promedio);
 
   return (
     <section className={estilos.tarjeta} aria-labelledby="titulo-resenas-servicio">
       <h2 className={estilos.tituloDeTarjeta} id="titulo-resenas-servicio">
         Reseñas
       </h2>
-      <div className={estilos.resumenDeResenas}>
-        <p className={estilos.puntuacionGrande}>{nota}</p>
-        <p className={estilos.deCinco}>De 5</p>
-      </div>
-      <ul className={estilos.barras}>
-        {DESGLOSE_DE_RESENAS_DE_MUESTRA.map((fila) => {
-          const porcentaje = total === 0 ? 0 : Math.round((fila.cantidad / total) * 100);
-          return (
-            <li key={fila.estrellas} className={estilos.filaDeBarra}>
-              <span className={estilos.etiquetaBarra}>
-                {fila.estrellas}
-                <IconoEstrella className={estilos.iconoEstrellaChica} />
-              </span>
-              <div
-                className={estilos.riel}
-                role="meter"
-                aria-label={`${fila.estrellas} estrellas`}
-                aria-valuemin={0}
-                aria-valuemax={total}
-                aria-valuenow={fila.cantidad}
-              >
-                <span className={estilos.relleno} style={{ width: `${porcentaje}%` }} />
-              </div>
-              <span className={estilos.contadorBarra}>{fila.cantidad}</span>
-            </li>
-          );
-        })}
-      </ul>
+      {nota === null ? (
+        <p className={estilos.sinResenas}>
+          {SIN_CALIFICACIONES} todavía. Este prestador aún no completó servicios calificados.
+        </p>
+      ) : (
+        <>
+          <div className={estilos.resumenDeResenas}>
+            <p className={estilos.puntuacionGrande}>{nota}</p>
+            <p className={estilos.deCinco}>De 5</p>
+          </div>
+          <p className={estilos.totalDeResenas}>{conteoDeCalificaciones(reputacion.cantidad)}</p>
+          <ul className={estilos.barras}>
+            {reputacion.desglose.map((fila) => {
+              const porcentaje =
+                reputacion.cantidad === 0
+                  ? 0
+                  : Math.round((fila.cantidad / reputacion.cantidad) * 100);
+              return (
+                <li key={fila.estrellas} className={estilos.filaDeBarra}>
+                  <span className={estilos.etiquetaBarra}>
+                    {fila.estrellas}
+                    <IconoEstrella className={estilos.iconoEstrellaChica} />
+                  </span>
+                  <div
+                    className={estilos.riel}
+                    role="meter"
+                    aria-label={`${fila.estrellas} estrellas`}
+                    aria-valuemin={0}
+                    aria-valuemax={reputacion.cantidad}
+                    aria-valuenow={fila.cantidad}
+                    aria-valuetext={conteoDeCalificaciones(fila.cantidad)}
+                  >
+                    <span className={estilos.relleno} style={{ width: `${porcentaje}%` }} />
+                  </div>
+                  <span className={estilos.contadorBarra}>{fila.cantidad}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
     </section>
   );
 }

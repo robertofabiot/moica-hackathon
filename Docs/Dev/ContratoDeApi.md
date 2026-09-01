@@ -75,6 +75,9 @@ Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy
 | `GET /api/solicitudes/{id}/mensajes` | Hilo de mensajes de la solicitud, en orden cronologico | Sesion plena; solo los dos participantes, y solo si llego a estar `ACEPTADA` |
 | `POST /api/solicitudes/{id}/mensajes` | Agrega un mensaje al hilo | Sesion plena con cuenta `ACTIVA`; solo los dos participantes y solo mientras esta `ACEPTADA` |
 | `GET /api/solicitudes/{id}/contactos` | Contactos externos del prestador revelados por la aceptacion | Sesion plena; **solo el cliente** participante, y solo si llego a estar `ACEPTADA` |
+| `GET /api/solicitudes/{id}/calificacion` | A quien califica la sesion, en que rol, si puede y que escribio | Sesion plena; solo los dos participantes |
+| `POST /api/solicitudes/{id}/calificacion` | Registra la calificacion de la sesion sobre la contraparte | Sesion plena con cuenta `ACTIVA`; solo los dos participantes y solo si esta `COMPLETADA` |
+| `GET /api/solicitudes/{id}/reputacion-del-cliente` | Reputacion como cliente de quien contrato | Sesion plena; **solo el prestador** participante |
 | `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
 
 **Sesion plena** es la que no esta pendiente del segundo factor y pertenece a una cuenta que no esta
@@ -354,7 +357,16 @@ El detalle y el perfil publico llevan `significadoVerificacion` y
 `advertenciaDeInsignia`. La advertencia es la misma en todos los niveles: la
 insignia no garantiza la calidad futura. No viajan contactos, correos privados,
 documentos, numeros de identidad, observaciones administrativas ni claves de
-almacenamiento. No se inventan reputaciones ni calificaciones.
+almacenamiento.
+
+Las tres superficies publicas llevan ademas `reputacionPrestador`, el agregado
+real del prestador que publica —no del servicio concreto—: no existe una
+reputacion por servicio, asi que todas las tarjetas de una misma persona
+muestran la misma cifra. Es el mismo objeto que se describe en «Calificaciones y
+reputacion»: promedio, cantidad y desglose por estrellas, sin comentarios ni
+identidades de quienes calificaron. `promedio` es `null` mientras no haya
+ninguna calificacion; **no se envia `0.0`**. El listado resuelve los agregados
+de todos los prestadores de la pagina con una sola consulta agrupada.
 
 `admiteContratacion` avisa si hoy se podria solicitar. Es falso cuando el
 prestador no esta disponible. Solicitar vive en `/api/solicitudes`; este campo
@@ -368,9 +380,9 @@ presenta como exhaustiva.
 
 El ciclo de contratacion opera sobre la sesion. Las acciones son explicitas
 —aceptar, rechazar, cancelar, completar— y no un cambio generico de estado. No
-hay `DELETE`. Las calificaciones no viven aqui. El chat y la revelacion de
-contactos cuelgan de la solicitud, pero en su propia superficie autorizada: ver
-«Chat y contactos de una solicitud».
+hay `DELETE`. El chat, la revelacion de contactos y las calificaciones cuelgan
+de la solicitud, pero cada uno en su propia superficie autorizada: ver «Chat y
+contactos de una solicitud» y «Calificaciones y reputacion».
 
 ### Quien puede que
 
@@ -545,6 +557,134 @@ Solo se revelan esas entradas. Nunca el correo de la cuenta ni ningun dato
 tomado de la autenticacion. No existe ninguna ruta para consultar los contactos
 de un prestador cualquiera, y el descubrimiento publico, el perfil publico, las
 bandejas y el detalle de la solicitud siguen sin llevarlos.
+
+## Calificaciones y reputacion
+
+Cuando el prestador marca la solicitud como `COMPLETADA`, cada participante
+puede calificar **una sola vez** a la contraparte. La calificacion cuelga de la
+solicitud, igual que el hilo de mensajes: no existe una ruta para calificar a
+una persona cualquiera. Solo hay consultar y crear; **no existe `PUT`, `PATCH`
+ni `DELETE`**: en el MVP una calificacion no se edita ni se borra.
+
+No hay recurso `reputacion` ni tabla que la almacene. El promedio, la cantidad y
+el desglose se calculan desde las calificaciones cada vez que se piden, y se
+mantienen **separados por rol**: la reputacion como cliente y como prestador son
+cifras distintas de la misma persona y nunca se suman.
+
+### Cuando se puede calificar
+
+| Estado de la solicitud | Consultar el estado | Calificar |
+|---|---|---|
+| `PENDIENTE` | Los dos participantes | 409 `SOLICITUD_NO_COMPLETADA` |
+| `ACEPTADA` | Los dos participantes | 409 `SOLICITUD_NO_COMPLETADA` |
+| `RECHAZADA` | Los dos participantes | 409 `SOLICITUD_NO_COMPLETADA` |
+| `CANCELADA` | Los dos participantes | 409 `SOLICITUD_NO_COMPLETADA` |
+| `COMPLETADA` | Los dos participantes | Los dos, con cuenta `ACTIVA`, una vez cada uno |
+
+`COMPLETADA` es definitivo, asi que una vez alcanzado la ventana no se cierra:
+no hay plazo para calificar. **Calificar es opcional y no calificar no
+penaliza**: no baja ningun promedio, no genera aviso y no tiene efecto alguno.
+
+### Quien puede que
+
+Un tercero recibe **404 `RECURSO_NO_ENCONTRADO`** en las tres rutas, igual que
+en el resto de recursos propios: no puede confirmar que la solicitud exista.
+
+En `/reputacion-del-cliente` el **cliente tambien recibe 404**. La reputacion
+como cliente se publica a una sola persona, el prestador destinatario, y solo
+desde una solicitud en la que participa. Los perfiles de cliente no son
+publicos y este incremento no los convierte en tales.
+
+Una cuenta `RESTRINGIDA_TEMPORAL` **consulta** su estado y la calificacion que
+ya hubiera emitido, pero al calificar recibe 403 `CUENTA_RESTRINGIDA`. Una
+cuenta suspendida no llega: la cadena responde 403 `ACCESO_DENEGADO`.
+
+### Registrar una calificacion
+
+`POST /api/solicitudes/{id}/calificacion` con el cuerpo `CalificacionAEmitir`:
+
+| Campo | Obligatorio | Limite |
+|---|---|---|
+| `puntuacion` | Si | Entero de 1 a 5 |
+| `comentario` | No | Texto, maximo 2000 caracteres de aplicacion |
+
+El diccionario modela `comentario` como `TEXT` sin maximo; los 2000 caracteres
+son un limite de la aplicacion, como en el resto de textos libres de Moica. El
+comentario se recorta antes de validarlo y, si queda vacio, **se guarda como
+`null`**: un comentario de espacios no es un comentario.
+
+**El calificado y su rol salen siempre de la solicitud.** El cuerpo no los
+lleva, y un `idCalificado`, un `idCalificador` o un `rolCalificado` enviados por
+el navegador se ignoran. El cliente califica al propietario del servicio como
+`PRESTADOR` y el prestador califica al cliente como `CLIENTE`; calificarse a si
+misma no es una peticion formulable —una solicitud sobre un servicio propio ya
+se rechaza al crearse— y `ck_calificacion_usuario_participantes` lo respalda en
+la base.
+
+La respuesta es 201 con la calificacion creada: identificador, solicitud, las
+dos personas por identificador, rol, puntuacion, comentario e instante.
+
+Rechazos al calificar:
+
+| Situacion | HTTP | Codigo |
+|---|---|---|
+| Sin sesion | 401 | `NO_AUTENTICADO` |
+| Cuenta suspendida | 403 | `ACCESO_DENEGADO` |
+| Cuenta restringida | 403 | `CUENTA_RESTRINGIDA` |
+| Solicitud inexistente o ajena | 404 | `RECURSO_NO_ENCONTRADO` |
+| Solicitud que no esta `COMPLETADA` | 409 | `SOLICITUD_NO_COMPLETADA` |
+| Esta persona ya califico esa solicitud | 409 | `CALIFICACION_DUPLICADA` |
+| Puntuacion ausente o fuera de 1 a 5 | 400 | `VALIDACION` |
+| Comentario que supera los 2000 caracteres | 400 | `VALIDACION` |
+
+La unicidad vive tambien en PostgreSQL, en
+`uq_calificacion_usuario_solicitud_calificador`. La comprobacion previa cubre el
+caso normal; la restriccion decide la carrera entre dos envios simultaneos, de
+modo que el perdedor recibe 409 y no 500. Una solicitud admite como maximo dos
+calificaciones, una de cada participante, y
+`uq_calificacion_usuario_solicitud_calificado` lo respalda.
+
+### Consultar el estado
+
+`GET /api/solicitudes/{id}/calificacion` responde en cualquier estado de la
+solicitud, para que la interfaz no tenga que deducir la regla:
+
+| Campo | Que dice |
+|---|---|
+| `solicitudCompletada` | Si la solicitud llego a `COMPLETADA` |
+| `idCalificado`, `nombreCalificado` | A quien califica esta sesion |
+| `rolCalificado` | `CLIENTE` o `PRESTADOR`, derivado de la solicitud |
+| `puedeCalificar` | Solicitud completada, sin calificacion previa y cuenta `ACTIVA` |
+| `calificacionEmitida` | Lo que esta sesion ya califico, o `null` |
+
+`nombreCalificado` es el mismo nombre que ya viaja en el detalle de la
+solicitud: `nombrePublico` del perfil para el prestador y `nombreCompleto` para
+el cliente. No se publican correos, contactos ni datos administrativos.
+
+### Reputacion
+
+El agregado tiene la misma forma en todas las superficies:
+
+| Campo | Que dice |
+|---|---|
+| `rol` | `CLIENTE` o `PRESTADOR`; el agregado nunca mezcla los dos |
+| `promedio` | Media redondeada a un decimal, o **`null` si no hay ninguna calificacion** |
+| `cantidad` | Numero de calificaciones recibidas en ese rol |
+| `desglose` | Las cinco filas, de cinco a una estrella, con `estrellas` y `cantidad` |
+
+**Un promedio ausente es `null`, nunca `0.0`.** Quien no ha sido calificado no
+tiene una nota pesima: no tiene nota. El desglose llega siempre completo, con
+cero donde no hubo votos, para que ninguna pantalla tenga que reconstruir las
+filas que faltan.
+
+La reputacion como **prestador** es publica y viaja en `reputacionPrestador` de
+`GET /api/servicios`, `GET /api/servicios/{id}` y `GET /api/prestadores/{id}`.
+La reputacion como **cliente** solo se obtiene en
+`GET /api/solicitudes/{id}/reputacion-del-cliente`, y solo la ve el prestador
+participante. Ninguna de las dos publica comentarios, identidades de quienes
+calificaron ni las solicitudes que las originaron: hacia fuera solo sale el
+agregado. Ver la propia calificacion emitida es la unica excepcion, y es de la
+sesion sobre su propia solicitud.
 
 ## Verificacion documental del prestador
 

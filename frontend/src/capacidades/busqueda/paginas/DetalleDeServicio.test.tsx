@@ -8,6 +8,7 @@ import {
   detallePublicoDeServicioDeEjemplo,
   imagenDeServicioDeEjemplo,
   instalarApiFalsa,
+  reputacionVaciaDeEjemplo,
   type ApiFalsa,
 } from '../../../pruebas/apiFalsa';
 import { renderizarConProveedores } from '../../../pruebas/utilidades';
@@ -152,7 +153,7 @@ describe('Detalle de servicio', () => {
     expect(screen.getByText(/No garantiza la calidad futura del trabajo/)).toBeVisible();
   });
 
-  it('muestra el desglose de reseñas de maqueta', async () => {
+  it('muestra el promedio y el desglose reales del prestador', async () => {
     api.responder('GET /api/servicios/10', {
       estado: 200,
       cuerpo: detallePublicoDeServicioDeEjemplo(),
@@ -161,13 +162,61 @@ describe('Detalle de servicio', () => {
     renderizarConProveedores(<App />, '/explorar/servicios/10');
 
     expect(await screen.findByRole('heading', { name: 'Reseñas' })).toBeVisible();
+    // La nota aparece dos veces a propósito: en la ficha de contratación y en el
+    // resumen de reseñas. Es la misma cifra del mismo prestador.
+    expect(screen.getAllByText('4.3')).toHaveLength(2);
     expect(screen.getByText('De 5')).toBeVisible();
+    expect(screen.getByText('3 calificaciones')).toBeVisible();
+    // Las cinco filas, incluidas las de dos y una estrella que la maqueta no
+    // tenía: el cero es un dato real y el desglose no se inventa.
     expect(screen.getByRole('meter', { name: '5 estrellas' })).toHaveAttribute(
       'aria-valuenow',
-      '80'
+      '1'
     );
-    expect(screen.getByRole('meter', { name: '4 estrellas' })).toBeVisible();
-    expect(screen.getByRole('meter', { name: '3 estrellas' })).toBeVisible();
+    expect(screen.getByRole('meter', { name: '4 estrellas' })).toHaveAttribute(
+      'aria-valuenow',
+      '2'
+    );
+    expect(screen.getByRole('meter', { name: '3 estrellas' })).toHaveAttribute(
+      'aria-valuenow',
+      '0'
+    );
+    expect(screen.getByRole('meter', { name: '2 estrellas' })).toBeVisible();
+    expect(screen.getByRole('meter', { name: '1 estrellas' })).toBeVisible();
+    expect(screen.getByLabelText('Calificación 4.3 de 5, 3 calificaciones')).toBeVisible();
+  });
+
+  it('sin calificaciones no dibuja una nota ni barras vacías', async () => {
+    api.responder('GET /api/servicios/10', {
+      estado: 200,
+      cuerpo: detallePublicoDeServicioDeEjemplo({
+        reputacionPrestador: reputacionVaciaDeEjemplo(),
+      }),
+    });
+
+    renderizarConProveedores(<App />, '/explorar/servicios/10');
+
+    expect(await screen.findByRole('heading', { name: 'Reseñas' })).toBeVisible();
+    expect(
+      screen.getByText(/Sin calificaciones todavía\. Este prestador aún no completó/)
+    ).toBeVisible();
+    expect(screen.getByLabelText('Sin calificaciones todavía')).toBeVisible();
+    expect(screen.queryByText('0.0')).not.toBeInTheDocument();
+    expect(screen.queryByRole('meter')).not.toBeInTheDocument();
+  });
+
+  it('no queda ninguna cifra ficticia de la maqueta anterior', async () => {
+    api.responder('GET /api/servicios/10', {
+      estado: 200,
+      cuerpo: detallePublicoDeServicioDeEjemplo(),
+    });
+
+    renderizarConProveedores(<App />, '/explorar/servicios/10');
+
+    await screen.findByRole('heading', { name: 'Reseñas' });
+    expect(screen.queryByText('4.8')).not.toBeInTheDocument();
+    expect(screen.queryByText(/120 reseñas/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/102/)).not.toBeInTheDocument();
   });
 
   it('no ofrece solicitar cuando el servicio no admite contratación', async () => {

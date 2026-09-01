@@ -1,0 +1,148 @@
+/*
+ * Calificación de una solicitud completada, dentro de su detalle.
+ *
+ * Reutiliza las tokens de `src/estilos/global.css`; no hay ningún color literal
+ * ni paleta paralela. La sección exterior, los títulos y los avisos siguen
+ * siendo los compartidos (`secciones.module.css` y `formulario.module.css`),
+ * igual que en el chat, para que se lea como una parte más de la pantalla.
+ *
+ * Mobile-first: la hoja base describe el teléfono y las media queries amplían a
+ * tableta y escritorio.
+ */
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.grupoDeEstrellas {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.estrellas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs);
+  margin-top: var(--gap-xs);
+}
+
+/*
+ * Cada opción es una etiqueta con su radio nativo dentro: las flechas del
+ * teclado recorren las cinco sin código propio y el foco se ve porque el radio
+ * sigue existiendo, solo que fuera de la caja visible.
+ */
+.opcion {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  padding: var(--gap-xs) var(--gap-sm);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-0);
+  cursor: pointer;
+}
+
+.opcion:hover {
+  border-color: var(--color-primary-300);
+}
+
+.opcion:has(.radio:checked) {
+  border-color: var(--color-primary-500);
+  background-color: var(--color-primary-50);
+}
+
+.opcion:has(.radio:focus-visible) {
+  outline: var(--border-width-sm) solid var(--color-primary-700);
+  outline-offset: 2px;
+}
+
+.opcion:has(.radio:disabled) {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/*
+ * El radio no se oculta con `display: none`: dejaría de ser enfocable y el
+ * teclado perdería el grupo entero. Se saca de la vista conservándolo en el
+ * árbol de accesibilidad y en el orden de tabulación.
+ */
+.radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  border: 0;
+  clip-path: inset(50%);
+}
+
+.estrellaLlena {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  color: var(--color-warning-500);
+}
+
+.estrellaVacia {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  color: var(--color-neutral-400);
+}
+
+.textoDeOpcion {
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-800);
+}
+
+.area {
+  min-height: 5rem;
+  resize: vertical;
+}
+
+.pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+}
+
+.contador {
+  font-size: var(--font-size-xs);
+  color: var(--color-neutral-600);
+}
+
+.resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.puntuacionEmitida {
+  display: flex;
+  gap: 0.125rem;
+  margin: 0;
+}
+
+.comentarioEmitido {
+  margin: 0;
+  padding: var(--gap-sm);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-900);
+}
+
+@media (min-width: 48rem) {
+  .estrellas {
+    flex-wrap: nowrap;
+  }
+}

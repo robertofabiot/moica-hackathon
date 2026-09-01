@@ -1,5 +1,5 @@
 import type { EstadoCuenta } from '../auth';
-import type { DatosDeSolicitudServicio, EstadoSolicitud } from './tipos';
+import type { DatosDeSolicitudServicio, EstadoSolicitud, RolCalificado } from './tipos';
 
 /** Enviar, aceptar, rechazar y completar exigen cuenta activa. Cancelar no. */
 export function cuentaEstaActiva(estadoCuenta: EstadoCuenta | undefined): boolean {
@@ -67,4 +67,20 @@ export function puedeVerContactos(
   idUsuario: number | undefined
 ): boolean {
   return idUsuario === solicitud.idCliente && hiloHabilitado(solicitud);
+}
+
+/**
+ * Si la solicitud admite calificación.
+ *
+ * Solo `COMPLETADA`, que es el único estado que cierra el servicio y además es definitivo. Antes de
+ * eso no se pinta ni el formulario ni la sección: no hay nada que calificar todavía. Quién puede
+ * calificar de verdad lo decide el backend; esto solo evita ofrecer una acción falsa.
+ */
+export function admiteCalificacion(solicitud: DatosDeSolicitudServicio): boolean {
+  return solicitud.estadoActual === 'COMPLETADA';
+}
+
+/** Cómo se nombra en pantalla el rol en que quedó calificada la contraparte. */
+export function nombreDelRol(rol: RolCalificado): string {
+  return rol === 'PRESTADOR' ? 'prestador' : 'cliente';
 }

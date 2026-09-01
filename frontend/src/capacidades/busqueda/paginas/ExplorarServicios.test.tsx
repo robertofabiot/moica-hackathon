@@ -151,6 +151,7 @@ describe('Explorar servicios', () => {
 
     expect(await screen.findByRole('heading', { name: 'Reparación de fugas' })).toBeVisible();
     expect(screen.getByText('A convenir')).toBeVisible();
+    await persona.hover(screen.getByRole('button', { name: /Insignia/i }));
     expect(screen.getByText(/No garantiza la calidad futura del trabajo/)).toBeVisible();
     expect(screen.getByRole('link', { name: 'Iniciar sesión para solicitar' })).toBeVisible();
     expect(screen.queryByRole('link', { name: 'Solicitar este servicio' })).not.toBeInTheDocument();

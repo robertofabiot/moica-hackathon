@@ -75,3 +75,56 @@ export function nombreDelTipoPrestador(tipo: 'INDEPENDIENTE' | 'EMPRENDIMIENTO' 
 export function nombreDeDisponibilidad(disponibilidad: 'DISPONIBLE' | 'NO_DISPONIBLE'): string {
   return disponibilidad === 'DISPONIBLE' ? 'Disponible para contratar' : 'No disponible ahora';
 }
+
+/** Iniciales de un nombre público para el avatar de respaldo. */
+export function inicialesDeNombre(nombre: string): string {
+  const partes = nombre
+    .trim()
+    .split(/\s+/)
+    .filter((parte) => parte.length > 0);
+  if (partes.length === 0) {
+    return '';
+  }
+  if (partes.length === 1) {
+    const unica = partes[0] ?? '';
+    return unica.slice(0, Math.min(2, unica.length)).toUpperCase();
+  }
+  const primera = partes[0]?.[0] ?? '';
+  const ultima = partes[partes.length - 1]?.[0] ?? '';
+  return `${primera}${ultima}`.toUpperCase();
+}
+
+/**
+ * Oficio que se lee bajo el nombre: la subcategoría más reciente, o el tipo de
+ * prestador si todavía no publicó servicios.
+ */
+export function profesionVisible(
+  servicios: Array<{ nombreSubcategoria: string }>,
+  tipoPrestador: 'INDEPENDIENTE' | 'EMPRENDIMIENTO' | 'PYME'
+): string {
+  const primera = servicios[0]?.nombreSubcategoria;
+  if (primera !== undefined && primera !== '') {
+    return primera;
+  }
+  return nombreDelTipoPrestador(tipoPrestador);
+}
+
+/**
+ * Porcentaje de calificaciones de 4 o 5 estrellas. `null` cuando todavía no hay
+ * ninguna: no se presenta como 0 %.
+ */
+export function porcentajeDeSatisfaccion(reputacion: ReputacionPorRol): number | null {
+  if (reputacion.cantidad === 0) {
+    return null;
+  }
+  const favorables = reputacion.desglose
+    .filter((tramo) => tramo.estrellas >= 4)
+    .reduce((total, tramo) => total + tramo.cantidad, 0);
+  return Math.round((favorables / reputacion.cantidad) * 100);
+}
+
+/** Precio de una fila de servicios: «A convenir» o «Desde C$600». */
+export function precioEnFila(precioReferencia: number | null): string {
+  const precio = precioEnTarjeta(precioReferencia);
+  return precio.prefijo === null ? precio.valor : `${precio.prefijo} ${precio.valor}`;
+}

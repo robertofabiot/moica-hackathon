@@ -1,32 +1,39 @@
-import { useState } from 'react';
+import { useState, type ComponentType, type SVGProps } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
 import {
   Boton,
   EstrellasCalificacion,
+  IconoCasa,
+  IconoChevronDerecha,
+  IconoHerramienta,
   IconoMaletin,
   IconoPin,
   IconoPulgarArriba,
+  IconoReloj,
   IconoUsuario,
   InsigniaVerificado,
 } from '../../../comun/componentes/ui';
 import InsigniaResponsable from '../componentes/InsigniaResponsable';
-import TarjetaDeServicio from '../componentes/TarjetaDeServicio';
-import lista from '../componentes/tarjeta.module.css';
 import { usePrestadorPublico } from '../hooks/useBusquedaPublica';
 import {
+  conteoDeCalificaciones,
   inicialesDeNombre,
   nombreDeDisponibilidad,
   nombreDelTipoPrestador,
+  notaVisible,
   porcentajeDeSatisfaccion,
+  precioEnFila,
   profesionVisible,
+  SIN_CALIFICACIONES,
 } from '../presentacion';
 import { RUTA_EXPLORAR, rutaDeDetalleDeServicio } from '../rutas';
 import type {
   PerfilPublico,
   PrestadorPublico as DatosDePrestador,
   ReputacionPorRol,
+  ResumenPublicoDeServicio,
 } from '../tipos';
 import estilos from './prestadorPublico.module.css';
 
@@ -76,58 +83,30 @@ export default function PrestadorPublico() {
 }
 
 function PerfilCargado({ perfil }: { perfil: PerfilPublico }) {
-  const { prestador, portafolio, servicios, admiteContratacion } = perfil;
+  const { prestador, portafolio, servicios, admiteContratacion, reputacionPrestador } = perfil;
 
   return (
     <div className={estilos.pagina}>
       <main className={estilos.principal}>
-        <CabeceraDePerfil perfil={perfil} />
+        <div className={estilos.columnas}>
+          <div className={estilos.columnaPrincipal}>
+            <div className={estilos.bloqueCabecera}>
+              <CabeceraDePerfil perfil={perfil} />
+            </div>
+            <div className={estilos.bloquePortafolio}>
+              <PortafolioPublico portafolio={portafolio} />
+            </div>
+          </div>
 
-        <section className={estilos.seccion} aria-labelledby="titulo-portafolio-publico">
-          <h2 className={estilos.tituloDeSeccion} id="titulo-portafolio-publico">
-            Portafolio
-          </h2>
-          {portafolio.length === 0 ? (
-            <p className={estilos.vacio}>Este prestador todavía no publicó trabajos.</p>
-          ) : (
-            <ul className={estilos.portafolio}>
-              {portafolio.map((trabajo) => (
-                <li key={trabajo.idTrabajo} className={estilos.trabajo}>
-                  <h3 className={estilos.tituloDeTrabajo}>{trabajo.titulo}</h3>
-                  <p>{trabajo.descripcion}</p>
-                  {trabajo.imagenes.length > 0 && (
-                    <div className={estilos.miniaturas}>
-                      {trabajo.imagenes.map((imagen) => (
-                        <img
-                          key={imagen.idImagenTrabajoPortafolio}
-                          className={estilos.miniatura}
-                          src={imagen.urlImagen}
-                          alt={imagen.textoAlternativo ?? trabajo.titulo}
-                          loading="lazy"
-                        />
-                      ))}
-                    </div>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className={estilos.seccion} aria-labelledby="titulo-servicios-publicos">
-          <h2 className={estilos.tituloDeSeccion} id="titulo-servicios-publicos">
-            Servicios
-          </h2>
-          {servicios.length === 0 ? (
-            <p className={estilos.vacio}>No hay servicios activos en este momento.</p>
-          ) : (
-            <ul className={lista.lista}>
-              {servicios.map((servicio) => (
-                <TarjetaDeServicio key={servicio.idServicioPublicado} servicio={servicio} />
-              ))}
-            </ul>
-          )}
-        </section>
+          <div className={estilos.columnaLateral}>
+            <div className={estilos.bloqueServicios}>
+              <ServiciosOfrecidos servicios={servicios} />
+            </div>
+            <div className={estilos.bloqueResenas}>
+              <ResenasDeClientes reputacion={reputacionPrestador} />
+            </div>
+          </div>
+        </div>
 
         <p className={estilos.vacio} role="status">
           {admiteContratacion
@@ -271,4 +250,131 @@ function MetricasDestacadas({
       </li>
     </ul>
   );
+}
+
+function ServiciosOfrecidos({ servicios }: { servicios: ResumenPublicoDeServicio[] }) {
+  return (
+    <section className={estilos.tarjetaLateral} aria-labelledby="titulo-servicios-publicos">
+      <h2 className={estilos.tituloDeSeccion} id="titulo-servicios-publicos">
+        Servicios
+      </h2>
+      {servicios.length === 0 ? (
+        <p className={estilos.vacio}>No hay servicios activos en este momento.</p>
+      ) : (
+        <ul className={estilos.listaDeServicios}>
+          {servicios.map((servicio, indice) => {
+            const Icono = iconoParaServicio(servicio.nombreCategoria, indice);
+            return (
+              <li key={servicio.idServicioPublicado}>
+                <Link
+                  className={estilos.filaDeServicio}
+                  to={rutaDeDetalleDeServicio(servicio.idServicioPublicado)}
+                >
+                  <span className={estilos.iconoDeServicio}>
+                    <Icono />
+                  </span>
+                  <span className={estilos.datosDeServicio}>
+                    <span className={estilos.nombreDeServicio}>{servicio.nombre}</span>
+                    <span className={estilos.precioDeServicio}>
+                      {precioEnFila(servicio.precioReferencia)}
+                    </span>
+                  </span>
+                  <IconoChevronDerecha className={estilos.chevron} />
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function ResenasDeClientes({ reputacion }: { reputacion: ReputacionPorRol }) {
+  const nota = notaVisible(reputacion.promedio);
+
+  return (
+    <section className={estilos.tarjetaLateral} aria-labelledby="titulo-resenas-publico">
+      <h2 className={estilos.tituloDeSeccion} id="titulo-resenas-publico">
+        Reseñas de clientes
+      </h2>
+      {nota === null ? (
+        <p className={estilos.vacio}>
+          {SIN_CALIFICACIONES} todavía. Este prestador aún no completó servicios calificados.
+        </p>
+      ) : (
+        <article className={estilos.testimonio}>
+          <span className={estilos.avatarCliente} aria-hidden="true">
+            <IconoUsuario />
+          </span>
+          <div className={estilos.cuerpoTestimonio}>
+            <p className={estilos.origenResena}>Clientes de Moica</p>
+            <EstrellasCalificacion
+              calificacion={reputacion.promedio}
+              totalCalificaciones={reputacion.cantidad}
+            />
+            <p className={estilos.notaDeResena} aria-hidden="true">
+              {nota}
+            </p>
+            <p className={estilos.comentarioResena}>
+              Según {conteoDeCalificaciones(reputacion.cantidad)} de solicitudes completadas.
+            </p>
+          </div>
+        </article>
+      )}
+    </section>
+  );
+}
+
+function PortafolioPublico({ portafolio }: { portafolio: PerfilPublico['portafolio'] }) {
+  return (
+    <section className={estilos.tarjetaPortafolio} aria-labelledby="titulo-portafolio-publico">
+      <h2 className={estilos.tituloDeSeccion} id="titulo-portafolio-publico">
+        Portafolio
+      </h2>
+      {portafolio.length === 0 ? (
+        <p className={estilos.vacio}>Este prestador todavía no publicó trabajos.</p>
+      ) : (
+        <ul className={estilos.portafolio}>
+          {portafolio.map((trabajo) => (
+            <li key={trabajo.idTrabajo} className={estilos.trabajo}>
+              {trabajo.imagenes.length > 0 ? (
+                <div className={estilos.miniaturas}>
+                  {trabajo.imagenes.map((imagen) => (
+                    <img
+                      key={imagen.idImagenTrabajoPortafolio}
+                      className={estilos.miniatura}
+                      src={imagen.urlImagen}
+                      alt={imagen.textoAlternativo ?? trabajo.titulo}
+                      loading="lazy"
+                    />
+                  ))}
+                </div>
+              ) : null}
+              <h3 className={estilos.tituloDeTrabajo}>{trabajo.titulo}</h3>
+              <p className={estilos.descripcionTrabajo}>{trabajo.descripcion}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+type IconoDeFila = ComponentType<SVGProps<SVGSVGElement>>;
+
+const ICONOS_POR_TURNO: IconoDeFila[] = [IconoCasa, IconoHerramienta, IconoMaletin, IconoReloj];
+
+function iconoParaServicio(nombreCategoria: string, indice: number): IconoDeFila {
+  const clave = nombreCategoria.toLowerCase();
+  if (clave.includes('hogar')) {
+    return IconoCasa;
+  }
+  if (clave.includes('construc') || clave.includes('repara')) {
+    return IconoHerramienta;
+  }
+  if (clave.includes('urgen') || clave.includes('emergen')) {
+    return IconoReloj;
+  }
+  return ICONOS_POR_TURNO[indice % ICONOS_POR_TURNO.length] ?? IconoMaletin;
 }

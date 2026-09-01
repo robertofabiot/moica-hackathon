@@ -97,7 +97,7 @@ describe('Explorar servicios', () => {
     api.responder('GET /api/servicios?texto=fuga', { estado: 200, cuerpo: [] });
     renderizarConProveedores(<App />, '/explorar?texto=fuga');
 
-    expect(await screen.findByLabelText('Qué buscas')).toHaveValue('fuga');
+    expect(await screen.findByLabelText('Buscar servicios')).toHaveValue('fuga');
     expect(api.ultima('GET /api/servicios?texto=fuga')).toBeDefined();
   });
 
@@ -106,11 +106,11 @@ describe('Explorar servicios', () => {
     api.responder('GET /api/servicios?texto=fuga', { estado: 200, cuerpo: [] });
     api.responder('GET /api/servicios', { estado: 200, cuerpo: [] });
     renderizarConProveedores(<App />, '/explorar?texto=fuga');
-    expect(await screen.findByLabelText('Qué buscas')).toHaveValue('fuga');
+    expect(await screen.findByLabelText('Buscar servicios')).toHaveValue('fuga');
 
     await persona.click(screen.getByRole('button', { name: 'Quitar filtros' }));
 
-    expect(screen.getByLabelText('Qué buscas')).toHaveValue('');
+    expect(screen.getByLabelText('Buscar servicios')).toHaveValue('');
     expect(api.ultima('GET /api/servicios')).toBeDefined();
   });
 
@@ -125,7 +125,7 @@ describe('Explorar servicios', () => {
     renderizarConProveedores(<App />, '/explorar');
     await screen.findByText(/No hay servicios que coincidan/);
 
-    await persona.type(screen.getByLabelText('Qué buscas'), 'fuga');
+    await persona.type(screen.getByLabelText('Buscar servicios'), 'fuga');
     await persona.click(screen.getByRole('button', { name: 'Hogar' }));
     await persona.selectOptions(screen.getByLabelText('Ubicación'), '3');
     await persona.click(screen.getByRole('button', { name: 'Buscar' }));

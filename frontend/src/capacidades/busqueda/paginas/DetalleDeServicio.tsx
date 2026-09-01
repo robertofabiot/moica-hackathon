@@ -1,14 +1,16 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 
+import logoIcono from '../../../assets/logos/moica-icono.svg';
 import { ErrorDeApi } from '../../../comun/api';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
+import { IconoCasa, PieDePagina } from '../../../comun/componentes/ui';
 import { AccionDeSolicitud } from '../../solicitud';
 import InsigniaResponsable from '../componentes/InsigniaResponsable';
 import { useServicioPublico } from '../hooks/useBusquedaPublica';
 import { nombreDelTipoPrestador, precioVisible } from '../presentacion';
 import { RUTA_EXPLORAR, rutaDePrestadorPublico } from '../rutas';
-import propios from './explorar.module.css';
+import type { DetallePublicoDeServicio, ImagenPublicaDeServicio } from '../tipos';
+import estilos from './detalleServicio.module.css';
 
 /** Detalle público de un servicio visible. La solicitud se envía desde aquí. */
 export default function DetalleDeServicio() {
@@ -18,105 +20,193 @@ export default function DetalleDeServicio() {
 
   if (detalle.isPending) {
     return (
-      <main className={propios.pantalla}>
-        <p className={secciones.estado} role="status">
-          Cargando el servicio…
-        </p>
-      </main>
+      <div className={estilos.pagina}>
+        <main className={estilos.principal}>
+          <p className={estilos.estado} role="status">
+            Cargando el servicio…
+          </p>
+        </main>
+        <PieDePagina />
+      </div>
     );
   }
 
   if (detalle.isError || detalle.data === undefined) {
     return (
-      <main className={propios.pantalla}>
-        <div className={propios.contenido}>
+      <div className={estilos.pagina}>
+        <main className={estilos.principal}>
           <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
             {detalle.error instanceof ErrorDeApi
               ? detalle.error.message
               : 'Ese servicio no está disponible.'}{' '}
             <button
-              className={estilos.enlaceDeTexto}
+              className={estilos.reintentar}
               type="button"
               onClick={() => void detalle.refetch()}
             >
               Reintentar
             </button>
           </p>
-          <p className={propios.pie}>
+          <p className={estilos.pieDeEstado}>
             <Link to={RUTA_EXPLORAR}>Volver a explorar</Link>
           </p>
-        </div>
-      </main>
+        </main>
+        <PieDePagina />
+      </div>
     );
   }
 
-  const servicio = detalle.data;
+  return <DetalleCargado servicio={detalle.data} />;
+}
+
+function DetalleCargado({ servicio }: { servicio: DetallePublicoDeServicio }) {
   const prestador = servicio.prestador;
 
   return (
-    <main className={propios.pantalla}>
-      <div className={propios.contenido}>
-        <header className={propios.encabezado}>
-          <h1 className={propios.titulo}>{servicio.nombre}</h1>
-          <p className={secciones.explicacion}>
-            {servicio.nombreCategoria} · {servicio.nombreSubcategoria}
-          </p>
-          <p>
-            <strong>{precioVisible(servicio.precioReferencia)}</strong>
-          </p>
-        </header>
-
-        {servicio.imagenes.length === 0 ? (
-          <p className={secciones.vacio}>Este servicio no tiene imágenes.</p>
-        ) : (
-          <ul className={propios.galeria}>
-            {servicio.imagenes.map((imagen, posicion) => (
-              <li key={imagen.idImagenServicioPublicado}>
-                <img
-                  className={propios.imagen}
-                  src={imagen.urlImagen}
-                  alt={imagen.textoAlternativo ?? `Imagen ${posicion + 1} de ${servicio.nombre}`}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <section className={secciones.seccion} aria-labelledby="titulo-descripcion-servicio">
-          <h2 className={secciones.tituloDeSeccion} id="titulo-descripcion-servicio">
-            Descripción
-          </h2>
-          <p>{servicio.descripcion}</p>
-        </section>
-
-        <section className={secciones.seccion} aria-labelledby="titulo-prestador-servicio">
-          <h2 className={secciones.tituloDeSeccion} id="titulo-prestador-servicio">
-            Quién lo ofrece
-          </h2>
-          <p>
-            <Link to={rutaDePrestadorPublico(prestador.idPrestador)}>
-              {prestador.nombrePublico}
-            </Link>
-          </p>
-          <p className={secciones.explicacion}>
-            {nombreDelTipoPrestador(prestador.tipoPrestador)} ·{' '}
-            {prestador.municipioPrincipal.nombreMunicipio},{' '}
-            {prestador.municipioPrincipal.nombreDepartamento}
-          </p>
-          <p>{prestador.descripcion}</p>
-          <InsigniaResponsable prestador={prestador} />
-        </section>
-
-        <AccionDeSolicitud
-          idServicio={servicio.idServicioPublicado}
-          idPrestador={prestador.idPrestador}
-          admiteContratacion={servicio.admiteContratacion}
+    <div className={estilos.pagina}>
+      <main className={estilos.principal}>
+        <MigasDePan
+          nombreCategoria={servicio.nombreCategoria}
+          idCategoria={servicio.idCategoriaServicio}
+          nombreServicio={servicio.nombre}
         />
 
-        <p className={propios.pie}>
-          <Link to={RUTA_EXPLORAR}>Volver a explorar</Link>
-        </p>
-      </div>
-    </main>
+        <div className={estilos.columnas}>
+          <div className={estilos.columnaPrincipal}>
+            <GaleriaDeServicio nombre={servicio.nombre} imagenes={servicio.imagenes} />
+
+            <section className={estilos.tarjeta} aria-labelledby="titulo-descripcion-servicio">
+              <h2 className={estilos.tituloDeTarjeta} id="titulo-descripcion-servicio">
+                Descripción
+              </h2>
+              <p className={estilos.descripcion}>{servicio.descripcion}</p>
+            </section>
+          </div>
+
+          <div className={estilos.columnaLateral}>
+            <header className={estilos.tarjeta}>
+              <h1 className={estilos.tituloDeServicio}>{servicio.nombre}</h1>
+              <p className={estilos.subtitulo}>
+                {servicio.nombreCategoria} · {servicio.nombreSubcategoria}
+              </p>
+              <p>
+                <strong>{precioVisible(servicio.precioReferencia)}</strong>
+              </p>
+            </header>
+
+            <section className={estilos.tarjeta} aria-labelledby="titulo-prestador-servicio">
+              <h2 className={estilos.tituloDeTarjeta} id="titulo-prestador-servicio">
+                Quién lo ofrece
+              </h2>
+              <p>
+                <Link to={rutaDePrestadorPublico(prestador.idPrestador)}>
+                  {prestador.nombrePublico}
+                </Link>
+              </p>
+              <p className={estilos.subtitulo}>
+                {nombreDelTipoPrestador(prestador.tipoPrestador)} ·{' '}
+                {prestador.municipioPrincipal.nombreMunicipio},{' '}
+                {prestador.municipioPrincipal.nombreDepartamento}
+              </p>
+              <p className={estilos.descripcion}>{prestador.descripcion}</p>
+              <InsigniaResponsable prestador={prestador} />
+            </section>
+
+            <AccionDeSolicitud
+              idServicio={servicio.idServicioPublicado}
+              idPrestador={prestador.idPrestador}
+              admiteContratacion={servicio.admiteContratacion}
+            />
+          </div>
+        </div>
+      </main>
+      <PieDePagina />
+    </div>
+  );
+}
+
+function MigasDePan({
+  nombreCategoria,
+  idCategoria,
+  nombreServicio,
+}: {
+  nombreCategoria: string;
+  idCategoria: number;
+  nombreServicio: string;
+}) {
+  return (
+    <nav className={estilos.migas} aria-label="Migas de pan">
+      <ol className={estilos.listaMigas}>
+        <li>
+          <Link className={estilos.miga} to="/">
+            <IconoCasa />
+            Inicio
+          </Link>
+        </li>
+        <li>
+          <Link className={estilos.miga} to={`${RUTA_EXPLORAR}?idCategoria=${idCategoria}`}>
+            {nombreCategoria}
+          </Link>
+        </li>
+        <li>
+          <span className={estilos.migaActual} aria-current="page">
+            {nombreServicio}
+          </span>
+        </li>
+      </ol>
+    </nav>
+  );
+}
+
+function GaleriaDeServicio({
+  nombre,
+  imagenes,
+}: {
+  nombre: string;
+  imagenes: ImagenPublicaDeServicio[];
+}) {
+  const [imagenSeleccionada, setImagenSeleccionada] = useState(0);
+  const actual = imagenes[imagenSeleccionada];
+
+  return (
+    <div className={estilos.galeria}>
+      {actual === undefined ? (
+        <div className={estilos.escenario}>
+          <div className={estilos.placeholder} role="img" aria-label={`${nombre}, sin imágenes`}>
+            <img className={estilos.isotipo} src={logoIcono} alt="" />
+          </div>
+        </div>
+      ) : (
+        <div className={estilos.escenario}>
+          <img
+            className={estilos.imagenPrincipal}
+            src={actual.urlImagen}
+            alt={actual.textoAlternativo ?? `Imagen ${imagenSeleccionada + 1} de ${nombre}`}
+          />
+        </div>
+      )}
+
+      {imagenes.length > 0 ? (
+        <ul className={estilos.miniaturas} aria-label="Miniaturas del servicio">
+          {imagenes.map((imagen, posicion) => (
+            <li key={imagen.idImagenServicioPublicado}>
+              <button
+                type="button"
+                className={
+                  posicion === imagenSeleccionada
+                    ? `${estilos.miniatura} ${estilos.miniaturaActiva}`
+                    : estilos.miniatura
+                }
+                aria-label={`Ver imagen ${posicion + 1} de ${imagenes.length}`}
+                aria-pressed={posicion === imagenSeleccionada}
+                onClick={() => setImagenSeleccionada(posicion)}
+              >
+                <img src={imagen.urlImagen} alt="" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
   );
 }

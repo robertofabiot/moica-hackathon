@@ -1,5 +1,25 @@
 import type { NivelVerificacion } from '../verificacion';
 
+/** Cuántas calificaciones recibió una puntuación concreta. */
+export interface TramoDeReputacion {
+  estrellas: number;
+  cantidad: number;
+}
+
+/**
+ * Reputación de una persona en un rol, calculada por el backend.
+ *
+ * `promedio` es `null` cuando todavía no hay calificaciones: la interfaz lo
+ * presenta como «Sin calificaciones» y nunca dibuja un `0.0`. El desglose llega
+ * siempre con las cinco filas, de cinco a una estrella.
+ */
+export interface ReputacionPorRol {
+  rol: 'CLIENTE' | 'PRESTADOR';
+  promedio: number | null;
+  cantidad: number;
+  desglose: TramoDeReputacion[];
+}
+
 export interface ImagenPublicaDeServicio {
   idImagenServicioPublicado: number;
   urlImagen: string;
@@ -39,6 +59,7 @@ export interface ResumenPublicoDeServicio {
   nombreSubcategoria: string;
   imagenPrincipal: ImagenPublicaDeServicio | null;
   prestador: PrestadorPublico;
+  reputacionPrestador: ReputacionPorRol;
 }
 
 export interface DetallePublicoDeServicio {
@@ -53,6 +74,7 @@ export interface DetallePublicoDeServicio {
   imagenes: ImagenPublicaDeServicio[];
   admiteContratacion: boolean;
   prestador: PrestadorPublico;
+  reputacionPrestador: ReputacionPorRol;
 }
 
 export interface TrabajoPublico {
@@ -77,6 +99,7 @@ export interface PerfilPublico {
   portafolio: TrabajoPublico[];
   servicios: ResumenPublicoDeServicio[];
   admiteContratacion: boolean;
+  reputacionPrestador: ReputacionPorRol;
 }
 
 export interface FiltrosDeBusqueda {

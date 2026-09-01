@@ -1,9 +1,12 @@
 import { enviarJson, obtenerJson } from '../../comun/api';
 import type {
+  CalificacionAEmitir,
   ContactoRevelado,
   DatosDeContratacion,
   DatosDeSolicitudServicio,
   DepartamentoDeCatalogo,
+  EstadoDeCalificacion,
+  DatosDeCalificacion,
   MensajeSolicitud,
   ResumenDeSolicitudServicio,
 } from './tipos';
@@ -72,4 +75,17 @@ export function enviarMensaje(idSolicitud: number, contenido: string): Promise<M
  */
 export function obtenerContactosRevelados(idSolicitud: number): Promise<ContactoRevelado[]> {
   return obtenerJson(`${RUTA}/${idSolicitud}/contactos`);
+}
+
+/** A quién califica la sesión, en qué rol y si todavía puede hacerlo. */
+export function obtenerEstadoDeCalificacion(idSolicitud: number): Promise<EstadoDeCalificacion> {
+  return obtenerJson(`${RUTA}/${idSolicitud}/calificacion`);
+}
+
+/** Emite la calificación. El calificado y su rol los pone el backend, no este cuerpo. */
+export function enviarCalificacion(
+  idSolicitud: number,
+  calificacion: CalificacionAEmitir
+): Promise<DatosDeCalificacion> {
+  return enviarJson('POST', `${RUTA}/${idSolicitud}/calificacion`, calificacion);
 }

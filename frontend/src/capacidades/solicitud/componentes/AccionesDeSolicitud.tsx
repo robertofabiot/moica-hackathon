@@ -56,7 +56,8 @@ export default function AccionesDeSolicitud({
   if (solicitud.estadoActual === 'COMPLETADA') {
     return (
       <p className={secciones.explicacion} role="status">
-        El servicio se marcó como completado. Las calificaciones llegan en un próximo incremento.
+        El servicio se marcó como completado. Puedes calificar a la contraparte más abajo; hacerlo
+        es opcional.
       </p>
     );
   }

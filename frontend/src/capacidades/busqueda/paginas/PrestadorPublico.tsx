@@ -1,12 +1,17 @@
 import { Link, useParams } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { EstrellasCalificacion } from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import InsigniaResponsable from '../componentes/InsigniaResponsable';
 import TarjetaDeServicio from '../componentes/TarjetaDeServicio';
 import { usePrestadorPublico } from '../hooks/useBusquedaPublica';
-import { nombreDeDisponibilidad, nombreDelTipoPrestador } from '../presentacion';
+import {
+  conteoDeCalificaciones,
+  nombreDeDisponibilidad,
+  nombreDelTipoPrestador,
+} from '../presentacion';
 import { RUTA_EXPLORAR } from '../rutas';
 import propios from './explorar.module.css';
 import lista from '../componentes/tarjeta.module.css';
@@ -51,7 +56,7 @@ export default function PrestadorPublico() {
     );
   }
 
-  const { prestador, portafolio, servicios, admiteContratacion } = perfil.data;
+  const { prestador, portafolio, servicios, admiteContratacion, reputacionPrestador } = perfil.data;
 
   return (
     <main className={propios.pantalla}>
@@ -72,6 +77,19 @@ export default function PrestadorPublico() {
           </p>
           <p className={secciones.explicacion}>
             {nombreDeDisponibilidad(prestador.disponibilidad)}
+          </p>
+          <p className={propios.reputacion}>
+            <EstrellasCalificacion
+              calificacion={reputacionPrestador.promedio}
+              totalCalificaciones={
+                reputacionPrestador.cantidad === 0 ? undefined : reputacionPrestador.cantidad
+              }
+            />
+            {reputacionPrestador.cantidad > 0 ? (
+              <span className={secciones.explicacion}>
+                {conteoDeCalificaciones(reputacionPrestador.cantidad)} de solicitudes completadas
+              </span>
+            ) : null}
           </p>
         </header>
 

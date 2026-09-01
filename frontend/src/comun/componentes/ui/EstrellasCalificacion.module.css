@@ -29,3 +29,18 @@
   font-weight: var(--font-weight-regular);
   color: var(--color-neutral-600);
 }
+
+.sinNota {
+  color: var(--color-neutral-600);
+}
+
+/* Sin nota, la estrella deja de ser un dato y pasa a ser decoración. */
+.iconoApagado {
+  color: var(--color-neutral-400);
+}
+
+.vacio {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-neutral-600);
+}

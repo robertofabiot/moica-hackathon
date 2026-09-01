@@ -31,6 +31,15 @@ export function precioEnTarjeta(precioReferencia: number | null): {
 export const CALIFICACION_DE_MUESTRA = 4.8;
 export const RESENAS_DE_MUESTRA = 102;
 
+/** Recuento de la ficha de detalle, alineado a la maqueta (120 reseñas). */
+export const RESENAS_DE_FICHA_DE_MUESTRA = 120;
+
+export const DESGLOSE_DE_RESENAS_DE_MUESTRA = [
+  { estrellas: 5, cantidad: 80 },
+  { estrellas: 4, cantidad: 30 },
+  { estrellas: 3, cantidad: 10 },
+] as const;
+
 export function nombreDelTipoPrestador(tipo: 'INDEPENDIENTE' | 'EMPRENDIMIENTO' | 'PYME'): string {
   switch (tipo) {
     case 'INDEPENDIENTE':

@@ -224,9 +224,267 @@
   overflow-wrap: anywhere;
 }
 
+.metadatos {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-sm) var(--gap-lg);
+}
+
+.calificacion,
+.ubicacion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  margin: 0;
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.iconoEstrella {
+  display: block;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  color: var(--color-warning-500);
+}
+
+.iconoPin {
+  display: block;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  color: var(--color-secondary-500);
+}
+
+.nota {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+}
+
+.conteo {
+  color: var(--color-neutral-600);
+}
+
+.bloqueDePrecio {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.etiquetaDesde {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.monto {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+
 .subtitulo {
   color: var(--color-neutral-600);
   font-size: var(--font-size-sm);
+}
+
+.garantias {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.garantias li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-sm);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.iconoCheck {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+  color: var(--color-primary-500);
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.ctaSolicitud {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.ctaSolicitud a {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-xs);
+  padding: var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-primary-500);
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-500);
+  color: var(--color-neutral-0);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+  text-decoration: none;
+}
+
+.ctaSolicitud a:hover {
+  background-color: var(--color-primary-700);
+  border-color: var(--color-primary-700);
+}
+
+.ctaSolicitud p {
+  margin: 0;
+  padding: var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.botonGuardar {
+  width: 100%;
+}
+
+.cabeceraPrestador {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-md);
+  min-width: 0;
+}
+
+.avatarPrestador {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-700);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  object-fit: cover;
+}
+
+.datosPrestador {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.enlacePrestador {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-xs) var(--gap-sm);
+  color: inherit;
+  text-decoration: none;
+}
+
+.enlacePrestador:hover .nombrePrestador {
+  color: var(--color-primary-700);
+  text-decoration: underline;
+}
+
+.nombrePrestador {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.resumenDeResenas {
+  display: flex;
+  align-items: baseline;
+  gap: var(--gap-sm);
+}
+
+.puntuacionGrande {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.deCinco {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.barras {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.filaDeBarra {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) 2rem;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+
+.etiquetaBarra {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.iconoEstrellaChica {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  color: var(--color-warning-500);
+}
+
+.riel {
+  height: 0.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-100);
+}
+
+.relleno {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-500);
+}
+
+.contadorBarra {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  text-align: right;
 }
 
 @media (min-width: 64rem) {

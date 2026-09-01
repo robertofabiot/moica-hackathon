@@ -4,6 +4,7 @@ import com.moica.auth.seguridad.UsuarioAutenticado;
 import com.moica.calificacion.dto.CalificacionAEmitir;
 import com.moica.calificacion.dto.DatosDeCalificacion;
 import com.moica.calificacion.dto.EstadoDeCalificacion;
+import com.moica.calificacion.dto.ReputacionPorRol;
 import com.moica.calificacion.entity.CalificacionUsuario;
 import com.moica.calificacion.entity.RolCalificado;
 import com.moica.calificacion.repository.CalificacionUsuarioRepository;
@@ -52,16 +53,19 @@ public class CalificacionDeSolicitudService {
 
   private final SolicitudServicioService solicitudes;
   private final CalificacionUsuarioRepository calificaciones;
+  private final ReputacionService reputaciones;
   private final PerfilPrestadorService perfiles;
   private final UsuarioService usuarios;
 
   public CalificacionDeSolicitudService(
       SolicitudServicioService solicitudes,
       CalificacionUsuarioRepository calificaciones,
+      ReputacionService reputaciones,
       PerfilPrestadorService perfiles,
       UsuarioService usuarios) {
     this.solicitudes = solicitudes;
     this.calificaciones = calificaciones;
+    this.reputaciones = reputaciones;
     this.perfiles = perfiles;
     this.usuarios = usuarios;
   }
@@ -158,6 +162,38 @@ public class CalificacionDeSolicitudService {
       // cuál se queda, y el otro sale por aquí como conflicto y no como fallo.
       throw yaCalificada();
     }
+  }
+
+  /**
+   * La reputación como cliente de la persona que contrató, para el prestador participante.
+   *
+   * <p>Es una superficie propia y no un campo del detalle de la solicitud, por la misma razón que
+   * la revelación de contactos: así la reputación como cliente no viaja por descuido en las
+   * bandejas ni en ninguna pantalla pública. Los perfiles de cliente no son públicos y este
+   * incremento no los convierte en tales.
+   *
+   * <p>Responde a una sola persona: el prestador destinatario. El cliente recibe 404 —su propia
+   * reputación como cliente no se le publica aquí— y un tercero también, igual que en el resto de
+   * recursos propios.
+   *
+   * <p>No exige que la solicitud esté completada. Quien va a decidir si acepta un encargo es
+   * precisamente quien más necesita ese dato, y llega por una solicitud que ya le pertenece.
+   *
+   * @throws ErrorDeAplicacion 404 si quien pregunta no es el prestador participante
+   */
+  @Transactional(readOnly = true)
+  public ReputacionPorRol reputacionDelCliente(
+      UsuarioAutenticado sujeto, Long idSolicitudServicio) {
+
+    ParticipacionEnSolicitud participacion =
+        solicitudes.participacionDe(sujeto, idSolicitudServicio);
+
+    if (!participacion.esPrestador(sujeto.idUsuario())) {
+      throw new ErrorDeAplicacion(
+          HttpStatus.NOT_FOUND, "RECURSO_NO_ENCONTRADO", "Esa solicitud no existe.");
+    }
+
+    return reputaciones.reputacionDe(participacion.idCliente(), RolCalificado.CLIENTE);
   }
 
   private static Long idCalificado(

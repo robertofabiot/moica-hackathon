@@ -1,0 +1,297 @@
+/*
+ * Perfil público del prestador. Mobile-first. Solo tokens de
+ * `src/estilos/global.css`.
+ */
+
+.pagina {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background-color: var(--color-neutral-50);
+}
+
+.principal {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: var(--gap-lg) var(--gap-md) var(--gap-2xl);
+}
+
+.estado {
+  color: var(--color-neutral-600);
+}
+
+.aviso {
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-left-width: 4px;
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+}
+
+.avisoDeError {
+  border-left-color: var(--color-error-500);
+}
+
+.reintentar {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary-700);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.pieDeEstado {
+  color: var(--color-neutral-600);
+}
+
+.tarjetaCabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  padding: var(--gap-xl);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-neutral-0);
+  box-shadow: var(--shadow-sm);
+}
+
+.filaCabecera {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-lg);
+  text-align: center;
+}
+
+.avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 7.5rem;
+  height: 7.5rem;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-700);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  object-fit: cover;
+}
+
+.avatar svg {
+  display: block;
+  width: 3rem;
+  height: 3rem;
+}
+
+.datosCabecera {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  min-width: 0;
+  width: 100%;
+}
+
+.filaNombre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-xs) var(--gap-sm);
+}
+
+.nombre {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.profesion {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-md);
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-sm) var(--gap-lg);
+}
+
+.ubicacion {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  margin: 0;
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.iconoPin {
+  display: block;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
+  color: var(--color-secondary-500);
+}
+
+.presentacion {
+  color: var(--color-neutral-800);
+  overflow-wrap: anywhere;
+}
+
+.cobertura {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.metricas {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.metrica {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: var(--gap-md);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-50);
+}
+
+.iconoMetrica {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-bottom: var(--gap-xs);
+  color: var(--color-secondary-500);
+}
+
+.valorMetrica {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+  overflow-wrap: anywhere;
+}
+
+.etiquetaMetrica {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.acciones button {
+  width: 100%;
+}
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.tituloDeSeccion {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.vacio {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.portafolio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trabajo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding: var(--gap-md);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-0);
+  box-shadow: var(--shadow-sm);
+}
+
+.tituloDeTrabajo {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.miniaturas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: var(--gap-sm);
+}
+
+.miniatura {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-lg);
+  object-fit: cover;
+  background-color: var(--color-neutral-100);
+}
+
+@media (min-width: 48rem) {
+  .principal {
+    padding-inline: var(--gap-xl);
+  }
+
+  .filaCabecera {
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .filaNombre,
+  .meta {
+    justify-content: flex-start;
+  }
+
+  .metricas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .acciones {
+    flex-direction: row;
+  }
+
+  .acciones button {
+    width: auto;
+    min-width: 8.5rem;
+  }
+}

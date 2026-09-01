@@ -1,7 +1,12 @@
+/*
+ * Tarjeta pública de servicio. Solo tokens de `src/estilos/global.css`.
+ * Mobile-first: 1 columna, 2 desde 48rem, 3 desde 64rem.
+ */
+
 .lista {
-  display: flex;
-  flex-direction: column;
-  gap: var(--moica-espacio-2);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-md);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -10,68 +15,98 @@
 .tarjeta {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-1);
-  padding: var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-radius: 0.5rem;
-  background-color: var(--moica-fondo-suave);
+  gap: var(--gap-md);
+  height: 100%;
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-neutral-0);
+  box-shadow: var(--shadow-sm);
   color: inherit;
   text-decoration: none;
 }
 
 .tarjeta:hover {
-  border-color: var(--moica-texto-suave);
+  box-shadow: var(--shadow-md);
 }
 
-.tarjeta:focus-visible {
-  outline: 2px solid var(--moica-texto);
-  outline-offset: 2px;
-}
-
-.imagen {
+.imagen,
+.sinImagen {
+  display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border: 1px solid var(--moica-borde);
-  border-radius: 0.375rem;
+  border-radius: var(--radius-lg);
   object-fit: cover;
-  background-color: var(--moica-fondo);
 }
 
 .sinImagen {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  border: 1px dashed var(--moica-borde);
-  border-radius: 0.375rem;
-  color: var(--moica-texto-suave);
-  font-size: 0.875rem;
+  background-color: var(--color-secondary-100);
+  color: var(--color-secondary-700);
+}
+
+.iconoDeRespaldo {
+  display: flex;
+}
+
+.iconoDeRespaldo svg {
+  display: block;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  min-width: 0;
+}
+
+.titular {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-xs) var(--gap-sm);
 }
 
 .nombre {
-  font-size: 1.125rem;
-  font-weight: 600;
+  flex: 1 1 8rem;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.25;
   overflow-wrap: anywhere;
 }
 
-.meta {
-  color: var(--moica-texto-suave);
-  font-size: 0.875rem;
+.filaMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
 }
 
 .precio {
-  font-weight: 600;
+  margin: 0;
+  color: var(--color-neutral-800);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.monto {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
 }
 
 @media (min-width: 48rem) {
   .lista {
-    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-@media (min-width: 80rem) {
+@media (min-width: 64rem) {
   .lista {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

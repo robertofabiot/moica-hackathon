@@ -1,18 +1,29 @@
 import { Link } from 'react-router';
 
-import { InsigniaDeVerificacion } from '../../verificacion';
-import { precioVisible } from '../presentacion';
+import {
+  EstrellasCalificacion,
+  IconoDeCategoria,
+  InsigniaVerificado,
+} from '../../../comun/componentes/ui';
+import { CALIFICACION_DE_MUESTRA, precioEnTarjeta, RESENAS_DE_MUESTRA } from '../presentacion';
 import { rutaDeDetalleDeServicio } from '../rutas';
 import type { ResumenPublicoDeServicio } from '../tipos';
 import estilos from './tarjeta.module.css';
 
-/** Tarjeta de un servicio visible: precio o «A convenir», prestador e insignia. */
+/** Tarjeta de un servicio visible: foto o icono, nota, precio e insignia. */
 export default function TarjetaDeServicio({ servicio }: { servicio: ResumenPublicoDeServicio }) {
+  const precio = precioEnTarjeta(servicio.precioReferencia);
+  const estaVerificado = servicio.prestador.nivelVerificacion !== 'SIN_VERIFICAR';
+
   return (
     <li>
       <Link className={estilos.tarjeta} to={rutaDeDetalleDeServicio(servicio.idServicioPublicado)}>
         {servicio.imagenPrincipal === null ? (
-          <div className={estilos.sinImagen}>Sin imagen</div>
+          <div className={estilos.sinImagen}>
+            <span className={estilos.iconoDeRespaldo}>
+              <IconoDeCategoria nombreCategoria={servicio.nombreCategoria} />
+            </span>
+          </div>
         ) : (
           <img
             className={estilos.imagen}
@@ -21,18 +32,27 @@ export default function TarjetaDeServicio({ servicio }: { servicio: ResumenPubli
             loading="lazy"
           />
         )}
-        <h2 className={estilos.nombre}>{servicio.nombre}</h2>
-        <p className={estilos.meta}>
-          {servicio.nombreCategoria} · {servicio.nombreSubcategoria}
-        </p>
-        <p className={estilos.precio}>{precioVisible(servicio.precioReferencia)}</p>
-        <p className={estilos.meta}>
-          {servicio.prestador.nombrePublico} ·{' '}
-          {servicio.prestador.municipioPrincipal.nombreMunicipio}
-        </p>
-        <p>
-          <InsigniaDeVerificacion nivel={servicio.prestador.nivelVerificacion} />
-        </p>
+        <div className={estilos.cuerpo}>
+          <div className={estilos.titular}>
+            <h2 className={estilos.nombre}>{servicio.nombre}</h2>
+            {estaVerificado ? <InsigniaVerificado /> : null}
+          </div>
+          <div className={estilos.filaMeta}>
+            <EstrellasCalificacion
+              calificacion={CALIFICACION_DE_MUESTRA}
+              totalResenas={RESENAS_DE_MUESTRA}
+            />
+            <p className={estilos.precio}>
+              {precio.prefijo === null ? (
+                precio.valor
+              ) : (
+                <>
+                  {precio.prefijo} <span className={estilos.monto}>{precio.valor}</span>
+                </>
+              )}
+            </p>
+          </div>
+        </div>
       </Link>
     </li>
   );

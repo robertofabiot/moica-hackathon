@@ -311,7 +311,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
     await persona.click(screen.getByRole('button', { name: 'Buscar' }));
 
     expect(await screen.findByRole('heading', { name: 'Explorar servicios' })).toBeVisible();
-    expect(screen.getByLabelText('Qué buscas')).toHaveValue('fuga');
+    expect(screen.getByLabelText('Buscar servicios')).toHaveValue('fuga');
     expect(api.ultima('GET /api/servicios?texto=fuga')).toBeDefined();
   });
 
@@ -326,7 +326,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
     await persona.click(await screen.findByRole('button', { name: 'Buscar' }));
 
     expect(await screen.findByRole('heading', { name: 'Explorar servicios' })).toBeVisible();
-    expect(screen.getByLabelText('Qué buscas')).toHaveValue('');
+    expect(screen.getByLabelText('Buscar servicios')).toHaveValue('');
     expect(api.ultima('GET /api/servicios')).toBeDefined();
   });
 

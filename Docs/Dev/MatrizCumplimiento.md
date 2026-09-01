@@ -788,14 +788,18 @@ Controles que P8 deja funcionando, con el resultado real de cada comprobación.
   levantado: `moica_db` **healthy**, esta vez publicado en `localhost:5432`
   porque es lo que fija `.env.example`. El backend arrancó contra ese
   PostgreSQL en `:8081` y `/actuator/health` respondió `UP`.
-- **CI**: los cuatro checks están en verde sobre `642108c`, el HEAD actual de la
-  rama: Backend (Java 21), Frontend (Node 22) y Entorno local (docker compose) en
+- **CI**: los cuatro checks están en verde sobre `642108c`, el commit que cierra
+  el código de P8: Backend (Java 21), Frontend (Node 22) y Entorno local (docker
+  compose) en
   la [ejecución 33505099455](https://github.com/robertofabiot/moica-hackathon/actions/runs/33505099455),
   y «Título y commits convencionales» en la
   [ejecución 33505116945](https://github.com/robertofabiot/moica-hackathon/actions/runs/33505116945).
   Antes habían quedado en verde sobre `714471d`:
   [ejecución 33504722649](https://github.com/robertofabiot/moica-hackathon/actions/runs/33504722649)
   y [ejecución 33504722677](https://github.com/robertofabiot/moica-hackathon/actions/runs/33504722677).
+  El commit `27a1c9f`, que solo añade esta evidencia, también quedó en verde:
+  [CI 33525882979](https://github.com/robertofabiot/moica-hackathon/actions/runs/33525882979)
+  y [Convenciones 33525883037](https://github.com/robertofabiot/moica-hackathon/actions/runs/33525883037).
 - **Rama**: `feature/calificaciones-reputacion` nace de `develop` en `0b8ddb4`,
   comprobado con `git merge-base origin/develop HEAD`.
 

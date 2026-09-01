@@ -117,10 +117,27 @@
 
 .columnaPrincipal,
 .columnaLateral {
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-lg);
-  min-width: 0;
+  display: contents;
+}
+
+.bloqueGaleria {
+  order: 1;
+}
+
+.bloqueFicha {
+  order: 2;
+}
+
+.bloqueDescripcion {
+  order: 3;
+}
+
+.bloquePrestador {
+  order: 4;
+}
+
+.bloqueResenas {
+  order: 5;
 }
 
 .galeria {
@@ -416,6 +433,26 @@
   overflow-wrap: anywhere;
 }
 
+.cajaVerificacion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-50);
+}
+
+.cajaVerificacion p {
+  margin: 0;
+}
+
+.cajaVerificacion p + p {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
 .resumenDeResenas {
   display: flex;
   align-items: baseline;
@@ -497,6 +534,22 @@
     grid-template-columns: minmax(0, 1.35fr) minmax(20rem, 24rem);
     align-items: start;
     gap: var(--gap-xl);
+  }
+
+  .columnaPrincipal,
+  .columnaLateral {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-lg);
+    min-width: 0;
+  }
+
+  .bloqueGaleria,
+  .bloqueFicha,
+  .bloqueDescripcion,
+  .bloquePrestador,
+  .bloqueResenas {
+    order: initial;
   }
 
   .columnaLateral {

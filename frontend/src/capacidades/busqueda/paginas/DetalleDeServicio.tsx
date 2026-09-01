@@ -94,20 +94,32 @@ function DetalleCargado({ servicio }: { servicio: DetallePublicoDeServicio }) {
 
         <div className={estilos.columnas}>
           <div className={estilos.columnaPrincipal}>
-            <GaleriaDeServicio nombre={servicio.nombre} imagenes={servicio.imagenes} />
+            <div className={estilos.bloqueGaleria}>
+              <GaleriaDeServicio nombre={servicio.nombre} imagenes={servicio.imagenes} />
+            </div>
 
-            <section className={estilos.tarjeta} aria-labelledby="titulo-descripcion-servicio">
+            <section
+              className={`${estilos.tarjeta} ${estilos.bloqueDescripcion}`}
+              aria-labelledby="titulo-descripcion-servicio"
+            >
               <h2 className={estilos.tituloDeTarjeta} id="titulo-descripcion-servicio">
                 Descripción
               </h2>
               <p className={estilos.descripcion}>{servicio.descripcion}</p>
             </section>
+
+            <div className={estilos.bloquePrestador}>
+              <TarjetaDePrestador prestador={prestador} />
+            </div>
           </div>
 
           <div className={estilos.columnaLateral}>
-            <FichaDeContratacion servicio={servicio} />
-            <TarjetaDePrestador prestador={prestador} />
-            <DesgloseDeResenas />
+            <div className={estilos.bloqueFicha}>
+              <FichaDeContratacion servicio={servicio} />
+            </div>
+            <div className={estilos.bloqueResenas}>
+              <DesgloseDeResenas />
+            </div>
           </div>
         </div>
       </main>
@@ -308,7 +320,9 @@ function TarjetaDePrestador({ prestador }: { prestador: PrestadorPublico }) {
           </p>
         </div>
       </div>
-      <InsigniaResponsable prestador={prestador} />
+      <div className={estilos.cajaVerificacion}>
+        <InsigniaResponsable prestador={prestador} />
+      </div>
     </section>
   );
 }

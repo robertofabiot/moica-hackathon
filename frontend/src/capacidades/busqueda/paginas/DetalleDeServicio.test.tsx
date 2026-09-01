@@ -139,6 +139,7 @@ describe('Detalle de servicio', () => {
   });
 
   it('enlaza el prestador y conserva la advertencia de la insignia', async () => {
+    const persona = userEvent.setup();
     api.responder('GET /api/servicios/10', {
       estado: 200,
       cuerpo: detallePublicoDeServicioDeEjemplo(),
@@ -150,6 +151,7 @@ describe('Detalle de servicio', () => {
       'href',
       '/explorar/prestadores/1'
     );
+    await persona.hover(screen.getByRole('button', { name: /Insignia/i }));
     expect(screen.getByText(/No garantiza la calidad futura del trabajo/)).toBeVisible();
   });
 

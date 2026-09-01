@@ -1,0 +1,131 @@
+/*
+ * Insignia interactiva con popover explicativo.
+ *
+ * Muestra el nivel de verificación de forma compacta y despliega los detalles
+ * y advertencias al pasar el cursor (hover) o al tocar la insignia (móvil/click).
+ */
+
+.contenedor {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.gatillo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-full);
+  text-decoration: none;
+  text-align: left;
+}
+
+.gatillo:focus-visible {
+  outline: var(--border-width-sm) solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.iconoAyuda {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.125rem;
+  height: 1.125rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.gatillo:hover .iconoAyuda {
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-700);
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 50;
+  width: min(22rem, 90vw);
+  padding: var(--gap-md);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-0);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  font-size: var(--font-size-xs);
+  line-height: 1.45;
+  color: var(--color-neutral-900);
+  text-align: left;
+  animation: aparecer 0.15s ease-out;
+}
+
+/* Flecha decorativa del popover */
+.popover::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 1.5rem;
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent var(--color-neutral-200) transparent;
+}
+
+.popover::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 1.5rem;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent var(--color-neutral-0) transparent;
+}
+
+.titulo {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-900);
+  margin: 0;
+}
+
+.significado {
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.advertencia {
+  color: var(--color-neutral-600);
+  margin: 0;
+  padding-top: var(--gap-xs);
+  border-top: var(--border-width-xs) solid var(--color-neutral-100);
+  font-size: var(--font-size-xs);
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 48rem) {
+  .popover {
+    width: 24rem;
+  }
+}

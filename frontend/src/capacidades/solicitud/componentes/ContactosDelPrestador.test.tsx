@@ -6,6 +6,7 @@ import App from '../../../App';
 import {
   contactoReveladoDeEjemplo,
   cuerpoDeError,
+  estadoDeCalificacionDeEjemplo,
   instalarApiFalsa,
   sesionDeEjemplo,
   solicitudConHiloDeEjemplo,
@@ -29,6 +30,11 @@ describe('Contactos revelados al cliente', () => {
     api.responder('GET /api/solicitudes/enviadas', { estado: 200, cuerpo: [] });
     api.responder('GET /api/solicitudes/recibidas', { estado: 200, cuerpo: [] });
     api.responder('GET /api/solicitudes/21/mensajes', { estado: 200, cuerpo: [] });
+    // El detalle monta también la calificación de P8; aquí se prueban los contactos.
+    api.responder('GET /api/solicitudes/21/calificacion', {
+      estado: 200,
+      cuerpo: estadoDeCalificacionDeEjemplo({ puedeCalificar: false, solicitudCompletada: false }),
+    });
   });
 
   afterEach(() => {

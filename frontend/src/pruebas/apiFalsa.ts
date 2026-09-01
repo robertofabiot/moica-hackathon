@@ -455,6 +455,7 @@ function servicioPublicoBase() {
     nombreSubcategoria: 'Plomería',
     imagenPrincipal: null as ReturnType<typeof imagenDeServicioDeEjemplo> | null,
     prestador: prestadorPublicoDeEjemplo(),
+    reputacionPrestador: reputacionDeEjemplo(),
   };
 }
 
@@ -635,4 +636,78 @@ export function contactoReveladoDeEjemplo(
   ordenVisualizacion = 0
 ) {
   return { idMedioContactoPrestador, contenido, ordenVisualizacion };
+}
+
+/**
+ * Reputación de un prestador tal como la publica el backend.
+ *
+ * Por omisión es la de quien ya tiene calificaciones. Para el estado vacío se usa
+ * {@link reputacionVaciaDeEjemplo}, que deja `promedio` en `null` y todas las
+ * filas del desglose en cero: así ninguna prueba puede confundir «sin
+ * calificaciones» con «calificado con cero».
+ */
+export function reputacionDeEjemplo(cambios: Partial<ReturnType<typeof reputacionBase>> = {}) {
+  return { ...reputacionBase(), ...cambios };
+}
+
+function reputacionBase() {
+  return {
+    rol: 'PRESTADOR' as 'CLIENTE' | 'PRESTADOR',
+    promedio: 4.3 as number | null,
+    cantidad: 3,
+    desglose: [
+      { estrellas: 5, cantidad: 1 },
+      { estrellas: 4, cantidad: 2 },
+      { estrellas: 3, cantidad: 0 },
+      { estrellas: 2, cantidad: 0 },
+      { estrellas: 1, cantidad: 0 },
+    ],
+  };
+}
+
+/** Quien todavía no recibió ninguna calificación: promedio nulo, nunca cero. */
+export function reputacionVaciaDeEjemplo(rol: 'CLIENTE' | 'PRESTADOR' = 'PRESTADOR') {
+  return reputacionDeEjemplo({
+    rol,
+    promedio: null,
+    cantidad: 0,
+    desglose: [5, 4, 3, 2, 1].map((estrellas) => ({ estrellas, cantidad: 0 })),
+  });
+}
+
+/** El estado de la calificación de una solicitud, para la sesión que la consulta. */
+export function estadoDeCalificacionDeEjemplo(
+  cambios: Partial<ReturnType<typeof estadoDeCalificacionBase>> = {}
+) {
+  return { ...estadoDeCalificacionBase(), ...cambios };
+}
+
+function estadoDeCalificacionBase() {
+  return {
+    idSolicitudServicio: 21,
+    solicitudCompletada: true,
+    idCalificado: 1,
+    nombreCalificado: 'Taller La Esperanza',
+    rolCalificado: 'PRESTADOR' as 'CLIENTE' | 'PRESTADOR',
+    puedeCalificar: true,
+    calificacionEmitida: null as ReturnType<typeof calificacionDeEjemplo> | null,
+  };
+}
+
+/** Una calificación ya emitida. En el MVP no se edita ni se borra. */
+export function calificacionDeEjemplo(cambios: Partial<ReturnType<typeof calificacionBase>> = {}) {
+  return { ...calificacionBase(), ...cambios };
+}
+
+function calificacionBase() {
+  return {
+    idCalificacionUsuario: 1,
+    idSolicitudServicio: 21,
+    idCalificador: 2,
+    idCalificado: 1,
+    rolCalificado: 'PRESTADOR' as 'CLIENTE' | 'PRESTADOR',
+    puntuacion: 4,
+    comentario: 'Puntual y ordenado.' as string | null,
+    fechaCreacion: '2026-08-30T09:15:00-06:00',
+  };
 }

@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../../../App';
 import {
   cuerpoDeError,
+  estadoDeCalificacionDeEjemplo,
   instalarApiFalsa,
   sesionDeEjemplo,
   solicitudDeServicioDeEjemplo,
@@ -20,11 +21,15 @@ describe('Detalle de solicitud', () => {
     document.cookie = 'XSRF-TOKEN=token-de-prueba';
     api.responder('GET /api/solicitudes/enviadas', { estado: 200, cuerpo: [] });
     api.responder('GET /api/solicitudes/recibidas', { estado: 200, cuerpo: [] });
-    // El detalle monta ahora el chat y los contactos de P7. Estas pruebas son
-    // del ciclo de P6, así que ambas superficies se dejan vacías para que lo
-    // que se comprueba aquí siga siendo el ciclo y no el hilo.
+    // El detalle monta ahora el chat y los contactos de P7 y la calificación de
+    // P8. Estas pruebas son del ciclo de P6, así que las tres superficies se
+    // dejan neutras para que lo que se comprueba aquí siga siendo el ciclo.
     api.responder('GET /api/solicitudes/21/mensajes', { estado: 200, cuerpo: [] });
     api.responder('GET /api/solicitudes/21/contactos', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/solicitudes/21/calificacion', {
+      estado: 200,
+      cuerpo: estadoDeCalificacionDeEjemplo({ puedeCalificar: false, solicitudCompletada: false }),
+    });
   });
 
   afterEach(() => {

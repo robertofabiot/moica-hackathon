@@ -25,6 +25,7 @@ class EsquemaDeTerritorioYPerfilIT extends PruebaDeIntegracionConPostgres {
 
   @BeforeEach
   void prepararUnaCuenta() {
+    jdbc.update("DELETE FROM calificacion_usuario");
     jdbc.update("DELETE FROM mensaje_solicitud");
     jdbc.update("DELETE FROM cambio_estado_solicitud");
     jdbc.update("DELETE FROM solicitud_servicio");

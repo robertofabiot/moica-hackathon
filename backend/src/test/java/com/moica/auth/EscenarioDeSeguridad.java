@@ -54,6 +54,7 @@ public abstract class EscenarioDeSeguridad extends PruebaDeIntegracionConPostgre
     // con ON DELETE RESTRICT, así que se retiran antes: si no, borrar las
     // cuentas chocaría con esa restricción en lugar de limpiar. Los mensajes
     // apuntan igual a la solicitud y al remitente, así que van los primeros.
+    jdbc.update("DELETE FROM calificacion_usuario");
     jdbc.update("DELETE FROM mensaje_solicitud");
     jdbc.update("DELETE FROM cambio_estado_solicitud");
     jdbc.update("DELETE FROM solicitud_servicio");

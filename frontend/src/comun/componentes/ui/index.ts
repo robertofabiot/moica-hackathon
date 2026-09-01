@@ -7,7 +7,15 @@ export { BarraLateral, type IdentificadorDeItemDeBarraLateral } from './BarraLat
 export { Boton, type FormaDeBoton, type VarianteDeBoton } from './Boton';
 export { Entrada, type VarianteDeEntrada } from './Entrada';
 export { EstrellasCalificacion } from './EstrellasCalificacion';
-export { IconoCasa, IconoLupa, IconoPin } from './iconos';
+export {
+  IconoCasa,
+  IconoCheckCirculo,
+  IconoEstrella,
+  IconoGuardar,
+  IconoLupa,
+  IconoMarcador,
+  IconoPin,
+} from './iconos';
 export {
   IconoBelleza,
   IconoConstruccion,

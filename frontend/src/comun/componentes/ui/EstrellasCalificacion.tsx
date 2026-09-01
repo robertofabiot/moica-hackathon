@@ -1,6 +1,7 @@
 import type { HTMLAttributes } from 'react';
 
 import estilos from './EstrellasCalificacion.module.css';
+import { IconoEstrella } from './iconos';
 
 type PropiedadesDeEstrellasCalificacion = HTMLAttributes<HTMLSpanElement> & {
   calificacion: number;
@@ -27,7 +28,7 @@ export function EstrellasCalificacion({
 
   return (
     <span className={unirClases(estilos.estrellas, className)} aria-label={etiqueta} {...rest}>
-      <IconoEstrella />
+      <IconoEstrella className={estilos.icono} />
       <span className={estilos.puntuacion} aria-hidden="true">
         {nota}
       </span>
@@ -37,14 +38,6 @@ export function EstrellasCalificacion({
         </span>
       )}
     </span>
-  );
-}
-
-function IconoEstrella() {
-  return (
-    <svg className={estilos.icono} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2.6 14.7 8.2l6.2.9-4.5 4.4 1.1 6.2L12 16.8 6.5 19.7l1.1-6.2-4.5-4.4 6.2-.9L12 2.6Z" />
-    </svg>
   );
 }
 

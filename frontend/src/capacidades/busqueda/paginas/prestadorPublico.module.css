@@ -522,6 +522,15 @@
   color: var(--color-neutral-400);
 }
 
+.listaDeResenas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .testimonio {
   display: flex;
   align-items: flex-start;
@@ -541,6 +550,9 @@
   border-radius: var(--radius-full);
   background-color: var(--color-secondary-100);
   color: var(--color-secondary-700);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
 }
 
 .avatarCliente svg {
@@ -561,16 +573,45 @@
   color: var(--color-neutral-900);
 }
 
-.notaDeResena {
-  font-family: var(--font-family-primary);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: -0.02em;
+.metaResena {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-xs) var(--gap-sm);
+}
+
+.filaDeEstrellas {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin: 0;
+}
+
+.estrellaLlena,
+.estrellaVacia {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+}
+
+.estrellaLlena {
+  color: var(--color-warning-500);
+}
+
+.estrellaVacia {
+  color: var(--color-neutral-400);
+}
+
+.fechaResena {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
 }
 
 .comentarioResena {
-  color: var(--color-neutral-600);
+  color: var(--color-neutral-800);
   font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
 }
 
 .descripcionTrabajo {

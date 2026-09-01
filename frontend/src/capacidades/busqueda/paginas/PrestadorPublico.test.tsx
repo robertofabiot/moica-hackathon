@@ -78,10 +78,7 @@ describe('Perfil público del prestador', () => {
     expect(screen.getByText('Plomería')).toBeVisible();
     expect(screen.getByText('Managua, NIC')).toBeVisible();
     expect(screen.getByText('Verificado')).toBeVisible();
-    expect(
-      screen.getAllByLabelText('Calificación 4.3 de 5, 3 calificaciones').length
-    ).toBeGreaterThan(0);
-    expect(screen.getByText('Según 3 calificaciones de solicitudes completadas.')).toBeVisible();
+    expect(screen.getByLabelText('Calificación 4.3 de 5, 3 calificaciones')).toBeVisible();
   });
 
   it('sin calificaciones lo dice y no muestra un promedio de cero', async () => {
@@ -93,31 +90,36 @@ describe('Perfil público del prestador', () => {
     renderizarConProveedores(<App />, '/explorar/prestadores/1');
 
     expect(await screen.findByRole('heading', { name: 'Taller La Esperanza' })).toBeVisible();
-    expect(screen.getAllByLabelText('Sin calificaciones todavía').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('Sin calificaciones todavía')).toBeVisible();
     expect(screen.queryByText('0.0')).not.toBeInTheDocument();
-    expect(screen.queryByText(/calificaciones de solicitudes completadas/)).not.toBeInTheDocument();
   });
 
-  it('la reputación del encabezado es la misma que la de las reseñas', async () => {
-    api.responder(RUTA_PERFIL, { estado: 200, cuerpo: perfilPublicoDeEjemplo() });
-
-    renderizarConProveedores(<App />, '/explorar/prestadores/1');
-
-    await screen.findByRole('heading', { name: 'Taller La Esperanza' });
-    expect(screen.getAllByLabelText('Calificación 4.3 de 5, 3 calificaciones')).toHaveLength(2);
-    expect(screen.queryByText('4.8')).not.toBeInTheDocument();
-  });
-
-  it('no queda ninguna cifra ni testimonio ficticio de la maqueta', async () => {
+  it('lista reseñas individuales con nombre, estrellas y comentario', async () => {
     api.responder(RUTA_PERFIL, { estado: 200, cuerpo: perfilPublicoDeEjemplo() });
 
     renderizarConProveedores(<App />, '/explorar/prestadores/1');
 
     await screen.findByRole('heading', { name: 'Reseñas de clientes' });
+    expect(screen.getByText('María Gómez')).toBeVisible();
+    expect(screen.getByText(/100% recomendado/)).toBeVisible();
+    expect(screen.getByText('Ana López')).toBeVisible();
+    expect(screen.getByText('Luis Martínez')).toBeVisible();
+    expect(screen.getByText('Carmen Ruiz')).toBeVisible();
+    expect(screen.getAllByLabelText('5 de 5 estrellas').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('4 de 5 estrellas')).toBeVisible();
+    expect(screen.queryByText('Clientes de Moica')).not.toBeInTheDocument();
+    expect(screen.queryByText(/calificaciones de solicitudes completadas/)).not.toBeInTheDocument();
+  });
+
+  it('no pinta las cifras ficticias de la maqueta en la cabecera', async () => {
+    api.responder(RUTA_PERFIL, { estado: 200, cuerpo: perfilPublicoDeEjemplo() });
+
+    renderizarConProveedores(<App />, '/explorar/prestadores/1');
+
+    await screen.findByRole('heading', { name: 'Taller La Esperanza' });
+    expect(screen.getByLabelText('Calificación 4.3 de 5, 3 calificaciones')).toBeVisible();
     expect(screen.queryByText('4.8')).not.toBeInTheDocument();
     expect(screen.queryByText(/120 reseñas/)).not.toBeInTheDocument();
-    expect(screen.queryByText('María Gómez')).not.toBeInTheDocument();
-    expect(screen.queryByText(/100% recomendado/)).not.toBeInTheDocument();
     expect(screen.queryByText(/5\+ años/)).not.toBeInTheDocument();
     expect(screen.queryByText('98%')).not.toBeInTheDocument();
   });

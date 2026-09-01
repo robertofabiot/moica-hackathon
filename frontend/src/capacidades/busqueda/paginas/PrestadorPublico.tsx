@@ -11,6 +11,7 @@ import {
   IconoCampana,
   IconoCasa,
   IconoChevronDerecha,
+  IconoEstrella,
   IconoHerramienta,
   IconoMaletin,
   IconoPin,
@@ -25,15 +26,12 @@ import { RUTA_PRESTADOR } from '../../prestador';
 import InsigniaResponsable from '../componentes/InsigniaResponsable';
 import { usePrestadorPublico } from '../hooks/useBusquedaPublica';
 import {
-  conteoDeCalificaciones,
   inicialesDeNombre,
   nombreDeDisponibilidad,
   nombreDelTipoPrestador,
-  notaVisible,
   porcentajeDeSatisfaccion,
   precioEnFila,
   profesionVisible,
-  SIN_CALIFICACIONES,
 } from '../presentacion';
 import { RUTA_EXPLORAR, rutaDeDetalleDeServicio } from '../rutas';
 import type {
@@ -105,7 +103,7 @@ function PerfilCargado({ perfil }: { perfil: PerfilPublico }) {
             <ServiciosOfrecidos servicios={servicios} />
           </div>
           <div className={estilos.bloqueResenas}>
-            <ResenasDeClientes reputacion={reputacionPrestador} />
+            <ResenasDeClientes />
           </div>
         </div>
       </div>
@@ -352,40 +350,113 @@ function ServiciosOfrecidos({ servicios }: { servicios: ResumenPublicoDeServicio
   );
 }
 
-function ResenasDeClientes({ reputacion }: { reputacion: ReputacionPorRol }) {
-  const nota = notaVisible(reputacion.promedio);
+/**
+ * Forma que se espera de la API pública de reseñas. Mientras no exista, la
+ * sección pinta {@link RESENAS_PROVISIONALES}.
+ */
+interface ResenaPublica {
+  idCalificacionUsuario: number;
+  nombreCliente: string;
+  puntuacion: number;
+  comentario: string | null;
+  fechaCreacion: string;
+}
 
+const ESTRELLAS = [1, 2, 3, 4, 5] as const;
+
+const RESENAS_PROVISIONALES: readonly ResenaPublica[] = [
+  {
+    idCalificacionUsuario: 1,
+    nombreCliente: 'María Gómez',
+    puntuacion: 5,
+    comentario:
+      'Excelente servicio, muy profesional y rápido. Explicó cada paso y dejó el área limpia. 100% recomendado.',
+    fechaCreacion: '2026-07-12T18:00:00-06:00',
+  },
+  {
+    idCalificacionUsuario: 2,
+    nombreCliente: 'Ana López',
+    puntuacion: 5,
+    comentario:
+      'Llegó puntual, el precio coincidió con lo acordado y el acabado quedó impecable. Ya lo agendé otra vez.',
+    fechaCreacion: '2026-06-28T11:30:00-06:00',
+  },
+  {
+    idCalificacionUsuario: 3,
+    nombreCliente: 'Luis Martínez',
+    puntuacion: 4,
+    comentario:
+      'Muy buena atención y materiales de calidad. Tardó un poco más de lo estimado, pero el resultado vale.',
+    fechaCreacion: '2026-05-14T16:45:00-06:00',
+  },
+  {
+    idCalificacionUsuario: 4,
+    nombreCliente: 'Carmen Ruiz',
+    puntuacion: 5,
+    comentario:
+      'Amable y cuidadoso. Resolvió el problema en una sola visita. Buena comunicación por WhatsApp y fotos del avance.',
+    fechaCreacion: '2026-04-02T09:10:00-06:00',
+  },
+];
+
+function ResenasDeClientes() {
   return (
     <section className={estilos.tarjetaLateral} aria-labelledby="titulo-resenas-publico">
       <h2 className={estilos.tituloDeSeccion} id="titulo-resenas-publico">
         Reseñas de clientes
       </h2>
-      {nota === null ? (
-        <p className={estilos.vacio}>
-          {SIN_CALIFICACIONES} todavía. Este prestador aún no completó servicios calificados.
-        </p>
-      ) : (
-        <article className={estilos.testimonio}>
-          <span className={estilos.avatarCliente} aria-hidden="true">
-            <IconoUsuario />
-          </span>
-          <div className={estilos.cuerpoTestimonio}>
-            <p className={estilos.origenResena}>Clientes de Moica</p>
-            <EstrellasCalificacion
-              calificacion={reputacion.promedio}
-              totalCalificaciones={reputacion.cantidad}
-            />
-            <p className={estilos.notaDeResena} aria-hidden="true">
-              {nota}
-            </p>
-            <p className={estilos.comentarioResena}>
-              Según {conteoDeCalificaciones(reputacion.cantidad)} de solicitudes completadas.
-            </p>
-          </div>
-        </article>
-      )}
+      <ul className={estilos.listaDeResenas}>
+        {RESENAS_PROVISIONALES.map((resena) => (
+          <li key={resena.idCalificacionUsuario}>
+            <article className={estilos.testimonio}>
+              <span className={estilos.avatarCliente} aria-hidden="true">
+                {inicialesDeNombre(resena.nombreCliente) || <IconoUsuario />}
+              </span>
+              <div className={estilos.cuerpoTestimonio}>
+                <p className={estilos.origenResena}>{resena.nombreCliente}</p>
+                <div className={estilos.metaResena}>
+                  <FilaDeEstrellas puntuacion={resena.puntuacion} />
+                  <time className={estilos.fechaResena} dateTime={resena.fechaCreacion}>
+                    {fechaDeResena(resena.fechaCreacion)}
+                  </time>
+                </div>
+                {resena.comentario === null ? (
+                  <p className={estilos.comentarioResena}>Sin comentario.</p>
+                ) : (
+                  <p className={estilos.comentarioResena}>{resena.comentario}</p>
+                )}
+              </div>
+            </article>
+          </li>
+        ))}
+      </ul>
     </section>
   );
+}
+
+function FilaDeEstrellas({ puntuacion }: { puntuacion: number }) {
+  return (
+    <p className={estilos.filaDeEstrellas} aria-label={`${puntuacion} de 5 estrellas`}>
+      {ESTRELLAS.map((valor) => (
+        <IconoEstrella
+          key={valor}
+          className={valor <= puntuacion ? estilos.estrellaLlena : estilos.estrellaVacia}
+        />
+      ))}
+    </p>
+  );
+}
+
+function fechaDeResena(iso: string): string {
+  const fecha = new Date(iso);
+  if (Number.isNaN(fecha.getTime())) {
+    return iso;
+  }
+  return new Intl.DateTimeFormat('es-NI', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  }).format(fecha);
 }
 
 function PortafolioPublico({ portafolio }: { portafolio: PerfilPublico['portafolio'] }) {

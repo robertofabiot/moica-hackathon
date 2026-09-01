@@ -70,12 +70,17 @@ function parametrosDesdeFiltros(filtros: FiltrosDeBusqueda): Record<string, stri
 export default function ExplorarServicios() {
   const [parametros, setParametros] = useSearchParams();
   const aplicados = filtrosDesdeParametros(parametros);
+  const serialDeUrl = parametros.toString();
   const [borrador, setBorrador] = useState<FiltrosDeBusqueda>(aplicados);
+  const [serialVisto, setSerialVisto] = useState(serialDeUrl);
   const resultados = useServiciosPublicos(aplicados);
 
-  useEffect(() => {
-    setBorrador(filtrosDesdeParametros(parametros));
-  }, [parametros]);
+  // La URL manda al navegar (atrás/adelante o un enlace con query). Ajustar el
+  // borrador durante el render evita un effect con setState.
+  if (serialVisto !== serialDeUrl) {
+    setSerialVisto(serialDeUrl);
+    setBorrador(aplicados);
+  }
 
   const serviciosFiltrados = useMemo(() => {
     const todos = resultados.data ?? [];

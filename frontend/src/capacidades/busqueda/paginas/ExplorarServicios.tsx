@@ -50,7 +50,11 @@ function parametrosDesdeFiltros(filtros: FiltrosDeBusqueda): Record<string, stri
   if (filtros.idMunicipio !== '') {
     parametros.idMunicipio = filtros.idMunicipio;
   }
-  if (filtros.precioMaximo && filtros.precioMaximo !== '' && filtros.precioMaximo !== 'cualquiera') {
+  if (
+    filtros.precioMaximo &&
+    filtros.precioMaximo !== '' &&
+    filtros.precioMaximo !== 'cualquiera'
+  ) {
     parametros.precioMaximo = filtros.precioMaximo;
   }
   return parametros;

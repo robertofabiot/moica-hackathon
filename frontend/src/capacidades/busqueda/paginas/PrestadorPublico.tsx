@@ -1,10 +1,14 @@
-import { useState, type ComponentType, type SVGProps } from 'react';
+import { useState, type ComponentType, type ReactNode, type SVGProps } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 
+import logoHorizontal from '../../../assets/logos/moica-horizontal.png';
+import logoIcono from '../../../assets/logos/moica-icono.svg';
 import { ErrorDeApi } from '../../../comun/api';
 import {
+  BarraLateral,
   Boton,
   EstrellasCalificacion,
+  IconoCampana,
   IconoCasa,
   IconoChevronDerecha,
   IconoHerramienta,
@@ -14,7 +18,10 @@ import {
   IconoReloj,
   IconoUsuario,
   InsigniaVerificado,
+  PieDePagina,
 } from '../../../comun/componentes/ui';
+import { RUTA_INICIO_SESION, RUTA_SEGURIDAD, useSesionActual } from '../../auth';
+import { RUTA_PRESTADOR } from '../../prestador';
 import InsigniaResponsable from '../componentes/InsigniaResponsable';
 import { usePrestadorPublico } from '../hooks/useBusquedaPublica';
 import {
@@ -45,37 +52,33 @@ export default function PrestadorPublico() {
 
   if (perfil.isPending) {
     return (
-      <div className={estilos.pagina}>
-        <main className={estilos.principal}>
-          <p className={estilos.estado} role="status">
-            Cargando el perfil…
-          </p>
-        </main>
-      </div>
+      <MarcoDePagina>
+        <p className={estilos.estado} role="status">
+          Cargando el perfil…
+        </p>
+      </MarcoDePagina>
     );
   }
 
   if (perfil.isError || perfil.data === undefined) {
     return (
-      <div className={estilos.pagina}>
-        <main className={estilos.principal}>
-          <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
-            {perfil.error instanceof ErrorDeApi
-              ? perfil.error.message
-              : 'Ese perfil no está disponible.'}{' '}
-            <button
-              className={estilos.reintentar}
-              type="button"
-              onClick={() => void perfil.refetch()}
-            >
-              Reintentar
-            </button>
-          </p>
-          <p className={estilos.pieDeEstado}>
-            <Link to={RUTA_EXPLORAR}>Volver a explorar</Link>
-          </p>
-        </main>
-      </div>
+      <MarcoDePagina>
+        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+          {perfil.error instanceof ErrorDeApi
+            ? perfil.error.message
+            : 'Ese perfil no está disponible.'}{' '}
+          <button
+            className={estilos.reintentar}
+            type="button"
+            onClick={() => void perfil.refetch()}
+          >
+            Reintentar
+          </button>
+        </p>
+        <p className={estilos.pieDeEstado}>
+          <Link to={RUTA_EXPLORAR}>Volver a explorar</Link>
+        </p>
+      </MarcoDePagina>
     );
   }
 
@@ -86,35 +89,94 @@ function PerfilCargado({ perfil }: { perfil: PerfilPublico }) {
   const { prestador, portafolio, servicios, admiteContratacion, reputacionPrestador } = perfil;
 
   return (
-    <div className={estilos.pagina}>
-      <main className={estilos.principal}>
-        <div className={estilos.columnas}>
-          <div className={estilos.columnaPrincipal}>
-            <div className={estilos.bloqueCabecera}>
-              <CabeceraDePerfil perfil={perfil} />
-            </div>
-            <div className={estilos.bloquePortafolio}>
-              <PortafolioPublico portafolio={portafolio} />
-            </div>
+    <MarcoDePagina>
+      <div className={estilos.columnas}>
+        <div className={estilos.columnaPrincipal}>
+          <div className={estilos.bloqueCabecera}>
+            <CabeceraDePerfil perfil={perfil} />
           </div>
-
-          <div className={estilos.columnaLateral}>
-            <div className={estilos.bloqueServicios}>
-              <ServiciosOfrecidos servicios={servicios} />
-            </div>
-            <div className={estilos.bloqueResenas}>
-              <ResenasDeClientes reputacion={reputacionPrestador} />
-            </div>
+          <div className={estilos.bloquePortafolio}>
+            <PortafolioPublico portafolio={portafolio} />
           </div>
         </div>
 
-        <p className={estilos.vacio} role="status">
-          {admiteContratacion
-            ? nombreDeDisponibilidad(prestador.disponibilidad)
-            : 'No está disponible para contratar ahora. No se muestran contactos.'}
-        </p>
-      </main>
+        <div className={estilos.columnaLateral}>
+          <div className={estilos.bloqueServicios}>
+            <ServiciosOfrecidos servicios={servicios} />
+          </div>
+          <div className={estilos.bloqueResenas}>
+            <ResenasDeClientes reputacion={reputacionPrestador} />
+          </div>
+        </div>
+      </div>
+
+      <p className={estilos.vacio} role="status">
+        {admiteContratacion
+          ? nombreDeDisponibilidad(prestador.disponibilidad)
+          : 'No está disponible para contratar ahora. No se muestran contactos.'}
+      </p>
+    </MarcoDePagina>
+  );
+}
+
+function MarcoDePagina({ children }: { children: ReactNode }) {
+  return (
+    <div className={estilos.pagina}>
+      <div className={estilos.barraLateral}>
+        <BarraLateral
+          itemActivo="inicio"
+          destinos={{
+            inicio: '/',
+            perfil: RUTA_PRESTADOR,
+            configuracion: RUTA_SEGURIDAD,
+          }}
+        />
+      </div>
+      <div className={estilos.envoltorio}>
+        <EncabezadoDePantalla />
+        <main className={estilos.principal}>{children}</main>
+        <PieDePagina />
+      </div>
     </div>
+  );
+}
+
+function EncabezadoDePantalla() {
+  const sesion = useSesionActual();
+  const usuario = sesion.data?.usuario;
+  const inicial =
+    usuario === undefined ? '' : inicialesDeNombre(usuario.nombreCompleto).slice(0, 1);
+
+  return (
+    <header className={estilos.barraSuperior}>
+      <Link className={estilos.marca} to="/" aria-label="Moica, ir al inicio">
+        <img className={estilos.logoIcono} src={logoIcono} alt="" />
+        <img className={estilos.logoCompleto} src={logoHorizontal} alt="" />
+      </Link>
+      <div className={estilos.accionesDeBarra}>
+        <button
+          type="button"
+          className={estilos.botonIcono}
+          aria-label="Notificaciones, hay avisos"
+        >
+          <IconoCampana />
+          <span className={estilos.puntoDeAviso} aria-hidden="true" />
+        </button>
+        {usuario === undefined || inicial === '' ? (
+          <Link className={estilos.avatarBarra} to={RUTA_INICIO_SESION} aria-label="Iniciar sesión">
+            <IconoUsuario />
+          </Link>
+        ) : (
+          <Link
+            className={estilos.avatarBarra}
+            to={RUTA_PRESTADOR}
+            aria-label={`Cuenta de ${usuario.nombreCompleto}`}
+          >
+            {inicial}
+          </Link>
+        )}
+      </div>
+    </header>
   );
 }
 

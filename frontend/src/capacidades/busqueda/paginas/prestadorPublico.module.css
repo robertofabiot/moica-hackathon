@@ -10,6 +10,114 @@
   background-color: var(--color-neutral-50);
 }
 
+.barraLateral {
+  display: none;
+}
+
+.envoltorio {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.barraSuperior {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
+  padding: 0.5rem var(--gap-sm);
+  background-color: var(--color-neutral-0);
+  border-bottom: var(--border-width-xs) solid var(--color-neutral-200);
+}
+
+.marca {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  text-decoration: none;
+}
+
+.logoIcono {
+  display: block;
+  height: 2rem;
+  width: auto;
+}
+
+.logoCompleto {
+  display: none;
+  height: 2.25rem;
+  width: auto;
+  max-width: none;
+}
+
+.accionesDeBarra {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+}
+
+.botonIcono {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: var(--color-neutral-600);
+  cursor: pointer;
+}
+
+.botonIcono:hover {
+  color: var(--color-primary-700);
+  background-color: var(--color-primary-50);
+}
+
+.botonIcono svg {
+  display: block;
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.puntoDeAviso {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.5rem;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-error-500);
+}
+
+.avatarBarra {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-700);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+.avatarBarra svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 .principal {
   display: flex;
   flex: 1 0 auto;
@@ -267,6 +375,18 @@
 }
 
 @media (min-width: 48rem) {
+  .barraSuperior {
+    padding: var(--gap-sm) var(--gap-xl);
+  }
+
+  .logoIcono {
+    display: none;
+  }
+
+  .logoCompleto {
+    display: block;
+  }
+
   .principal {
     padding-inline: var(--gap-xl);
   }
@@ -459,6 +579,14 @@
 }
 
 @media (min-width: 64rem) {
+  .barraLateral {
+    display: block;
+  }
+
+  .pagina {
+    padding-left: calc(var(--font-size-xl) + var(--gap-md) * 2);
+  }
+
   .columnas {
     display: grid;
     grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 22rem);
@@ -483,6 +611,6 @@
 
   .columnaLateral {
     position: sticky;
-    top: var(--gap-lg);
+    top: calc(var(--gap-3xl) + var(--gap-md));
   }
 }

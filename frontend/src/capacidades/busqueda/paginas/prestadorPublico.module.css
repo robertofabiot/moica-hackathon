@@ -185,6 +185,7 @@
   justify-content: center;
   width: 7.5rem;
   height: 7.5rem;
+  max-width: none;
   overflow: hidden;
   border-radius: var(--radius-full);
   background-color: var(--color-secondary-50);

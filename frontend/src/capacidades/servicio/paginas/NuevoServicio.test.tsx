@@ -78,9 +78,7 @@ describe('Asistente de nuevo servicio', () => {
 
     expect(await screen.findByLabelText('Descripción')).toBeVisible();
     expect(screen.getByText('Subir fotos')).toBeVisible();
-    expect(
-      screen.getByText(/Arrastra tus imágenes aquí o haz clic para buscarlas/i)
-    ).toBeVisible();
+    expect(screen.getByText(/Arrastra tus imágenes aquí o haz clic para buscarlas/i)).toBeVisible();
     expect(screen.getByText('0/3000')).toBeVisible();
 
     await persona.click(screen.getByRole('button', { name: 'Siguiente' }));

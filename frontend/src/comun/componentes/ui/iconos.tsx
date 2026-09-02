@@ -174,4 +174,3 @@ export function IconoX(props: PropiedadesDeIcono) {
     </Trazo>
   );
 }
-

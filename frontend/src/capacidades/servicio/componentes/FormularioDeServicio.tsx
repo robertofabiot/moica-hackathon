@@ -449,8 +449,7 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
             {fotos.length > 0 && (
               <div className={propios.galeriaPrevia}>
                 <p className={propios.contadorFotos}>
-                  {fotos.length}{' '}
-                  {fotos.length === 1 ? 'foto seleccionada' : 'fotos seleccionadas'}
+                  {fotos.length} {fotos.length === 1 ? 'foto seleccionada' : 'fotos seleccionadas'}
                 </p>
                 <ul className={propios.listaDeMiniaturas}>
                   {fotos.map((foto, indice) => (
@@ -575,11 +574,7 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
             Siguiente
           </Boton>
         ) : (
-          <Boton
-            variante="primario"
-            type="submit"
-            disabled={creacion.isPending || subiendoFotos}
-          >
+          <Boton variante="primario" type="submit" disabled={creacion.isPending || subiendoFotos}>
             {subiendoFotos
               ? 'Subiendo fotos…'
               : creacion.isPending

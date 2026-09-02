@@ -390,13 +390,19 @@ class ReporteDeParticipanteIT extends EscenarioDeModeracion {
   @Test
   void nadieVeElCasoQuePresentoLaContraparte() {
     long idSolicitud = solicitudAceptada();
-    long idDelCliente = idDeCaso(reportar(cliente, idSolicitud));
+    assertThat(reportar(cliente, idSolicitud).statusCode()).isEqualTo(HttpStatus.CREATED.value());
 
     HttpResponse<String> respuesta = leerReporte(navegador, idSolicitud);
 
     assertThat(json(respuesta).get("casoAbierto").isNull()).isTrue();
     assertThat(json(respuesta).get("puedeReportar").asBoolean()).isTrue();
-    assertThat(respuesta.body()).doesNotContain(String.valueOf(idDelCliente));
+    // No se busca el valor numérico del caso en todo el JSON: las secuencias
+    // de identidad son independientes y ese número puede coincidir, por
+    // ejemplo, con el de la solicitud sin que exista una filtración. Lo que
+    // protege la privacidad es que el caso ajeno no viaje como recurso ni deje
+    // sus campos en el nivel superior.
+    assertThat(json(respuesta).has("idCasoModeracion")).isFalse();
+    assertThat(respuesta.body()).doesNotContain(MOTIVO).doesNotContain(DESCRIPCION);
   }
 
   // --- Validación de la entrada -------------------------------------------

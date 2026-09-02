@@ -181,6 +181,11 @@ function Formulario({
   const [caracteres, setCaracteres] = useState(0);
   const campoDeDescripcion = register('descripcion');
   const falloAlEnviar = envio.error;
+  // Confirmado cuenta tambien como en curso: entre el 201 y el estado nuevo la
+  // consulta todavia dice que no hay caso, asi que el formulario seguiria en
+  // pantalla con los campos rehabilitados. Rehabilitarlo ahi invita a un
+  // segundo envio que solo puede acabar en conflicto.
+  const enCurso = envio.isPending || envio.isSuccess;
 
   return (
     <form
@@ -189,7 +194,7 @@ function Formulario({
       // y la descripción siguen ahí para reintentar sin volver a escribirlos.
       onSubmit={(evento) =>
         void handleSubmit((campos) => {
-          if (envio.isPending) {
+          if (enCurso) {
             return;
           }
           envio.mutate({ motivo: campos.motivo.trim(), descripcion: campos.descripcion.trim() });
@@ -220,7 +225,7 @@ function Formulario({
           id={idDelMotivo}
           type="text"
           maxLength={MAXIMO_MOTIVO}
-          disabled={envio.isPending}
+          disabled={enCurso}
           aria-invalid={errors.motivo !== undefined}
           aria-describedby={errors.motivo === undefined ? undefined : `${idDelMotivo}-error`}
           {...register('motivo')}
@@ -241,7 +246,7 @@ function Formulario({
           id={idDeLaDescripcion}
           rows={4}
           maxLength={MAXIMO_DESCRIPCION}
-          disabled={envio.isPending}
+          disabled={enCurso}
           aria-invalid={errors.descripcion !== undefined}
           aria-describedby={
             errors.descripcion === undefined ? undefined : `${idDeLaDescripcion}-error`
@@ -264,13 +269,13 @@ function Formulario({
           {caracteres} de {MAXIMO_DESCRIPCION} caracteres
         </span>
         <div className={propios.acciones}>
-          <button className={estilos.boton} type="submit" disabled={envio.isPending}>
-            {envio.isPending ? 'Enviando…' : 'Enviar reporte'}
+          <button className={estilos.boton} type="submit" disabled={enCurso}>
+            {enCurso ? 'Enviando…' : 'Enviar reporte'}
           </button>
           <button
             className={secciones.botonSecundario}
             type="button"
-            disabled={envio.isPending}
+            disabled={enCurso}
             onClick={alCancelar}
           >
             Volver

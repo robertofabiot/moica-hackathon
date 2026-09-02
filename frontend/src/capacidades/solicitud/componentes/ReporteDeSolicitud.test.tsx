@@ -340,6 +340,33 @@ describe('Reporte de una solicitud', () => {
     ).toHaveLength(1);
   });
 
+  it('no admite un segundo envío entre la confirmación y el refresco del estado', async () => {
+    const persona = userEvent.setup();
+    conSolicitud();
+    conEstadoDeReporte();
+    api.responder(`POST ${RUTA_REPORTE}`, { estado: 201, cuerpo: casoDeModeracionDeEjemplo() });
+    abrirComo(ID_CLIENTE);
+    await abrirFormulario(persona);
+
+    await persona.type(screen.getByRole('textbox', { name: 'Motivo' }), 'Trato irrespetuoso');
+    await persona.type(screen.getByRole('textbox', { name: 'Descripción' }), 'Usó insultos.');
+
+    // El estado nuevo se queda colgado: es exactamente la ventana en la que el
+    // caso ya existe pero la pantalla todavia muestra el formulario.
+    api.colgar(`GET ${RUTA_REPORTE}`);
+    await persona.click(screen.getByRole('button', { name: 'Enviar reporte' }));
+
+    await waitFor(() => expect(api.ultima(`POST ${RUTA_REPORTE}`)).toBeDefined());
+    const boton = await screen.findByRole('button', { name: 'Enviando…' });
+    expect(boton).toBeDisabled();
+
+    await persona.click(boton);
+
+    expect(
+      api.peticiones.filter((p) => p.metodo === 'POST' && p.ruta === RUTA_REPORTE)
+    ).toHaveLength(1);
+  });
+
   // --- Cuenta restringida --------------------------------------------------
 
   it('una cuenta restringida conserva el reporte', async () => {

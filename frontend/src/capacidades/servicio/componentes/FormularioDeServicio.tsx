@@ -4,7 +4,13 @@ import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
-import { Boton, Entrada, IconoSubida, IconoX } from '../../../comun/componentes/ui';
+import {
+  Boton,
+  Entrada,
+  IconoCheckCirculo,
+  IconoSubida,
+  IconoX,
+} from '../../../comun/componentes/ui';
 import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
@@ -62,6 +68,7 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
   const [errorDeFotos, setErrorDeFotos] = useState<string | undefined>();
   const [arrastrando, setArrastrando] = useState(false);
   const [subiendoFotos, setSubiendoFotos] = useState(false);
+  const [servicioCreado, setServicioCreado] = useState<ServicioPropio | null>(null);
   const entradaDeArchivoRef = useRef<HTMLInputElement>(null);
 
   const urlsPrevia = useMemo(() => fotos.map((f) => URL.createObjectURL(f)), [fotos]);
@@ -170,7 +177,7 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
             }
             setSubiendoFotos(false);
           }
-          alCrear?.(creado);
+          setServicioCreado(creado);
         },
         onError: anotarErrores,
       }
@@ -232,6 +239,10 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
     evento.preventDefault();
     if (paso !== 4) {
       void avanzar();
+      return;
+    }
+    if (servicioCreado !== null) {
+      alCrear?.(servicioCreado);
       return;
     }
     void publicar();
@@ -513,6 +524,23 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
       {paso === 4 && (
         <div className={propios.cuerpoDePaso}>
           <h2 className={propios.tituloDePaso}>Revisión y confirmación</h2>
+
+          {servicioCreado !== null && (
+            <div className={propios.avisoExito} role="status">
+              <IconoCheckCirculo className={propios.iconoExito} />
+              <div>
+                <p className={propios.tituloExito}>
+                  {fotos.length > 0
+                    ? '¡Fotos subidas y servicio listo!'
+                    : '¡Servicio listo para publicarse!'}
+                </p>
+                <p className={propios.detalleExito}>
+                  Tu servicio «{servicioCreado.nombre}» ha sido registrado. Haz clic en Publicar servicio para acceder a su administración.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className={propios.resumen}>
             <div className={propios.filaDeResumen}>
               <p className={propios.etiquetaDeResumen}>Nombre</p>
@@ -565,21 +593,36 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
             Cancelar
           </Boton>
         ) : (
-          <Boton variante="contorno" onClick={retroceder}>
-            Atrás
+          <Boton
+            variante="contorno"
+            onClick={servicioCreado !== null ? () => navegar(RUTA_SERVICIOS) : retroceder}
+          >
+            {servicioCreado !== null ? 'Mis servicios' : 'Atrás'}
           </Boton>
         )}
         {paso < 4 ? (
           <Boton variante="primario" onClick={() => void avanzar()}>
             Siguiente
           </Boton>
-        ) : (
-          <Boton variante="primario" type="submit" disabled={creacion.isPending || subiendoFotos}>
+        ) : servicioCreado === null ? (
+          <Boton
+            variante="primario"
+            type="submit"
+            disabled={creacion.isPending || subiendoFotos}
+          >
             {subiendoFotos
               ? 'Subiendo fotos…'
               : creacion.isPending
                 ? 'Publicando…'
                 : 'Publicar servicio'}
+          </Boton>
+        ) : (
+          <Boton
+            variante="primario"
+            type="button"
+            onClick={() => alCrear?.(servicioCreado)}
+          >
+            Publicar servicio
           </Boton>
         )}
       </div>

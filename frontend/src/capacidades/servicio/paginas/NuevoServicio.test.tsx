@@ -128,6 +128,12 @@ describe('Asistente de nuevo servicio', () => {
     await waitFor(() => {
       expect(api.ultima('POST /api/prestador/servicios/10/imagenes')).toBeDefined();
     });
+
+    expect(await screen.findByText('¡Fotos subidas y servicio listo!')).toBeVisible();
+    await persona.click(screen.getByRole('button', { name: 'Publicar servicio' }));
+
+    expect(await screen.findByRole('heading', { name: 'Reparación de fugas' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Activar servicio' })).toBeVisible();
   });
 
   it('rechaza un precio inválido y acepta el vacío como A convenir', async () => {
@@ -187,6 +193,10 @@ describe('Asistente de nuevo servicio', () => {
         precioReferencia: null,
       });
     });
+
+    expect(await screen.findByText('¡Servicio listo para publicarse!')).toBeVisible();
+    await persona.click(screen.getByRole('button', { name: 'Publicar servicio' }));
+
     expect(await screen.findByRole('heading', { name: 'Reparación de fugas' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Activar servicio' })).toBeVisible();
   });

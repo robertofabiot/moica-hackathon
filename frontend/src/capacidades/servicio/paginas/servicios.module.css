@@ -87,3 +87,527 @@
     max-width: 48rem;
   }
 }
+
+/*
+ * Asistente de publicación (`/prestador/servicios/nuevo`).
+ * Layout con barra lateral, tarjeta central e indicador de pasos.
+ */
+
+.paginaAsistente {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background-color: var(--color-neutral-50);
+}
+
+.barraLateralDeAsistente {
+  display: none;
+}
+
+.principalAsistente {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: var(--gap-md);
+}
+
+.tarjetaAsistente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xl);
+  width: 100%;
+  max-width: 40rem;
+  padding: var(--gap-xl);
+  background-color: var(--color-neutral-0);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.encabezadoAsistente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.tituloAsistente {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+  letter-spacing: -0.01em;
+}
+
+.explicacionAsistente {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.pasos {
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paso {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-xs);
+  min-width: 0;
+}
+
+.paso:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 1rem;
+  left: calc(50% + 1.15rem);
+  right: calc(-50% + 1.15rem);
+  height: var(--border-width-sm);
+  background-color: var(--color-neutral-200);
+}
+
+.pasoCompletado:not(:last-child)::after {
+  background-color: var(--color-secondary-500);
+}
+
+.circulo {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.circulo svg {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.circuloActivo {
+  background-color: var(--color-primary-500);
+  color: var(--color-neutral-0);
+}
+
+.circuloCompletado {
+  background-color: var(--color-secondary-500);
+  color: var(--color-neutral-0);
+}
+
+.circuloFuturo {
+  background-color: var(--color-neutral-200);
+  color: var(--color-neutral-600);
+}
+
+.etiquetaDePaso {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+}
+
+.etiquetaDePasoActiva {
+  color: var(--color-neutral-900);
+  font-weight: var(--font-weight-bold);
+}
+
+.etiquetaDePasoCompletada {
+  color: var(--color-neutral-800);
+  font-weight: var(--font-weight-semibold);
+}
+
+.formularioAsistente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xl);
+}
+
+.cuerpoDePaso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+}
+
+.tituloDePaso {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.campoAsistente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.filaDeSelectores {
+  display: grid;
+  gap: var(--gap-md);
+}
+
+.etiquetaAsistente {
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-neutral-900);
+}
+
+.selectAsistente,
+.textareaAsistente {
+  width: 100%;
+  padding: var(--gap-sm);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-base);
+}
+
+.selectAsistente:hover,
+.textareaAsistente:hover {
+  border-color: var(--color-neutral-600);
+}
+
+.selectAsistente:focus-visible,
+.textareaAsistente:focus-visible {
+  border-color: var(--color-primary-500);
+}
+
+.selectConError,
+.textareaConError {
+  border-color: var(--color-error-500);
+}
+
+.pistaAsistente {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.errorAsistente {
+  margin: 0;
+  color: var(--color-error-500);
+  font-size: var(--font-size-sm);
+}
+
+.cabeceraDeDescripcion {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+}
+
+.contadorDeCaracteres {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.entradaOculta {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.zonaDeSubida {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-xs);
+  padding: var(--gap-xl) var(--gap-md);
+  border: var(--border-width-sm) dashed var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-50);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out;
+}
+
+.zonaDeSubida:hover {
+  border-color: var(--color-neutral-600);
+  background-color: var(--color-neutral-100);
+}
+
+.zonaDeSubida:focus-visible {
+  border-color: var(--color-primary-500);
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+.zonaDeSubidaArrastrando {
+  border-color: var(--color-primary-500);
+  background-color: var(--color-primary-50);
+}
+
+.iconoDeZona {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--color-neutral-400);
+}
+
+.tituloDeZona {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.pistaDeZona {
+  margin: 0;
+  max-width: 24rem;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.botonExaminar {
+  margin-top: var(--gap-xs);
+  pointer-events: auto;
+}
+
+.galeriaPrevia {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin-top: var(--gap-xs);
+}
+
+.contadorFotos {
+  margin: 0;
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.listaDeMiniaturas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: var(--gap-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.itemDeMiniatura {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-neutral-0);
+}
+
+.miniaturaFoto {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  background-color: var(--color-neutral-100);
+}
+
+.detallesFoto {
+  display: flex;
+  flex-direction: column;
+  padding: var(--gap-xs);
+  gap: 0.125rem;
+}
+
+.nombreFoto {
+  font-size: var(--font-size-xs);
+  color: var(--color-neutral-900);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tamanoFoto {
+  font-size: var(--font-size-xs);
+  color: var(--color-neutral-600);
+}
+
+.botonQuitarFoto {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: rgba(31, 41, 55, 0.75);
+  color: var(--color-neutral-0);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.botonQuitarFoto:hover {
+  background-color: var(--color-error-500);
+}
+
+.botonQuitarFoto svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.resumenFotos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.miniaturasResumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs);
+}
+
+.miniaturaResumen {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-sm);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  object-fit: cover;
+}
+
+.campoDePrecio {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.prefijoMoneda {
+  display: flex;
+  align-items: center;
+  padding-inline: var(--gap-sm);
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  padding: var(--gap-lg);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-50);
+}
+
+.filaDeResumen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.etiquetaDeResumen {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.valorDeResumen {
+  color: var(--color-neutral-900);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.extractoDeResumen {
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  overflow-wrap: anywhere;
+}
+
+.avisoExito {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-sm);
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-secondary-300);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-secondary-50);
+}
+
+.iconoExito {
+  display: block;
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--color-secondary-600);
+  margin-top: 0.125rem;
+}
+
+.tituloExito {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-secondary-900);
+}
+
+.detalleExito {
+  margin: 0.25rem 0 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-secondary-800);
+}
+
+.navegacionAsistente {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+}
+
+@media (min-width: 48rem) {
+  .barraLateralDeAsistente {
+    display: block;
+  }
+
+  .paginaAsistente {
+    padding-left: calc(var(--font-size-xl) + var(--gap-md) * 2);
+  }
+
+  .principalAsistente {
+    padding: var(--gap-xl);
+  }
+
+  .tarjetaAsistente {
+    max-width: 44rem;
+  }
+
+  .tituloAsistente {
+    font-size: var(--font-size-2xl);
+  }
+
+  .filaDeSelectores {
+    grid-template-columns: 1fr 1fr;
+  }
+}

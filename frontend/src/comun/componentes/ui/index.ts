@@ -8,6 +8,7 @@ export { Boton, type FormaDeBoton, type VarianteDeBoton } from './Boton';
 export { Entrada, type VarianteDeEntrada } from './Entrada';
 export { EstrellasCalificacion } from './EstrellasCalificacion';
 export {
+  IconoCamara,
   IconoCampana,
   IconoCasa,
   IconoCheckCirculo,
@@ -21,7 +22,9 @@ export {
   IconoPin,
   IconoPulgarArriba,
   IconoReloj,
+  IconoSubida,
   IconoUsuario,
+  IconoX,
 } from './iconos';
 export {
   IconoBelleza,

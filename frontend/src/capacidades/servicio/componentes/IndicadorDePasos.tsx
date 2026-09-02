@@ -1,6 +1,6 @@
 import estilos from '../paginas/servicios.module.css';
 
-export const PASOS_DE_PUBLICACION = [
+const PASOS_DE_PUBLICACION = [
   { numero: 1, etiqueta: 'Información' },
   { numero: 2, etiqueta: 'Detalles' },
   { numero: 3, etiqueta: 'Precio' },
@@ -61,7 +61,7 @@ function claseDePaso(estado: EstadoDePaso): string | undefined {
   return estilos.pasoFuturo;
 }
 
-function claseDeCirculo(estado: EstadoDePaso): string {
+function claseDeCirculo(estado: EstadoDePaso): string | undefined {
   if (estado === 'activo') {
     return estilos.circuloActivo;
   }

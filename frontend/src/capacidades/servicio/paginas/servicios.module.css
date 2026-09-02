@@ -229,6 +229,186 @@
   font-weight: var(--font-weight-semibold);
 }
 
+.formularioAsistente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xl);
+}
+
+.cuerpoDePaso {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+}
+
+.tituloDePaso {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.campoAsistente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.filaDeSelectores {
+  display: grid;
+  gap: var(--gap-md);
+}
+
+.etiquetaAsistente {
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-neutral-900);
+}
+
+.selectAsistente,
+.textareaAsistente {
+  width: 100%;
+  padding: var(--gap-sm);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-base);
+}
+
+.selectAsistente:hover,
+.textareaAsistente:hover {
+  border-color: var(--color-neutral-600);
+}
+
+.selectAsistente:focus-visible,
+.textareaAsistente:focus-visible {
+  border-color: var(--color-primary-500);
+}
+
+.selectConError,
+.textareaConError {
+  border-color: var(--color-error-500);
+}
+
+.pistaAsistente {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.errorAsistente {
+  margin: 0;
+  color: var(--color-error-500);
+  font-size: var(--font-size-sm);
+}
+
+.cabeceraDeDescripcion {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+}
+
+.contadorDeCaracteres {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.zonaDeSubida {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-xs);
+  padding: var(--gap-xl) var(--gap-md);
+  border: var(--border-width-sm) dashed var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-50);
+  text-align: center;
+}
+
+.iconoDeZona {
+  display: block;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--color-neutral-400);
+}
+
+.tituloDeZona {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.pistaDeZona {
+  margin: 0;
+  max-width: 22rem;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.campoDePrecio {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.prefijoMoneda {
+  display: flex;
+  align-items: center;
+  padding-inline: var(--gap-sm);
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  padding: var(--gap-lg);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-50);
+}
+
+.filaDeResumen {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.etiquetaDeResumen {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.valorDeResumen {
+  color: var(--color-neutral-900);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.extractoDeResumen {
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  overflow-wrap: anywhere;
+}
+
+.navegacionAsistente {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+}
+
 @media (min-width: 48rem) {
   .barraLateralDeAsistente {
     display: block;
@@ -248,5 +428,9 @@
 
   .tituloAsistente {
     font-size: var(--font-size-2xl);
+  }
+
+  .filaDeSelectores {
+    grid-template-columns: 1fr 1fr;
   }
 }

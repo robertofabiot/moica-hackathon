@@ -35,6 +35,8 @@ class RegistroDeUsuarioIT extends PruebaDeIntegracionConPostgres {
   @BeforeEach
   void prepararNavegadorYBase() {
     jdbc.update("DELETE FROM sesion");
+    jdbc.update("DELETE FROM historial_caso");
+    jdbc.update("DELETE FROM caso_moderacion");
     jdbc.update("DELETE FROM calificacion_usuario");
     jdbc.update("DELETE FROM mensaje_solicitud");
     jdbc.update("DELETE FROM cambio_estado_solicitud");

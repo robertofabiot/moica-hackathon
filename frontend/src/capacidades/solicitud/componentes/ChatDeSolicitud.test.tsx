@@ -6,6 +6,7 @@ import App from '../../../App';
 import {
   cuerpoDeError,
   estadoDeCalificacionDeEjemplo,
+  estadoDeReporteDeEjemplo,
   instalarApiFalsa,
   mensajeDeEjemplo,
   sesionDeEjemplo,
@@ -36,6 +37,11 @@ describe('Chat de una solicitud', () => {
     api.responder('GET /api/solicitudes/21/calificacion', {
       estado: 200,
       cuerpo: estadoDeCalificacionDeEjemplo({ puedeCalificar: false, solicitudCompletada: false }),
+    });
+    // El detalle monta también el reporte de P9; aquí no se prueba.
+    api.responder('GET /api/solicitudes/21/caso-moderacion', {
+      estado: 200,
+      cuerpo: estadoDeReporteDeEjemplo({ solicitudReportable: false, puedeReportar: false }),
     });
   });
 

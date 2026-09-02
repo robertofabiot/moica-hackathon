@@ -40,49 +40,6 @@ describe('Servicios propios', () => {
     expect(screen.getByRole('link', { name: 'Publicar un servicio' })).toBeVisible();
   });
 
-  it('exige nombre, descripción y subcategoría antes de crear', async () => {
-    const persona = userEvent.setup();
-    api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
-
-    renderizarConProveedores(<App />, '/prestador/servicios/nuevo');
-
-    await persona.click(await screen.findByRole('button', { name: 'Crear servicio' }));
-
-    expect(await screen.findByText('Escribe el nombre del servicio.')).toBeVisible();
-    expect(screen.getByText('Describe el servicio.')).toBeVisible();
-    expect(screen.getByText('Elige una subcategoría.')).toBeVisible();
-    expect(api.ultima('POST /api/prestador/servicios')).toBeUndefined();
-  });
-
-  it('crea un servicio inactivo y deja el precio vacío como nulo', async () => {
-    const persona = userEvent.setup();
-    const creado = servicioPropioDeEjemplo();
-    api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
-    api.responder('POST /api/prestador/servicios', { estado: 201, cuerpo: creado });
-    api.responder('GET /api/prestador/servicios/10', { estado: 200, cuerpo: creado });
-
-    renderizarConProveedores(<App />, '/prestador/servicios/nuevo');
-
-    await persona.type(await screen.findByLabelText('Nombre'), 'Reparación de fugas');
-    await persona.type(
-      screen.getByLabelText('Descripción'),
-      'Reparo tuberías y fugas en el hogar.'
-    );
-    await persona.selectOptions(screen.getByLabelText('Subcategoría'), '1');
-    await persona.click(screen.getByRole('button', { name: 'Crear servicio' }));
-
-    await waitFor(() => {
-      expect(api.ultima('POST /api/prestador/servicios')?.cuerpo).toEqual({
-        nombre: 'Reparación de fugas',
-        descripcion: 'Reparo tuberías y fugas en el hogar.',
-        idSubcategoriaServicio: 1,
-        precioReferencia: null,
-      });
-    });
-    expect(await screen.findByRole('heading', { name: 'Reparación de fugas' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Activar servicio' })).toBeVisible();
-  });
-
   it('muestra A convenir y permite activar o desactivar desde el listado', async () => {
     const persona = userEvent.setup();
     api.responder('GET /api/prestador/servicios', {

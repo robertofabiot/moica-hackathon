@@ -143,3 +143,24 @@ export function IconoCampana(props: PropiedadesDeIcono) {
     </Trazo>
   );
 }
+
+/** Flecha hacia una bandeja: subir archivos o fotos. */
+export function IconoSubida(props: PropiedadesDeIcono) {
+  return (
+    <Trazo {...props}>
+      <path d="M12 3v12" />
+      <path d="m17 8-5-5-5 5" />
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    </Trazo>
+  );
+}
+
+/** Cámara: galería de fotos de un servicio. */
+export function IconoCamara(props: PropiedadesDeIcono) {
+  return (
+    <Trazo {...props}>
+      <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+      <circle cx="12" cy="13" r="3" />
+    </Trazo>
+  );
+}

@@ -1,13 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useNavigate } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
-import { Boton, Entrada, IconoSubida } from '../../../comun/componentes/ui';
+import { Boton, Entrada, IconoSubida, IconoX } from '../../../comun/componentes/ui';
 import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
+import { subirImagenDeServicio } from '../api';
 import {
   esquemaDeServicio,
   type CamposDeServicio,
@@ -57,6 +58,19 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
   const [paso, setPaso] = useState<PasoDePublicacion>(1);
   const [idCategoria, setIdCategoria] = useState('');
   const [errorDeCategoria, setErrorDeCategoria] = useState<string | undefined>();
+  const [fotos, setFotos] = useState<File[]>([]);
+  const [errorDeFotos, setErrorDeFotos] = useState<string | undefined>();
+  const [arrastrando, setArrastrando] = useState(false);
+  const [subiendoFotos, setSubiendoFotos] = useState(false);
+  const entradaDeArchivoRef = useRef<HTMLInputElement>(null);
+
+  const urlsPrevia = useMemo(() => fotos.map((f) => URL.createObjectURL(f)), [fotos]);
+
+  useEffect(() => {
+    return () => {
+      urlsPrevia.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [urlsPrevia]);
 
   const {
     register,
@@ -100,6 +114,41 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
     (subcategoria) => String(subcategoria.idSubcategoriaServicio) === idSubcategoriaServicio
   );
 
+  function agregarArchivos(archivos: FileList | null) {
+    if (!archivos || archivos.length === 0) {
+      return;
+    }
+    setErrorDeFotos(undefined);
+    const formatosValidos = ['image/jpeg', 'image/png', 'image/webp'];
+    const nuevos: File[] = [];
+    let errorDetectado: string | undefined;
+
+    Array.from(archivos).forEach((archivo) => {
+      if (!formatosValidos.includes(archivo.type)) {
+        errorDetectado = 'Solo se admiten formatos JPEG, PNG o WebP.';
+        return;
+      }
+      if (archivo.size > 5 * 1024 * 1024) {
+        errorDetectado = 'Las imágenes no deben superar los 5 MB.';
+        return;
+      }
+      nuevos.push(archivo);
+    });
+
+    if (errorDetectado && nuevos.length === 0) {
+      setErrorDeFotos(errorDetectado);
+      return;
+    }
+    if (errorDetectado) {
+      setErrorDeFotos(errorDetectado);
+    }
+    setFotos((actuales) => [...actuales, ...nuevos]);
+  }
+
+  function quitarFoto(indice: number) {
+    setFotos((actuales) => actuales.filter((_, i) => i !== indice));
+  }
+
   const publicar = handleSubmit((campos) => {
     creacion.mutate(
       {
@@ -109,7 +158,20 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
         precioReferencia: campos.precioReferencia,
       },
       {
-        onSuccess: (creado) => alCrear?.(creado),
+        onSuccess: async (creado) => {
+          if (fotos.length > 0) {
+            setSubiendoFotos(true);
+            for (const foto of fotos) {
+              try {
+                await subirImagenDeServicio(creado.idServicioPublicado, foto, '');
+              } catch {
+                // Continuar si alguna foto falla para no bloquear el flujo
+              }
+            }
+            setSubiendoFotos(false);
+          }
+          alCrear?.(creado);
+        },
         onError: anotarErrores,
       }
     );
@@ -315,12 +377,109 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
               </p>
             )}
           </div>
-          <div className={propios.zonaDeSubida} role="note">
-            <IconoSubida className={propios.iconoDeZona} />
-            <p className={propios.tituloDeZona}>Subir fotos</p>
-            <p className={propios.pistaDeZona}>
-              Podrás administrar la galería completa una vez creado el servicio
-            </p>
+
+          <div className={propios.campoAsistente}>
+            <label className={propios.etiquetaAsistente} htmlFor="fotos-servicio">
+              Fotos del servicio
+            </label>
+            <input
+              ref={entradaDeArchivoRef}
+              id="fotos-servicio"
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/webp"
+              className={propios.entradaOculta}
+              onChange={(evento) => {
+                agregarArchivos(evento.target.files);
+                evento.target.value = '';
+              }}
+            />
+            <div
+              className={unirClases(
+                propios.zonaDeSubida,
+                arrastrando ? propios.zonaDeSubidaArrastrando : undefined
+              )}
+              role="button"
+              tabIndex={0}
+              onClick={() => entradaDeArchivoRef.current?.click()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  entradaDeArchivoRef.current?.click();
+                }
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setArrastrando(true);
+              }}
+              onDragLeave={() => setArrastrando(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setArrastrando(false);
+                agregarArchivos(e.dataTransfer.files);
+              }}
+              aria-label="Subir fotos: Haz clic o arrastra imágenes aquí"
+            >
+              <IconoSubida className={propios.iconoDeZona} />
+              <p className={propios.tituloDeZona}>
+                {fotos.length === 0 ? 'Subir fotos' : 'Agregar más fotos'}
+              </p>
+              <p className={propios.pistaDeZona}>
+                Arrastra tus imágenes aquí o haz clic para buscarlas (JPEG, PNG o WebP, máx. 5 MB)
+              </p>
+              <Boton
+                type="button"
+                variante="contorno"
+                className={propios.botonExaminar}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  entradaDeArchivoRef.current?.click();
+                }}
+              >
+                Explorar archivos
+              </Boton>
+            </div>
+
+            {errorDeFotos !== undefined && (
+              <p className={propios.errorAsistente} role="alert">
+                {errorDeFotos}
+              </p>
+            )}
+
+            {fotos.length > 0 && (
+              <div className={propios.galeriaPrevia}>
+                <p className={propios.contadorFotos}>
+                  {fotos.length}{' '}
+                  {fotos.length === 1 ? 'foto seleccionada' : 'fotos seleccionadas'}
+                </p>
+                <ul className={propios.listaDeMiniaturas}>
+                  {fotos.map((foto, indice) => (
+                    <li key={`${foto.name}-${indice}`} className={propios.itemDeMiniatura}>
+                      <img
+                        src={urlsPrevia[indice]}
+                        alt={`Previsualización de ${foto.name}`}
+                        className={propios.miniaturaFoto}
+                      />
+                      <div className={propios.detallesFoto}>
+                        <span className={propios.nombreFoto}>{foto.name}</span>
+                        <span className={propios.tamanoFoto}>
+                          {(foto.size / (1024 * 1024)).toFixed(2)} MB
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        className={propios.botonQuitarFoto}
+                        onClick={() => quitarFoto(indice)}
+                        aria-label={`Quitar foto ${foto.name}`}
+                        title="Quitar foto"
+                      >
+                        <IconoX />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -374,6 +533,29 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
               <p className={propios.etiquetaDeResumen}>Descripción</p>
               <p className={propios.extractoDeResumen}>{extracto(descripcion)}</p>
             </div>
+            <div className={propios.filaDeResumen}>
+              <p className={propios.etiquetaDeResumen}>Fotos</p>
+              {fotos.length > 0 ? (
+                <div className={propios.resumenFotos}>
+                  <p className={propios.valorDeResumen}>
+                    {fotos.length}{' '}
+                    {fotos.length === 1 ? 'foto lista para subir' : 'fotos listas para subir'}
+                  </p>
+                  <div className={propios.miniaturasResumen}>
+                    {fotos.map((_, idx) => (
+                      <img
+                        key={idx}
+                        className={propios.miniaturaResumen}
+                        src={urlsPrevia[idx]}
+                        alt={`Miniatura ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p className={propios.valorDeResumen}>Sin fotos (podrás subirlas después)</p>
+              )}
+            </div>
           </div>
         </div>
       )}
@@ -393,8 +575,16 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
             Siguiente
           </Boton>
         ) : (
-          <Boton variante="primario" type="submit" disabled={creacion.isPending}>
-            {creacion.isPending ? 'Publicando…' : 'Publicar servicio'}
+          <Boton
+            variante="primario"
+            type="submit"
+            disabled={creacion.isPending || subiendoFotos}
+          >
+            {subiendoFotos
+              ? 'Subiendo fotos…'
+              : creacion.isPending
+                ? 'Publicando…'
+                : 'Publicar servicio'}
           </Boton>
         )}
       </div>

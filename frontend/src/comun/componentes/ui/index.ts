@@ -24,6 +24,7 @@ export {
   IconoReloj,
   IconoSubida,
   IconoUsuario,
+  IconoX,
 } from './iconos';
 export {
   IconoBelleza,

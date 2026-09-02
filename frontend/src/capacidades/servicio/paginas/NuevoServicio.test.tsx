@@ -79,7 +79,7 @@ describe('Asistente de nuevo servicio', () => {
     expect(await screen.findByLabelText('Descripción')).toBeVisible();
     expect(screen.getByText('Subir fotos')).toBeVisible();
     expect(
-      screen.getByText('Podrás administrar la galería completa una vez creado el servicio')
+      screen.getByText(/Arrastra tus imágenes aquí o haz clic para buscarlas/i)
     ).toBeVisible();
     expect(screen.getByText('0/3000')).toBeVisible();
 
@@ -88,6 +88,48 @@ describe('Asistente de nuevo servicio', () => {
     expect(await screen.findByText('Describe el servicio.')).toBeVisible();
     expect(screen.getByRole('listitem', { current: 'step' })).toHaveTextContent('Detalles');
     expect(api.ultima('POST /api/prestador/servicios')).toBeUndefined();
+  });
+
+  it('permite adjuntar fotos en el paso de detalles y las sube al publicar', async () => {
+    const persona = userEvent.setup();
+    const creado = servicioPropioDeEjemplo();
+    api.responder('POST /api/prestador/servicios', { estado: 201, cuerpo: creado });
+    api.responder('POST /api/prestador/servicios/10/imagenes', {
+      estado: 201,
+      cuerpo: {
+        idImagenServicioPublicado: 101,
+        urlImagen: 'https://ejemplo.com/foto.jpg',
+        textoAlternativo: null,
+        orden: 1,
+      },
+    });
+    api.responder('GET /api/prestador/servicios/10', { estado: 200, cuerpo: creado });
+
+    renderizarConProveedores(<App />, RUTA_NUEVO);
+
+    await completarInformacion(persona);
+    await persona.click(screen.getByRole('button', { name: 'Siguiente' }));
+    await persona.type(
+      await screen.findByLabelText('Descripción'),
+      'Reparo tuberías y fugas en el hogar.'
+    );
+
+    const archivo = new File(['contenido-imagen'], 'foto-tuberias.jpg', { type: 'image/jpeg' });
+    const entradaArchivo = screen.getByLabelText(/Fotos del servicio/i);
+    await persona.upload(entradaArchivo, archivo);
+
+    expect(await screen.findByText('1 foto seleccionada')).toBeVisible();
+    expect(screen.getByText('foto-tuberias.jpg')).toBeVisible();
+
+    await persona.click(screen.getByRole('button', { name: 'Siguiente' }));
+    await persona.click(await screen.findByRole('button', { name: 'Siguiente' }));
+
+    expect(await screen.findByText('1 foto lista para subir')).toBeVisible();
+    await persona.click(screen.getByRole('button', { name: 'Publicar servicio' }));
+
+    await waitFor(() => {
+      expect(api.ultima('POST /api/prestador/servicios/10/imagenes')).toBeDefined();
+    });
   });
 
   it('rechaza un precio inválido y acepta el vacío como A convenir', async () => {

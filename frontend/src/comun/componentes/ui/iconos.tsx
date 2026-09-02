@@ -164,3 +164,14 @@ export function IconoCamara(props: PropiedadesDeIcono) {
     </Trazo>
   );
 }
+
+/** Equis: cerrar o quitar elementos. */
+export function IconoX(props: PropiedadesDeIcono) {
+  return (
+    <Trazo {...props}>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </Trazo>
+  );
+}
+

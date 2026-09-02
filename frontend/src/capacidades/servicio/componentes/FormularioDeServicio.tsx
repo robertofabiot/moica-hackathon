@@ -535,7 +535,8 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
                     : '¡Servicio listo para publicarse!'}
                 </p>
                 <p className={propios.detalleExito}>
-                  Tu servicio «{servicioCreado.nombre}» ha sido registrado. Haz clic en Publicar servicio para acceder a su administración.
+                  Tu servicio «{servicioCreado.nombre}» ha sido registrado. Haz clic en Publicar
+                  servicio para acceder a su administración.
                 </p>
               </div>
             </div>
@@ -605,11 +606,7 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
             Siguiente
           </Boton>
         ) : servicioCreado === null ? (
-          <Boton
-            variante="primario"
-            type="submit"
-            disabled={creacion.isPending || subiendoFotos}
-          >
+          <Boton variante="primario" type="submit" disabled={creacion.isPending || subiendoFotos}>
             {subiendoFotos
               ? 'Subiendo fotos…'
               : creacion.isPending
@@ -617,11 +614,7 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
                 : 'Publicar servicio'}
           </Boton>
         ) : (
-          <Boton
-            variante="primario"
-            type="button"
-            onClick={() => alCrear?.(servicioCreado)}
-          >
+          <Boton variante="primario" type="button" onClick={() => alCrear?.(servicioCreado)}>
             Publicar servicio
           </Boton>
         )}

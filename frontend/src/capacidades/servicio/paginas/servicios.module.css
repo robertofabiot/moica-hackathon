@@ -87,3 +87,166 @@
     max-width: 48rem;
   }
 }
+
+/*
+ * Asistente de publicación (`/prestador/servicios/nuevo`).
+ * Layout con barra lateral, tarjeta central e indicador de pasos.
+ */
+
+.paginaAsistente {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background-color: var(--color-neutral-50);
+}
+
+.barraLateralDeAsistente {
+  display: none;
+}
+
+.principalAsistente {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: var(--gap-md);
+}
+
+.tarjetaAsistente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xl);
+  width: 100%;
+  max-width: 40rem;
+  padding: var(--gap-xl);
+  background-color: var(--color-neutral-0);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.encabezadoAsistente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.tituloAsistente {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+  letter-spacing: -0.01em;
+}
+
+.explicacionAsistente {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.pasos {
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.paso {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-xs);
+  min-width: 0;
+}
+
+.paso:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  top: 1rem;
+  left: calc(50% + 1.15rem);
+  right: calc(-50% + 1.15rem);
+  height: var(--border-width-sm);
+  background-color: var(--color-neutral-200);
+}
+
+.pasoCompletado:not(:last-child)::after {
+  background-color: var(--color-secondary-500);
+}
+
+.circulo {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.circulo svg {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+}
+
+.circuloActivo {
+  background-color: var(--color-primary-500);
+  color: var(--color-neutral-0);
+}
+
+.circuloCompletado {
+  background-color: var(--color-secondary-500);
+  color: var(--color-neutral-0);
+}
+
+.circuloFuturo {
+  background-color: var(--color-neutral-200);
+  color: var(--color-neutral-600);
+}
+
+.etiquetaDePaso {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+}
+
+.etiquetaDePasoActiva {
+  color: var(--color-neutral-900);
+  font-weight: var(--font-weight-bold);
+}
+
+.etiquetaDePasoCompletada {
+  color: var(--color-neutral-800);
+  font-weight: var(--font-weight-semibold);
+}
+
+@media (min-width: 48rem) {
+  .barraLateralDeAsistente {
+    display: block;
+  }
+
+  .paginaAsistente {
+    padding-left: calc(var(--font-size-xl) + var(--gap-md) * 2);
+  }
+
+  .principalAsistente {
+    padding: var(--gap-xl);
+  }
+
+  .tarjetaAsistente {
+    max-width: 44rem;
+  }
+
+  .tituloAsistente {
+    font-size: var(--font-size-2xl);
+  }
+}

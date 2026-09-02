@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { ErrorDeApi } from '../../../comun/api';
 import { enviarReporte, obtenerEstadoDeReporte } from '../api';
 import type { ReporteAPresentar } from '../tipos';
 
@@ -31,13 +32,24 @@ export function useReporte(idSolicitud: number, habilitado: boolean) {
  *
  * Solo se invalida la clave del reporte: abrir un caso no cambia la solicitud, ninguna cuenta ni
  * ninguna reputación, así que invalidar más caché haría recargar pantallas que no cambiaron.
+ *
+ * Un conflicto se invalida igual que un acierto. Un 409 significa que el servidor sabe algo que
+ * esta pantalla ya no: que el caso existe —lo abrió otra pestaña o un envío anterior— o que la
+ * solicitud dejó de admitir el reporte. Sin volver a preguntar, la caché seguiría ofreciendo un
+ * formulario que ya no puede funcionar hasta que venciera `staleTime`.
  */
 export function useEnvioDeReporte(idSolicitud: number) {
   const cliente = useQueryClient();
+  const volverAPedirElEstado = () =>
+    void cliente.invalidateQueries({ queryKey: claveDeReporte(idSolicitud) });
+
   return useMutation({
     mutationFn: (reporte: ReporteAPresentar) => enviarReporte(idSolicitud, reporte),
-    onSuccess: () => {
-      void cliente.invalidateQueries({ queryKey: claveDeReporte(idSolicitud) });
+    onSuccess: volverAPedirElEstado,
+    onError: (fallo) => {
+      if (fallo instanceof ErrorDeApi && fallo.estado === 409) {
+        volverAPedirElEstado();
+      }
     },
   });
 }

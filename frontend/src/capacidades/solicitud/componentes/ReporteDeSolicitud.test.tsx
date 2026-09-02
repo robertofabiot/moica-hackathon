@@ -270,6 +270,34 @@ describe('Reporte de una solicitud', () => {
     );
   });
 
+  it('tras un conflicto vuelve a pedir el estado y muestra el caso que ya existía', async () => {
+    const persona = userEvent.setup();
+    conSolicitud();
+    conEstadoDeReporte();
+    abrirComo(ID_CLIENTE);
+    await abrirFormulario(persona);
+
+    await persona.type(screen.getByRole('textbox', { name: 'Motivo' }), 'Trato irrespetuoso');
+    await persona.type(screen.getByRole('textbox', { name: 'Descripción' }), 'Usó insultos.');
+
+    // El caso ya lo abrió otra pestaña: el envío choca con la unicidad y la
+    // pantalla tiene que enterarse, no quedarse ofreciendo el formulario.
+    api.responder(`POST ${RUTA_REPORTE}`, {
+      estado: 409,
+      cuerpo: cuerpoDeError(
+        409,
+        'REPORTE_DUPLICADO',
+        'Ya reportaste esta solicitud. Tu caso sigue abierto y no se presenta dos veces.'
+      ),
+    });
+    conEstadoDeReporte({ puedeReportar: false, casoAbierto: casoDeModeracionDeEjemplo() });
+
+    await persona.click(screen.getByRole('button', { name: 'Enviar reporte' }));
+
+    expect(await screen.findByText(/^Reportaste a /)).toBeVisible();
+    expect(screen.queryByRole('textbox', { name: 'Motivo' })).toBeNull();
+  });
+
   it('deja reintentar cuando falla la consulta del estado', async () => {
     const persona = userEvent.setup();
     conSolicitud();

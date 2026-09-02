@@ -4,7 +4,6 @@ import { BarraLateral } from '../../../comun/componentes/ui';
 import { RUTA_SEGURIDAD } from '../../auth';
 import { RUTA_PRESTADOR } from '../../prestador';
 import FormularioDeServicio from '../componentes/FormularioDeServicio';
-import IndicadorDePasos from '../componentes/IndicadorDePasos';
 import { rutaDeEdicionDeServicio } from '../rutas';
 import propios from './servicios.module.css';
 
@@ -33,7 +32,6 @@ export default function NuevoServicio() {
               prepararlo ahora y activarlo después.
             </p>
           </header>
-          <IndicadorDePasos pasoActual={1} />
           <FormularioDeServicio
             alCrear={(creado) => navegar(rutaDeEdicionDeServicio(creado.idServicioPublicado))}
           />

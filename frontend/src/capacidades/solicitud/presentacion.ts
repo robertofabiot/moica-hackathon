@@ -1,5 +1,10 @@
 import type { EstadoCuenta } from '../auth';
-import type { DatosDeSolicitudServicio, EstadoSolicitud, RolCalificado } from './tipos';
+import type {
+  DatosDeSolicitudServicio,
+  EstadoCasoModeracion,
+  EstadoSolicitud,
+  RolCalificado,
+} from './tipos';
 
 /** Enviar, aceptar, rechazar y completar exigen cuenta activa. Cancelar no. */
 export function cuentaEstaActiva(estadoCuenta: EstadoCuenta | undefined): boolean {
@@ -83,4 +88,28 @@ export function admiteCalificacion(solicitud: DatosDeSolicitudServicio): boolean
 /** Cómo se nombra en pantalla el rol en que quedó calificada la contraparte. */
 export function nombreDelRol(rol: RolCalificado): string {
   return rol === 'PRESTADOR' ? 'prestador' : 'cliente';
+}
+
+/**
+ * Si la solicitud admite un reporte.
+ *
+ * Es la misma condición que habilita el hilo: haber llegado alguna vez a `ACEPTADA`. Da igual dónde
+ * terminara —completada o cancelada después de aceptarse siguen admitiéndolo, porque el trato
+ * existió—, y una que nunca se aceptó no lo admite nunca. Quién puede reportar de verdad lo decide
+ * el backend; esto solo evita ofrecer una acción falsa.
+ */
+export function admiteReporte(solicitud: DatosDeSolicitudServicio): boolean {
+  return hiloHabilitado(solicitud);
+}
+
+const ESTADOS_DE_CASO: Record<EstadoCasoModeracion, string> = {
+  ABIERTO: 'Abierto',
+  EN_REVISION: 'En revisión',
+  CERRADO: 'Cerrado',
+  REABIERTO: 'Reabierto',
+};
+
+/** Cómo se nombra en pantalla la etapa vigente de un caso de moderación. */
+export function nombreDelEstadoDeCaso(estado: EstadoCasoModeracion): string {
+  return ESTADOS_DE_CASO[estado];
 }

@@ -104,3 +104,45 @@ export interface CalificacionAEmitir {
   puntuacion: number;
   comentario: string | null;
 }
+
+/** Etapa vigente de la revisión de un caso de moderación. */
+export type EstadoCasoModeracion = 'ABIERTO' | 'EN_REVISION' | 'CERRADO' | 'REABIERTO';
+
+/**
+ * El caso que esta persona abrió, tal como se lo devuelve el backend.
+ *
+ * No trae nada administrativo: ni responsable, ni medida, ni resultado, ni resolución. Eso
+ * pertenece al área administrativa, no al acuse del reporte.
+ */
+export interface DatosDeCasoModeracion {
+  idCasoModeracion: number;
+  idSolicitudServicio: number;
+  idReportado: number;
+  nombreReportado: string;
+  motivo: string;
+  descripcion: string;
+  estadoActual: EstadoCasoModeracion;
+  fechaApertura: string;
+}
+
+/**
+ * Qué puede hacer la sesión con el reporte de una solicitud.
+ *
+ * `puedeReportar` lo decide el servidor —la solicitud llegó a estar aceptada y esta
+ * persona todavía no reportó—. Ocultar el formulario no autoriza nada: el envío se
+ * vuelve a comprobar en el backend.
+ */
+export interface EstadoDeReporte {
+  idSolicitudServicio: number;
+  solicitudReportable: boolean;
+  idReportado: number;
+  nombreReportado: string;
+  puedeReportar: boolean;
+  casoAbierto: DatosDeCasoModeracion | null;
+}
+
+/** Lo único que el navegador envía al reportar: el reportado lo pone el servidor. */
+export interface ReporteAPresentar {
+  motivo: string;
+  descripcion: string;
+}

@@ -42,3 +42,25 @@ export const esquemaDeCancelacion = z.object({
 });
 
 export type CamposDeCancelacion = z.input<typeof esquemaDeCancelacion>;
+
+/**
+ * El reporte que abre un caso de moderación.
+ *
+ * Los dos topes son los mismos que valida `ReporteAPresentar` en el backend: el motivo
+ * respeta el ancho de la columna `varchar(120)` y la descripción usa el límite de
+ * aplicación de 3000 caracteres, el mismo que la descripción de una solicitud.
+ */
+export const esquemaDeReporte = z.object({
+  motivo: textoObligatorio(
+    120,
+    'Indica el motivo del reporte.',
+    'El motivo no puede pasar de 120 caracteres.'
+  ),
+  descripcion: textoObligatorio(
+    3000,
+    'Describe lo que ocurrió.',
+    'La descripción no puede pasar de 3000 caracteres.'
+  ),
+});
+
+export type CamposDeReporte = z.input<typeof esquemaDeReporte>;

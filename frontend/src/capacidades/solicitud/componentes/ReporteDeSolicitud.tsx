@@ -166,6 +166,7 @@ function Formulario({
   const envio = useEnvioDeReporte(idSolicitud);
   const idDelMotivo = useId();
   const idDeLaDescripcion = useId();
+  const idDelContador = useId();
   const {
     register,
     handleSubmit,
@@ -248,8 +249,12 @@ function Formulario({
           maxLength={MAXIMO_DESCRIPCION}
           disabled={enCurso}
           aria-invalid={errors.descripcion !== undefined}
+          // El contador va siempre en la descripcion: con dos campos de texto,
+          // uno suelto al pie no dice de cual habla.
           aria-describedby={
-            errors.descripcion === undefined ? undefined : `${idDeLaDescripcion}-error`
+            errors.descripcion === undefined
+              ? idDelContador
+              : `${idDeLaDescripcion}-error ${idDelContador}`
           }
           {...campoDeDescripcion}
           onChange={(evento) => {
@@ -265,7 +270,7 @@ function Formulario({
       </div>
 
       <div className={propios.pie}>
-        <span className={propios.contador}>
+        <span className={propios.contador} id={idDelContador}>
           {caracteres} de {MAXIMO_DESCRIPCION} caracteres
         </span>
         <div className={propios.acciones}>

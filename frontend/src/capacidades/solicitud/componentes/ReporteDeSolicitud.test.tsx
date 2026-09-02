@@ -161,8 +161,10 @@ describe('Reporte de una solicitud', () => {
     expect(await screen.findByText('Indica el motivo del reporte.')).toBeVisible();
     expect(screen.getByText('Describe lo que ocurrió.')).toBeVisible();
     expect(screen.getByRole('textbox', { name: 'Motivo' })).toHaveAttribute('aria-invalid', 'true');
+    // El contador va tambien en la descripcion accesible: es lo que ata ese
+    // «de 3000 caracteres» a este campo y no al de motivo.
     expect(screen.getByRole('textbox', { name: 'Descripción' })).toHaveAccessibleDescription(
-      'Describe lo que ocurrió.'
+      'Describe lo que ocurrió. 0 de 3000 caracteres'
     );
     expect(api.ultima(`POST ${RUTA_REPORTE}`)).toBeUndefined();
   });

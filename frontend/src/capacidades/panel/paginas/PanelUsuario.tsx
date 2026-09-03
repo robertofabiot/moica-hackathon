@@ -167,8 +167,7 @@ export default function PanelUsuario() {
             ) : actividad.length === 0 ? (
               <p className={estilos.vacio}>
                 Todavía no tienes solicitudes. Explora servicios para contratar o espera a que te
-                escriban.{' '}
-                <Link to={RUTA_EXPLORAR}>Explorar servicios</Link>
+                escriban. <Link to={RUTA_EXPLORAR}>Explorar servicios</Link>
               </p>
             ) : (
               <ul className={estilos.listaActividad}>
@@ -225,10 +224,7 @@ export default function PanelUsuario() {
               <p className={estilos.textoPromocion}>
                 Ofrece tus habilidades y llega a más clientes en tu comunidad.
               </p>
-              <Boton
-                variante="primario"
-                to={esSoloCliente ? RUTA_EXPLORAR : RUTA_NUEVO_SERVICIO}
-              >
+              <Boton variante="primario" to={esSoloCliente ? RUTA_EXPLORAR : RUTA_NUEVO_SERVICIO}>
                 {esSoloCliente ? 'Explorar servicios' : 'Publicar servicio'}
               </Boton>
             </aside>

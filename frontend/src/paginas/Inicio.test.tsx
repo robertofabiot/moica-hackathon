@@ -362,7 +362,9 @@ describe('estado de acceso en la pantalla de inicio', () => {
 
     expect(screen.getByRole('link', { name: 'Verificar segundo factor' })).toBeVisible();
     expect(screen.queryByRole('link', { name: 'Panel principal' })).not.toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Ir a tu Panel principal →' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: 'Ir a tu Panel principal →' })
+    ).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Mis servicios' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Mis solicitudes' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Mi perfil de prestador' })).not.toBeInTheDocument();

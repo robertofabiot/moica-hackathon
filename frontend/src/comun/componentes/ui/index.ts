@@ -42,3 +42,4 @@ export {
 } from './iconosDeCategorias';
 export { InsigniaVerificado } from './InsigniaVerificado';
 export { PieDePagina } from './PieDePagina';
+export { TarjetaMetrica } from './TarjetaMetrica';

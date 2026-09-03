@@ -127,8 +127,8 @@ export default function ConversacionActiva({
           to={rutaDeSolicitud(idSolicitud)}
           aria-label="Ver detalle del servicio"
         >
-          <span className={estilos.detalleTextoCompleto}>Ver detalle del servicio</span>
-          <span className={estilos.detalleTextoCorto}>Ver detalle</span>
+          <span className={estilos.detalleCompleto}>Ver detalle del servicio</span>
+          <span className={estilos.detalleCorto}>Detalle</span>
         </Link>
       </header>
 

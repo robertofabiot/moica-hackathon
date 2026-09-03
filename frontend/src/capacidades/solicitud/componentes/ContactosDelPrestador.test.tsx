@@ -7,6 +7,7 @@ import {
   contactoReveladoDeEjemplo,
   cuerpoDeError,
   estadoDeCalificacionDeEjemplo,
+  estadoDeReporteDeEjemplo,
   instalarApiFalsa,
   sesionDeEjemplo,
   solicitudConHiloDeEjemplo,
@@ -34,6 +35,11 @@ describe('Contactos revelados al cliente', () => {
     api.responder('GET /api/solicitudes/21/calificacion', {
       estado: 200,
       cuerpo: estadoDeCalificacionDeEjemplo({ puedeCalificar: false, solicitudCompletada: false }),
+    });
+    // El detalle monta también el reporte de P9; aquí no se prueba.
+    api.responder('GET /api/solicitudes/21/caso-moderacion', {
+      estado: 200,
+      cuerpo: estadoDeReporteDeEjemplo({ solicitudReportable: false, puedeReportar: false }),
     });
   });
 

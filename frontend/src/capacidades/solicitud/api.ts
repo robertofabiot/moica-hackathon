@@ -2,12 +2,15 @@ import { enviarJson, obtenerJson } from '../../comun/api';
 import type {
   CalificacionAEmitir,
   ContactoRevelado,
+  DatosDeCasoModeracion,
   DatosDeContratacion,
   DatosDeSolicitudServicio,
   DepartamentoDeCatalogo,
   EstadoDeCalificacion,
+  EstadoDeReporte,
   DatosDeCalificacion,
   MensajeSolicitud,
+  ReporteAPresentar,
   ResumenDeSolicitudServicio,
 } from './tipos';
 
@@ -88,4 +91,17 @@ export function enviarCalificacion(
   calificacion: CalificacionAEmitir
 ): Promise<DatosDeCalificacion> {
   return enviarJson('POST', `${RUTA}/${idSolicitud}/calificacion`, calificacion);
+}
+
+/** A quién puede reportar la sesión, si la solicitud lo admite y qué caso abrió, si abrió uno. */
+export function obtenerEstadoDeReporte(idSolicitud: number): Promise<EstadoDeReporte> {
+  return obtenerJson(`${RUTA}/${idSolicitud}/caso-moderacion`);
+}
+
+/** Abre el caso de moderación. El reportado lo pone el backend, no este cuerpo. */
+export function enviarReporte(
+  idSolicitud: number,
+  reporte: ReporteAPresentar
+): Promise<DatosDeCasoModeracion> {
+  return enviarJson('POST', `${RUTA}/${idSolicitud}/caso-moderacion`, reporte);
 }

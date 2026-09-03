@@ -711,3 +711,41 @@ function calificacionBase() {
     fechaCreacion: '2026-08-30T09:15:00-06:00',
   };
 }
+
+/** El estado del reporte de una solicitud, para la sesión que lo consulta. */
+export function estadoDeReporteDeEjemplo(
+  cambios: Partial<ReturnType<typeof estadoDeReporteBase>> = {}
+) {
+  return { ...estadoDeReporteBase(), ...cambios };
+}
+
+function estadoDeReporteBase() {
+  return {
+    idSolicitudServicio: 21,
+    solicitudReportable: true,
+    idReportado: 1,
+    nombreReportado: 'Taller La Esperanza',
+    puedeReportar: true,
+    casoAbierto: null as ReturnType<typeof casoDeModeracionDeEjemplo> | null,
+  };
+}
+
+/** Un caso de moderación ya abierto, tal como lo ve quien lo presentó. */
+export function casoDeModeracionDeEjemplo(
+  cambios: Partial<ReturnType<typeof casoDeModeracionBase>> = {}
+) {
+  return { ...casoDeModeracionBase(), ...cambios };
+}
+
+function casoDeModeracionBase() {
+  return {
+    idCasoModeracion: 5,
+    idSolicitudServicio: 21,
+    idReportado: 1,
+    nombreReportado: 'Taller La Esperanza',
+    motivo: 'Trato irrespetuoso',
+    descripcion: 'Usó insultos y no terminó el trabajo acordado.',
+    estadoActual: 'ABIERTO' as 'ABIERTO' | 'EN_REVISION' | 'CERRADO' | 'REABIERTO',
+    fechaApertura: '2026-08-30T12:00:00-06:00',
+  };
+}

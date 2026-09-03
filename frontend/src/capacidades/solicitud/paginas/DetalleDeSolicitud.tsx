@@ -8,6 +8,7 @@ import AccionesDeSolicitud from '../componentes/AccionesDeSolicitud';
 import CalificacionDeSolicitud from '../componentes/CalificacionDeSolicitud';
 import ChatDeSolicitud from '../componentes/ChatDeSolicitud';
 import ContactosDelPrestador from '../componentes/ContactosDelPrestador';
+import ReporteDeSolicitud from '../componentes/ReporteDeSolicitud';
 import { useSolicitud } from '../hooks/useSolicitudes';
 import { diaVisible, fechaVisible, nombreDelEstado } from '../presentacion';
 import { RUTA_SOLICITUDES } from '../rutas';
@@ -103,6 +104,7 @@ export default function DetalleDeSolicitud() {
         <ChatDeSolicitud solicitud={solicitud} />
         <ContactosDelPrestador solicitud={solicitud} />
         <CalificacionDeSolicitud solicitud={solicitud} />
+        <ReporteDeSolicitud solicitud={solicitud} />
 
         <section className={secciones.seccion} aria-labelledby="titulo-historial">
           <h2 className={secciones.tituloDeSeccion} id="titulo-historial">

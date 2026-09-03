@@ -78,6 +78,8 @@ Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy
 | `GET /api/solicitudes/{id}/calificacion` | A quien califica la sesion, en que rol, si puede y que escribio | Sesion plena; solo los dos participantes |
 | `POST /api/solicitudes/{id}/calificacion` | Registra la calificacion de la sesion sobre la contraparte | Sesion plena con cuenta `ACTIVA`; solo los dos participantes y solo si esta `COMPLETADA` |
 | `GET /api/solicitudes/{id}/reputacion-del-cliente` | Reputacion como cliente de quien contrato | Sesion plena; **solo el prestador** participante |
+| `GET /api/solicitudes/{id}/caso-moderacion` | A quien puede reportar la sesion y que caso abrio, si abrio uno | Sesion plena; solo los dos participantes |
+| `POST /api/solicitudes/{id}/caso-moderacion` | Abre el caso de moderacion sobre la contraparte | Sesion plena, tambien con cuenta `RESTRINGIDA_TEMPORAL`; solo los dos participantes y solo si la solicitud llego a `ACEPTADA` |
 | `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
 
 **Sesion plena** es la que no esta pendiente del segundo factor y pertenece a una cuenta que no esta
@@ -380,9 +382,10 @@ presenta como exhaustiva.
 
 El ciclo de contratacion opera sobre la sesion. Las acciones son explicitas
 —aceptar, rechazar, cancelar, completar— y no un cambio generico de estado. No
-hay `DELETE`. El chat, la revelacion de contactos y las calificaciones cuelgan
-de la solicitud, pero cada uno en su propia superficie autorizada: ver «Chat y
-contactos de una solicitud» y «Calificaciones y reputacion».
+hay `DELETE`. El chat, la revelacion de contactos, las calificaciones y los
+reportes cuelgan de la solicitud, pero cada uno en su propia superficie
+autorizada: ver «Chat y contactos de una solicitud», «Calificaciones y
+reputacion» y «Reportes y casos de moderacion».
 
 ### Quien puede que
 
@@ -686,6 +689,156 @@ calificaron ni las solicitudes que las originaron: hacia fuera solo sale el
 agregado. Ver la propia calificacion emitida es la unica excepcion, y es de la
 sesion sobre su propia solicitud.
 
+## Reportes y casos de moderacion
+
+Desde una solicitud que **llego a estar aceptada**, cualquiera de los dos
+participantes puede reportar a la contraparte. El reporte abre un
+`CasoModeracion` —el expediente de la investigacion— y crea su primera version
+`HistorialCaso` en la misma transaccion. El caso cuelga de la solicitud, igual
+que el hilo de mensajes y la calificacion: no existe una ruta para reportar a
+una persona cualquiera. Solo hay consultar y crear; **no existe `PUT`, `PATCH`
+ni `DELETE`**: en el MVP un reporte no se edita ni se retira.
+
+**Reportar no sanciona.** No cambia el estado de la solicitud, no toca ninguna
+cuenta, no asigna administrador, no elige ni aplica una medida, no revoca
+sesiones y no depende de reincidencia, severidad ni numero de casos. Segun la
+definicion 11.3, en el MVP cada medida la elige una persona administradora.
+
+Lo que ve el reportante es **su** expediente. La bandeja administrativa, la
+asignacion de responsable, los cambios de estado, las resoluciones y las
+medidas son otra superficie, la de P10A y P10B, y todavia no existen.
+
+### Cuando se puede reportar
+
+Lo que decide no es el estado vigente sino **si la solicitud llego alguna vez a
+`ACEPTADA`**: una vez que hubo trato, el derecho a reportarlo no caduca.
+
+| Estado de la solicitud | Consultar el estado | Reportar |
+|---|---|---|
+| `PENDIENTE` | Los dos participantes | 409 `SOLICITUD_NO_REPORTABLE` |
+| `RECHAZADA` | Los dos participantes | 409 `SOLICITUD_NO_REPORTABLE` |
+| `CANCELADA` desde `PENDIENTE` | Los dos participantes | 409 `SOLICITUD_NO_REPORTABLE` |
+| `ACEPTADA` | Los dos participantes | Los dos, una vez cada uno |
+| `COMPLETADA` | Los dos participantes | Los dos, una vez cada uno |
+| `CANCELADA` tras `ACEPTADA` | Los dos participantes | Los dos, una vez cada uno |
+
+Las dos `CANCELADA` se distinguen por el historial de transiciones, igual que
+hace el chat para decidir si el hilo existe. No hay plazo: `COMPLETADA` y
+`CANCELADA` son definitivos y la ventana no se cierra.
+
+### Quien puede que
+
+Un tercero recibe **404 `RECURSO_NO_ENCONTRADO`** en las dos rutas, igual que
+en el resto de recursos propios: no puede confirmar que la solicitud exista.
+
+Una cuenta `RESTRINGIDA_TEMPORAL` **conserva el reporte y su consulta**. Es lo
+contrario que calificar: reportar es la via por la que alguien pide ayuda, y
+quitarsela justo a quien ya arrastra una restriccion la dejaria sin recurso
+frente a la contraparte. Una cuenta suspendida no llega: la cadena responde
+403 `ACCESO_DENEGADO`, porque toda ruta de negocio exige sesion plena.
+
+**Cada participante ve solo el caso que el mismo presento.** El que la
+contraparte haya podido abrir sobre la misma solicitud no aparece por ningun
+lado, ni siquiera como indicio de que existe.
+
+### Abrir un caso
+
+`POST /api/solicitudes/{id}/caso-moderacion` con el cuerpo `ReporteAPresentar`:
+
+| Campo | Obligatorio | Limite |
+|---|---|---|
+| `motivo` | Si | Texto, maximo 120 caracteres |
+| `descripcion` | Si | Texto, maximo 3000 caracteres de aplicacion |
+
+Los 120 caracteres del motivo son el ancho de la columna `varchar(120)` del
+diccionario. El diccionario modela `descripcion` como `TEXT` sin maximo; los
+3000 caracteres son un limite de la aplicacion, el mismo que la descripcion de
+una solicitud, que es el otro texto largo obligatorio de Moica. Los dos textos
+se recortan antes de validarlos, asi que uno formado solo por espacios se
+rechaza como vacio en lugar de guardarse en blanco.
+
+**El reportado sale siempre de la solicitud.** El cuerpo no lo lleva, y un
+`idReportado`, un `idReportante` o un `estadoActual` enviados por el navegador
+se ignoran. Quien reporta es la sesion y el reportado es la contraparte;
+reportarse a si misma no es una peticion formulable —una solicitud sobre un
+servicio propio ya se rechaza al crearse— y `ck_caso_moderacion_participantes`
+lo respalda en la base.
+
+La respuesta es 201 con el caso abierto y solo con lo que el reportante
+necesita para reconocer su expediente:
+
+| Campo | Que dice |
+|---|---|
+| `idCasoModeracion` | Identificador del expediente |
+| `idSolicitudServicio` | Solicitud que relaciona a las dos personas |
+| `idReportado`, `nombreReportado` | A quien se reporto |
+| `motivo`, `descripcion` | Lo que la persona escribio |
+| `estadoActual` | Etapa vigente; recien abierto es siempre `ABIERTO` |
+| `fechaApertura` | Instante en que se abrio |
+
+**No viaja nada administrativo:** ni administrador responsable, ni medida
+vinculada, ni resultado, ni resolucion, ni fechas de cierre o de fin de medida.
+Son la decision de Moica sobre una persona, no el acuse del reporte.
+
+Rechazos al reportar:
+
+| Situacion | HTTP | Codigo |
+|---|---|---|
+| Sin sesion | 401 | `NO_AUTENTICADO` |
+| Cuenta suspendida | 403 | `ACCESO_DENEGADO` |
+| Solicitud inexistente o ajena | 404 | `RECURSO_NO_ENCONTRADO` |
+| Solicitud que nunca llego a `ACEPTADA` | 409 | `SOLICITUD_NO_REPORTABLE` |
+| Esta persona ya reporto esa solicitud | 409 | `REPORTE_DUPLICADO` |
+| Motivo o descripcion ausentes o en blanco | 400 | `VALIDACION` |
+| Motivo de mas de 120 o descripcion de mas de 3000 caracteres | 400 | `VALIDACION` |
+
+La unicidad vive tambien en PostgreSQL, en
+`uq_caso_moderacion_solicitud_reportante`. La comprobacion previa cubre el caso
+normal; la restriccion decide la carrera entre dos envios simultaneos, de modo
+que el perdedor recibe 409 y no 500. Una solicitud admite como maximo **dos**
+casos: uno por cada participante.
+
+### La primera version del historial
+
+El caso y su version inicial **se confirman o se revierten juntos**: un
+expediente sin la fotografia con la que nace no seria auditable. La version
+llega con estos valores, y ninguno lo elige el navegador:
+
+| Campo | Valor en la apertura |
+|---|---|
+| `numeroVersion` | `1` |
+| `tipoActor` | `USUARIO` |
+| `tipoEvento` | `CASO_ABIERTO` |
+| `estadoCaso` | `ABIERTO` |
+| `idActor` | El reportante |
+| `idUsuarioAfectado` | El reportado |
+| `estadoCuenta` | El estado **real y vigente** de la cuenta reportada |
+| `esVersionActual` | `true` |
+| `fechaFinVigencia` | `null` |
+| `detalleCambio` | Texto no vacio que explica la apertura |
+| Responsable, medida, resultado, resolucion y fecha de fin de medida | `null` |
+
+`fechaApertura`, `fechaActualizacion` y `fechaInicioVigencia` salen del mismo
+reloj de la operacion, de modo que el historial no empiece antes ni despues de
+existir el expediente que describe. El historial no se publica en ninguna ruta:
+leerlo es parte de la revision administrativa de P10A.
+
+### Consultar el caso propio
+
+`GET /api/solicitudes/{id}/caso-moderacion` responde en cualquier estado de la
+solicitud, para que la interfaz no tenga que deducir la regla:
+
+| Campo | Que dice |
+|---|---|
+| `solicitudReportable` | Si la solicitud llego alguna vez a `ACEPTADA` |
+| `idReportado`, `nombreReportado` | A quien puede reportar esta sesion |
+| `puedeReportar` | Solicitud reportable y sin caso propio todavia |
+| `casoAbierto` | El caso que **esta sesion** presento, o `null` |
+
+`nombreReportado` es el mismo nombre que ya viaja en el detalle de la
+solicitud: `nombrePublico` del perfil para el prestador y `nombreCompleto` para
+el cliente. No se publican correos, contactos ni datos administrativos.
+
 ## Verificacion documental del prestador
 
 El expediente propio se opera **siempre sobre la cuenta de la sesion**: ninguna
@@ -868,4 +1021,4 @@ Todos los errores comparten cuerpo. El detalle por campo solo aparece cuando el 
 }
 ```
 
-Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ADMITIDO`, `DOCUMENTO_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ENCONTRADO`, `EXPEDIENTE_INCOMPLETO`, `SOLICITUD_ABIERTA_DUPLICADA`, `SOLICITUD_NO_ENCONTRADA`, `SOLICITUD_YA_TOMADA`, `NIVEL_YA_VIGENTE`, `VERIFICACION_BASICA_REQUERIDA`, `TRANSICION_NO_PERMITIDA`, `REVISION_DE_OTRO_ADMINISTRADOR`, `SERVICIO_PROPIO`, `SERVICIO_INACTIVO`, `PRESTADOR_NO_DISPONIBLE`, `MOTIVO_OBLIGATORIO`, `CHAT_NO_HABILITADO`, `CHAT_SOLO_LECTURA`, `CONTACTOS_NO_REVELADOS`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento, URL prefirmadas ni valores internos.
+Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ADMITIDO`, `DOCUMENTO_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ENCONTRADO`, `EXPEDIENTE_INCOMPLETO`, `SOLICITUD_ABIERTA_DUPLICADA`, `SOLICITUD_NO_ENCONTRADA`, `SOLICITUD_YA_TOMADA`, `NIVEL_YA_VIGENTE`, `VERIFICACION_BASICA_REQUERIDA`, `TRANSICION_NO_PERMITIDA`, `REVISION_DE_OTRO_ADMINISTRADOR`, `SERVICIO_PROPIO`, `SERVICIO_INACTIVO`, `PRESTADOR_NO_DISPONIBLE`, `MOTIVO_OBLIGATORIO`, `CHAT_NO_HABILITADO`, `CHAT_SOLO_LECTURA`, `CONTACTOS_NO_REVELADOS`, `SOLICITUD_NO_REPORTABLE`, `REPORTE_DUPLICADO`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento, URL prefirmadas ni valores internos.

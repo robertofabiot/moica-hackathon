@@ -1,0 +1,47 @@
+/*
+ * Bandeja izquierda de conversaciones. Solo tokens de `src/estilos/global.css`.
+ */
+
+.bandeja {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  background-color: var(--color-neutral-0);
+}
+
+.encabezado {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: var(--gap-md);
+  padding: var(--gap-lg) var(--gap-md) var(--gap-sm);
+}
+
+.titulo {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+}
+
+.lista {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0;
+  padding: 0 0 var(--gap-sm);
+  overflow-y: auto;
+  list-style: none;
+}
+
+.estado {
+  padding: var(--gap-md);
+  color: var(--color-neutral-600);
+}
+
+.aviso {
+  margin: 0 var(--gap-md) var(--gap-sm);
+}

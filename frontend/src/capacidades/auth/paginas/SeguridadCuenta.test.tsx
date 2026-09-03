@@ -8,6 +8,7 @@ import {
   activacionDeEjemplo,
   cuerpoDeError,
   instalarApiFalsa,
+  perfilDeEjemplo,
   segundoFactorDeEjemplo,
   sesionDeEjemplo,
   type ApiFalsa,
@@ -42,15 +43,22 @@ describe('seguridad de la cuenta', () => {
     return montado;
   }
 
-  /** El ítem Inicio de la barra lleva al panel, que consulta perfil y solicitudes. */
-  function responderPanelSinPerfil() {
+  /** El ítem Inicio de la barra lleva al panel de prestador. */
+  function responderPanelConPerfil() {
     api.responder('GET /api/prestador/perfil', {
-      estado: 404,
-      cuerpo: cuerpoDeError(
-        404,
-        'PERFIL_NO_ENCONTRADO',
-        'Esta cuenta todavía no tiene un perfil de prestador.'
-      ),
+      estado: 200,
+      cuerpo: perfilDeEjemplo(),
+    });
+    api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/prestadores/1', {
+      estado: 200,
+      cuerpo: {
+        prestador: { idPrestador: 1, nombrePublico: 'Erving Miranda' },
+        portafolio: [],
+        servicios: [],
+        admiteContratacion: true,
+        reputacionPrestador: { promedio: 5, cantidad: 1 },
+      },
     });
     api.responder('GET /api/solicitudes/enviadas', { estado: 200, cuerpo: [] });
     api.responder('GET /api/solicitudes/recibidas', { estado: 200, cuerpo: [] });
@@ -197,7 +205,7 @@ describe('seguridad de la cuenta', () => {
       await persona.click(await screen.findByRole('button', { name: 'Activar el segundo factor' }));
       expect(await screen.findByText(SECRETO_DE_ACTIVACION)).toBeVisible();
 
-      responderPanelSinPerfil();
+      responderPanelConPerfil();
       await persona.click(screen.getByRole('link', { name: 'Inicio' }));
       expect(await screen.findByRole('heading', { name: '¡Hola, Erving! 👋' })).toBeVisible();
 
@@ -338,7 +346,7 @@ describe('seguridad de la cuenta', () => {
       const { cliente } = await abrirSeguridad();
       expect(await screen.findByText('Activo')).toBeVisible();
 
-      responderPanelSinPerfil();
+      responderPanelConPerfil();
       await persona.click(screen.getByRole('link', { name: 'Inicio' }));
       await persona.click(await screen.findByRole('button', { name: 'Cuenta de Erving Miranda' }));
       await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));

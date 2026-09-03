@@ -72,30 +72,11 @@ describe('Panel de usuario', () => {
     expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
   });
 
-  it('saluda por el primer nombre y no truena si todavía no hay perfil de prestador', async () => {
+  it('sin perfil de prestador redirige a explorar servicios', async () => {
     sinPerfil();
     abrirComo();
 
-    expect(await screen.findByRole('heading', { name: '¡Hola, Erving! 👋' })).toBeVisible();
-    expect(
-      await screen.findByText(
-        'Bienvenido a tu espacio. Aquí puedes dar seguimiento a tus solicitudes y mensajes.'
-      )
-    ).toBeVisible();
-    expect(
-      await screen.findByRole('link', {
-        name: 'Encuentra y contrata profesionales de confianza cerca de ti',
-      })
-    ).toHaveAttribute('href', '/explorar');
-    expect(screen.getByRole('link', { name: 'Tus solicitudes 0' })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Mensajes 0' })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Explorar catálogo Explorar' })).toBeVisible();
-    expect(screen.getByRole('link', { name: '¿Ofreces servicios? Comenzar' })).toBeVisible();
-    expect(screen.getByText(/Todavía no has enviado solicitudes/)).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Crear perfil de prestador' })).toHaveAttribute(
-      'href',
-      '/prestador'
-    );
+    expect(await screen.findByRole('heading', { name: 'Explorar servicios' })).toBeVisible();
 
     await waitFor(() => {
       expect(api.ultima('GET /api/prestador/perfil')).toBeDefined();
@@ -104,8 +85,17 @@ describe('Panel de usuario', () => {
     expect(api.ultima('GET /api/prestadores/1')).toBeUndefined();
   });
 
-  it('deja el ítem de inicio activo en la barra lateral', async () => {
-    sinPerfil();
+  it('deja el ítem de inicio activo en la barra lateral para un prestador', async () => {
+    api.responder('GET /api/prestador/perfil', {
+      estado: 200,
+      cuerpo: perfilDeEjemplo(),
+    });
+    api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/prestadores/1', {
+      estado: 200,
+      cuerpo: perfilPublicoDeEjemplo(reputacionVaciaDeEjemplo()),
+    });
+
     abrirComo();
 
     expect(await screen.findByRole('heading', { name: '¡Hola, Erving! 👋' })).toBeVisible();
@@ -166,7 +156,15 @@ describe('Panel de usuario', () => {
   });
 
   it('ordena la actividad reciente y no pasa de cuatro filas', async () => {
-    sinPerfil();
+    api.responder('GET /api/prestador/perfil', {
+      estado: 200,
+      cuerpo: perfilDeEjemplo(),
+    });
+    api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/prestadores/1', {
+      estado: 200,
+      cuerpo: perfilPublicoDeEjemplo(reputacionVaciaDeEjemplo()),
+    });
     api.responder('GET /api/solicitudes/enviadas', {
       estado: 200,
       cuerpo: [
@@ -255,35 +253,5 @@ describe('Panel de usuario', () => {
         name: 'Publica tu primer servicio para recibir clientes',
       })
     ).toHaveAttribute('href', '/prestador/servicios/nuevo');
-  });
-
-  it('para un cliente con solicitudes muestra sus métricas de cliente y tareas de coordinación', async () => {
-    sinPerfil();
-    api.responder('GET /api/solicitudes/enviadas', {
-      estado: 200,
-      cuerpo: [
-        resumenDeSolicitudDeEjemplo({
-          idSolicitudServicio: 42,
-          nombreServicio: 'Cambio de pasta termica',
-          estadoActual: 'ACEPTADA',
-          idCliente: 1,
-        }),
-      ],
-    });
-
-    abrirComo();
-
-    expect(await screen.findByRole('heading', { name: '¡Hola, Erving! 👋' })).toBeVisible();
-    expect(await screen.findByRole('link', { name: 'Tus solicitudes 1' })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Mensajes 1' })).toBeVisible();
-    expect(
-      screen.getByRole('link', {
-        name: 'Tienes 1 solicitud aceptada en curso. Coordina con el prestador',
-      })
-    ).toHaveAttribute('href', '/mensajes');
-    expect(screen.getByRole('link', { name: 'Crear perfil de prestador' })).toHaveAttribute(
-      'href',
-      '/prestador'
-    );
   });
 });

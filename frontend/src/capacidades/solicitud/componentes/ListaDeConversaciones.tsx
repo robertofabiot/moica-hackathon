@@ -75,7 +75,11 @@ export default function ListaDeConversaciones({
           role="alert"
         >
           {error instanceof ErrorDeApi ? error.message : 'No pudimos cargar las conversaciones.'}{' '}
-          <button className={estilosDeFormulario.enlaceDeTexto} type="button" onClick={alReintentar}>
+          <button
+            className={estilosDeFormulario.enlaceDeTexto}
+            type="button"
+            onClick={alReintentar}
+          >
             Reintentar
           </button>
         </p>

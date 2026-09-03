@@ -14,3 +14,12 @@ export function rutaDeNuevaSolicitud(idServicio: number): string {
 export function rutaDeMensajes(idSolicitud?: number): string {
   return idSolicitud === undefined ? RUTA_MENSAJES : `${RUTA_MENSAJES}?solicitud=${idSolicitud}`;
 }
+
+export function idSeleccionadoDeParametros(parametros: URLSearchParams): number | undefined {
+  const crudo = parametros.get('solicitud');
+  if (crudo === null || crudo === '') {
+    return undefined;
+  }
+  const id = Number(crudo);
+  return Number.isInteger(id) && id > 0 ? id : undefined;
+}

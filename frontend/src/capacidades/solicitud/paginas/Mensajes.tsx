@@ -10,7 +10,7 @@ import ListaDeConversaciones, {
 } from '../componentes/ListaDeConversaciones';
 import { useSolicitudesEnviadas, useSolicitudesRecibidas } from '../hooks/useSolicitudes';
 import { conversacionesDeBandeja } from '../presentacion';
-import { RUTA_MENSAJES } from '../rutas';
+import { RUTA_MENSAJES, idSeleccionadoDeParametros } from '../rutas';
 import type { MensajeSolicitud } from '../tipos';
 import estilos from './mensajes.module.css';
 
@@ -55,10 +55,7 @@ export default function Mensajes() {
   const recordarUltimo = useCallback((idSolicitud: number, mensaje: MensajeSolicitud) => {
     setUltimosMensajes((previos) => {
       const actual = previos[idSolicitud];
-      if (
-        actual?.contenido === mensaje.contenido &&
-        actual.fechaEnvio === mensaje.fechaEnvio
-      ) {
+      if (actual?.contenido === mensaje.contenido && actual.fechaEnvio === mensaje.fechaEnvio) {
         return previos;
       }
       return {
@@ -125,15 +122,6 @@ export default function Mensajes() {
       </main>
     </div>
   );
-}
-
-export function idSeleccionadoDeParametros(parametros: URLSearchParams): number | undefined {
-  const crudo = parametros.get('solicitud');
-  if (crudo === null || crudo === '') {
-    return undefined;
-  }
-  const id = Number(crudo);
-  return Number.isInteger(id) && id > 0 ? id : undefined;
 }
 
 function errorDeBandeja(enviadas: Error | null, recibidas: Error | null): Error | null {

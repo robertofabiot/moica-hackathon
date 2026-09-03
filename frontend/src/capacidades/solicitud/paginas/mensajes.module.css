@@ -1,0 +1,115 @@
+/*
+ * Pantalla dedicada de mensajería. Solo tokens de `src/estilos/global.css`.
+ * Mobile-first: en el teléfono se ve la bandeja o el hilo; desde tableta, las dos columnas.
+ */
+
+.pagina {
+  min-height: 100dvh;
+  background-color: var(--color-neutral-50);
+}
+
+.barraLateral {
+  display: none;
+}
+
+.principal {
+  display: flex;
+  height: calc(100dvh - var(--gap-md) * 2);
+  margin: var(--gap-md);
+  overflow: hidden;
+  background-color: var(--color-neutral-0);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.columnaBandeja {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+}
+
+.columnaConversacion {
+  display: none;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.conSeleccion .columnaBandeja {
+  display: none;
+}
+
+.conSeleccion .columnaConversacion {
+  display: flex;
+}
+
+.vacio {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-md);
+  padding: var(--gap-xl);
+  color: var(--color-neutral-600);
+  text-align: center;
+}
+
+.iconoVacio {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 4rem;
+  height: 4rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-500);
+}
+
+.iconoVacio svg {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+}
+
+.textoVacio {
+  max-width: 18rem;
+  font-size: var(--font-size-base);
+}
+
+@media (min-width: 48rem) {
+  .barraLateral {
+    display: block;
+  }
+
+  .pagina {
+    padding-left: calc(var(--font-size-xl) + var(--gap-md) * 2);
+  }
+
+  .columnaBandeja {
+    display: flex;
+    flex: 0 0 22.5rem;
+    width: 22.5rem;
+    border-right: var(--border-width-xs) solid var(--color-neutral-200);
+  }
+
+  .conSeleccion .columnaBandeja {
+    display: flex;
+  }
+
+  .columnaConversacion,
+  .conSeleccion .columnaConversacion {
+    display: flex;
+  }
+}
+
+@media (min-width: 64rem) {
+  .columnaBandeja {
+    flex-basis: 22.5rem;
+    width: 22.5rem;
+  }
+}

@@ -1,0 +1,210 @@
+/*
+ * Panel derecho: encabezado, hilo y barra de composición.
+ * Solo tokens de `src/estilos/global.css`.
+ */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  background-color: var(--color-neutral-0);
+}
+
+.encabezado {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--gap-xs);
+  padding: var(--gap-xs) var(--gap-sm);
+  border-bottom: var(--border-width-xs) solid var(--color-neutral-200);
+}
+
+@media (min-width: 48rem) {
+  .encabezado {
+    gap: var(--gap-sm);
+    padding: var(--gap-sm) var(--gap-md);
+  }
+}
+
+.volver {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: var(--color-neutral-600);
+  cursor: pointer;
+}
+
+.volver:hover {
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-900);
+}
+
+.volver svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.identidad {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+
+.nombre {
+  overflow: hidden;
+  color: var(--color-neutral-900);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 48rem) {
+  .nombre {
+    font-size: var(--font-size-md);
+  }
+}
+
+.estado {
+  overflow: hidden;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detalle {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-500);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.detalle:hover {
+  background-color: var(--color-primary-100);
+  color: var(--color-primary-700);
+  text-decoration: none;
+}
+
+.detalleCompleto {
+  display: none;
+}
+
+.detalleCorto {
+  display: inline;
+}
+
+@media (min-width: 48rem) {
+  .detalle {
+    padding: 0.375rem 0.75rem;
+    font-size: var(--font-size-sm);
+  }
+
+  .detalleCompleto {
+    display: inline;
+  }
+
+  .detalleCorto {
+    display: none;
+  }
+}
+
+.hilo {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  min-height: 0;
+  padding: var(--gap-md);
+  overflow-y: auto;
+  background-color: var(--color-neutral-50);
+}
+
+.estadoDeHilo {
+  margin: auto;
+  color: var(--color-neutral-600);
+  text-align: center;
+}
+
+.aviso {
+  flex-shrink: 0;
+  margin: var(--gap-sm) var(--gap-md) 0;
+}
+
+.composicion {
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding: var(--gap-sm) var(--gap-md);
+  border-top: var(--border-width-xs) solid var(--color-neutral-200);
+  background-color: var(--color-neutral-0);
+}
+
+.filaDeEnvio {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--gap-sm);
+}
+
+.area {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 2.75rem;
+  max-height: 8rem;
+  padding: var(--gap-sm) var(--gap-md);
+  resize: none;
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-base);
+}
+
+.area:hover:not(:disabled) {
+  border-color: var(--color-neutral-600);
+}
+
+.enviar {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+}
+
+.soloLectura {
+  padding: var(--gap-md);
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+  text-align: center;
+}
+
+@media (min-width: 48rem) {
+  .volver {
+    display: none;
+  }
+}

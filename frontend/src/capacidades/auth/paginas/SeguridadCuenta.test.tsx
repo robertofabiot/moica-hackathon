@@ -42,6 +42,20 @@ describe('seguridad de la cuenta', () => {
     return montado;
   }
 
+  /** El ítem Inicio de la barra lleva al panel, que consulta perfil y solicitudes. */
+  function responderPanelSinPerfil() {
+    api.responder('GET /api/prestador/perfil', {
+      estado: 404,
+      cuerpo: cuerpoDeError(
+        404,
+        'PERFIL_NO_ENCONTRADO',
+        'Esta cuenta todavía no tiene un perfil de prestador.'
+      ),
+    });
+    api.responder('GET /api/solicitudes/enviadas', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/solicitudes/recibidas', { estado: 200, cuerpo: [] });
+  }
+
   /** Todo lo que queda guardado de las mutaciones, para buscar en ello un secreto. */
   function memoriaDeLasMutaciones(cliente: QueryClient): string {
     return JSON.stringify(
@@ -183,16 +197,13 @@ describe('seguridad de la cuenta', () => {
       await persona.click(await screen.findByRole('button', { name: 'Activar el segundo factor' }));
       expect(await screen.findByText(SECRETO_DE_ACTIVACION)).toBeVisible();
 
+      responderPanelSinPerfil();
       await persona.click(screen.getByRole('link', { name: 'Inicio' }));
-      expect(
-        await screen.findByRole('heading', {
-          name: 'Encuentra servicios confiables en tu comunidad',
-        })
-      ).toBeVisible();
+      expect(await screen.findByRole('heading', { name: '¡Hola, Erving! 👋' })).toBeVisible();
 
       expect(memoriaDeLasMutaciones(cliente)).not.toContain(SECRETO_DE_ACTIVACION);
 
-      await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
+      await persona.click(await screen.findByRole('button', { name: 'Cuenta de Erving Miranda' }));
       await persona.click(await screen.findByRole('link', { name: 'Seguridad de la cuenta' }));
 
       expect(
@@ -327,8 +338,9 @@ describe('seguridad de la cuenta', () => {
       const { cliente } = await abrirSeguridad();
       expect(await screen.findByText('Activo')).toBeVisible();
 
+      responderPanelSinPerfil();
       await persona.click(screen.getByRole('link', { name: 'Inicio' }));
-      await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
+      await persona.click(await screen.findByRole('button', { name: 'Cuenta de Erving Miranda' }));
       await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
       expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
 

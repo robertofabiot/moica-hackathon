@@ -114,6 +114,11 @@ describe('estado de acceso en la pantalla de inicio', () => {
     expect(await screen.findByRole('button', { name: 'Hola, Erving' })).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Regístrate' })).not.toBeInTheDocument();
+    expect(screen.getByText(/Bienvenido de nuevo, Erving/)).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Ir a tu Panel principal →' })).toHaveAttribute(
+      'href',
+      '/panel'
+    );
 
     await persona.click(screen.getByRole('button', { name: 'Hola, Erving' }));
     expect(screen.getByRole('button', { name: 'Cerrar sesión' })).toBeVisible();
@@ -337,6 +342,7 @@ describe('estado de acceso en la pantalla de inicio', () => {
 
     await persona.click(await screen.findByRole('button', { name: 'Hola, Erving' }));
 
+    expect(screen.getByRole('link', { name: 'Panel principal' })).toHaveAttribute('href', '/panel');
     expect(screen.getByRole('link', { name: 'Mi perfil de prestador' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Mis servicios' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Mis solicitudes' })).toBeVisible();
@@ -355,6 +361,8 @@ describe('estado de acceso en la pantalla de inicio', () => {
     await persona.click(await screen.findByRole('button', { name: 'Hola, Erving' }));
 
     expect(screen.getByRole('link', { name: 'Verificar segundo factor' })).toBeVisible();
+    expect(screen.queryByRole('link', { name: 'Panel principal' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Ir a tu Panel principal →' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Mis servicios' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Mis solicitudes' })).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Mi perfil de prestador' })).not.toBeInTheDocument();

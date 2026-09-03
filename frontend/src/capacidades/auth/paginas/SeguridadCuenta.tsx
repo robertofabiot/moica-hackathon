@@ -8,7 +8,7 @@ import { RUTA_SEGURIDAD } from '../rutas';
 import estilos from './seguridad.module.css';
 
 const DESTINOS_DE_BARRA = {
-  inicio: '/',
+  inicio: '/panel',
   mensajes: '/mensajes',
   perfil: RUTA_PRESTADOR,
   configuracion: RUTA_SEGURIDAD,

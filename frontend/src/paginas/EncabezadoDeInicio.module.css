@@ -154,6 +154,28 @@
   border-left-color: var(--color-error-500);
 }
 
+.bannerDePanel {
+  width: calc(100% - var(--gap-lg) * 2);
+  max-width: 72rem;
+  margin: var(--gap-md) auto 0;
+  padding: var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-primary-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-primary-50);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.enlaceDePanel {
+  color: var(--color-primary-700);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.enlaceDePanel:hover {
+  text-decoration: underline;
+}
+
 @media (min-width: 64rem) {
   .encabezado {
     grid-template-columns: minmax(8rem, 1fr) auto minmax(8rem, 1fr);

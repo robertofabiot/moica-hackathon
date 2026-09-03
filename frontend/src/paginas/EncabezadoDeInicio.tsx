@@ -12,6 +12,7 @@ import {
   useSesionActual,
 } from '../capacidades/auth';
 import { RUTA_EXPLORAR } from '../capacidades/busqueda';
+import { RUTA_PANEL } from '../capacidades/panel';
 import { RUTA_PRESTADOR } from '../capacidades/prestador';
 import { RUTA_SERVICIOS } from '../capacidades/servicio';
 import { RUTA_SOLICITUDES } from '../capacidades/solicitud';
@@ -80,6 +81,14 @@ export function EncabezadoDeInicio() {
         </div>
       </header>
 
+      {sesion.data?.usuario && !pendienteDeSegundoFactor ? (
+        <p className={estilos.bannerDePanel}>
+          Bienvenido de nuevo, {primerNombreDe(sesion.data.usuario.nombreCompleto)}.{' '}
+          <Link className={estilos.enlaceDePanel} to={RUTA_PANEL}>
+            Ir a tu Panel principal →
+          </Link>
+        </p>
+      ) : null}
       {pendienteDeSegundoFactor && (
         <p className={estilos.aviso} role="status">
           Falta verificar tu segundo factor. Hasta entonces, tu sesión solo sirve para eso o para
@@ -145,6 +154,11 @@ function AccionesConSesion({
             </li>
           ) : (
             <>
+              <li>
+                <Link className={estilos.opcionDeSesion} to={RUTA_PANEL}>
+                  Panel principal
+                </Link>
+              </li>
               <li>
                 <Link className={estilos.opcionDeSesion} to={RUTA_PRESTADOR}>
                   Mi perfil de prestador

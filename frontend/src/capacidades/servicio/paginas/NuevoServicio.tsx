@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router';
 
 import { BarraLateral } from '../../../comun/componentes/ui';
 import { RUTA_SEGURIDAD } from '../../auth';
+import { RUTA_PANEL } from '../../panel';
 import { RUTA_PRESTADOR } from '../../prestador';
 import { RUTA_MENSAJES } from '../../solicitud';
 import FormularioDeServicio from '../componentes/FormularioDeServicio';
@@ -18,7 +19,7 @@ export default function NuevoServicio() {
         <BarraLateral
           itemActivo="inicio"
           destinos={{
-            inicio: '/',
+            inicio: RUTA_PANEL,
             mensajes: RUTA_MENSAJES,
             perfil: RUTA_PRESTADOR,
             configuracion: RUTA_SEGURIDAD,

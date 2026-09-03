@@ -17,6 +17,9 @@ type PropiedadesDeTarjetaMetrica = {
  * estático —por ejemplo, una calificación que no navega a ninguna pantalla.
  */
 export function TarjetaMetrica({ titulo, valor, icono, destino }: PropiedadesDeTarjetaMetrica) {
+  const etiquetaAccesible =
+    typeof valor === 'string' || typeof valor === 'number' ? `${titulo} ${valor}` : undefined;
+
   const contenido = (
     <>
       <span className={estilos.cabecera}>
@@ -31,11 +34,15 @@ export function TarjetaMetrica({ titulo, valor, icono, destino }: PropiedadesDeT
 
   if (destino !== undefined) {
     return (
-      <Link className={estilos.tarjeta} to={destino}>
+      <Link className={estilos.tarjeta} to={destino} aria-label={etiquetaAccesible}>
         {contenido}
       </Link>
     );
   }
 
-  return <div className={estilos.tarjeta}>{contenido}</div>;
+  return (
+    <div className={estilos.tarjeta} aria-label={etiquetaAccesible}>
+      {contenido}
+    </div>
+  );
 }

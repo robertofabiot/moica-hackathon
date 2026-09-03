@@ -9,6 +9,8 @@
 export const RUTA_REGISTRO = '/registro';
 export const RUTA_INICIO_SESION = '/iniciar-sesion';
 export const RUTA_SEGURIDAD = '/seguridad';
+/** Dirección alternativa de la misma pantalla de configuración de la cuenta. */
+export const RUTA_CONFIGURACION = '/configuracion';
 export const RUTA_VERIFICACION_SEGUNDO_FACTOR = '/verificar-segundo-factor';
 
 export const PARAMETRO_MOTIVO = 'motivo';

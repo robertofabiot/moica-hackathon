@@ -1,9 +1,10 @@
-import { Route, Routes } from 'react-router';
+import { Navigate, Route, Routes } from 'react-router';
 
 import { PanelAdministrativo, RUTA_ADMIN, RutaAdministrativa } from './capacidades/admin';
 import {
   InicioSesion,
   Registro,
+  RUTA_CONFIGURACION,
   RUTA_INICIO_SESION,
   RUTA_REGISTRO,
   RUTA_SEGURIDAD,
@@ -87,6 +88,7 @@ export default function App() {
           </RutaProtegida>
         }
       />
+      <Route path={RUTA_CONFIGURACION} element={<Navigate to={RUTA_SEGURIDAD} replace />} />
       <Route
         path={RUTA_PRESTADOR}
         element={

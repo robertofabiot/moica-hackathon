@@ -33,9 +33,11 @@ import {
 } from './capacidades/servicio';
 import {
   DetalleDeSolicitud,
+  Mensajes,
   MisSolicitudes,
   NuevaSolicitud,
   RUTA_DETALLE_SOLICITUD,
+  RUTA_MENSAJES,
   RUTA_NUEVA_SOLICITUD,
   RUTA_SOLICITUDES,
 } from './capacidades/solicitud';
@@ -138,6 +140,14 @@ export default function App() {
         element={
           <RutaProtegida>
             <NuevaSolicitud />
+          </RutaProtegida>
+        }
+      />
+      <Route
+        path={RUTA_MENSAJES}
+        element={
+          <RutaProtegida>
+            <Mensajes />
           </RutaProtegida>
         }
       />

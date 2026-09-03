@@ -23,6 +23,7 @@ import {
 } from '../../../comun/componentes/ui';
 import { RUTA_INICIO_SESION, RUTA_SEGURIDAD, useSesionActual } from '../../auth';
 import { RUTA_PRESTADOR } from '../../prestador';
+import { RUTA_MENSAJES } from '../../solicitud';
 import InsigniaResponsable from '../componentes/InsigniaResponsable';
 import { usePrestadorPublico } from '../hooks/useBusquedaPublica';
 import {
@@ -125,6 +126,7 @@ function MarcoDePagina({ children }: { children: ReactNode }) {
           itemActivo="inicio"
           destinos={{
             inicio: '/',
+            mensajes: RUTA_MENSAJES,
             perfil: RUTA_PRESTADOR,
             configuracion: RUTA_SEGURIDAD,
           }}

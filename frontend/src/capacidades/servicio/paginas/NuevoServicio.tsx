@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { BarraLateral } from '../../../comun/componentes/ui';
 import { RUTA_SEGURIDAD } from '../../auth';
 import { RUTA_PRESTADOR } from '../../prestador';
+import { RUTA_MENSAJES } from '../../solicitud';
 import FormularioDeServicio from '../componentes/FormularioDeServicio';
 import { rutaDeEdicionDeServicio } from '../rutas';
 import propios from './servicios.module.css';
@@ -18,6 +19,7 @@ export default function NuevoServicio() {
           itemActivo="inicio"
           destinos={{
             inicio: '/',
+            mensajes: RUTA_MENSAJES,
             perfil: RUTA_PRESTADOR,
             configuracion: RUTA_SEGURIDAD,
           }}

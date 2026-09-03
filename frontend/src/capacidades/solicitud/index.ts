@@ -6,12 +6,15 @@
 
 export { default as AccionDeSolicitud } from './componentes/AccionDeSolicitud';
 export { default as DetalleDeSolicitud } from './paginas/DetalleDeSolicitud';
+export { default as Mensajes } from './paginas/Mensajes';
 export { default as MisSolicitudes } from './paginas/MisSolicitudes';
 export { default as NuevaSolicitud } from './paginas/NuevaSolicitud';
 export {
   RUTA_DETALLE_SOLICITUD,
+  RUTA_MENSAJES,
   RUTA_NUEVA_SOLICITUD,
   RUTA_SOLICITUDES,
+  rutaDeMensajes,
   rutaDeNuevaSolicitud,
   rutaDeSolicitud,
 } from './rutas';

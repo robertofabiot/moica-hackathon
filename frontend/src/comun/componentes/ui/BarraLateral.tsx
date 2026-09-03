@@ -32,7 +32,7 @@ type PropiedadesDeBarraLateral = {
  *
  * `comun` no conoce las rutas de cada capacidad: el padre pasa `destinos`.
  * Un ítem sin destino se pinta como botón para no inventar pantallas que
- * todavía no existen (chat, calendario, pagos).
+ * todavía no existen (calendario, pagos).
  */
 export function BarraLateral({
   itemActivo,

@@ -332,6 +332,62 @@
   text-decoration: underline;
 }
 
+.columnaTareas {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  min-width: 0;
+}
+
+.listaTareas {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.enlaceTarea {
+  display: block;
+  padding-block: var(--gap-sm);
+  border-top: var(--border-width-xs) solid var(--color-neutral-200);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+}
+
+.listaTareas li:first-child .enlaceTarea {
+  border-top: none;
+  padding-top: 0;
+}
+
+.enlaceTarea:hover {
+  color: var(--color-primary-700);
+}
+
+.promocion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--gap-sm);
+  padding: var(--gap-lg);
+  background-color: var(--color-primary-50);
+  border: var(--border-width-xs) solid var(--color-primary-200);
+  border-radius: var(--radius-lg);
+}
+
+.tituloPromocion {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+}
+
+.textoPromocion {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
 .estadoDeCarga {
   color: var(--color-neutral-600);
   font-size: var(--font-size-sm);

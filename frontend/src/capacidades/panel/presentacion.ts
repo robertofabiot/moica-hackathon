@@ -14,6 +14,66 @@ export function inicialDe(nombreCompleto: string): string {
   return primero.slice(0, 1).toUpperCase();
 }
 
+export type TareaPendiente = {
+  id: string;
+  texto: string;
+  destino: string;
+};
+
+/**
+ * Acciones que conviene atender ahora, según perfil, verificación y solicitudes.
+ *
+ * `perfil` en `undefined` significa que todavía se está consultando: no se ofrece
+ * crear el perfil hasta saber si ya existe.
+ */
+export function tareasProximas(entrada: {
+  pendientesRecibidas: number;
+  perfil: { nivelVerificacion: string } | null | undefined;
+  cantidadDeServicios: number;
+  serviciosConsultados: boolean;
+  destinoSolicitudes: string;
+  destinoPerfil: string;
+  destinoNuevoServicio: string;
+}): TareaPendiente[] {
+  const tareas: TareaPendiente[] = [];
+
+  if (entrada.pendientesRecibidas > 0) {
+    const n = entrada.pendientesRecibidas;
+    tareas.push({
+      id: 'pendientes',
+      texto:
+        n === 1
+          ? 'Tienes 1 solicitud pendiente de respuesta'
+          : `Tienes ${n} solicitudes pendientes de respuesta`,
+      destino: entrada.destinoSolicitudes,
+    });
+  }
+
+  if (entrada.perfil === null) {
+    tareas.push({
+      id: 'crear-perfil',
+      texto: 'Crea tu perfil de prestador para ofrecer servicios',
+      destino: entrada.destinoPerfil,
+    });
+  } else if (entrada.perfil !== undefined) {
+    if (entrada.perfil.nivelVerificacion === 'SIN_VERIFICAR') {
+      tareas.push({
+        id: 'verificar',
+        texto: 'Envía tu documentación para verificar tu perfil',
+        destino: entrada.destinoPerfil,
+      });
+    } else if (entrada.serviciosConsultados && entrada.cantidadDeServicios === 0) {
+      tareas.push({
+        id: 'publicar',
+        texto: 'Publica tu primer servicio para recibir clientes',
+        destino: entrada.destinoNuevoServicio,
+      });
+    }
+  }
+
+  return tareas;
+}
+
 export type ItemDeActividad = {
   idSolicitudServicio: number;
   descripcion: string;

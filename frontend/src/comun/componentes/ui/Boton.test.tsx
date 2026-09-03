@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router';
 import { describe, expect, it } from 'vitest';
 
 import { Boton } from './Boton';
@@ -33,5 +34,19 @@ describe('Boton', () => {
     expect(screen.getByRole('button', { name: 'Volver a explorar' })).toHaveClass(
       estilos.pildora ?? ''
     );
+  });
+
+  it('con destino se pinta como enlace conservando la variante primaria', () => {
+    render(
+      <MemoryRouter>
+        <Boton variante="primario" to="/prestador/servicios/nuevo">
+          Publicar servicio
+        </Boton>
+      </MemoryRouter>
+    );
+
+    const enlace = screen.getByRole('link', { name: 'Publicar servicio' });
+    expect(enlace).toHaveAttribute('href', '/prestador/servicios/nuevo');
+    expect(enlace).toHaveClass(estilos.primario ?? '');
   });
 });

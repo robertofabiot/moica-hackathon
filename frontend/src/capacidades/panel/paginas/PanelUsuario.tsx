@@ -9,7 +9,7 @@ import { RUTA_EXPLORAR } from '../../busqueda';
 import { usePrestadorPublico } from '../../busqueda/hooks/useBusquedaPublica';
 import { RUTA_PRESTADOR } from '../../prestador';
 import { usePerfilPrestador } from '../../prestador/hooks/usePerfilPrestador';
-import { RUTA_SERVICIOS } from '../../servicio';
+import { RUTA_NUEVO_SERVICIO, RUTA_SERVICIOS } from '../../servicio';
 import { useServiciosPropios } from '../../servicio/hooks/useServiciosPropios';
 import { RUTA_MENSAJES, RUTA_SOLICITUDES, rutaDeSolicitud } from '../../solicitud';
 import {
@@ -24,6 +24,7 @@ import {
 import type { EstadoSolicitud } from '../../solicitud/tipos';
 import {
   BarraLateral,
+  Boton,
   EstrellasCalificacion,
   IconoCampana,
   IconoCasa,
@@ -33,7 +34,7 @@ import {
   IconoReloj,
   TarjetaMetrica,
 } from '../../../comun/componentes/ui';
-import { actividadReciente, inicialDe, primerNombreDe } from '../presentacion';
+import { actividadReciente, inicialDe, primerNombreDe, tareasProximas } from '../presentacion';
 import { RUTA_PANEL } from '../rutas';
 import estilos from './panel.module.css';
 
@@ -97,6 +98,23 @@ export default function PanelUsuario() {
         }
       />
     );
+
+  const esSoloCliente = perfil.data === null;
+  const tareas = useMemo(
+    () =>
+      tareasProximas({
+        pendientesRecibidas: (recibidas.data ?? []).filter(
+          (solicitud) => solicitud.estadoActual === 'PENDIENTE'
+        ).length,
+        perfil: perfil.isLoading ? undefined : (perfil.data ?? null),
+        cantidadDeServicios: servicios.data?.length ?? 0,
+        serviciosConsultados: servicios.data !== undefined,
+        destinoSolicitudes: RUTA_SOLICITUDES,
+        destinoPerfil: RUTA_PRESTADOR,
+        destinoNuevoServicio: RUTA_NUEVO_SERVICIO,
+      }),
+    [recibidas.data, perfil.isLoading, perfil.data, servicios.data]
+  );
 
   return (
     <div className={estilos.pagina}>
@@ -181,6 +199,40 @@ export default function PanelUsuario() {
               Ver todas las solicitudes →
             </Link>
           </section>
+
+          <div className={estilos.columnaTareas}>
+            <section className={estilos.tarjeta} aria-labelledby="titulo-tareas">
+              <h2 className={estilos.tituloDeTarjeta} id="titulo-tareas">
+                Próximas tareas
+              </h2>
+              {tareas.length === 0 ? (
+                <p className={estilos.vacio}>No tienes tareas pendientes. Vas al día.</p>
+              ) : (
+                <ul className={estilos.listaTareas}>
+                  {tareas.map((tarea) => (
+                    <li key={tarea.id}>
+                      <Link className={estilos.enlaceTarea} to={tarea.destino}>
+                        {tarea.texto}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <aside className={estilos.promocion}>
+              <p className={estilos.tituloPromocion}>Mejora tu visibilidad</p>
+              <p className={estilos.textoPromocion}>
+                Ofrece tus habilidades y llega a más clientes en tu comunidad.
+              </p>
+              <Boton
+                variante="primario"
+                to={esSoloCliente ? RUTA_EXPLORAR : RUTA_NUEVO_SERVICIO}
+              >
+                {esSoloCliente ? 'Explorar servicios' : 'Publicar servicio'}
+              </Boton>
+            </aside>
+          </div>
         </div>
       </main>
     </div>

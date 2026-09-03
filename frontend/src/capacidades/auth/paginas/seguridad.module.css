@@ -1,17 +1,22 @@
 /*
  * Pantalla de configuración de la cuenta.
  * Solo tokens de `src/estilos/global.css`. Mobile-first: la hoja base describe
- * el teléfono y la media query amplía paddings a tableta y escritorio.
+ * el teléfono y la media query muestra la barra lateral y amplía paddings.
  */
 
-/* Oculta la barra lateral en escritorio: las pestañas ya cubren la navegación.
-   Para activarla en móvil, basta añadir un @media que le ponga display:block. */
-.barraLateralMovil {
+.pagina {
+  display: flex;
+  min-height: 100dvh;
+  background-color: var(--color-neutral-50);
+}
+
+.barraLateral {
   display: none;
 }
 
-.pagina {
-  min-height: 100dvh;
+.principal {
+  flex: 1 1 auto;
+  min-width: 0;
   padding: var(--gap-md);
 }
 
@@ -67,6 +72,7 @@
   font-family: var(--font-family-secondary);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
+  text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
 }
@@ -328,12 +334,32 @@
 }
 
 @media (min-width: 48rem) {
+  .barraLateral {
+    display: block;
+  }
+
   .pagina {
+    padding-left: calc(var(--font-size-xl) + var(--gap-md) * 2);
+  }
+
+  .principal {
     padding: var(--gap-xl);
   }
 
   .tarjetaPrincipal,
   .seccion {
     padding: var(--gap-xl);
+  }
+
+  .bloqueDeSelect {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--gap-md);
+  }
+
+  .selectPresentacional {
+    width: auto;
+    min-width: 16rem;
   }
 }

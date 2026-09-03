@@ -90,6 +90,12 @@
   color: var(--color-primary-500);
 }
 
+.tabInactiva,
+.tabInactiva:hover {
+  color: var(--color-neutral-400);
+  cursor: not-allowed;
+}
+
 .filas {
   display: flex;
   flex-direction: column;

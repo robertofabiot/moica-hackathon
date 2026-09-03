@@ -122,8 +122,13 @@ export default function ConversacionActiva({
             {estado !== undefined ? estadoVisibleDeConversacion(estado) : servicio}
           </p>
         </div>
-        <Link className={estilos.detalle} to={rutaDeSolicitud(idSolicitud)}>
-          Ver detalle del servicio
+        <Link
+          className={estilos.detalle}
+          to={rutaDeSolicitud(idSolicitud)}
+          aria-label="Ver detalle del servicio"
+        >
+          <span className={estilos.detalleTextoCompleto}>Ver detalle del servicio</span>
+          <span className={estilos.detalleTextoCorto}>Ver detalle</span>
         </Link>
       </header>
 

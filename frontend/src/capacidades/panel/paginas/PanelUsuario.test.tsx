@@ -77,22 +77,25 @@ describe('Panel de usuario', () => {
     abrirComo();
 
     expect(await screen.findByRole('heading', { name: '¡Hola, Erving! 👋' })).toBeVisible();
-    expect(screen.getByText('Este es el resumen de tu actividad.')).toBeVisible();
+    expect(
+      await screen.findByText(
+        'Bienvenido a tu espacio. Aquí puedes dar seguimiento a tus solicitudes y mensajes.'
+      )
+    ).toBeVisible();
     expect(
       await screen.findByRole('link', {
-        name: 'Crea tu perfil de prestador para ofrecer servicios',
+        name: 'Encuentra y contrata profesionales de confianza cerca de ti',
       })
-    ).toHaveAttribute('href', '/prestador');
-    expect(screen.getByRole('link', { name: 'Servicios publicados 0' })).toBeVisible();
+    ).toHaveAttribute('href', '/explorar');
+    expect(screen.getByRole('link', { name: 'Tus solicitudes 0' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Mensajes 0' })).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Contrataciones 0' })).toBeVisible();
-    expect(screen.getByText('Calificación').closest('div')).toHaveTextContent('—');
-    expect(screen.getByText(/Todavía no tienes solicitudes/)).toBeVisible();
-    expect(
-      screen.getAllByRole('link', { name: 'Explorar servicios' }).every((enlace) => {
-        return enlace.getAttribute('href') === '/explorar';
-      })
-    ).toBe(true);
+    expect(screen.getByRole('link', { name: 'Explorar catálogo Explorar' })).toBeVisible();
+    expect(screen.getByRole('link', { name: '¿Ofreces servicios? Comenzar' })).toBeVisible();
+    expect(screen.getByText(/Todavía no has enviado solicitudes/)).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Crear perfil de prestador' })).toHaveAttribute(
+      'href',
+      '/prestador'
+    );
 
     await waitFor(() => {
       expect(api.ultima('GET /api/prestador/perfil')).toBeDefined();
@@ -252,5 +255,35 @@ describe('Panel de usuario', () => {
         name: 'Publica tu primer servicio para recibir clientes',
       })
     ).toHaveAttribute('href', '/prestador/servicios/nuevo');
+  });
+
+  it('para un cliente con solicitudes muestra sus métricas de cliente y tareas de coordinación', async () => {
+    sinPerfil();
+    api.responder('GET /api/solicitudes/enviadas', {
+      estado: 200,
+      cuerpo: [
+        resumenDeSolicitudDeEjemplo({
+          idSolicitudServicio: 42,
+          nombreServicio: 'Cambio de pasta termica',
+          estadoActual: 'ACEPTADA',
+          idCliente: 1,
+        }),
+      ],
+    });
+
+    abrirComo();
+
+    expect(await screen.findByRole('heading', { name: '¡Hola, Erving! 👋' })).toBeVisible();
+    expect(await screen.findByRole('link', { name: 'Tus solicitudes 1' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Mensajes 1' })).toBeVisible();
+    expect(
+      screen.getByRole('link', {
+        name: 'Tienes 1 solicitud aceptada en curso. Coordina con el prestador',
+      })
+    ).toHaveAttribute('href', '/mensajes');
+    expect(screen.getByRole('link', { name: 'Crear perfil de prestador' })).toHaveAttribute(
+      'href',
+      '/prestador'
+    );
   });
 });

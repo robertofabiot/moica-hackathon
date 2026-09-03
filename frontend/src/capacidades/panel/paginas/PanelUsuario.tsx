@@ -106,14 +106,20 @@ export default function PanelUsuario() {
         pendientesRecibidas: (recibidas.data ?? []).filter(
           (solicitud) => solicitud.estadoActual === 'PENDIENTE'
         ).length,
+        solicitudesEnviadas: (enviadas.data ?? []).length,
+        solicitudesAceptadas: (enviadas.data ?? []).filter(
+          (solicitud) => solicitud.estadoActual === 'ACEPTADA'
+        ).length,
         perfil: perfil.isLoading ? undefined : (perfil.data ?? null),
         cantidadDeServicios: servicios.data?.length ?? 0,
         serviciosConsultados: servicios.data !== undefined,
         destinoSolicitudes: RUTA_SOLICITUDES,
         destinoPerfil: RUTA_PRESTADOR,
         destinoNuevoServicio: RUTA_NUEVO_SERVICIO,
+        destinoMensajes: RUTA_MENSAJES,
+        destinoExplorar: RUTA_EXPLORAR,
       }),
-    [recibidas.data, perfil.isLoading, perfil.data, servicios.data]
+    [recibidas.data, enviadas.data, perfil.isLoading, perfil.data, servicios.data]
   );
 
   return (
@@ -124,41 +130,77 @@ export default function PanelUsuario() {
       <EncabezadoDelPanel
         nombreCompleto={usuario?.nombreCompleto ?? ''}
         esAdministrador={usuario?.esAdministrador === true}
+        esSoloCliente={esSoloCliente}
       />
       <main className={estilos.principal}>
         <header className={estilos.bienvenida}>
           <h1 className={estilos.saludo}>
             {primerNombre === '' ? '¡Hola! 👋' : `¡Hola, ${primerNombre}! 👋`}
           </h1>
-          <p className={estilos.subtitulo}>Este es el resumen de tu actividad.</p>
+          <p className={estilos.subtitulo}>
+            {esSoloCliente
+              ? 'Bienvenido a tu espacio. Aquí puedes dar seguimiento a tus solicitudes y mensajes.'
+              : 'Este es el resumen de tu actividad como prestador.'}
+          </p>
         </header>
 
         <section className={estilos.metricas} aria-label="Métricas clave">
-          <TarjetaMetrica
-            titulo="Servicios publicados"
-            valor={serviciosPublicados}
-            icono={<IconoMaletin />}
-            destino={RUTA_SERVICIOS}
-          />
-          <TarjetaMetrica
-            titulo="Mensajes"
-            valor={cantidadMensajes}
-            icono={<IconoMensaje />}
-            destino={RUTA_MENSAJES}
-          />
-          <TarjetaMetrica
-            titulo="Contrataciones"
-            valor={cantidadContrataciones}
-            icono={<IconoCasa />}
-            destino={RUTA_SOLICITUDES}
-          />
-          <TarjetaMetrica titulo="Calificación" valor={calificacion} icono={<IconoEstrella />} />
+          {esSoloCliente ? (
+            <>
+              <TarjetaMetrica
+                titulo="Tus solicitudes"
+                valor={solicitudesListas ? (enviadas.data?.length ?? 0) : '—'}
+                icono={<IconoCasa />}
+                destino={RUTA_SOLICITUDES}
+              />
+              <TarjetaMetrica
+                titulo="Mensajes"
+                valor={cantidadMensajes}
+                icono={<IconoMensaje />}
+                destino={RUTA_MENSAJES}
+              />
+              <TarjetaMetrica
+                titulo="Explorar catálogo"
+                valor="Explorar"
+                icono={<IconoMaletin />}
+                destino={RUTA_EXPLORAR}
+              />
+              <TarjetaMetrica
+                titulo="¿Ofreces servicios?"
+                valor="Comenzar"
+                icono={<IconoEstrella />}
+                destino={RUTA_PRESTADOR}
+              />
+            </>
+          ) : (
+            <>
+              <TarjetaMetrica
+                titulo="Servicios publicados"
+                valor={serviciosPublicados}
+                icono={<IconoMaletin />}
+                destino={RUTA_SERVICIOS}
+              />
+              <TarjetaMetrica
+                titulo="Mensajes"
+                valor={cantidadMensajes}
+                icono={<IconoMensaje />}
+                destino={RUTA_MENSAJES}
+              />
+              <TarjetaMetrica
+                titulo="Contrataciones"
+                valor={cantidadContrataciones}
+                icono={<IconoCasa />}
+                destino={RUTA_SOLICITUDES}
+              />
+              <TarjetaMetrica titulo="Calificación" valor={calificacion} icono={<IconoEstrella />} />
+            </>
+          )}
         </section>
 
         <div className={estilos.cuerpo}>
           <section className={estilos.tarjeta} aria-labelledby="titulo-actividad">
             <h2 className={estilos.tituloDeTarjeta} id="titulo-actividad">
-              Actividad reciente
+              {esSoloCliente ? 'Tus solicitudes recientes' : 'Actividad reciente'}
             </h2>
             {enviadas.isLoading || recibidas.isLoading ? (
               <p className={estilos.estadoDeCarga} role="status">
@@ -166,8 +208,17 @@ export default function PanelUsuario() {
               </p>
             ) : actividad.length === 0 ? (
               <p className={estilos.vacio}>
-                Todavía no tienes solicitudes. Explora servicios para contratar o espera a que te
-                escriban. <Link to={RUTA_EXPLORAR}>Explorar servicios</Link>
+                {esSoloCliente ? (
+                  <>
+                    Todavía no has enviado solicitudes.{' '}
+                    <Link to={RUTA_EXPLORAR}>Explorar servicios</Link>
+                  </>
+                ) : (
+                  <>
+                    Todavía no tienes solicitudes en tus servicios.{' '}
+                    <Link to={RUTA_NUEVO_SERVICIO}>Publica un nuevo servicio</Link>
+                  </>
+                )}
               </p>
             ) : (
               <ul className={estilos.listaActividad}>
@@ -220,13 +271,27 @@ export default function PanelUsuario() {
             </section>
 
             <aside className={estilos.promocion}>
-              <p className={estilos.tituloPromocion}>Mejora tu visibilidad</p>
-              <p className={estilos.textoPromocion}>
-                Ofrece tus habilidades y llega a más clientes en tu comunidad.
-              </p>
-              <Boton variante="primario" to={esSoloCliente ? RUTA_EXPLORAR : RUTA_NUEVO_SERVICIO}>
-                {esSoloCliente ? 'Explorar servicios' : 'Publicar servicio'}
-              </Boton>
+              {esSoloCliente ? (
+                <>
+                  <p className={estilos.tituloPromocion}>¿Ofreces algún oficio o servicio?</p>
+                  <p className={estilos.textoPromocion}>
+                    Únete como prestador en Moica, llega a más clientes en tu comunidad y genera ingresos independientes.
+                  </p>
+                  <Boton variante="primario" to={RUTA_PRESTADOR}>
+                    Crear perfil de prestador
+                  </Boton>
+                </>
+              ) : (
+                <>
+                  <p className={estilos.tituloPromocion}>Mejora tu visibilidad</p>
+                  <p className={estilos.textoPromocion}>
+                    Publica nuevos servicios y mantén activo tu portafolio para atraer más clientes.
+                  </p>
+                  <Boton variante="primario" to={RUTA_NUEVO_SERVICIO}>
+                    Publicar servicio
+                  </Boton>
+                </>
+              )}
             </aside>
           </div>
         </div>
@@ -238,9 +303,11 @@ export default function PanelUsuario() {
 function EncabezadoDelPanel({
   nombreCompleto,
   esAdministrador,
+  esSoloCliente,
 }: {
   nombreCompleto: string;
   esAdministrador: boolean;
+  esSoloCliente: boolean;
 }) {
   const inicial = inicialDe(nombreCompleto);
 
@@ -248,7 +315,7 @@ function EncabezadoDelPanel({
     <header className={estilos.barraSuperior}>
       <Link className={estilos.marca} to="/" aria-label="Moica, ir al inicio">
         <img className={estilos.logoIcono} src={logoIcono} alt="" />
-        <img className={estilos.logoCompleto} src={logoHorizontal} alt="" />
+        <img className={estilos.logoCompleto} src={logoHorizontal} alt="Moica" />
       </Link>
       <div className={estilos.accionesDeBarra}>
         <button type="button" className={estilos.botonIcono} aria-label="Notificaciones">
@@ -259,6 +326,7 @@ function EncabezadoDelPanel({
             nombreCompleto={nombreCompleto}
             inicial={inicial}
             esAdministrador={esAdministrador}
+            esSoloCliente={esSoloCliente}
           />
         )}
       </div>
@@ -270,10 +338,12 @@ function MenuUsuarioAvatar({
   nombreCompleto,
   inicial,
   esAdministrador,
+  esSoloCliente,
 }: {
   nombreCompleto: string;
   inicial: string;
   esAdministrador: boolean;
+  esSoloCliente: boolean;
 }) {
   const [abierto, setAbierto] = useState(false);
   const cierre = useCierreSesion();
@@ -313,45 +383,106 @@ function MenuUsuarioAvatar({
               to={RUTA_PANEL}
               onClick={() => setAbierto(false)}
             >
-              Panel principal
+              {esSoloCliente ? 'Panel principal' : 'Panel de prestador'}
             </Link>
           </li>
-          <li>
-            <Link
-              className={estilos.opcionDeSesion}
-              to={RUTA_PRESTADOR}
-              onClick={() => setAbierto(false)}
-            >
-              Mi perfil de prestador
-            </Link>
-          </li>
-          <li>
-            <Link
-              className={estilos.opcionDeSesion}
-              to={RUTA_SERVICIOS}
-              onClick={() => setAbierto(false)}
-            >
-              Mis servicios
-            </Link>
-          </li>
-          <li>
-            <Link
-              className={estilos.opcionDeSesion}
-              to={RUTA_SOLICITUDES}
-              onClick={() => setAbierto(false)}
-            >
-              Mis solicitudes
-            </Link>
-          </li>
-          <li>
-            <Link
-              className={estilos.opcionDeSesion}
-              to={RUTA_SEGURIDAD}
-              onClick={() => setAbierto(false)}
-            >
-              Seguridad de la cuenta
-            </Link>
-          </li>
+          {esSoloCliente ? (
+            <>
+              <li>
+                <Link
+                  className={estilos.opcionDeSesion}
+                  to={RUTA_EXPLORAR}
+                  onClick={() => setAbierto(false)}
+                >
+                  Explorar servicios
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={estilos.opcionDeSesion}
+                  to={RUTA_SOLICITUDES}
+                  onClick={() => setAbierto(false)}
+                >
+                  Mis solicitudes
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={estilos.opcionDeSesion}
+                  to={RUTA_MENSAJES}
+                  onClick={() => setAbierto(false)}
+                >
+                  Mensajes
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={estilos.opcionDeSesion}
+                  to={RUTA_SEGURIDAD}
+                  onClick={() => setAbierto(false)}
+                >
+                  Seguridad de la cuenta
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={estilos.opcionDeSesion}
+                  to={RUTA_PRESTADOR}
+                  onClick={() => setAbierto(false)}
+                >
+                  Ofrecer mis servicios
+                </Link>
+              </li>
+            </>
+          ) : (
+            <>
+              <li>
+                <Link
+                  className={estilos.opcionDeSesion}
+                  to={RUTA_PRESTADOR}
+                  onClick={() => setAbierto(false)}
+                >
+                  Mi perfil de prestador
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={estilos.opcionDeSesion}
+                  to={RUTA_SERVICIOS}
+                  onClick={() => setAbierto(false)}
+                >
+                  Mis servicios
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={estilos.opcionDeSesion}
+                  to={RUTA_SOLICITUDES}
+                  onClick={() => setAbierto(false)}
+                >
+                  Mis solicitudes
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={estilos.opcionDeSesion}
+                  to={RUTA_MENSAJES}
+                  onClick={() => setAbierto(false)}
+                >
+                  Mensajes
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className={estilos.opcionDeSesion}
+                  to={RUTA_SEGURIDAD}
+                  onClick={() => setAbierto(false)}
+                >
+                  Seguridad de la cuenta
+                </Link>
+              </li>
+            </>
+          )}
           {esAdministrador ? (
             <li>
               <Link

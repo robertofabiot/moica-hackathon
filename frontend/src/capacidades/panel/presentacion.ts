@@ -28,15 +28,52 @@ export type TareaPendiente = {
  */
 export function tareasProximas(entrada: {
   pendientesRecibidas: number;
+  solicitudesEnviadas?: number;
+  solicitudesAceptadas?: number;
   perfil: { nivelVerificacion: string } | null | undefined;
   cantidadDeServicios: number;
   serviciosConsultados: boolean;
   destinoSolicitudes: string;
   destinoPerfil: string;
   destinoNuevoServicio: string;
+  destinoMensajes?: string;
+  destinoExplorar?: string;
 }): TareaPendiente[] {
   const tareas: TareaPendiente[] = [];
 
+  // Si es un usuario que solo es cliente (no tiene perfil de prestador)
+  if (entrada.perfil === null) {
+    if ((entrada.solicitudesAceptadas ?? 0) > 0) {
+      const n = entrada.solicitudesAceptadas ?? 0;
+      tareas.push({
+        id: 'aceptadas-cliente',
+        texto:
+          n === 1
+            ? 'Tienes 1 solicitud aceptada en curso. Coordina con el prestador'
+            : `Tienes ${n} solicitudes aceptadas en curso`,
+        destino: entrada.destinoMensajes ?? entrada.destinoSolicitudes,
+      });
+    } else if ((entrada.solicitudesEnviadas ?? 0) > 0) {
+      const n = entrada.solicitudesEnviadas ?? 0;
+      tareas.push({
+        id: 'enviadas-cliente',
+        texto:
+          n === 1
+            ? 'Tienes 1 solicitud esperando respuesta del prestador'
+            : `Tienes ${n} solicitudes en espera de confirmación`,
+        destino: entrada.destinoSolicitudes,
+      });
+    } else {
+      tareas.push({
+        id: 'explorar-cliente',
+        texto: 'Encuentra y contrata profesionales de confianza cerca de ti',
+        destino: entrada.destinoExplorar ?? '/explorar',
+      });
+    }
+    return tareas;
+  }
+
+  // Tareas para prestador
   if (entrada.pendientesRecibidas > 0) {
     const n = entrada.pendientesRecibidas;
     tareas.push({
@@ -49,13 +86,7 @@ export function tareasProximas(entrada: {
     });
   }
 
-  if (entrada.perfil === null) {
-    tareas.push({
-      id: 'crear-perfil',
-      texto: 'Crea tu perfil de prestador para ofrecer servicios',
-      destino: entrada.destinoPerfil,
-    });
-  } else if (entrada.perfil !== undefined) {
+  if (entrada.perfil !== undefined) {
     if (entrada.perfil.nivelVerificacion === 'SIN_VERIFICAR') {
       tareas.push({
         id: 'verificar',

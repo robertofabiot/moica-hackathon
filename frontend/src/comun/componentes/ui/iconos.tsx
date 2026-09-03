@@ -174,3 +174,31 @@ export function IconoX(props: PropiedadesDeIcono) {
     </Trazo>
   );
 }
+
+/** Burbuja de chat: estado vacío de mensajería o hilo. */
+export function IconoMensaje(props: PropiedadesDeIcono) {
+  return (
+    <Trazo {...props}>
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+    </Trazo>
+  );
+}
+
+/** Avión de papel: enviar un mensaje. */
+export function IconoEnviar(props: PropiedadesDeIcono) {
+  return (
+    <Trazo {...props}>
+      <path d="m22 2-7 20-4-9-9-4Z" />
+      <path d="M22 2 11 13" />
+    </Trazo>
+  );
+}
+
+/** Flecha hacia la izquierda: volver a la bandeja en pantallas estrechas. */
+export function IconoChevronIzquierda(props: PropiedadesDeIcono) {
+  return (
+    <Trazo {...props}>
+      <path d="m15 18-6-6 6-6" />
+    </Trazo>
+  );
+}

@@ -1,0 +1,45 @@
+/*
+ * Burbuja de un mensaje en el hilo. Solo tokens de `src/estilos/global.css`.
+ */
+
+.burbuja {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  max-width: min(75%, 28rem);
+  padding: var(--gap-sm) var(--gap-md);
+  overflow-wrap: anywhere;
+}
+
+.propia {
+  align-self: flex-end;
+  background-color: var(--color-secondary-700);
+  color: var(--color-neutral-0);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 var(--radius-lg);
+}
+
+.ajena {
+  align-self: flex-start;
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-900);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg) var(--radius-lg) var(--radius-lg) 0;
+}
+
+.texto {
+  white-space: pre-wrap;
+}
+
+.hora {
+  align-self: flex-end;
+  font-size: var(--font-size-xs);
+}
+
+.propia .hora {
+  color: var(--color-neutral-0);
+  opacity: 0.85;
+}
+
+.ajena .hora {
+  color: var(--color-neutral-600);
+}

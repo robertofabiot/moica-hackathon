@@ -93,12 +93,14 @@
   padding: 0.25rem 0.625rem;
   border-radius: var(--radius-full);
   background-color: var(--color-primary-50);
-  color: var(--color-primary-600);
+  color: var(--color-primary-500);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   text-decoration: none;
   white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .detalle:hover {

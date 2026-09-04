@@ -964,9 +964,17 @@ en todo el JSON, y las secuencias de identidad pueden coincidir sin que haya
 filtración— por afirmaciones sobre el contenido que sí la protegen.
 
 **Pendientes preexistentes, ajenos a P9.** El catálogo de códigos del contrato
-arrastra tres ausencias anteriores a este incremento —`CALIFICACION_DUPLICADA` y
+arrastraba tres ausencias anteriores a este incremento —`CALIFICACION_DUPLICADA` y
 `SOLICITUD_NO_COMPLETADA`, del #25, y `SUBCATEGORIA_NO_DISPONIBLE`, del #17—:
-se dejan anotadas y no se tocan aquí. Y el contenedor `moica_pgadmin` sigue
+se dejaron anotadas y no se tocaron aquí, por quedar fuera del alcance de P9.
+**Se cerraron en P10A**, que las añadió al catálogo final de
+`Docs/Dev/ContratoDeApi.md` tras contrastarlas contra los servicios y las
+pruebas que ya las emitían: `CatalogoDeServiciosService.exigirSubcategoria`
+(400) y `CalificacionDeSolicitudService` (409 en los dos casos), cubiertas por
+`ServicioPublicadoIT`, `CalificacionDeSolicitudIT` y
+`ConcurrenciaDeCalificacionIT`. Fue una omisión de redacción: ningún
+comportamiento cambió y no se añadieron pruebas para comprobar una lista de
+Markdown. Y el contenedor `moica_pgadmin` sigue
 reiniciándose por el correo `.local` de `MOICA_PGADMIN_EMAIL`. No afecta a
 PostgreSQL, a Testcontainers ni a este incremento, y no se tocó.
 

@@ -122,23 +122,18 @@ moica-hackathon/
 
 ## Estado actual
 
-Ciclo de acceso completo: registro, inicio de sesion, sesion persistida con expiracion y revocacion, y cierre de sesion, con sus pantallas correspondientes.
+El MVP cuenta con un flujo funcional completo de punta a punta, enfocado en la formalización, confianza y seguridad del servicio:
 
-Seguridad de la cuenta: cambio de contraseña que revoca todas las sesiones, segundo factor TOTP con su ciclo completo, sesion provisional hasta verificar el codigo y area `/admin` protegida por rol y segundo factor verificado.
+* **Autenticación y Seguridad:** Registro, login con JWT en cookie `HttpOnly`, expiración y revocación inmediata de sesiones, y **2FA (TOTP)** obligatorio para el área `/admin`.
+* **Perfil y Portafolio:** Perfil profesional con catálogo territorial de Managua, medios de contacto y galería de trabajos alojada en **Cloudflare R2**.
+* **Verificación Documental:** Carga de expedientes privados y panel administrativo para revisión y asignación de niveles (*Básico* y *Profesional*).
+* **Descubrimiento y Búsqueda:** Catálogo público accesible sin registro con filtros por texto, categoría y municipio (visibilidad exclusiva para prestadores verificados).
+* **Gestión de Solicitudes:** Ciclo de contratación de extremo a extremo (solicitar, aceptar, rechazar, cancelar y completar) con trazabilidad histórica.
+* **Chat y Contacto Seguro:** Hilo de mensajería interna habilitado tras la aceptación del servicio y revelación controlada de contactos externos.
+* **Reputación Bidireccional:** Calificación mutua (1 a 5 estrellas + reseña) al completar el trabajo, con reputación pública para prestadores.
+* **Moderación y Auditoría:** Apertura de reportes con historial auditable (SCD2) para resolver controversias entre las partes.
 
-Perfil de prestador: catalogo territorial de Managua, perfil propio con tipo, municipio principal, presentacion y cobertura, disponibilidad, medios de contacto y portafolio de trabajos con imagenes. Las imagenes publicas se guardan en Cloudflare R2 (ver [`Docs/Dev/Almacenamiento.md`](Docs/Dev/Almacenamiento.md)); PostgreSQL solo conserva su URL. Todo perfil nace `SIN_VERIFICAR` y permanece privado hasta que una persona administradora apruebe al menos la verificacion basica.
-
-Verificacion documental: el prestador presenta su expediente —JPEG, PNG o PDF, hasta 5 MB por archivo— en una sola operacion, y una persona administradora con segundo factor verificado lo toma, lo aprueba, lo rechaza con motivo o revoca una verificacion ya concedida. Los documentos viven en un bucket privado de R2; PostgreSQL guarda solo una clave opaca y sus metadatos, y el archivo se abre con un enlace temporal que caduca. El nivel del perfil —`SIN_VERIFICAR`, `VERIFICADO_BASICO` o `PROFESIONAL_VERIFICADO`— lo proyecta ese flujo y nadie mas.
-
-Servicios y descubrimiento: el prestador administra publicaciones e imagenes; un visitante explora sin autenticarse. Solo aparecen servicios `ACTIVO` de cuentas operativas, prestadores `DISPONIBLE` y perfiles con al menos verificacion basica. Un prestador `NO_DISPONIBLE` con verificacion basica conserva perfil y portafolio publicos, pero sin servicios listados y sin contratacion. La busqueda combina texto, categoria o subcategoria y municipio. Un precio nulo se muestra como «A convenir».
-
-Solicitudes: un cliente autenticado con cuenta `ACTIVA` pide un servicio ajeno; el prestador con cuenta `ACTIVA` acepta o rechaza; cualquiera de los dos puede cancelar segun el estado; el prestador con cuenta `ACTIVA` marca como completada. Una cuenta restringida conserva la lectura y la cancelacion. Cada transicion queda en el historial.
-
-Chat y contactos: aceptar una solicitud abre un hilo de mensajes de texto entre sus dos participantes y revela al cliente los medios de contacto externos del prestador. El hilo es la solicitud, sin entidad contenedora: se lee mientras la solicitud haya llegado a estar aceptada y solo admite mensajes nuevos mientras siga `ACEPTADA`; al cancelar o completar, el historial queda en solo lectura y los contactos ya revelados no vuelven a ocultarse. Una cancelacion desde `PENDIENTE` nunca abre hilo. Una cuenta restringida lee, pero no escribe. Un tercero recibe 404 y no puede confirmar que el hilo exista; el prestador tampoco recibe la revelacion de contactos, que pertenece al cliente. La interfaz se actualiza por short polling, sin WebSockets. El chat es solo de texto: sin imagenes, audios, archivos, edicion, reacciones ni cifrado de extremo a extremo.
-
-Calificaciones y reputacion: cuando el prestador marca la solicitud como completada, cada participante puede calificar una sola vez a la contraparte con una puntuacion de una a cinco estrellas y un comentario opcional. El calificado y el rol —`CLIENTE` o `PRESTADOR`— los deriva el servidor de la solicitud, nunca el navegador: el cliente califica al prestador y el prestador al cliente, y nadie puede calificarse a si mismo. Calificar es opcional y no hacerlo no penaliza. Las calificaciones son inmutables: no se editan ni se borran. La reputacion se calcula desde esas filas y se mantiene separada por rol, sin tabla `reputacion`: la del prestador es publica y viaja en el listado, en el detalle y en el perfil; la del cliente solo la ve el prestador participante desde su propia solicitud. Quien todavia no tiene calificaciones aparece como «Sin calificaciones», nunca como `0.0`.
-
-Reportes y casos de moderacion: desde una solicitud que llego a estar aceptada, cualquiera de los dos participantes puede reportar a la contraparte. Da igual donde terminara la solicitud —completada o cancelada despues de aceptarse siguen admitiendolo—; una que nunca se acepto, no. El reporte abre un caso de moderacion con su primera version historica SCD2 en la misma transaccion, y cada participante abre como maximo uno por solicitud, asi que una solicitud admite hasta dos: uno por lado. El reportado lo deriva el servidor de la solicitud, nunca el navegador. Reportar no cambia el estado de la solicitud, no toca ninguna cuenta, no asigna administrador, no elige medida y no sanciona automaticamente a nadie: en el MVP cada medida la decide una persona. Una cuenta restringida conserva el reporte, porque es la via por la que alguien pide ayuda. Cada quien consulta solo el caso que el mismo presento; la revision administrativa, las resoluciones y el catalogo de medidas llegan despues. Todavia no hay pagos ni mapas.
+> **Alcance del MVP:** Se priorizó la verificación humana y la contratación segura. Pagos en línea integrados y mapas interactivos forman parte del roadmap posterior ([Docs/Core/post-mvp.md](Docs/Core/post-mvp.md)).
 
 ## Licencia
 

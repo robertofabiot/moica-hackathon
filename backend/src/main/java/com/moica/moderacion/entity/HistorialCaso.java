@@ -25,8 +25,8 @@ import java.time.OffsetDateTime;
  *
  * <p>Todo lo histórico es {@code updatable = false}. Los dos únicos campos que llegan a cambiar son
  * {@code fechaFinVigencia} y {@code esVersionActual}, y solo una vez: al dejar de ser la versión
- * vigente. P9 no ejecuta ese cierre —abre el caso y crea su primera versión, y nada más—, así que
- * esta clase todavía no ofrece la operación que lo hará en P10A.
+ * vigente. P10A añade ese cierre en {@link #cerrarVigencia(OffsetDateTime)} y la fotografía que lo
+ * sustituye en {@link #siguienteDe}.
  */
 @Entity
 @Table(name = "historial_caso")
@@ -235,5 +235,74 @@ public class HistorialCaso {
 
   public OffsetDateTime getFechaRegistro() {
     return fechaRegistro;
+  }
+
+  /**
+   * La fotografía que un evento administrativo deja del caso ya mutado.
+   *
+   * <p>Se construye <b>después</b> de aplicar el cambio sobre {@link CasoModeracion}, porque una
+   * versión SCD2 retrata el estado resultante y no el anterior: responsable, estado, resultado,
+   * resolución, medida y fecha de fin salen todos de la fila vigente. Por eso basta con el caso, el
+   * evento y quién lo originó.
+   *
+   * <p>El número de versión lo calcula quien la crea a partir de la anterior, no esta clase: es la
+   * transacción del servicio la que sabe cuál está cerrando, y {@code uq_historial_caso_version}
+   * rechaza un duplicado si dos intentaran el mismo.
+   *
+   * <p>{@code estadoCuenta} es el estado real y vigente de la cuenta afectada en este instante.
+   * P10A no lo cambia nunca: revisar y resolver un caso no sanciona a nadie. Se copia porque el
+   * historial retrata también qué acceso tenía la persona cuando se tomó cada decisión.
+   *
+   * @param instante el mismo reloj con el que se cerró la versión anterior, para que los dos
+   *     periodos se toquen sin superponerse
+   */
+  public static HistorialCaso siguienteDe(
+      CasoModeracion caso,
+      int numeroVersion,
+      Long idAdministradorActor,
+      TipoEventoHistorial tipoEvento,
+      EstadoCuenta estadoCuentaAfectada,
+      String detalleCambio,
+      OffsetDateTime instante) {
+
+    HistorialCaso version =
+        new HistorialCaso(
+            caso.getIdCasoModeracion(),
+            caso.getIdReportado(),
+            idAdministradorActor,
+            numeroVersion,
+            TipoActorHistorial.ADMINISTRADOR,
+            tipoEvento,
+            caso.getEstadoActual(),
+            estadoCuentaAfectada,
+            detalleCambio,
+            instante);
+
+    version.idAdministradorResponsable = caso.getIdAdministradorResponsable();
+    version.idMedidaAdministrativa = caso.getIdMedidaAdministrativaActual();
+    version.resultadoCaso = caso.getResultadoActual();
+    version.resolucion = caso.getResolucionActual();
+    version.fechaFinMedida = caso.getFechaFinMedidaActual();
+    return version;
+  }
+
+  /**
+   * Deja de ser la versión vigente.
+   *
+   * <p>El fin es exclusivo, así que recibe el mismo instante en el que empieza la versión que la
+   * sustituye: los dos periodos se tocan sin solaparse y {@code ex_historial_caso_vigencia} los
+   * admite. Cerrar y crear ocurren en la misma transacción; si una fallara, el caso se quedaría sin
+   * versión vigente o con dos.
+   *
+   * @throws IllegalStateException si la versión ya estaba cerrada, porque cerrarla otra vez movería
+   *     un periodo histórico que debe permanecer intacto
+   */
+  public void cerrarVigencia(OffsetDateTime instante) {
+    if (!esVersionActual) {
+      throw new IllegalStateException(
+          "La versión " + idHistorialCaso + " ya estaba cerrada y no puede cerrarse otra vez");
+    }
+    this.fechaFinVigencia = instante;
+    this.esVersionActual = false;
   }
 }

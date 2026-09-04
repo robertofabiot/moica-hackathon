@@ -23,6 +23,7 @@ import {
   RUTA_EXPLORAR,
   RUTA_PRESTADOR_PUBLICO,
 } from './capacidades/busqueda';
+import { PanelUsuario, RUTA_PANEL } from './capacidades/panel';
 import { PerfilPrestador, RUTA_PRESTADOR } from './capacidades/prestador';
 import {
   EditarServicio,
@@ -51,8 +52,8 @@ import RutaNoEncontrada from './paginas/RutaNoEncontrada';
  *
  * Cada incremento agrega las rutas de su propia capacidad. P2 añadió las de acceso, P3 las de
  * seguridad de la cuenta y el área administrativa, P4 la del perfil de prestador, P4V la cola
- * administrativa de verificaciones, P5 el descubrimiento público y la gestión de servicios, y P6
- * el ciclo de solicitudes.
+ * administrativa de verificaciones, P5 el descubrimiento público y la gestión de servicios, P6
+ * el ciclo de solicitudes, y el panel de actividad en `/panel`.
  *
  * Los envoltorios de ruta deciden a qué pantalla llevar a cada persona, no si puede hacer algo:
  * quien pida una ruta protegida de la API sin permiso recibe 401 o 403 del backend aunque llegue a
@@ -89,6 +90,14 @@ export default function App() {
         }
       />
       <Route path={RUTA_CONFIGURACION} element={<Navigate to={RUTA_SEGURIDAD} replace />} />
+      <Route
+        path={RUTA_PANEL}
+        element={
+          <RutaProtegida>
+            <PanelUsuario />
+          </RutaProtegida>
+        }
+      />
       <Route
         path={RUTA_PRESTADOR}
         element={

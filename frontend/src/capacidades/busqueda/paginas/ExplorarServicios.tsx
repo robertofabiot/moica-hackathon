@@ -5,6 +5,7 @@ import logoHorizontal from '../../../assets/logos/moica-horizontal.png';
 import logoIcono from '../../../assets/logos/moica-icono.svg';
 import { RUTA_ADMIN } from '../../admin';
 import { RUTA_INICIO_SESION, RUTA_SEGURIDAD, useCierreSesion, useSesionActual } from '../../auth';
+import { RUTA_PANEL } from '../../panel';
 import { RUTA_PRESTADOR } from '../../prestador';
 import { RUTA_SERVICIOS } from '../../servicio';
 import { RUTA_SOLICITUDES } from '../../solicitud';
@@ -307,6 +308,15 @@ function MenuUsuarioAvatar({
 
       {abierto && (
         <ul className={propios.panelDeSesion} role="menu">
+          <li>
+            <Link
+              className={propios.opcionDeSesion}
+              to={RUTA_PANEL}
+              onClick={() => setAbierto(false)}
+            >
+              Panel principal
+            </Link>
+          </li>
           <li>
             <Link
               className={propios.opcionDeSesion}

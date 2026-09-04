@@ -8,6 +8,7 @@ import {
   activacionDeEjemplo,
   cuerpoDeError,
   instalarApiFalsa,
+  perfilDeEjemplo,
   segundoFactorDeEjemplo,
   sesionDeEjemplo,
   type ApiFalsa,
@@ -40,6 +41,27 @@ describe('seguridad de la cuenta', () => {
     const montado = renderizarConProveedores(<App />, '/seguridad');
     expect(await screen.findByRole('heading', { name: 'Seguridad de tu cuenta' })).toBeVisible();
     return montado;
+  }
+
+  /** El ítem Inicio de la barra lleva al panel de prestador. */
+  function responderPanelConPerfil() {
+    api.responder('GET /api/prestador/perfil', {
+      estado: 200,
+      cuerpo: perfilDeEjemplo(),
+    });
+    api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/prestadores/1', {
+      estado: 200,
+      cuerpo: {
+        prestador: { idPrestador: 1, nombrePublico: 'Erving Miranda' },
+        portafolio: [],
+        servicios: [],
+        admiteContratacion: true,
+        reputacionPrestador: { promedio: 5, cantidad: 1 },
+      },
+    });
+    api.responder('GET /api/solicitudes/enviadas', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/solicitudes/recibidas', { estado: 200, cuerpo: [] });
   }
 
   /** Todo lo que queda guardado de las mutaciones, para buscar en ello un secreto. */
@@ -183,16 +205,13 @@ describe('seguridad de la cuenta', () => {
       await persona.click(await screen.findByRole('button', { name: 'Activar el segundo factor' }));
       expect(await screen.findByText(SECRETO_DE_ACTIVACION)).toBeVisible();
 
+      responderPanelConPerfil();
       await persona.click(screen.getByRole('link', { name: 'Inicio' }));
-      expect(
-        await screen.findByRole('heading', {
-          name: 'Encuentra servicios confiables en tu comunidad',
-        })
-      ).toBeVisible();
+      expect(await screen.findByRole('heading', { name: '¡Hola, Erving! 👋' })).toBeVisible();
 
       expect(memoriaDeLasMutaciones(cliente)).not.toContain(SECRETO_DE_ACTIVACION);
 
-      await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
+      await persona.click(await screen.findByRole('button', { name: 'Cuenta de Erving Miranda' }));
       await persona.click(await screen.findByRole('link', { name: 'Seguridad de la cuenta' }));
 
       expect(
@@ -327,8 +346,9 @@ describe('seguridad de la cuenta', () => {
       const { cliente } = await abrirSeguridad();
       expect(await screen.findByText('Activo')).toBeVisible();
 
+      responderPanelConPerfil();
       await persona.click(screen.getByRole('link', { name: 'Inicio' }));
-      await persona.click(await screen.findByRole('button', { name: /^Hola,/ }));
+      await persona.click(await screen.findByRole('button', { name: 'Cuenta de Erving Miranda' }));
       await persona.click(await screen.findByRole('button', { name: 'Cerrar sesión' }));
       expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
 

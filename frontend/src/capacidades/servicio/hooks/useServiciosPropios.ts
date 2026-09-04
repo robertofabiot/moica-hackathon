@@ -21,12 +21,13 @@ export function claveDeServicioPropio(idServicio: number) {
   return ['servicio', 'propio', idServicio] as const;
 }
 
-export function useServiciosPropios() {
+export function useServiciosPropios(opciones?: { enabled?: boolean }) {
   return useQuery({
     queryKey: CLAVE_DE_SERVICIOS_PROPIOS,
     queryFn: listarServiciosPropios,
     retry: false,
     staleTime: 60_000,
+    enabled: opciones?.enabled ?? true,
   });
 }
 

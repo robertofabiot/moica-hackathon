@@ -78,6 +78,31 @@ public class HiloDeSolicitudService {
   }
 
   /**
+   * El hilo completo de una solicitud, para el expediente de un caso de moderación.
+   *
+   * <p>Devuelve exactamente lo mismo que ven los dos participantes. Se distingue de {@link
+   * #listarMensajes} en que no exige participación —quien revisa un caso no participa en la
+   * solicitud reportada— y en que no exige que el hilo esté habilitado: un caso solo puede nacer de
+   * una solicitud que llegó a aceptarse, así que el hilo existe, y si estuviera vacío la respuesta
+   * vacía es la información correcta.
+   *
+   * <p><b>No autoriza.</b> Quien lo invoca ya comprobó rol administrativo, segundo factor y que el
+   * caso que ampara la lectura existe. No recibe sujeto a propósito: pedírselo sugeriría que decide
+   * con él, y no lo hace.
+   *
+   * <p>Solo lee: no hay ninguna vía para escribir en el hilo desde el área administrativa.
+   */
+  @Transactional(readOnly = true)
+  public List<DatosDeMensajeSolicitud> mensajesParaModeracion(Long idSolicitudServicio) {
+    Map<Long, String> nombres = new HashMap<>();
+    return mensajes
+        .findByIdSolicitudServicioOrderByFechaEnvioAscIdMensajeSolicitudAsc(idSolicitudServicio)
+        .stream()
+        .map(mensaje -> DatosDeMensajeSolicitud.de(mensaje, nombreDe(nombres, mensaje)))
+        .toList();
+  }
+
+  /**
    * Agrega un mensaje al hilo de una solicitud {@code ACEPTADA}.
    *
    * <p>La solicitud se bloquea antes de comprobar su estado y no se suelta hasta que la transacción

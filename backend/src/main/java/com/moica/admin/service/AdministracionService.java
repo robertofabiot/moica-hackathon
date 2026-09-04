@@ -1,10 +1,13 @@
 package com.moica.admin.service;
 
+import com.moica.admin.dto.DatosDeAdministrador;
 import com.moica.admin.dto.ResumenAdministrativo;
 import com.moica.comun.error.ErrorDeAplicacion;
 import com.moica.usuario.dto.DatosDeUsuario;
 import com.moica.usuario.service.AdministradorService;
 import com.moica.usuario.service.UsuarioService;
+import java.util.Comparator;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,20 @@ public class AdministracionService {
   public AdministracionService(UsuarioService usuarios, AdministradorService administradores) {
     this.usuarios = usuarios;
     this.administradores = administradores;
+  }
+
+  /**
+   * Las personas administradoras entre las que puede repartirse el trabajo.
+   *
+   * <p>La consume la reasignación de casos de moderación. Va ordenada por nombre para que el
+   * desplegable no cambie de orden entre dos consultas.
+   */
+  @Transactional(readOnly = true)
+  public List<DatosDeAdministrador> listarAdministradores() {
+    return administradores.idsDeAdministradores().stream()
+        .map(id -> new DatosDeAdministrador(id, usuarios.obtener(id).nombreCompleto()))
+        .sorted(Comparator.comparing(DatosDeAdministrador::nombreCompleto))
+        .toList();
   }
 
   /** Describe la cuenta administradora que hace la petición. */

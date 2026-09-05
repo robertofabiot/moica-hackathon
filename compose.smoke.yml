@@ -1,0 +1,41 @@
+# Validacion desechable, aislada del Compose de desarrollo y de Railway.
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: ${MOICA_DB_NOMBRE:?}
+      POSTGRES_USER: ${MOICA_DB_USUARIO:?}
+      POSTGRES_PASSWORD: ${MOICA_DB_CLAVE:?}
+    volumes:
+      - datos-smoke:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  backend:
+    image: moica-backend:p11
+    build: ./backend
+    env_file: .env.example
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      MOICA_DB_HOST: postgres
+      MOICA_DB_PORT: 5432
+      MOICA_BACKEND_PORT: 8080
+      MOICA_COOKIE_SEGURA: "true"
+      MOICA_SOPORTE_CANAL: demo@example.org
+    depends_on:
+      postgres:
+        condition: service_healthy
+  frontend:
+    image: moica-frontend:p11
+    build: ./frontend
+    environment:
+      PORT: 8080
+      MOICA_BACKEND_UPSTREAM: backend:8080
+    ports:
+      - "127.0.0.1:${MOICA_SMOKE_PORT:-18080}:8080"
+    depends_on:
+      - backend
+volumes:
+  datos-smoke:

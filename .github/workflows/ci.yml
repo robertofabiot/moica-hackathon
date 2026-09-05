@@ -17,6 +17,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  produccion:
+    name: Produccion (Docker y smoke)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Descargar el repositorio limpio
+        uses: actions/checkout@v7
+      - name: Preparar Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: frontend/.nvmrc
+      - name: Construir imagenes y comprobar PostgreSQL nuevo, Nginx y seguridad
+        run: node scripts/smoke-produccion.mjs
+
   backend:
     name: Backend (Java 21)
     runs-on: ubuntu-latest

@@ -1,0 +1,39 @@
+server {
+    listen ${PORT};
+    listen [::]:${PORT};
+    server_name _;
+    server_tokens off;
+    root /usr/share/nginx/html;
+    index index.html;
+    # No registrar URLs de documentos, consultas ni datos de autenticacion.
+    access_log off;
+    client_max_body_size 25m;
+    resolver ${MOICA_DNS_RESOLVER} valid=10s;
+    set $backend http://${MOICA_BACKEND_UPSTREAM};
+    set $moica_scheme ${MOICA_PUBLIC_SCHEME};
+    set $moica_port ${MOICA_PUBLIC_PORT};
+
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok\n";
+    }
+    location ~ ^/(api(?:/|$)|actuator/health$) {
+        include /etc/nginx/proxy-headers.conf;
+        proxy_pass $backend;
+    }
+    location /actuator { return 404; }
+    location ~ /\. { return 404; }
+    location ^~ /assets/ {
+        try_files $uri =404;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+    location ~* \.(?:js|css|webmanifest|png|jpg|jpeg|svg|ico|woff2?)$ {
+        try_files $uri =404;
+        add_header Cache-Control "no-cache";
+    }
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache";
+    }
+}

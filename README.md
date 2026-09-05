@@ -92,10 +92,21 @@ imagenes publicas y los expedientes de verificacion, y no sustituye a
 PostgreSQL: la base conserva los datos y, de cada archivo, solo su URL publica
 o su clave opaca.
 
-La arquitectura productiva prevista usa Docker, configuracion por variables de
-entorno y frontend y API bajo un mismo origen. El proveedor, la base remota,
-los Dockerfiles y el procedimiento de despliegue corresponden al incremento
-P11 y todavia no estan implementados.
+P11-A incorpora Dockerfiles de backend y frontend para la demostracion publica
+en Railway Free/Trial: Nginx sirve React/PWA y reenvia `/api` al backend privado;
+PostgreSQL conserva los datos en un servicio privado con volumen. El dominio
+HTTPS sera el proporcionado por Railway. El estado real y el procedimiento
+estan en [DespliegueProduccion.md](Docs/Dev/DespliegueProduccion.md).
+
+Desde la raiz, `node scripts/smoke-produccion.mjs` construye ambas imagenes y
+comprueba una base nueva, Flyway, SPA/PWA, API, cookies/CSRF y persistencia tras
+reinicio. Requiere Docker y Node 22; no usa el `.env` ni la base de desarrollo.
+
+Produccion requiere `SPRING_PROFILES_ACTIVE=prod`, `MOICA_COOKIE_SEGURA=true`,
+soporte real, variables PostgreSQL, JWT/TOTP secretos y ambos grupos R2 para
+habilitar archivos. Nginx recibe `MOICA_BACKEND_UPSTREAM` y opcionalmente `PORT`,
+`MOICA_PUBLIC_SCHEME` y `MOICA_PUBLIC_PORT`. La guia y `.env.example` clasifican
+las variables; ningun secreto se incorpora al build de React.
 
 ## Estructura del repositorio
 

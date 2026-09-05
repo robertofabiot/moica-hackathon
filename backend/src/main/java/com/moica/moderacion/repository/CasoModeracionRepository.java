@@ -3,6 +3,7 @@ package com.moica.moderacion.repository;
 import com.moica.moderacion.entity.CasoModeracion;
 import com.moica.moderacion.entity.EstadoCasoModeracion;
 import jakarta.persistence.LockModeType;
+import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -61,4 +62,31 @@ public interface CasoModeracionRepository extends JpaRepository<CasoModeracion, 
       WHERE caso.idCasoModeracion = :idCasoModeracion
       """)
   Optional<CasoModeracion> bloquearPorId(@Param("idCasoModeracion") Long idCasoModeracion);
+
+  /**
+   * El expediente que sostiene la medida vigente de una cuenta, si alguno la sostiene.
+   *
+   * <p>Devuelve como máximo uno: {@code uq_caso_moderacion_medida_vigente_por_cuenta} es un índice
+   * único parcial sobre los casos con medida, así que dos sanciones vigentes sobre la misma persona
+   * no pueden existir. Es la consulta que decide si aplicar una medida es una aplicación limpia o
+   * un reemplazo que exige confirmación.
+   *
+   * <p>Quien la llama debe haber bloqueado antes la fila de la cuenta: sin ese bloqueo, dos
+   * transacciones simultáneas leerían las dos que no hay ninguna vigente.
+   */
+  Optional<CasoModeracion> findByIdReportadoAndIdMedidaAdministrativaActualNotNull(
+      Long idReportado);
+
+  /**
+   * Los expedientes cuya medida temporal ya cumplió su plazo.
+   *
+   * <p>La consulta el barrido de expiración. Filtra por fecha en la base y no en memoria porque el
+   * barrido corre periódicamente sobre toda la tabla y no debe traerse los casos que no vencen.
+   *
+   * <p>Una medida sin fecha de fin nunca entra: {@code fechaFinMedidaActual} nulo significa que
+   * solo se levanta revocándola, y la comparación descarta los nulos por sí sola.
+   */
+  List<CasoModeracion>
+      findByIdMedidaAdministrativaActualNotNullAndFechaFinMedidaActualLessThanEqual(
+          OffsetDateTime instante);
 }

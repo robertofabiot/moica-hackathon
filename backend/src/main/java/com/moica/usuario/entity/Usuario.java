@@ -81,6 +81,24 @@ public class Usuario {
     this.claveHash = claveHash;
   }
 
+  /**
+   * Proyecta en la cuenta el estado operativo que impone la moderación.
+   *
+   * <p>Es una proyección, no una decisión: quien elige la medida es una persona administradora y la
+   * evidencia de por qué la cuenta quedó así vive en el historial del caso. Aquí solo se refleja el
+   * resultado, que es lo que la autorización lee en cada petición.
+   *
+   * <p>El estado y su fecha entran juntos porque son una sola cosa: {@link
+   * EstadoCuenta#RESTRINGIDA_TEMPORAL} y {@link EstadoCuenta#SUSPENDIDA_TEMPORAL} terminan cuando
+   * llega esa fecha, y {@link EstadoCuenta#ACTIVA} y {@link EstadoCuenta#SUSPENDIDA_PERMANENTE} no
+   * terminan, así que la reciben nula. Dejar una fecha huérfana de un estado anterior haría creer a
+   * la interfaz que una suspensión permanente caduca.
+   */
+  public void proyectarEstadoDeCuenta(EstadoCuenta estadoCuenta, OffsetDateTime fechaFin) {
+    this.estadoCuenta = estadoCuenta;
+    this.fechaFinEstadoCuenta = fechaFin;
+  }
+
   @PrePersist
   void registrarInstanteDeCreacion() {
     OffsetDateTime ahora = OffsetDateTime.now();

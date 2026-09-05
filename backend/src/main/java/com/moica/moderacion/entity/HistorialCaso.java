@@ -265,13 +265,69 @@ public class HistorialCaso {
       String detalleCambio,
       OffsetDateTime instante) {
 
+    return fotografiar(
+        caso,
+        numeroVersion,
+        TipoActorHistorial.ADMINISTRADOR,
+        idAdministradorActor,
+        tipoEvento,
+        estadoCuentaAfectada,
+        detalleCambio,
+        instante);
+  }
+
+  /**
+   * La fotografía de un evento que no originó ninguna persona.
+   *
+   * <p>Hoy solo lo produce {@link TipoEventoHistorial#MEDIDA_EXPIRADA}: cuando llega la fecha que
+   * una persona administradora fijó, el plazo se cumple solo y nadie vuelve a decidir nada. Por eso
+   * el actor es {@link TipoActorHistorial#SISTEMA} y queda sin identificador, como exige {@code
+   * ck_historial_caso_actor}.
+   *
+   * <p>Que el actor sea el sistema no convierte la expiración en una sanción automática: la medida,
+   * su severidad y su plazo los eligió una persona, y esta versión solo registra que el plazo se
+   * agotó. Moica no selecciona, no recomienda y no escala medidas, según la definición 11.3.
+   *
+   * <p>{@code idAdministradorResponsable} sí se conserva: quien respondía por el caso lo sigue
+   * haciendo aunque este evento concreto no lo originara nadie. El actor del evento y el
+   * responsable de la versión son campos distintos a propósito.
+   */
+  public static HistorialCaso delSistemaDe(
+      CasoModeracion caso,
+      int numeroVersion,
+      TipoEventoHistorial tipoEvento,
+      EstadoCuenta estadoCuentaAfectada,
+      String detalleCambio,
+      OffsetDateTime instante) {
+
+    return fotografiar(
+        caso,
+        numeroVersion,
+        TipoActorHistorial.SISTEMA,
+        null,
+        tipoEvento,
+        estadoCuentaAfectada,
+        detalleCambio,
+        instante);
+  }
+
+  private static HistorialCaso fotografiar(
+      CasoModeracion caso,
+      int numeroVersion,
+      TipoActorHistorial tipoActor,
+      Long idActor,
+      TipoEventoHistorial tipoEvento,
+      EstadoCuenta estadoCuentaAfectada,
+      String detalleCambio,
+      OffsetDateTime instante) {
+
     HistorialCaso version =
         new HistorialCaso(
             caso.getIdCasoModeracion(),
             caso.getIdReportado(),
-            idAdministradorActor,
+            idActor,
             numeroVersion,
-            TipoActorHistorial.ADMINISTRADOR,
+            tipoActor,
             tipoEvento,
             caso.getEstadoActual(),
             estadoCuentaAfectada,

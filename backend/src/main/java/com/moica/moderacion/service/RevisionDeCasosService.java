@@ -6,6 +6,8 @@ import com.moica.chat.service.HiloDeSolicitudService;
 import com.moica.comun.error.ErrorDeAplicacion;
 import com.moica.moderacion.dto.DatosDeExpedienteDeCaso;
 import com.moica.moderacion.dto.DatosDeVersionDeCaso;
+import com.moica.moderacion.dto.EstadoDeApelacion;
+import com.moica.moderacion.dto.MedidaVigenteDeCuenta;
 import com.moica.moderacion.dto.ResumenDeCasoAdministrativo;
 import com.moica.moderacion.entity.CasoModeracion;
 import com.moica.moderacion.entity.EstadoCasoModeracion;
@@ -46,8 +48,8 @@ import org.springframework.transaction.annotation.Transactional;
  *   EN_REVISION --cerrar--&gt;           CERRADO
  * </pre>
  *
- * <p>{@code CERRADO} a {@code REABIERTO} no está: nace de aceptar una apelación y es P10B.
- * Cualquier otra combinación responde 409 y no deja nada a medias.
+ * <p>{@code CERRADO} a {@code REABIERTO} no está aquí: nace de aceptar una apelación y la ejecuta
+ * {@code MedidasDeCasoService}. Cualquier otra combinación responde 409 y no deja nada a medias.
  *
  * <p><b>Quién puede qué.</b> Asignar y reasignar las puede hacer cualquier administrador: repartir
  * trabajo es coordinación, y quien reasigna queda registrado en el historial. Iniciar la revisión y
@@ -56,7 +58,8 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p><b>Resolver no sanciona.</b> Cerrar un caso como {@link ResultadoCasoModeracion#PROCEDENTE}
  * dice que amerita una decisión administrativa; no elige medida, no cambia ninguna cuenta y no
- * revoca ninguna sesión. Eso es P10B y siempre lo decide una persona, según la definición 11.3.
+ * revoca ninguna sesión. Aplicar la medida es una decisión aparte y posterior, que hace {@code
+ * MedidasDeCasoService} y que siempre toma una persona, según la definición 11.3.
  *
  * <p><b>Cada mutación versiona.</b> Cambiar el caso y fotografiarlo son una sola transacción: se
  * bloquea la fila, se comprueba la transición, se aplica, se cierra la versión vigente con el mismo
@@ -80,6 +83,8 @@ public class RevisionDeCasosService {
   private final ServicioPublicadoService servicios;
   private final AdministradorService administradores;
   private final UsuarioService usuarios;
+  private final CatalogoDeMedidasService catalogo;
+  private final VersionadoDeCasos versionado;
   private final Clock reloj;
 
   public RevisionDeCasosService(
@@ -90,6 +95,8 @@ public class RevisionDeCasosService {
       ServicioPublicadoService servicios,
       AdministradorService administradores,
       UsuarioService usuarios,
+      CatalogoDeMedidasService catalogo,
+      VersionadoDeCasos versionado,
       Clock reloj) {
     this.casos = casos;
     this.historial = historial;
@@ -98,6 +105,8 @@ public class RevisionDeCasosService {
     this.servicios = servicios;
     this.administradores = administradores;
     this.usuarios = usuarios;
+    this.catalogo = catalogo;
+    this.versionado = versionado;
     this.reloj = reloj;
   }
 
@@ -114,7 +123,7 @@ public class RevisionDeCasosService {
   public List<ResumenDeCasoAdministrativo> consultarBandeja(
       UsuarioAutenticado sujeto, Collection<EstadoCasoModeracion> estados, boolean soloMios) {
 
-    exigirPermisosAdministrativos(sujeto);
+    GuardiasDeCaso.exigirPermisoAdministrativo(sujeto);
 
     Collection<EstadoCasoModeracion> filtro =
         (estados == null || estados.isEmpty()) ? BANDEJA_POR_OMISION : estados;
@@ -138,7 +147,7 @@ public class RevisionDeCasosService {
    */
   @Transactional(readOnly = true)
   public DatosDeExpedienteDeCaso consultarExpediente(UsuarioAutenticado sujeto, Long idCaso) {
-    exigirPermisosAdministrativos(sujeto);
+    GuardiasDeCaso.exigirPermisoAdministrativo(sujeto);
     return describir(buscar(idCaso), sujeto);
   }
 
@@ -156,7 +165,7 @@ public class RevisionDeCasosService {
    */
   @Transactional(readOnly = true)
   public List<DatosDeMensajeSolicitud> consultarMensajes(UsuarioAutenticado sujeto, Long idCaso) {
-    exigirPermisosAdministrativos(sujeto);
+    GuardiasDeCaso.exigirPermisoAdministrativo(sujeto);
     return hilos.mensajesParaModeracion(buscar(idCaso).getIdSolicitudServicio());
   }
 
@@ -176,7 +185,7 @@ public class RevisionDeCasosService {
   public DatosDeExpedienteDeCaso asignar(
       UsuarioAutenticado sujeto, Long idCaso, Long idAdministrador) {
 
-    exigirPermisosAdministrativos(sujeto);
+    GuardiasDeCaso.exigirPermisoAdministrativo(sujeto);
 
     if (!administradores.esAdministrador(idAdministrador)) {
       throw new ErrorDeAplicacion(
@@ -187,9 +196,10 @@ public class RevisionDeCasosService {
 
     CasoModeracion caso = bloquear(idCaso);
     // Un caso cerrado ya tiene decisión vigente: cambiarle el responsable haría
-    // que la resolución dejara de decir quién la firmó. Se reabre en P10B.
+    // que la resolución dejara de decir quién la firmó. Para volver a tocarlo
+    // hay que reabrirlo, y eso exige una apelación aceptada.
     if (caso.getEstadoActual() == EstadoCasoModeracion.CERRADO) {
-      throw transicionNoPermitida(caso);
+      throw GuardiasDeCaso.transicionNoPermitida(caso, "Esa acción no está disponible.");
     }
 
     if (idAdministrador.equals(caso.getIdAdministradorResponsable())) {
@@ -226,14 +236,14 @@ public class RevisionDeCasosService {
    */
   @Transactional
   public DatosDeExpedienteDeCaso iniciarRevision(UsuarioAutenticado sujeto, Long idCaso) {
-    exigirPermisosAdministrativos(sujeto);
+    GuardiasDeCaso.exigirPermisoAdministrativo(sujeto);
 
     CasoModeracion caso = bloquear(idCaso);
     if (caso.getEstadoActual() != EstadoCasoModeracion.ABIERTO
         && caso.getEstadoActual() != EstadoCasoModeracion.REABIERTO) {
-      throw transicionNoPermitida(caso);
+      throw GuardiasDeCaso.transicionNoPermitida(caso, "Esa acción no está disponible.");
     }
-    exigirQueSeaElResponsable(caso, sujeto);
+    GuardiasDeCaso.exigirQueSeaElResponsable(caso, sujeto);
 
     OffsetDateTime instante = OffsetDateTime.now(reloj);
     caso.iniciarRevision(instante);
@@ -268,13 +278,13 @@ public class RevisionDeCasosService {
       ResultadoCasoModeracion resultado,
       String resolucion) {
 
-    exigirPermisosAdministrativos(sujeto);
+    GuardiasDeCaso.exigirPermisoAdministrativo(sujeto);
 
     CasoModeracion caso = bloquear(idCaso);
     if (caso.getEstadoActual() != EstadoCasoModeracion.EN_REVISION) {
-      throw transicionNoPermitida(caso);
+      throw GuardiasDeCaso.transicionNoPermitida(caso, "Esa acción no está disponible.");
     }
-    exigirQueSeaElResponsable(caso, sujeto);
+    GuardiasDeCaso.exigirQueSeaElResponsable(caso, sujeto);
 
     OffsetDateTime instante = OffsetDateTime.now(reloj);
     caso.cerrar(resultado, resolucion, instante);
@@ -291,16 +301,9 @@ public class RevisionDeCasosService {
   /**
    * Cierra la versión vigente y crea la siguiente, dentro de la transacción ya abierta.
    *
-   * <p>El mismo instante sirve de fin de una y de inicio de la otra. El intervalo es semiabierto,
-   * de modo que los dos periodos se tocan sin superponerse y {@code ex_historial_caso_vigencia} los
-   * admite; el índice parcial {@code uq_historial_caso_version_actual} garantiza que solo quede una
-   * vigente.
-   *
-   * <p>Los dos {@code saveAndFlush} son deliberados. El primero ordena las escrituras: sin él,
-   * Hibernate insertaría la versión nueva antes de actualizar la anterior y el índice parcial de
-   * versión vigente rechazaría la operación. El segundo obliga a PostgreSQL a comprobar la
-   * exclusión temporal y la unicidad <b>aquí</b> y no al confirmar, de modo que un conflicto real
-   * salga como el fallo de esta operación y no como un error tardío sin contexto.
+   * <p>El encadenado en sí lo hace {@link VersionadoDeCasos}, compartido con las medidas y las
+   * apelaciones. Lo que queda aquí es lo propio de la revisión: el estado de la cuenta reportada se
+   * <b>lee</b>, no se cambia, porque revisar y resolver un caso no sanciona a nadie.
    */
   private void versionar(
       CasoModeracion caso,
@@ -309,36 +312,8 @@ public class RevisionDeCasosService {
       String detalle,
       OffsetDateTime instante) {
 
-    HistorialCaso vigente =
-        historial
-            .findByIdCasoModeracionAndEsVersionActualTrue(caso.getIdCasoModeracion())
-            .orElseThrow(
-                () ->
-                    new IllegalStateException(
-                        "El caso "
-                            + caso.getIdCasoModeracion()
-                            + " no tiene versión vigente; su apertura debió crearla"));
-
-    vigente.cerrarVigencia(instante);
-    // Este vaciado no es opcional: Hibernate ordena sus inserciones antes que
-    // sus actualizaciones dentro de un mismo vaciado, así que la versión nueva
-    // llegaría a la base mientras la anterior sigue marcada como vigente y
-    // `uq_historial_caso_version_actual` la rechazaría. Escribir el cierre
-    // primero es lo que deja el índice libre para la que entra.
-    historial.saveAndFlush(vigente);
-
-    // El estado de la cuenta reportada se lee, no se cambia: P10A no sanciona.
     EstadoCuenta estadoCuentaAfectada = usuarios.obtener(caso.getIdReportado()).estadoCuenta();
-
-    historial.saveAndFlush(
-        HistorialCaso.siguienteDe(
-            caso,
-            vigente.getNumeroVersion() + 1,
-            sujeto.idUsuario(),
-            evento,
-            estadoCuentaAfectada,
-            detalle,
-            instante));
+    versionado.versionar(caso, sujeto.idUsuario(), evento, estadoCuentaAfectada, detalle, instante);
   }
 
   /** El expediente de un caso ya cargado y con los permisos ya comprobados. */
@@ -346,14 +321,18 @@ public class RevisionDeCasosService {
     DatosDeSolicitudServicio solicitud =
         solicitudes.detalleParaModeracion(caso.getIdSolicitudServicio());
 
+    List<HistorialCaso> historia =
+        historial.findByIdCasoModeracionOrderByNumeroVersionAsc(caso.getIdCasoModeracion());
+
     List<DatosDeVersionDeCaso> versiones =
-        historial.findByIdCasoModeracionOrderByNumeroVersionAsc(caso.getIdCasoModeracion()).stream()
+        historia.stream()
             .map(
                 version ->
                     DatosDeVersionDeCaso.de(
                         version,
                         nombreDeCuenta(version.getIdActor()),
-                        nombreDeCuenta(version.getIdAdministradorResponsable())))
+                        nombreDeCuenta(version.getIdAdministradorResponsable()),
+                        nombreDeMedida(version.getIdMedidaAdministrativa())))
             .toList();
 
     return new DatosDeExpedienteDeCaso(
@@ -363,7 +342,44 @@ public class RevisionDeCasosService {
         solicitud,
         servicios.describirImagenesDe(solicitud.idServicioPublicado()),
         versiones,
-        esResponsable(caso, sujeto));
+        esResponsable(caso, sujeto),
+        usuarios.obtener(caso.getIdReportado()).estadoCuenta(),
+        medidaVigenteDe(caso),
+        EstadoDeApelacion.deLasVersiones(historia));
+  }
+
+  /**
+   * La medida que la cuenta reportada sostiene ahora, venga del caso que venga.
+   *
+   * <p>Se busca por cuenta y no por caso a propósito: la regla de una sola medida vigente es de la
+   * persona, y quien mira un expediente necesita saber que sancionarla aquí sustituiría algo
+   * impuesto en otro. Es lo que permite a la interfaz advertirlo antes de recibir el 409.
+   *
+   * <p>Describir la medida no es aplicarla: P10A sigue sin sancionar a nadie. Aplicar, revocar y
+   * sustituir viven en {@code MedidasDeCasoService}.
+   */
+  private MedidaVigenteDeCuenta medidaVigenteDe(CasoModeracion caso) {
+    return casos
+        .findByIdReportadoAndIdMedidaAdministrativaActualNotNull(caso.getIdReportado())
+        .map(
+            conMedida ->
+                MedidaVigenteDeCuenta.de(
+                    conMedida,
+                    catalogo.obtener(conMedida.getIdMedidaAdministrativaActual()),
+                    conMedida.getIdCasoModeracion().equals(caso.getIdCasoModeracion())))
+        .orElse(null);
+  }
+
+  /**
+   * El nombre de la medida que una versión retrató, o nulo si no retrató ninguna.
+   *
+   * <p>Se resuelve contra el catálogo aunque la medida esté deshabilitada: una medida retirada
+   * sigue describiendo correctamente las decisiones que la citaron, porque nunca se borra.
+   */
+  private String nombreDeMedida(Short idMedidaAdministrativa) {
+    return idMedidaAdministrativa == null
+        ? null
+        : catalogo.obtener(idMedidaAdministrativa).getNombre();
   }
 
   private ResumenDeCasoAdministrativo resumir(CasoModeracion caso) {
@@ -391,50 +407,10 @@ public class RevisionDeCasosService {
   }
 
   private CasoModeracion buscar(Long idCaso) {
-    return casos.findById(idCaso).orElseThrow(RevisionDeCasosService::casoNoEncontrado);
+    return casos.findById(idCaso).orElseThrow(GuardiasDeCaso::casoNoEncontrado);
   }
 
   private CasoModeracion bloquear(Long idCaso) {
-    return casos.bloquearPorId(idCaso).orElseThrow(RevisionDeCasosService::casoNoEncontrado);
-  }
-
-  private static void exigirQueSeaElResponsable(CasoModeracion caso, UsuarioAutenticado sujeto) {
-    if (caso.getIdAdministradorResponsable() == null) {
-      throw new ErrorDeAplicacion(
-          HttpStatus.CONFLICT,
-          "CASO_SIN_RESPONSABLE",
-          "Asigna primero una persona responsable del caso.");
-    }
-    if (!esResponsable(caso, sujeto)) {
-      throw new ErrorDeAplicacion(
-          HttpStatus.FORBIDDEN,
-          "CASO_DE_OTRO_ADMINISTRADOR",
-          "Este caso lo lleva otra persona administradora. Solo quien lo tiene asignado puede"
-              + " revisarlo y resolverlo.");
-    }
-  }
-
-  private static ErrorDeAplicacion transicionNoPermitida(CasoModeracion caso) {
-    // El mensaje nombra el estado real porque es información administrativa que
-    // quien revisa necesita para entender qué pasó mientras tenía la pantalla
-    // abierta.
-    return new ErrorDeAplicacion(
-        HttpStatus.CONFLICT,
-        "TRANSICION_NO_PERMITIDA",
-        "Esa acción no está disponible: el caso está en estado " + caso.getEstadoActual() + ".");
-  }
-
-  private static void exigirPermisosAdministrativos(UsuarioAutenticado sujeto) {
-    if (sujeto == null || !sujeto.puedeAdministrar()) {
-      throw new ErrorDeAplicacion(
-          HttpStatus.FORBIDDEN,
-          "ACCESO_DENEGADO",
-          "Esta cuenta no tiene permisos administrativos.");
-    }
-  }
-
-  private static ErrorDeAplicacion casoNoEncontrado() {
-    return new ErrorDeAplicacion(
-        HttpStatus.NOT_FOUND, "CASO_NO_ENCONTRADO", "Ese caso de moderación no existe.");
+    return casos.bloquearPorId(idCaso).orElseThrow(GuardiasDeCaso::casoNoEncontrado);
   }
 }

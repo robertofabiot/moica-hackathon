@@ -12,7 +12,8 @@ package com.moica.moderacion.entity;
  *
  * <p>Reportar solo produce {@link #ABIERTO}: abre el expediente y nada más. Las transiciones a
  * {@link #EN_REVISION} y {@link #CERRADO} son administrativas y las hace {@code
- * RevisionDeCasosService}. A {@link #REABIERTO} se llega aceptando una apelación, que es P10B.
+ * RevisionDeCasosService}. A {@link #REABIERTO} se llega aceptando una apelación, y lo hace {@code
+ * MedidasDeCasoService}; desde ahí el caso vuelve a {@link #EN_REVISION} por el camino de siempre.
  */
 public enum EstadoCasoModeracion {
   /** El caso fue recibido y espera asignación o revisión. */

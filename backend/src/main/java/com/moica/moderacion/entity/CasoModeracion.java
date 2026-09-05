@@ -221,4 +221,60 @@ public class CasoModeracion {
     this.fechaCierreActual = instante;
     this.fechaActualizacion = instante;
   }
+
+  /**
+   * Deja constancia de que este expediente sostiene una medida sobre la cuenta reportada.
+   *
+   * <p>La medida vive en el caso, no en la cuenta: la cuenta solo conserva la <em>proyección</em>
+   * de su efecto en {@code estadoCuenta}. Así el expediente sigue diciendo por qué la persona quedó
+   * como quedó, que es lo que una apelación necesita revisar.
+   *
+   * <p>No toca el estado del caso ni su resolución: aplicar una medida es la consecuencia de una
+   * resolución ya registrada, no otra resolución.
+   *
+   * @param fechaFin cuándo termina la medida, o nulo si no termina sola. Cuando llega, {@code
+   *     MedidasDeCasoService} la expira; hasta entonces solo se levanta revocándola
+   */
+  public void aplicarMedida(
+      Short idMedidaAdministrativa, OffsetDateTime fechaFin, OffsetDateTime instante) {
+    this.idMedidaAdministrativaActual = idMedidaAdministrativa;
+    this.fechaFinMedidaActual = fechaFin;
+    this.fechaActualizacion = instante;
+  }
+
+  /**
+   * Retira la medida que este expediente sostenía.
+   *
+   * <p>Es lo mismo revocarla a mano que verla expirar: en los dos casos el caso deja de sostener
+   * una sanción vigente y lo que distingue una cosa de la otra es el evento que queda en el
+   * historial. Por eso hay un solo mutador y no dos.
+   *
+   * <p>La medida y su fecha quedan nulas también en la fila, no marcadas de ninguna forma: la
+   * evidencia de que existió está en las versiones del historial, que sí la conservan.
+   */
+  public void retirarMedida(OffsetDateTime instante) {
+    this.idMedidaAdministrativaActual = null;
+    this.fechaFinMedidaActual = null;
+    this.fechaActualizacion = instante;
+  }
+
+  /**
+   * Reabre un caso cerrado porque una apelación aceptada lo justificó.
+   *
+   * <p>Resultado, resolución y fecha de cierre quedan nulos porque {@code
+   * ck_caso_moderacion_cierre} los exige solo en {@link EstadoCasoModeracion#CERRADO}: una decisión
+   * que dejó de ser definitiva no puede seguir figurando como vigente. <b>No se pierde</b>: la
+   * versión del historial que la registró la conserva íntegra, y por eso reabrir crea una versión
+   * nueva en lugar de reescribir la anterior.
+   *
+   * <p>La medida sí sobrevive. Reabrir el expediente no levanta la sanción: si quien revisa decide
+   * levantarla, la revoca, y eso es otra decisión con su propio evento.
+   */
+  public void reabrir(OffsetDateTime instante) {
+    this.estadoActual = EstadoCasoModeracion.REABIERTO;
+    this.resultadoActual = null;
+    this.resolucionActual = null;
+    this.fechaCierreActual = null;
+    this.fechaActualizacion = instante;
+  }
 }

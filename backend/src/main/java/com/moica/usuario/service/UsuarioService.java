@@ -6,6 +6,7 @@ import com.moica.usuario.dto.SolicitudDeRegistro;
 import com.moica.usuario.entity.EstadoCuenta;
 import com.moica.usuario.entity.Usuario;
 import com.moica.usuario.repository.UsuarioRepository;
+import java.time.OffsetDateTime;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -125,6 +126,45 @@ public class UsuarioService {
   }
 
   /**
+   * Recupera una cuenta bloqueando su fila hasta el final de la transacción en curso.
+   *
+   * <p>La pide la moderación antes de decidir una medida. El bloqueo es lo que serializa a dos
+   * personas administradoras que sancionan a la misma persona desde expedientes distintos: sin él,
+   * las dos leerían que la cuenta no tiene ninguna medida vigente y las dos la aplicarían.
+   *
+   * <p>Solo tiene sentido dentro de una transacción de escritura ya abierta por quien la llama; el
+   * bloqueo dura lo que dure esa transacción, no lo que dure esta llamada.
+   *
+   * @throws ErrorDeAplicacion si la cuenta no existe
+   */
+  @Transactional
+  public DatosDeUsuario bloquearCuenta(Long idUsuario) {
+    return repositorio.bloquearPorId(idUsuario).map(this::aDatos).orElseThrow(this::cuentaNoExiste);
+  }
+
+  /**
+   * Proyecta en la cuenta el estado operativo que impone una medida de moderación.
+   *
+   * <p>Es el único camino por el que un estado de cuenta cambia. No decide nada: la medida la
+   * eligió una persona y la evidencia vive en el historial del caso, que la moderación escribe en
+   * esta misma transacción.
+   *
+   * <p>Tampoco revoca sesiones: eso lo hace {@code auth}, igual que con el cambio de contraseña.
+   * Cada capacidad conserva lo suyo.
+   *
+   * @param fechaFin cuándo termina el estado, o nulo si no termina solo
+   * @throws ErrorDeAplicacion si la cuenta no existe
+   */
+  @Transactional
+  public DatosDeUsuario proyectarEstadoDeCuenta(
+      Long idUsuario, EstadoCuenta estadoCuenta, OffsetDateTime fechaFin) {
+
+    Usuario usuario = repositorio.findById(idUsuario).orElseThrow(this::cuentaNoExiste);
+    usuario.proyectarEstadoDeCuenta(estadoCuenta, fechaFin);
+    return aDatos(usuario);
+  }
+
+  /**
    * Sustituye la contraseña de una cuenta después de comprobar la actual.
    *
    * <p>Exigir la contraseña vigente es lo que impide que una sesión robada cambie las credenciales
@@ -175,6 +215,11 @@ public class UsuarioService {
     if (!codificador.matches(clave, usuario.getClaveHash())) {
       throw claveActualIncorrecta();
     }
+  }
+
+  private ErrorDeAplicacion cuentaNoExiste() {
+    return new ErrorDeAplicacion(
+        HttpStatus.NOT_FOUND, "RECURSO_NO_ENCONTRADO", "La cuenta no existe.");
   }
 
   private DatosDeUsuario aDatos(Usuario usuario) {

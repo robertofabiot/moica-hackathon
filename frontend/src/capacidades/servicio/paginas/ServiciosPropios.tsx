@@ -1,10 +1,5 @@
 import { ErrorDeApi } from '../../../comun/api';
-import {
-  Boton,
-  IconoDeCategoria,
-  IconoLapiz,
-  IconoMaletin,
-} from '../../../comun/componentes/ui';
+import { Boton, IconoDeCategoria, IconoLapiz, IconoMaletin } from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import { useCambioDeEstadoDeServicio, useServiciosPropios } from '../hooks/useServiciosPropios';

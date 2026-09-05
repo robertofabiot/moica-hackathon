@@ -11,9 +11,7 @@ import {
   IconoSubida,
   IconoX,
 } from '../../../comun/componentes/ui';
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
 import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
 import { subirImagenDeServicio } from '../api';
 import {
   esquemaDeServicio,
@@ -37,8 +35,9 @@ const LARGO_DEL_EXTRACTO = 160;
 /**
  * Formulario para crear o editar un servicio publicado.
  *
- * La publicación nueva es un asistente de cuatro pasos. La edición sigue en una
- * sola vista: el prestador ya tiene el dato y solo ajusta campos sueltos.
+ * La publicación nueva es un asistente de cuatro pasos. La edición agrupa los
+ * datos generales en una tarjeta: el prestador ya tiene el dato y solo ajusta
+ * campos sueltos.
  *
  * La categoría solo filtra el segundo selector; lo que se envía es la subcategoría.
  * El precio vacío viaja como nulo: «A convenir» es presentación, no un valor de la API.
@@ -632,6 +631,7 @@ function FormularioDeEdicionDeServicio({ servicio }: { servicio: ServicioPropio 
     handleSubmit,
     setError,
     setValue,
+    control,
     formState: { errors },
   } = useForm<CamposDeServicio, unknown, DatosValidadosDeServicio>({
     resolver: zodResolver(esquemaDeServicio),
@@ -644,6 +644,7 @@ function FormularioDeEdicionDeServicio({ servicio }: { servicio: ServicioPropio 
     },
   });
 
+  const descripcion = useWatch({ control, name: 'descripcion' }) ?? '';
   const [idCategoria, setIdCategoria] = useState(String(servicio.idCategoriaServicio));
 
   const subcategorias = useMemo(() => {
@@ -695,10 +696,15 @@ function FormularioDeEdicionDeServicio({ servicio }: { servicio: ServicioPropio 
   const mensajeGeneral =
     fallo instanceof ErrorDeApi && fallo.errores.length === 0 ? fallo.message : null;
 
+  const registroDeNombre = register('nombre');
+  const registroDeDescripcion = register('descripcion');
+  const registroDeSubcategoria = register('idSubcategoriaServicio');
+  const registroDePrecio = register('precioReferencia');
+
   return (
-    <section className={secciones.seccion} aria-labelledby="titulo-datos-del-servicio">
-      <h2 className={secciones.tituloDeSeccion} id="titulo-datos-del-servicio">
-        Datos del servicio
+    <section className={propios.tarjetaDeEdicion} aria-labelledby="titulo-datos-del-servicio">
+      <h2 className={propios.tituloDeTarjetaEdicion} id="titulo-datos-del-servicio">
+        Datos generales
       </h2>
 
       {mensajeGeneral !== null && (
@@ -713,131 +719,133 @@ function FormularioDeEdicionDeServicio({ servicio }: { servicio: ServicioPropio 
         </p>
       )}
 
-      <form className={estilos.formulario} onSubmit={enviar} noValidate>
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="nombre-servicio">
-            Nombre
+      <form className={propios.formularioDeEdicion} onSubmit={enviar} noValidate>
+        <div className={propios.campoAsistente}>
+          <label className={propios.etiquetaAsistente} htmlFor="nombre-servicio">
+            Nombre del servicio
           </label>
-          <input
+          <Entrada
             id="nombre-servicio"
-            className={claseDeEntrada(errors.nombre !== undefined)}
             type="text"
             maxLength={150}
             autoComplete="off"
-            aria-invalid={errors.nombre !== undefined}
-            aria-describedby={errors.nombre ? 'error-nombre-servicio' : undefined}
-            {...register('nombre')}
+            mensajeDeError={errors.nombre?.message}
+            {...registroDeNombre}
           />
-          {errors.nombre && (
-            <p className={estilos.error} id="error-nombre-servicio" role="alert">
-              {errors.nombre.message}
-            </p>
-          )}
         </div>
 
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="descripcion-servicio">
-            Descripción
+        <div className={propios.filaDeSelectores}>
+          <div className={propios.campoAsistente}>
+            <label className={propios.etiquetaAsistente} htmlFor="categoria-servicio">
+              Categoría
+            </label>
+            <select
+              id="categoria-servicio"
+              className={propios.selectAsistente}
+              value={idCategoria}
+              onChange={(evento) => setIdCategoria(evento.target.value)}
+              disabled={categorias.isPending}
+            >
+              <option value="">Todas las categorías de demostración</option>
+              {(categorias.data ?? []).map((categoria) => (
+                <option key={categoria.idCategoriaServicio} value={categoria.idCategoriaServicio}>
+                  {categoria.nombre}
+                </option>
+              ))}
+            </select>
+            <p className={propios.pistaAsistente}>
+              Este listado es de demostración: no pretende cubrir todos los oficios de Managua.
+            </p>
+          </div>
+          <div className={propios.campoAsistente}>
+            <label className={propios.etiquetaAsistente} htmlFor="subcategoria-servicio">
+              Subcategoría
+            </label>
+            <select
+              id="subcategoria-servicio"
+              className={unirClases(
+                propios.selectAsistente,
+                errors.idSubcategoriaServicio !== undefined ? propios.selectConError : undefined
+              )}
+              aria-invalid={errors.idSubcategoriaServicio !== undefined}
+              aria-describedby={
+                errors.idSubcategoriaServicio ? 'error-subcategoria-servicio' : undefined
+              }
+              {...registroDeSubcategoria}
+            >
+              <option value="">Elige una subcategoría</option>
+              {subcategorias.map((subcategoria) => (
+                <option
+                  key={subcategoria.idSubcategoriaServicio}
+                  value={subcategoria.idSubcategoriaServicio}
+                >
+                  {subcategoria.nombre}
+                </option>
+              ))}
+            </select>
+            {errors.idSubcategoriaServicio && (
+              <p className={propios.errorAsistente} id="error-subcategoria-servicio" role="alert">
+                {errors.idSubcategoriaServicio.message}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className={propios.campoAsistente}>
+          <label className={propios.etiquetaAsistente} htmlFor="precio-servicio">
+            Precio orientativo
           </label>
+          <div className={propios.campoDePrecio}>
+            <Entrada
+              id="precio-servicio"
+              type="number"
+              inputMode="decimal"
+              min="0.01"
+              step="0.01"
+              icono={<span className={propios.prefijoMoneda}>C$</span>}
+              mensajeDeError={errors.precioReferencia?.message}
+              aria-describedby={errors.precioReferencia ? undefined : 'pista-precio-servicio'}
+              {...registroDePrecio}
+            />
+          </div>
+          <p className={propios.pistaAsistente} id="pista-precio-servicio">
+            Si lo dejas vacío, en el descubrimiento se mostrará como «A convenir».
+          </p>
+        </div>
+
+        <div className={propios.campoAsistente}>
+          <div className={propios.cabeceraDeDescripcion}>
+            <label className={propios.etiquetaAsistente} htmlFor="descripcion-servicio">
+              Descripción detallada
+            </label>
+            <span className={propios.contadorDeCaracteres} aria-live="polite">
+              {descripcion.length}/{MAXIMO_DE_DESCRIPCION}
+            </span>
+          </div>
           <textarea
             id="descripcion-servicio"
-            className={claseDeEntrada(errors.descripcion !== undefined)}
+            className={unirClases(
+              propios.textareaAsistente,
+              errors.descripcion !== undefined ? propios.textareaConError : undefined
+            )}
             rows={6}
-            maxLength={3000}
+            maxLength={MAXIMO_DE_DESCRIPCION}
             aria-invalid={errors.descripcion !== undefined}
             aria-describedby={errors.descripcion ? 'error-descripcion-servicio' : undefined}
-            {...register('descripcion')}
+            {...registroDeDescripcion}
           />
           {errors.descripcion && (
-            <p className={estilos.error} id="error-descripcion-servicio" role="alert">
+            <p className={propios.errorAsistente} id="error-descripcion-servicio" role="alert">
               {errors.descripcion.message}
             </p>
           )}
         </div>
 
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="categoria-servicio">
-            Categoría
-          </label>
-          <select
-            id="categoria-servicio"
-            className={claseDeEntrada(false)}
-            value={idCategoria}
-            onChange={(evento) => setIdCategoria(evento.target.value)}
-            disabled={categorias.isPending}
-          >
-            <option value="">Todas las categorías de demostración</option>
-            {(categorias.data ?? []).map((categoria) => (
-              <option key={categoria.idCategoriaServicio} value={categoria.idCategoriaServicio}>
-                {categoria.nombre}
-              </option>
-            ))}
-          </select>
-          <p className={estilos.pista}>
-            Este listado es de demostración: no pretende cubrir todos los oficios de Managua.
-          </p>
+        <div className={propios.accionesALaDerecha}>
+          <Boton variante="primario" type="submit" disabled={actualizacion.isPending}>
+            {actualizacion.isPending ? 'Guardando…' : 'Guardar cambios generales'}
+          </Boton>
         </div>
-
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="subcategoria-servicio">
-            Subcategoría
-          </label>
-          <select
-            id="subcategoria-servicio"
-            className={claseDeEntrada(errors.idSubcategoriaServicio !== undefined)}
-            aria-invalid={errors.idSubcategoriaServicio !== undefined}
-            aria-describedby={
-              errors.idSubcategoriaServicio ? 'error-subcategoria-servicio' : undefined
-            }
-            {...register('idSubcategoriaServicio')}
-          >
-            <option value="">Elige una subcategoría</option>
-            {subcategorias.map((subcategoria) => (
-              <option
-                key={subcategoria.idSubcategoriaServicio}
-                value={subcategoria.idSubcategoriaServicio}
-              >
-                {subcategoria.nombre}
-              </option>
-            ))}
-          </select>
-          {errors.idSubcategoriaServicio && (
-            <p className={estilos.error} id="error-subcategoria-servicio" role="alert">
-              {errors.idSubcategoriaServicio.message}
-            </p>
-          )}
-        </div>
-
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="precio-servicio">
-            Precio de referencia (opcional)
-          </label>
-          <input
-            id="precio-servicio"
-            className={claseDeEntrada(errors.precioReferencia !== undefined)}
-            type="number"
-            inputMode="decimal"
-            min="0.01"
-            step="0.01"
-            aria-invalid={errors.precioReferencia !== undefined}
-            aria-describedby={
-              errors.precioReferencia ? 'error-precio-servicio' : 'pista-precio-servicio'
-            }
-            {...register('precioReferencia')}
-          />
-          <p className={estilos.pista} id="pista-precio-servicio">
-            Si lo dejas vacío, en el descubrimiento se mostrará como «A convenir».
-          </p>
-          {errors.precioReferencia && (
-            <p className={estilos.error} id="error-precio-servicio" role="alert">
-              {errors.precioReferencia.message}
-            </p>
-          )}
-        </div>
-
-        <button className={estilos.boton} type="submit" disabled={actualizacion.isPending}>
-          {actualizacion.isPending ? 'Guardando…' : 'Guardar cambios'}
-        </button>
       </form>
     </section>
   );

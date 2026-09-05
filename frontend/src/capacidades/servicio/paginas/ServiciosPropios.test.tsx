@@ -84,6 +84,9 @@ describe('Servicios propios', () => {
       expect(screen.getByLabelText('Subcategoría')).toHaveValue('1');
     });
     expect(screen.getByLabelText('Categoría')).toHaveValue('1');
+    expect(screen.getByRole('navigation', { name: 'Migas de pan' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Mis servicios' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Guardar cambios generales' })).toBeVisible();
   });
 
   it('sube una imagen con previsualización y texto alternativo', async () => {

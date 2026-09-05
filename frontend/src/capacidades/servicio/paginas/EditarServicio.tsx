@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { Boton } from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import EstadoDelServicio from '../componentes/EstadoDelServicio';
@@ -20,6 +21,7 @@ export default function EditarServicio() {
   if (servicio.isPending) {
     return (
       <MarcoDeGestionDeServicios>
+        <MigasDeEdicion />
         <p className={secciones.estado} role="status">
           Cargando el servicio…
         </p>
@@ -30,6 +32,7 @@ export default function EditarServicio() {
   if (servicio.isError || servicio.data === undefined) {
     return (
       <MarcoDeGestionDeServicios>
+        <MigasDeEdicion />
         <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
           {servicio.error instanceof ErrorDeApi
             ? servicio.error.message
@@ -42,9 +45,9 @@ export default function EditarServicio() {
             Reintentar
           </button>
         </p>
-        <p className={propios.pie}>
-          <Link to={RUTA_SERVICIOS}>Volver a tus servicios</Link>
-        </p>
+        <Boton variante="secundario" to={RUTA_SERVICIOS}>
+          Volver al listado
+        </Boton>
       </MarcoDeGestionDeServicios>
     );
   }
@@ -53,18 +56,39 @@ export default function EditarServicio() {
 
   return (
     <MarcoDeGestionDeServicios>
-      <header className={propios.encabezado}>
-        <h1 className={propios.titulo}>{datos.nombre}</h1>
-        <p className={secciones.explicacion}>
-          {datos.nombreCategoria} · {datos.nombreSubcategoria}
-        </p>
+      <MigasDeEdicion />
+      <header className={propios.cabeceraDeEdicion}>
+        <div className={propios.grupoDeTitulo}>
+          <h1 className={propios.tituloDeEdicion}>{datos.nombre}</h1>
+          <div className={propios.filaDePildoras}>
+            <span className={propios.pildoraCategoria}>{datos.nombreCategoria}</span>
+            <span className={propios.pildoraCategoria}>{datos.nombreSubcategoria}</span>
+          </div>
+        </div>
+        <Boton variante="secundario" to={RUTA_SERVICIOS}>
+          Volver al listado
+        </Boton>
       </header>
       <FormularioDeServicio servicio={datos} />
       <EstadoDelServicio servicio={datos} />
       <ImagenesDelServicio servicio={datos} />
-      <p className={propios.pie}>
-        <Link to={RUTA_SERVICIOS}>Volver a tus servicios</Link>
-      </p>
     </MarcoDeGestionDeServicios>
+  );
+}
+
+function MigasDeEdicion() {
+  return (
+    <nav className={propios.migas} aria-label="Migas de pan">
+      <ol className={propios.listaDeMigas}>
+        <li>
+          <Link className={propios.enlaceMiga} to={RUTA_SERVICIOS}>
+            Mis servicios
+          </Link>
+        </li>
+        <li className={propios.migaActual} aria-current="page">
+          Editar servicio
+        </li>
+      </ol>
+    </nav>
   );
 }

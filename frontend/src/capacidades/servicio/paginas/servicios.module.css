@@ -1,43 +1,9 @@
 /*
  * Pantallas de administración de servicios publicados.
  *
- * Reutiliza las variables neutras de `src/estilos/global.css`. Mobile-first:
- * la hoja base describe el teléfono y las media queries amplían a tableta y
- * escritorio.
+ * Solo tokens de `src/estilos/global.css`. Mobile-first: la hoja base describe
+ * el teléfono y las media queries amplían a tableta y escritorio.
  */
-
-.pantalla {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100dvh;
-  padding: var(--moica-espacio-3) var(--moica-espacio-2);
-}
-
-.contenido {
-  width: 100%;
-  max-width: 40rem;
-  display: flex;
-  flex-direction: column;
-  gap: var(--moica-espacio-4);
-}
-
-.encabezado {
-  display: flex;
-  flex-direction: column;
-  gap: var(--moica-espacio-1);
-}
-
-.titulo {
-  font-size: 1.5rem;
-  letter-spacing: -0.01em;
-}
-
-.accionesDeEncabezado {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--moica-espacio-1);
-}
 
 .lista {
   display: grid;
@@ -328,31 +294,6 @@
   max-width: 28rem;
   color: var(--color-neutral-600);
   font-size: var(--font-size-sm);
-}
-
-.meta {
-  color: var(--moica-texto-suave);
-  font-size: 0.875rem;
-}
-
-.pie {
-  color: var(--moica-texto-suave);
-}
-
-@media (min-width: 48rem) {
-  .contenido {
-    max-width: 44rem;
-  }
-
-  .titulo {
-    font-size: 1.75rem;
-  }
-}
-
-@media (min-width: 80rem) {
-  .contenido {
-    max-width: 48rem;
-  }
 }
 
 /*
@@ -894,6 +835,128 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--gap-sm);
+}
+
+.migas {
+  font-size: var(--font-size-sm);
+}
+
+.listaDeMigas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-neutral-600);
+}
+
+.listaDeMigas li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+}
+
+.listaDeMigas li:not(:last-child)::after {
+  content: '>';
+  color: var(--color-neutral-400);
+}
+
+.enlaceMiga {
+  color: var(--color-primary-500);
+  text-decoration: none;
+}
+
+.enlaceMiga:hover {
+  text-decoration: underline;
+}
+
+.migaActual {
+  color: var(--color-neutral-800);
+  font-weight: var(--font-weight-medium);
+}
+
+.cabeceraDeEdicion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap-md);
+}
+
+.tituloDeEdicion {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+  letter-spacing: -0.01em;
+}
+
+.tarjetaDeEdicion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  padding: var(--gap-xl);
+  background-color: var(--color-neutral-0);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.tituloDeTarjetaEdicion {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.formularioDeEdicion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+}
+
+.accionesALaDerecha {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pildoraDeEstadoEstatica {
+  position: static;
+}
+
+.explicacionesDeEstado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.explicacionDeEstado,
+.explicacionDestacada {
+  margin: 0;
+  padding: var(--gap-sm) var(--gap-md);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
+
+.explicacionDeEstado {
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-600);
+}
+
+.explicacionDestacada {
+  background-color: var(--color-secondary-50);
+  color: var(--color-neutral-800);
+  border: var(--border-width-xs) solid var(--color-secondary-100);
+}
+
+.filaDePublicacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-md);
 }
 
 @media (min-width: 48rem) {

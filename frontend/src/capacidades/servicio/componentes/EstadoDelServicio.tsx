@@ -1,7 +1,7 @@
 import { ErrorDeApi } from '../../../comun/api';
 import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
 import { useCambioDeEstadoDeServicio } from '../hooks/useServiciosPropios';
+import propios from '../paginas/servicios.module.css';
 import { nombreDelEstado } from '../presentacion';
 import type { ServicioPropio } from '../tipos';
 
@@ -13,21 +13,68 @@ import type { ServicioPropio } from '../tipos';
  */
 export default function EstadoDelServicio({ servicio }: { servicio: ServicioPropio }) {
   const cambio = useCambioDeEstadoDeServicio();
-  const siguiente = servicio.estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
+  const activo = servicio.estado === 'ACTIVO';
+  const siguiente = activo ? 'INACTIVO' : 'ACTIVO';
 
   return (
-    <section className={secciones.seccion} aria-labelledby="titulo-estado-del-servicio">
-      <h2 className={secciones.tituloDeSeccion} id="titulo-estado-del-servicio">
-        Publicación
+    <section className={propios.tarjetaDeEdicion} aria-labelledby="titulo-estado-del-servicio">
+      <h2 className={propios.tituloDeTarjetaEdicion} id="titulo-estado-del-servicio">
+        Estado de la publicación
       </h2>
-      <p className={secciones.explicacion}>
-        Un servicio inactivo no aparece en el descubrimiento. No se elimina: solo se deja de
-        mostrar.
-      </p>
-      <p className={secciones.estado}>
-        Estado actual:{' '}
-        <span className={secciones.etiquetaDeEstado}>{nombreDelEstado(servicio.estado)}</span>
-      </p>
+      <div className={propios.explicacionesDeEstado}>
+        <p className={activo ? propios.explicacionDestacada : propios.explicacionDeEstado}>
+          <strong>Activo.</strong> Cualquier cliente puede encontrarlo en el buscador si tu perfil
+          está verificado.
+        </p>
+        <p className={!activo ? propios.explicacionDestacada : propios.explicacionDeEstado}>
+          <strong>Inactivo.</strong> Queda oculto en el buscador. No se elimina: solo deja de
+          mostrarse.
+        </p>
+      </div>
+
+      <div className={propios.filaDePublicacion}>
+        <span
+          className={unirClases(
+            propios.pildoraDeEstado,
+            propios.pildoraDeEstadoEstatica,
+            activo ? propios.pildoraActiva : propios.pildoraInactiva
+          )}
+        >
+          <span
+            className={unirClases(
+              propios.puntoDeEstado,
+              activo ? propios.puntoPulsante : propios.puntoInactivo
+            )}
+            aria-hidden="true"
+          />
+          {activo ? 'ACTIVO' : 'INACTIVO'}
+        </span>
+        <button
+          type="button"
+          role="switch"
+          className={unirClases(
+            propios.interruptor,
+            activo ? propios.interruptorEncendido : undefined
+          )}
+          aria-checked={activo}
+          aria-busy={cambio.isPending}
+          aria-label={`Publicación de ${servicio.nombre}`}
+          disabled={cambio.isPending}
+          onClick={() =>
+            cambio.mutate({
+              idServicio: servicio.idServicioPublicado,
+              estado: siguiente,
+            })
+          }
+        >
+          <span className={propios.carril} aria-hidden="true">
+            <span className={propios.palanca} />
+          </span>
+          <span className={propios.textoInterruptor}>
+            {cambio.isPending ? 'Actualizando…' : activo ? 'Publicado' : 'Oculto'}
+          </span>
+        </button>
+      </div>
 
       {cambio.isError && (
         <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
@@ -42,24 +89,10 @@ export default function EstadoDelServicio({ servicio }: { servicio: ServicioProp
           El servicio quedó {nombreDelEstado(cambio.data.estado).toLowerCase()}.
         </p>
       )}
-
-      <button
-        className={secciones.botonSecundario}
-        type="button"
-        disabled={cambio.isPending}
-        onClick={() =>
-          cambio.mutate({
-            idServicio: servicio.idServicioPublicado,
-            estado: siguiente,
-          })
-        }
-      >
-        {cambio.isPending
-          ? 'Actualizando…'
-          : siguiente === 'ACTIVO'
-            ? 'Activar servicio'
-            : 'Desactivar servicio'}
-      </button>
     </section>
   );
+}
+
+function unirClases(...partes: Array<string | undefined>): string {
+  return partes.filter((parte) => parte !== undefined && parte !== '').join(' ');
 }

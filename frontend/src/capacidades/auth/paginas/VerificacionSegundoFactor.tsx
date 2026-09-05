@@ -1,12 +1,12 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
+import { Boton, Entrada, IconoEscudo } from '../../../comun/componentes/ui';
 import { ErrorDeApi } from '../api';
 import { esquemaDeCodigoTotp, type CamposDeCodigoTotp } from '../esquemas';
 import { useCierreSesion } from '../hooks/useAcceso';
 import { useVerificacionDeSesion } from '../hooks/useSeguridadCuenta';
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
-import estilos from '../../../comun/estilos/formulario.module.css';
+import estilos from './acceso.module.css';
 
 /**
  * Segundo paso del inicio de sesión cuando la cuenta usa segundo factor.
@@ -36,8 +36,11 @@ export default function VerificacionSegundoFactor() {
     <main className={estilos.pantalla}>
       <div className={estilos.tarjeta}>
         <header className={estilos.encabezado}>
+          <span className={estilos.selloDeSeguridad} aria-hidden="true">
+            <IconoEscudo />
+          </span>
           <h1 className={estilos.titulo}>Verifica tu segundo factor</h1>
-          <p className={estilos.explicacion}>
+          <p className={estilos.subtitulo}>
             Tu contraseña era correcta. Escribe el código de tu aplicación autenticadora para
             terminar de entrar.
           </p>
@@ -54,27 +57,27 @@ export default function VerificacionSegundoFactor() {
             <label className={estilos.etiqueta} htmlFor="codigo">
               Código de verificación
             </label>
-            <input
+            <Entrada
               id="codigo"
-              className={claseDeEntrada(errors.codigo !== undefined)}
+              className={estilos.codigo}
               type="text"
               inputMode="numeric"
               autoComplete="one-time-code"
               autoFocus
-              aria-invalid={errors.codigo !== undefined}
-              aria-describedby={errors.codigo ? 'error-codigo' : undefined}
+              mensajeDeError={errors.codigo?.message}
               {...register('codigo')}
+              pattern="[0-9]*"
             />
-            {errors.codigo && (
-              <p className={estilos.error} id="error-codigo">
-                {errors.codigo.message}
-              </p>
-            )}
           </div>
 
-          <button className={estilos.boton} type="submit" disabled={verificacion.isPending}>
+          <Boton
+            className={estilos.enviar}
+            forma="pildora"
+            type="submit"
+            disabled={verificacion.isPending}
+          >
             {verificacion.isPending ? 'Comprobando el código…' : 'Verificar y entrar'}
-          </button>
+          </Boton>
         </form>
 
         {cierre.error !== null && cierre.error !== undefined && (
@@ -86,7 +89,7 @@ export default function VerificacionSegundoFactor() {
         <p className={estilos.pie}>
           ¿No puedes usar tu aplicación autenticadora?{' '}
           <button
-            className={estilos.enlaceDeTexto}
+            className={estilos.salida}
             type="button"
             onClick={() => cierre.solicitarCierre()}
             disabled={cierre.isPending}

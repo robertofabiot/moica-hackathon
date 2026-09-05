@@ -13,6 +13,7 @@ import MensajesDelCaso from '../componentes/MensajesDelCaso';
 import { fechaLegible, nombreDelEstado, nombreDelResultado } from '../etiquetas';
 import { useExpedienteDeCaso } from '../hooks/useRevisionDeCasos';
 import { RUTA_ADMIN_CASOS } from '../rutas';
+import type { EstadoDeCaso } from '../tipos';
 import propios from './casos.module.css';
 
 /**
@@ -90,7 +91,9 @@ function Expediente({ idCaso }: { idCaso: number }) {
                 {expediente.data.caso.nombreReportado} · Abierto el{' '}
                 {fechaLegible(expediente.data.caso.fechaApertura)}
               </p>
-              <p className={propios.estadoDestacado}>
+              <p
+                className={`${propios.estadoDestacado} ${claseDeEstado(expediente.data.caso.estadoActual)}`}
+              >
                 {nombreDelEstado(expediente.data.caso.estadoActual)}
                 {expediente.data.caso.resultadoActual !== null &&
                   ` · ${nombreDelResultado(expediente.data.caso.resultadoActual)}`}
@@ -185,4 +188,17 @@ function SolicitudDelCaso({
       </ol>
     </section>
   );
+}
+
+function claseDeEstado(estado: EstadoDeCaso): string {
+  switch (estado) {
+    case 'ABIERTO':
+      return propios.pildoraAbierto ?? '';
+    case 'EN_REVISION':
+      return propios.pildoraEnRevision ?? '';
+    case 'REABIERTO':
+      return propios.pildoraReabierto ?? '';
+    case 'CERRADO':
+      return propios.pildoraCerrado ?? '';
+  }
 }

@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { IconoChevronIzquierda } from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import { fechaLegible, nombreDelEstado, nombreDelResultado } from '../etiquetas';
 import { useBandejaDeCasos } from '../hooks/useRevisionDeCasos';
-import { rutaDeExpediente } from '../rutas';
-import type { EstadoDeCaso, FiltroDeBandeja } from '../tipos';
+import { RUTA_ADMIN_MEDIDAS, rutaDeExpediente } from '../rutas';
+import type { EstadoDeCaso, FiltroDeBandeja, ResultadoDeCaso } from '../tipos';
 import propios from './casos.module.css';
 
 /**
@@ -31,6 +32,12 @@ export default function BandejaDeCasos() {
     <main className={propios.pantalla}>
       <div className={propios.contenido}>
         <header className={propios.encabezado}>
+          <p className={propios.migaDePan}>
+            <Link className={propios.enlaceVolver} to="/admin">
+              <IconoChevronIzquierda />
+              Área administrativa
+            </Link>
+          </p>
           <h1 className={propios.titulo}>Casos de moderación</h1>
           <p className={secciones.explicacion}>
             Cada caso lo revisa y lo resuelve una persona. Moica no sanciona por su cuenta ni elige
@@ -98,16 +105,26 @@ export default function BandejaDeCasos() {
                           {fechaLegible(caso.fechaApertura)}
                         </span>
                       </th>
-                      <td>
-                        {nombreDelEstado(caso.estadoActual)}
+                      <td className={propios.celdaEstado}>
+                        <span
+                          className={`${propios.pildoraEstado} ${claseDeEstado(caso.estadoActual)}`}
+                        >
+                          {nombreDelEstado(caso.estadoActual)}
+                        </span>
                         {caso.resultadoActual !== null && (
-                          <span className={propios.detalleDeLaFila}>
+                          <span
+                            className={`${propios.pildoraResultado} ${claseDeResultado(caso.resultadoActual)}`}
+                          >
                             {nombreDelResultado(caso.resultadoActual)}
                           </span>
                         )}
                       </td>
-                      <td>
-                        {caso.nombreAdministradorResponsable ?? (
+                      <td className={propios.celdaResponsable}>
+                        {caso.nombreAdministradorResponsable !== null ? (
+                          <span className={propios.nombreResponsable}>
+                            {caso.nombreAdministradorResponsable}
+                          </span>
+                        ) : (
                           <span className={propios.sinAsignar}>Sin asignar</span>
                         )}
                       </td>
@@ -121,6 +138,10 @@ export default function BandejaDeCasos() {
         <p className={propios.pie}>
           <Link className={propios.enlaceDePie} to="/admin">
             Volver al área administrativa
+          </Link>
+          <span aria-hidden="true">·</span>
+          <Link className={propios.enlaceDePie} to={RUTA_ADMIN_MEDIDAS}>
+            Catálogo de medidas
           </Link>
         </p>
       </div>
@@ -149,7 +170,7 @@ function Filtros({
   return (
     <div className={propios.filtros} role="group" aria-label="Filtros de la bandeja">
       <button
-        className={secciones.botonSecundario}
+        className={`${secciones.botonSecundario} ${propios.botonFiltro}`}
         type="button"
         aria-pressed={mostrandoPendientes}
         onClick={() => alCambiar({ ...filtro, estados: ESTADOS_PENDIENTES })}
@@ -157,7 +178,7 @@ function Filtros({
         Esperando decisión
       </button>
       <button
-        className={secciones.botonSecundario}
+        className={`${secciones.botonSecundario} ${propios.botonFiltro}`}
         type="button"
         aria-pressed={!mostrandoPendientes}
         onClick={() => alCambiar({ ...filtro, estados: ESTADOS_CERRADOS })}
@@ -165,7 +186,7 @@ function Filtros({
         Cerrados
       </button>
       <button
-        className={secciones.botonSecundario}
+        className={`${secciones.botonSecundario} ${propios.botonFiltro}`}
         type="button"
         aria-pressed={filtro.soloMios}
         onClick={() => alCambiar({ ...filtro, soloMios: !filtro.soloMios })}
@@ -174,4 +195,26 @@ function Filtros({
       </button>
     </div>
   );
+}
+
+function claseDeEstado(estado: EstadoDeCaso): string {
+  switch (estado) {
+    case 'ABIERTO':
+      return propios.pildoraAbierto ?? '';
+    case 'EN_REVISION':
+      return propios.pildoraEnRevision ?? '';
+    case 'REABIERTO':
+      return propios.pildoraReabierto ?? '';
+    case 'CERRADO':
+      return propios.pildoraCerrado ?? '';
+  }
+}
+
+function claseDeResultado(resultado: ResultadoDeCaso): string {
+  switch (resultado) {
+    case 'PROCEDENTE':
+      return propios.pildoraProcedente ?? '';
+    case 'DESESTIMADO':
+      return propios.pildoraDesestimado ?? '';
+  }
 }

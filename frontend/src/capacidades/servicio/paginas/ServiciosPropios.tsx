@@ -3,6 +3,7 @@ import {
   Boton,
   IconoDeCategoria,
   IconoLapiz,
+  IconoMaletin,
 } from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
@@ -71,7 +72,19 @@ export default function ServiciosPropios() {
       </header>
 
       {lista.length === 0 ? (
-        <p className={secciones.vacio}>Todavía no tienes servicios. Publica el primero.</p>
+        <div className={propios.estadoVacio}>
+          <span className={propios.iconoVacio} aria-hidden="true">
+            <IconoMaletin />
+          </span>
+          <h2 className={propios.tituloVacio}>Aún no has publicado ningún servicio</h2>
+          <p className={propios.explicacionVacio}>
+            Publica el primero para que los clientes puedan encontrarte en el directorio cuando la
+            publicación esté activa y tu perfil verificado.
+          </p>
+          <Boton variante="primario" to={RUTA_NUEVO_SERVICIO}>
+            + Publicar nuevo servicio
+          </Boton>
+        </div>
       ) : (
         <>
           <div className={propios.resumenRapido} aria-label="Resumen de publicaciones">
@@ -161,8 +174,15 @@ function TarjetaPropia({ servicio }: { servicio: ServicioPropio }) {
 
       <div className={propios.barraDeAcciones}>
         <button
-          className={secciones.botonPequeno}
           type="button"
+          role="switch"
+          className={unirClases(
+            propios.interruptor,
+            activo ? propios.interruptorEncendido : undefined
+          )}
+          aria-checked={activo}
+          aria-busy={cambio.isPending}
+          aria-label={`Publicación de ${servicio.nombre}`}
           disabled={cambio.isPending}
           onClick={() =>
             cambio.mutate({
@@ -171,7 +191,12 @@ function TarjetaPropia({ servicio }: { servicio: ServicioPropio }) {
             })
           }
         >
-          {cambio.isPending ? 'Actualizando…' : siguiente === 'ACTIVO' ? 'Activar' : 'Desactivar'}
+          <span className={propios.carril} aria-hidden="true">
+            <span className={propios.palanca} />
+          </span>
+          <span className={propios.textoInterruptor}>
+            {cambio.isPending ? 'Actualizando…' : activo ? 'Publicado' : 'Oculto'}
+          </span>
         </button>
         <Boton variante="secundario" to={rutaDeEdicionDeServicio(servicio.idServicioPublicado)}>
           <IconoLapiz />

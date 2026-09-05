@@ -37,8 +37,10 @@ describe('Servicios propios', () => {
     renderizarConProveedores(<App />, '/prestador/servicios');
 
     expect(await screen.findByRole('heading', { name: 'Mis servicios' })).toBeVisible();
-    expect(await screen.findByText(/Todavía no tienes servicios/)).toBeVisible();
-    expect(screen.getByRole('link', { name: '+ Publicar nuevo servicio' })).toBeVisible();
+    expect(
+      await screen.findByRole('heading', { name: 'Aún no has publicado ningún servicio' })
+    ).toBeVisible();
+    expect(screen.getAllByRole('link', { name: '+ Publicar nuevo servicio' })).toHaveLength(2);
   });
 
   it('muestra A convenir y permite activar o desactivar desde el listado', async () => {
@@ -59,7 +61,11 @@ describe('Servicios propios', () => {
     expect(screen.getByText('Hogar y mantenimiento')).toBeVisible();
     expect(screen.getByText('Plomería')).toBeVisible();
 
-    await persona.click(screen.getByRole('button', { name: 'Activar' }));
+    const interruptor = screen.getByRole('switch', {
+      name: 'Publicación de Reparación de fugas',
+    });
+    expect(interruptor).toHaveAttribute('aria-checked', 'false');
+    await persona.click(interruptor);
 
     await waitFor(() => {
       expect(api.ultima('PUT /api/prestador/servicios/10/estado')?.cuerpo).toEqual({

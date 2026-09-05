@@ -1,17 +1,18 @@
 import type { ReactNode } from 'react';
 
 import { BarraLateral } from '../../../comun/componentes/ui';
-import { RUTA_SEGURIDAD } from '../../auth';
-import { RUTA_PANEL } from '../../panel';
-import { RUTA_PRESTADOR } from '../../prestador';
-import { RUTA_MENSAJES } from '../../solicitud';
 import propios from './servicios.module.css';
 
+/**
+ * Destinos de la barra. Se escriben como rutas literales para no importar el
+ * panel (ni otras capacidades) desde este módulo: `PanelUsuario` ya importa el
+ * listado de servicios, y un import inverso deja `RUTA_PANEL` en zona muerta.
+ */
 const DESTINOS_DE_BARRA = {
-  inicio: RUTA_PANEL,
-  mensajes: RUTA_MENSAJES,
-  perfil: RUTA_PRESTADOR,
-  configuracion: RUTA_SEGURIDAD,
+  inicio: '/panel',
+  mensajes: '/mensajes',
+  perfil: '/prestador',
+  configuracion: '/seguridad',
 };
 
 /**

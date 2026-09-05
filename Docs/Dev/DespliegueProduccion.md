@@ -211,7 +211,7 @@ Se permite multipart hasta 25 MB, igual al tope de transporte Spring. Assets
 versionados usan cache inmutable; HTML, manifest y SW se revalidan. Archivos
 inexistentes devuelven 404 y las rutas React reciben `index.html`.
 
-## Verificacion publica pendiente de URL real
+## Procedimiento de verificacion publica
 
 Registrar fecha, SHA y resultados, sin cookies ni credenciales:
 
@@ -274,9 +274,8 @@ puede mover el lockfile; P11-A no lo toca para no cambiar dependencias mientras
 se estabiliza el despliegue. Si mas adelante se usara `ajvResolver`, deja de ser
 deuda y pasa a ser bloqueo.
 
-Otros limites ya asumidos: el smoke local no prueba TLS publico ni el
-comportamiento de cookies en un navegador real, y la integracion con R2 no se
-demuestra sin credenciales reales.
+El smoke local conserva su limite de transporte HTTP. La evidencia publica
+posterior de esta misma guia agrega HTTPS y pruebas reales de ambos buckets R2.
 
 ## Evidencia de esta pasada
 
@@ -300,7 +299,91 @@ Tras reiniciar el backend el historial no cambia, el usuario creado sigue ahi y
 la sesion continua siendo valida; el JWT revocado por el cierre de sesion se
 rechaza aunque no hubiera vencido.
 
-Queda pendiente Railway: exige que el propietario inicie sesion, asi que todavia
-no se han verificado proyecto, plan, servicios, URL publica, metricas ni smoke
-publico, y la integracion con R2 sigue sin credenciales reales. No dar P11-A por
-completado mientras falte eso.
+### Evidencia publica en Railway — 5 de septiembre de 2026
+
+Continuacion del PR #40, abierto y en borrador contra `develop`. Se conserva
+la evidencia anterior de Claude: smoke HTTPS con 38 comprobaciones y 0 fallos
+sobre `f820e09`. La validacion posterior a configurar R2 vuelve a pasar las
+38 comprobaciones, sin fallos. Los cambios posteriores de esta pasada son
+documentales; el estado del HEAD definitivo se registra en los checks del PR.
+
+| Dato | Estado comprobado |
+|---|---|
+| Proveedor / proyecto / entorno | Railway / `victorious-embrace` / `production` |
+| Frontend publico | <https://frontend-production-90df.up.railway.app> |
+| Servicios | `frontend`, `backend` y `Postgres`: `SUCCESS` |
+| Fuentes | `feature/preparar-entrega-mvp`; raices `/frontend` y `/backend` |
+| Red | Solo frontend tiene dominio; backend privado y Postgres sin TCP proxy |
+| PostgreSQL | Imagen Railway PostgreSQL 18; volumen en `/var/lib/postgresql/data` |
+| API | Mismo origen HTTPS mediante Nginx, `/api/servicios` 200 JSON, `no-store`, sin CORS |
+| Health | Frontend `/healthz` 200; backend `/actuator/health` 200 y cuerpo exacto `{"status":"UP"}` |
+| Soporte | `novastudio26moica@gmail.com` |
+| R2 | Publico con URL real `r2.dev`; documentos privados con acceso temporal autorizado |
+| Plan | Objetivo Free/Trial. Suscripcion y credito restante pendientes de confirmacion en dashboard; no se activo Hobby |
+
+**SPA/PWA y seguridad HTTPS.** Home, `/explorar`, ruta React directa y refresh,
+JS/CSS versionados, manifest, service worker JavaScript e iconos responden 200.
+`/actuator/env`, `beans`, `configprops`, `metrics`, `loggers`, `mappings` y
+`heapdump` responden 404 por Nginx. Registro sin CSRF 403 y con CSRF 201; login
+201; cookie de sesion `HttpOnly`, `Secure`, `SameSite=Lax`; sesion valida 200;
+logout sin CSRF 403, logout valido 204 y reutilizacion de sesion revocada 401.
+Se comprobo ademas login y carga de `/prestador` en el navegador sobre HTTPS.
+No es la auditoria integral PWA ni E2E de P11-B.
+
+**Persistencia real.** Se creo una cuenta ficticia unica y se consulto antes
+del cambio de variables R2. El redeploy exclusivo del backend
+`5ce62e01-3c44-4ee6-9b3b-040a48b4785c` termino en `SUCCESS` sobre `f820e09`.
+Despues, la misma sesion devolvio los mismos datos y el login volvio a funcionar.
+Logs de Flyway a las 22:15 UTC: 15 migraciones validadas, version actual 90,
+esquema actualizado y ninguna migracion necesaria. El conector no permite
+consultar SQL privado; no se presenta la lista individual de
+`flyway_schema_history` como una consulta ejecutada en Railway. La lista de
+15 versiones comprobada en local/CI se conserva arriba. No se recreo Postgres
+ni su volumen.
+
+**R2 publico real.** Se transfirieron los dos grupos completos desde configuracion
+local ignorada por Git, sin incluir valores en documentacion o PR. Una imagen
+ficticia se cargo por `PUT /api/prestador/perfil/imagen` (200), la URL quedo
+persistida y el objeto de `r2.dev` respondio 200 con bytes identicos. En
+`/prestador`, el navegador renderizo esa imagen con ancho natural 192 px.
+La URL y el expediente siguieron existiendo tras un redeploy posterior.
+Se reutilizan los buckets de demostracion ya empleados en P4/P4V; no se
+crearon buckets ni se cambiaron sus permisos. `r2.dev` es una limitacion de
+demo frente a produccion comercial, como se describe en la seccion R2.
+
+**R2 privado real.** Un archivo ficticio claramente identificado como demo
+se envio mediante `POST /api/prestador/verificacion/solicitudes` (201).
+El propietario consulta metadatos (200), pero la ruta administrativa de acceso
+rechaza anonimo (401) y usuario ordinario (403). Una cuenta de demostracion
+separada con TOTP activo recibio el rol por el bootstrap existente:
+administrador con TOTP 200, acceso al documento 302 con `no-store`, URL
+temporal 200 y bytes identicos. Sin los parametros de firma, R2 devuelve
+400 `InvalidArgument` y no entrega el documento. No se publico la URL firmada
+ni se habilito acceso publico al bucket privado. La sesion administrativa se
+cerro (204); `MOICA_ADMIN_CORREO` quedo vacia, desactivando el bootstrap, y el
+backend volvio a `SUCCESS`. La cuenta administrativa ficticia conserva el rol
+y TOTP, segun el mecanismo existente; sus credenciales quedan solo en scratchpad.
+El expediente ficticio permanece pendiente, sin conceder una verificacion real.
+
+**Observacion de recursos.** Consulta del conector, ventana aproximada de una
+hora antes de las pruebas R2; no es benchmarking ni gasto facturado:
+
+| Servicio | CPU_USAGE promedio (vCPU) | RAM promedio (GB) |
+|---|---:|---:|
+| backend | 0,000914 | 0,3692 |
+| frontend | 0,0000013 | 0,0437 |
+| Postgres | 0,000495 | 0,1065 |
+
+**Pendiente de cierre.** El conector solo expone limites efectivos
+(`planTier=HOBBY`), que no permiten distinguir Trial de una suscripcion de pago.
+No expone suscripcion, estado de trial ni credito restante. El navegador
+disponible no tiene sesion Railway. El propietario debe capturar en el dashboard
+el plan Free/Trial y credito/consumo; no se debe marcar ese control por inferencia.
+
+**Capturas externas.** Se prepararon `moica-publico.png` y
+`moica-r2-perfil.png` fuera del repositorio. No se adjuntaron automaticamente
+al PR. Faltan las capturas del dashboard: proyecto con los tres servicios
+Online/Success, dominio del frontend, raices/rama/healthchecks y nombres de
+variables sin valores, y plan/credito/recursos. Adjuntarlas al #40, nunca a Git.
+P11-A permanece pendiente de acreditar el plan; P11-B/C y la fila historica 6
+no se modifican.

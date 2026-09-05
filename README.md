@@ -93,9 +93,11 @@ PostgreSQL: la base conserva los datos y, de cada archivo, solo su URL publica
 o su clave opaca.
 
 P11-A incorpora Dockerfiles de backend y frontend para la demostracion publica
-en Railway Free/Trial: Nginx sirve React/PWA y reenvia `/api` al backend privado;
+en Railway: Nginx sirve React/PWA y reenvia `/api` al backend privado;
 PostgreSQL conserva los datos en un servicio privado con volumen. El dominio
-HTTPS sera el proporcionado por Railway. El estado real y el procedimiento
+HTTPS de demostracion es [Moica](https://frontend-production-90df.up.railway.app).
+La confirmacion documental del plan Free/Trial sigue pendiente. El estado real
+y el procedimiento
 estan en [DespliegueProduccion.md](Docs/Dev/DespliegueProduccion.md).
 
 Desde la raiz, `node scripts/smoke-produccion.mjs` construye ambas imagenes y

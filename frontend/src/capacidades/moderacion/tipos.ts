@@ -73,6 +73,9 @@ export interface VersionDeCaso {
   tipoActor: TipoDeActor;
   idActor: number | null;
   nombreActor: string | null;
+  /** Quién respondía por el caso en esta versión. Nulo mientras nadie lo tuviera asignado. */
+  idAdministradorResponsable: number | null;
+  nombreAdministradorResponsable: string | null;
   estadoCaso: EstadoDeCaso;
   resultadoCaso: ResultadoDeCaso | null;
   estadoCuenta: EstadoDeCuenta;

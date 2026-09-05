@@ -379,6 +379,54 @@ class RevisionDeCasosIT extends EscenarioDeRevisionDeCasos {
     assertThat(versionActual(idCaso).get("id_medida_administrativa")).isNull();
   }
 
+  @Test
+  @DisplayName("Cada versión conserva el responsable de entonces, distinto de quien la originó")
+  void elHistorialConservaElResponsableDeCadaVersion() {
+    NavegadorDePrueba otra = administradora(CORREO_OTRO_ADMIN);
+    long idCaso = casoAbierto();
+
+    // El escenario registra todas las cuentas con el mismo nombre, así que sin
+    // esto el nombre no distinguiría nada y la prueba pasaría por accidente.
+    renombrar(CORREO_ADMIN, "Lucía Moderadora");
+    renombrar(CORREO_OTRO_ADMIN, "Carlos Moderador");
+
+    // Quien ejecuta la acción y quien recibe el caso son personas distintas en
+    // las dos: si el DTO confundiera actor con responsable, la prueba lo vería.
+    assertThat(asignar(admin, idCaso, idDe(CORREO_OTRO_ADMIN)).statusCode())
+        .isEqualTo(HttpStatus.OK.value());
+    assertThat(asignar(otra, idCaso, idDe(CORREO_ADMIN)).statusCode())
+        .isEqualTo(HttpStatus.OK.value());
+
+    var historial = json(consultarExpediente(admin, idCaso)).get("historial");
+    assertThat(historial).hasSize(3);
+
+    // La apertura no tiene responsable: nadie respondía por el caso todavía.
+    var apertura = historial.get(0);
+    assertThat(apertura.get("idAdministradorResponsable").isNull()).isTrue();
+    assertThat(apertura.get("nombreAdministradorResponsable").isNull()).isTrue();
+
+    var asignacion = historial.get(1);
+    assertThat(asignacion.get("idActor").asLong()).isEqualTo(idDe(CORREO_ADMIN));
+    assertThat(asignacion.get("nombreActor").asText()).isEqualTo("Lucía Moderadora");
+    assertThat(asignacion.get("idAdministradorResponsable").asLong())
+        .isEqualTo(idDe(CORREO_OTRO_ADMIN));
+    assertThat(asignacion.get("nombreAdministradorResponsable").asText())
+        .isEqualTo("Carlos Moderador");
+
+    var reasignacion = historial.get(2);
+    assertThat(reasignacion.get("idActor").asLong()).isEqualTo(idDe(CORREO_OTRO_ADMIN));
+    assertThat(reasignacion.get("nombreActor").asText()).isEqualTo("Carlos Moderador");
+    assertThat(reasignacion.get("idAdministradorResponsable").asLong())
+        .isEqualTo(idDe(CORREO_ADMIN));
+    assertThat(reasignacion.get("nombreAdministradorResponsable").asText())
+        .isEqualTo("Lucía Moderadora");
+
+    // Y lo que publica la API es lo que quedó guardado, no algo derivado.
+    assertThat(versionesEnOrden(idCaso))
+        .extracting(fila -> fila.get("id_administrador_responsable"))
+        .containsExactly(null, idDe(CORREO_OTRO_ADMIN), idDe(CORREO_ADMIN));
+  }
+
   // --- Historial SCD2 -----------------------------------------------------
 
   @Test

@@ -795,6 +795,8 @@ function versionDeCasoBase() {
     tipoActor: 'USUARIO',
     idActor: 2 as number | null,
     nombreActor: 'Ana Cliente' as string | null,
+    idAdministradorResponsable: null as number | null,
+    nombreAdministradorResponsable: null as string | null,
     estadoCaso: 'ABIERTO',
     resultadoCaso: null as string | null,
     estadoCuenta: 'ACTIVA',

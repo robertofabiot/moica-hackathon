@@ -348,7 +348,12 @@ public class RevisionDeCasosService {
 
     List<DatosDeVersionDeCaso> versiones =
         historial.findByIdCasoModeracionOrderByNumeroVersionAsc(caso.getIdCasoModeracion()).stream()
-            .map(version -> DatosDeVersionDeCaso.de(version, nombreDeActor(version)))
+            .map(
+                version ->
+                    DatosDeVersionDeCaso.de(
+                        version,
+                        nombreDeCuenta(version.getIdActor()),
+                        nombreDeCuenta(version.getIdAdministradorResponsable())))
             .toList();
 
     return new DatosDeExpedienteDeCaso(
@@ -370,10 +375,15 @@ public class RevisionDeCasosService {
         responsable == null ? null : usuarios.obtener(responsable).nombreCompleto());
   }
 
-  /** El nombre de quien originó una versión; nulo cuando la originó el sistema. */
-  private String nombreDeActor(HistorialCaso version) {
-    Long idActor = version.getIdActor();
-    return idActor == null ? null : usuarios.obtener(idActor).nombreCompleto();
+  /**
+   * El nombre de una cuenta, o nulo si no hay ninguna.
+   *
+   * <p>Lo usan por igual el actor de una versión —nulo cuando la originó el sistema— y su
+   * responsable —nulo mientras nadie tuviera el caso asignado—. Son campos distintos con la misma
+   * ausencia posible, así que se resuelven igual.
+   */
+  private String nombreDeCuenta(Long idUsuario) {
+    return idUsuario == null ? null : usuarios.obtener(idUsuario).nombreCompleto();
   }
 
   private static boolean esResponsable(CasoModeracion caso, UsuarioAutenticado sujeto) {

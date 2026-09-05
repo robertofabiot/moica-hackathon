@@ -290,4 +290,169 @@ describe('expediente de un caso de moderación', () => {
     // Un caso cerrado tampoco se reasigna: la API responde 409.
     expect(screen.queryByLabelText(/Reasignar/)).not.toBeInTheDocument();
   });
+  it('el historial nombra al responsable de cada versión, aparte de quien la originó', async () => {
+    api.responder(RUTA_EXPEDIENTE, {
+      estado: 200,
+      cuerpo: expedienteDeCasoDeEjemplo({
+        historial: [
+          versionDeCasoDeEjemplo({
+            esVersionActual: false,
+            fechaFinVigencia: '2026-08-30T13:00:00-06:00',
+          }),
+          versionDeCasoDeEjemplo({
+            idHistorialCaso: 91,
+            numeroVersion: 2,
+            tipoEvento: 'RESPONSABLE_ASIGNADO',
+            tipoActor: 'ADMINISTRADOR',
+            idActor: 9,
+            nombreActor: 'Lucía Moderadora',
+            idAdministradorResponsable: 12,
+            nombreAdministradorResponsable: 'Carlos Moderador',
+            detalleCambio: 'El caso se asignó a una persona administradora responsable.',
+            fechaInicioVigencia: '2026-08-30T13:00:00-06:00',
+          }),
+        ],
+      }),
+    });
+
+    montar();
+    await screen.findByRole('heading', { level: 1, name: 'Trato irrespetuoso' });
+
+    // Quien ejecutó la acción y quien quedó a cargo son personas distintas, y el
+    // historial tiene que poder distinguirlas.
+    const asignacion = screen.getByText('Responsable asignado').closest('li');
+    expect(asignacion).not.toBeNull();
+    expect(asignacion).toHaveTextContent('Lucía Moderadora');
+    expect(asignacion).toHaveTextContent('Responsable entonces: Carlos Moderador');
+    expect(asignacion).not.toHaveTextContent('Responsable entonces: Lucía Moderadora');
+
+    // La apertura no tuvo responsable: no se inventa ninguno.
+    const apertura = screen.getByText('Caso abierto').closest('li');
+    expect(apertura).not.toHaveTextContent('Responsable entonces:');
+  });
+
+  it('el aviso del 409 sobrevive al refresco que oculta la acción', async () => {
+    api.responder(RUTA_EXPEDIENTE, {
+      estado: 200,
+      cuerpo: expedienteDeCasoDeEjemplo({
+        caso: casoAdministrativoDeEjemplo({
+          idAdministradorResponsable: 9,
+          nombreAdministradorResponsable: 'Lucía Moderadora',
+        }),
+        puedeResolver: true,
+      }),
+    });
+    montar();
+    await screen.findByRole('button', { name: 'Iniciar la revisión' });
+
+    // Otra persona cerró el caso entre que se pintó la pantalla y se pulsó: la
+    // acción responde 409 y el refresco trae ya el caso cerrado.
+    api.responder(RUTA_REVISION, {
+      estado: 409,
+      cuerpo: cuerpoDeError(
+        409,
+        'TRANSICION_NO_PERMITIDA',
+        'Esa acción no está disponible: el caso está en estado CERRADO.'
+      ),
+    });
+    api.responder(RUTA_EXPEDIENTE, {
+      estado: 200,
+      cuerpo: expedienteDeCasoDeEjemplo({
+        caso: casoAdministrativoDeEjemplo({
+          estadoActual: 'CERRADO',
+          resultadoActual: 'PROCEDENTE',
+          idAdministradorResponsable: 9,
+          nombreAdministradorResponsable: 'Lucía Moderadora',
+        }),
+        resolucionActual: 'Otra persona ya lo resolvió.',
+        puedeResolver: true,
+      }),
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Iniciar la revisión' }));
+
+    // El refresco ya terminó: el caso se ve cerrado y las acciones desaparecieron.
+    await screen.findByText('Otra persona ya lo resolvió.');
+    expect(screen.queryByRole('button', { name: 'Iniciar la revisión' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Reasignar|Asignar responsable/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Cerrar el caso' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Asignar' })).not.toBeInTheDocument();
+
+    // Y aun así el aviso sigue en pantalla: es lo único que explica por qué.
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Esa acción no está disponible: el caso está en estado CERRADO.'
+    );
+  });
+
+  it('el aviso del 403 sobrevive al refresco que quita el permiso de resolver', async () => {
+    api.responder(RUTA_EXPEDIENTE, {
+      estado: 200,
+      cuerpo: expedienteDeCasoDeEjemplo({
+        caso: casoAdministrativoDeEjemplo({
+          estadoActual: 'EN_REVISION',
+          idAdministradorResponsable: 9,
+          nombreAdministradorResponsable: 'Lucía Moderadora',
+        }),
+        puedeResolver: true,
+      }),
+    });
+    montar();
+    await screen.findByRole('button', { name: 'Cerrar el caso' });
+
+    // El caso se reasignó mientras se escribía la resolución: cerrar responde 403
+    // y el refresco trae ya `puedeResolver: false`.
+    api.responder(RUTA_CIERRE, {
+      estado: 403,
+      cuerpo: cuerpoDeError(
+        403,
+        'CASO_DE_OTRO_ADMINISTRADOR',
+        'Este caso lo lleva otra persona administradora.'
+      ),
+    });
+    api.responder(RUTA_EXPEDIENTE, {
+      estado: 200,
+      cuerpo: expedienteDeCasoDeEjemplo({
+        caso: casoAdministrativoDeEjemplo({
+          estadoActual: 'EN_REVISION',
+          idAdministradorResponsable: 12,
+          nombreAdministradorResponsable: 'Carlos Moderador',
+        }),
+        puedeResolver: false,
+      }),
+    });
+
+    await userEvent.type(screen.getByLabelText('Resolución'), 'Quedó acreditado.');
+    await userEvent.click(screen.getByRole('button', { name: 'Cerrar el caso' }));
+
+    // El refresco ya terminó: el formulario de cierre desapareció con el permiso.
+    await screen.findByText(/Responsable: Carlos Moderador/);
+    expect(screen.queryByRole('button', { name: 'Cerrar el caso' })).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Resolución')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Iniciar la revisión' })).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Reasignar a otra persona')).toBeEnabled();
+
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Este caso lo lleva otra persona administradora.'
+    );
+
+    // Recuperar la asignación es una acción posterior válida. Su éxito no debe
+    // seguir acompañado del error de cierre anterior.
+    const recuperado = expedienteDeCasoDeEjemplo({
+      caso: casoAdministrativoDeEjemplo({
+        estadoActual: 'EN_REVISION',
+        idAdministradorResponsable: 9,
+        nombreAdministradorResponsable: 'Lucía Moderadora',
+      }),
+      puedeResolver: true,
+    });
+    api.responder(RUTA_ASIGNACION, { estado: 200, cuerpo: recuperado });
+    api.responder(RUTA_EXPEDIENTE, { estado: 200, cuerpo: recuperado });
+    await userEvent.selectOptions(screen.getByLabelText('Reasignar a otra persona'), '9');
+    expect(screen.getByRole('button', { name: 'Asignar' })).toBeEnabled();
+    await userEvent.click(screen.getByRole('button', { name: 'Asignar' }));
+    await screen.findByText(/Responsable: Lucía Moderadora/);
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Asignar' })).toBeEnabled());
+    expect(screen.getByRole('button', { name: 'Cerrar el caso' })).toBeInTheDocument();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
 });

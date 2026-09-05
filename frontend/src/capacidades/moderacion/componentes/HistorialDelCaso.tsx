@@ -18,6 +18,10 @@ import propios from './acciones.module.css';
  * tenía entonces.
  *
  * La versión vigente se marca como tal. Solo puede haber una, y su periodo no tiene fin.
+ *
+ * Quien originó el evento y quien respondía por el caso son personas distintas en una reasignación,
+ * así que se nombran por separado. Las versiones anteriores a la primera asignación no tienen
+ * responsable y no se les inventa uno.
  */
 export default function HistorialDelCaso({ versiones }: { versiones: VersionDeCaso[] }) {
   return (
@@ -43,6 +47,11 @@ export default function HistorialDelCaso({ versiones }: { versiones: VersionDeCa
               {version.nombreActor !== null && `: ${version.nombreActor}`} ·{' '}
               {fechaLegible(version.fechaInicioVigencia)}
             </p>
+            {version.nombreAdministradorResponsable !== null && (
+              <p className={propios.versionDetalle}>
+                Responsable entonces: {version.nombreAdministradorResponsable}
+              </p>
+            )}
             <p className={propios.versionDetalle}>
               Caso {nombreDelEstado(version.estadoCaso).toLowerCase()}
               {version.resultadoCaso !== null &&

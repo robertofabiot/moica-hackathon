@@ -18,6 +18,12 @@ import propios from './acciones.module.css';
  * Ocultar un botón mejora la experiencia pero no es un control de seguridad: la autorización la
  * aplica el backend en cada petición, y quien fuerce una acción que no le toca recibe 403 o 409.
  * Por eso el mensaje de error se muestra tal cual lo envía la API, que es quien sabe el estado real.
+ *
+ * El aviso vive **fuera** de los bloques de acción, y por eso la mutación de cierre se declara aquí
+ * y no dentro de su formulario. Un conflicto cambia justamente lo que decide qué acciones caben: el
+ * refresco que sigue al fallo puede traer el caso cerrado o sin permiso para resolver, y con él
+ * desaparecerían el botón, el formulario y —si el aviso viviera dentro— la única explicación de por
+ * qué la acción no salió. Quien recibe un 409 se quedaría mirando una pantalla que cambió sola.
  */
 export default function AccionesDelCaso({ expediente }: { expediente: ExpedienteDeCaso }) {
   const { caso, puedeResolver } = expediente;
@@ -26,6 +32,7 @@ export default function AccionesDelCaso({ expediente }: { expediente: Expediente
   const administradores = useAdministradores();
   const asignacion = useAsignacionDeCaso(idCaso);
   const revision = useInicioDeRevision(idCaso);
+  const cierre = useCierreDeCaso(idCaso);
 
   const [responsableElegido, setResponsableElegido] = useState('');
 
@@ -87,7 +94,6 @@ export default function AccionesDelCaso({ expediente }: { expediente: Expediente
               {asignacion.isPending ? 'Asignando…' : 'Asignar'}
             </button>
           </div>
-          <Aviso error={asignacion.error} />
         </form>
       )}
 
@@ -101,11 +107,12 @@ export default function AccionesDelCaso({ expediente }: { expediente: Expediente
           >
             {revision.isPending ? 'Iniciando…' : 'Iniciar la revisión'}
           </button>
-          <Aviso error={revision.error} />
         </div>
       )}
 
-      {puedeCerrar && <FormularioDeCierre idCaso={idCaso} />}
+      {puedeCerrar && <FormularioDeCierre cierre={cierre} />}
+
+      <Aviso error={errorMasReciente(asignacion, revision, cierre)} />
     </section>
   );
 }
@@ -116,9 +123,11 @@ export default function AccionesDelCaso({ expediente }: { expediente: Expediente
  * Van en el mismo formulario porque el backend los exige a la vez —un caso cerrado sin decisión no
  * diría nada— y porque separarlos invitaría a registrar un resultado y dejar la explicación para
  * después, que es justo lo que hace inauditable un expediente meses más tarde.
+ *
+ * La mutación llega por props: si se creara aquí, un 403 que retire el permiso de resolver
+ * desmontaría este formulario y se llevaría por delante el error que lo explica.
  */
-function FormularioDeCierre({ idCaso }: { idCaso: number }) {
-  const cierre = useCierreDeCaso(idCaso);
+function FormularioDeCierre({ cierre }: { cierre: MutacionDeCierre }) {
   const [resultado, setResultado] = useState<ResultadoDeCaso>('PROCEDENTE');
   const [resolucion, setResolucion] = useState('');
 
@@ -188,9 +197,20 @@ function FormularioDeCierre({ idCaso }: { idCaso: number }) {
       >
         {cierre.isPending ? 'Cerrando…' : 'Cerrar el caso'}
       </button>
-      <Aviso error={cierre.error} />
     </form>
   );
+}
+
+type MutacionDeCierre = ReturnType<typeof useCierreDeCaso>;
+
+/**
+ * El error de la acción que se intentó última.
+ *
+ * Se elige la última mutación, incluso si ya no tiene error: una asignación exitosa debe retirar
+ * el aviso de un cierre anterior. El refresco del expediente no cambia `submittedAt`.
+ */
+function errorMasReciente(...mutaciones: { error: unknown; submittedAt: number }[]): unknown {
+  return mutaciones.sort((una, otra) => otra.submittedAt - una.submittedAt)[0]?.error;
 }
 
 /** El error que devolvió la API, tal cual: es quien conoce el estado real del caso. */

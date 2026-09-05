@@ -976,6 +976,15 @@ La version nueva retrata el caso **ya mutado**: responsable, estado, resultado y
 resolucion salen de la fila vigente, `tipoActor` es `ADMINISTRADOR` e `idActor`
 es quien decidio. `numeroVersion` es el de la anterior mas uno.
 
+**El actor y el responsable son campos distintos.** Cada version publica
+`idActor` y `nombreActor` —quien ejecuto el evento— junto a
+`idAdministradorResponsable` y `nombreAdministradorResponsable` —quien respondia
+por el caso en ese periodo—. En una reasignacion no coinciden: una persona
+ejecuta y otra recibe el caso, y el historial tiene que poder distinguirlas. Las
+versiones anteriores a la primera asignacion dejan los dos campos del
+responsable en `null`, porque entonces no habia ninguno; el actor solo es `null`
+cuando el evento lo origino el sistema.
+
 `estadoCuenta` es el estado real y vigente de la cuenta reportada en ese
 instante. P10A nunca lo cambia: se copia porque el historial retrata tambien que
 acceso tenia la persona cuando se tomo cada decision.

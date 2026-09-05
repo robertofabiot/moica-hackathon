@@ -61,6 +61,20 @@ public abstract class EscenarioDeRevisionDeCasos extends EscenarioDeModeracion {
     return idCaso;
   }
 
+  /**
+   * Cambia el nombre de una cuenta ya registrada.
+   *
+   * <p>El registro de prueba usa siempre el mismo nombre, y hay comprobaciones —como la que separa
+   * al actor de una versión de su responsable— en las que dos cuentas homónimas dejarían pasar
+   * cualquier confusión entre ambos campos.
+   */
+  protected void renombrar(String correo, String nombreCompleto) {
+    jdbc.update(
+        "UPDATE usuario SET nombre_completo = ? WHERE correo_electronico = ?",
+        nombreCompleto,
+        correo);
+  }
+
   /** El identificador de la cuenta de un correo, que las pruebas necesitan para asignar. */
   protected Long idDe(String correo) {
     return jdbc.queryForObject(

@@ -18,7 +18,14 @@ import java.time.OffsetDateTime;
  * <p>El intervalo de vigencia viaja tal cual: {@code fechaFinVigencia} nula es la versión actual.
  * Quien pinta el historial no necesita deducirlo de las fechas de las demás.
  *
+ * <p>El actor y el responsable son cosas distintas y viajan por separado: quien ejecuta una
+ * reasignación no es quien queda a cargo del caso, y confundirlos haría ilegible el historial justo
+ * en el evento que más importa. Las versiones anteriores a la primera asignación no tienen
+ * responsable y lo dejan nulo.
+ *
  * @param nombreActor nombre de quien originó el evento; nulo cuando el actor fue el sistema
+ * @param nombreAdministradorResponsable nombre de quien respondía por el caso en esa versión; nulo
+ *     mientras nadie lo tuviera asignado
  */
 public record DatosDeVersionDeCaso(
     Long idHistorialCaso,
@@ -27,6 +34,8 @@ public record DatosDeVersionDeCaso(
     TipoActorHistorial tipoActor,
     Long idActor,
     String nombreActor,
+    Long idAdministradorResponsable,
+    String nombreAdministradorResponsable,
     EstadoCasoModeracion estadoCaso,
     ResultadoCasoModeracion resultadoCaso,
     EstadoCuenta estadoCuenta,
@@ -36,7 +45,8 @@ public record DatosDeVersionDeCaso(
     OffsetDateTime fechaFinVigencia,
     boolean esVersionActual) {
 
-  public static DatosDeVersionDeCaso de(HistorialCaso version, String nombreActor) {
+  public static DatosDeVersionDeCaso de(
+      HistorialCaso version, String nombreActor, String nombreAdministradorResponsable) {
     return new DatosDeVersionDeCaso(
         version.getIdHistorialCaso(),
         version.getNumeroVersion(),
@@ -44,6 +54,8 @@ public record DatosDeVersionDeCaso(
         version.getTipoActor(),
         version.getIdActor(),
         nombreActor,
+        version.getIdAdministradorResponsable(),
+        nombreAdministradorResponsable,
         version.getEstadoCaso(),
         version.getResultadoCaso(),
         version.getEstadoCuenta(),

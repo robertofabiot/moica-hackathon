@@ -1,10 +1,11 @@
 import { Link, useNavigate, useParams } from 'react-router';
 
 import { useSesionActual } from '../../auth';
-import secciones from '../../../comun/estilos/secciones.module.css';
+import { IconoChevronIzquierda } from '../../../comun/componentes/ui';
 import FormularioDeSolicitud from '../componentes/FormularioDeSolicitud';
 import { cuentaEstaActiva } from '../presentacion';
 import { rutaDeSolicitud } from '../rutas';
+import MarcoDeSolicitudes from './MarcoDeSolicitudes';
 import propios from './solicitudes.module.css';
 
 /** Formulario para solicitar un servicio publicado. */
@@ -17,50 +18,52 @@ export default function NuevaSolicitud() {
 
   if (!identificadorValido) {
     return (
-      <main className={propios.pantalla}>
-        <div className={propios.contenido}>
-          <p className={secciones.estado} role="alert">
-            Esa dirección no corresponde a un servicio.
-          </p>
-          <p className={propios.pie}>
-            <Link to="/explorar">Volver a explorar</Link>
-          </p>
-        </div>
-      </main>
+      <MarcoDeSolicitudes>
+        <p className={propios.vacio} role="alert">
+          Esa dirección no corresponde a un servicio.
+        </p>
+        <p className={propios.pie}>
+          <Link className={propios.enlaceVolver} to="/explorar">
+            <IconoChevronIzquierda />
+            Volver a explorar
+          </Link>
+        </p>
+      </MarcoDeSolicitudes>
     );
   }
 
   if (sesion.isPending) {
     return (
-      <main className={propios.pantalla}>
-        <p className={secciones.estado} role="status">
+      <MarcoDeSolicitudes>
+        <p className={propios.vacio} role="status">
           Comprobando tu sesión…
         </p>
-      </main>
+      </MarcoDeSolicitudes>
     );
   }
 
   if (!cuentaEstaActiva(sesion.data?.usuario.estadoCuenta)) {
     return (
-      <main className={propios.pantalla}>
-        <div className={propios.contenido}>
-          <p className={secciones.estado} role="status">
-            Tu cuenta está restringida y por ahora no puede enviar solicitudes.
-          </p>
-          <p className={propios.pie}>
-            <Link to={`/explorar/servicios/${identificador}`}>Volver al servicio</Link>
-          </p>
-        </div>
-      </main>
+      <MarcoDeSolicitudes>
+        <p className={propios.vacio} role="status">
+          Tu cuenta está restringida y por ahora no puede enviar solicitudes.
+        </p>
+        <p className={propios.pie}>
+          <Link className={propios.enlaceVolver} to={`/explorar/servicios/${identificador}`}>
+            <IconoChevronIzquierda />
+            Volver al servicio
+          </Link>
+        </p>
+      </MarcoDeSolicitudes>
     );
   }
 
   return (
-    <main className={propios.pantalla}>
-      <div className={propios.contenido}>
+    <MarcoDeSolicitudes>
+      <article className={propios.tarjetaFormulario}>
         <header className={propios.encabezado}>
           <h1 className={propios.titulo}>Solicitar este servicio</h1>
-          <p className={secciones.explicacion}>
+          <p className={propios.explicacion}>
             Cuéntale al prestador qué necesitas, dónde y cuándo te vendría bien. Los contactos
             siguen ocultos hasta que acepte.
           </p>
@@ -70,9 +73,12 @@ export default function NuevaSolicitud() {
           alCrear={(idSolicitud) => navegar(rutaDeSolicitud(idSolicitud))}
         />
         <p className={propios.pie}>
-          <Link to={`/explorar/servicios/${identificador}`}>Volver al servicio</Link>
+          <Link className={propios.enlaceVolver} to={`/explorar/servicios/${identificador}`}>
+            <IconoChevronIzquierda />
+            Volver al servicio
+          </Link>
         </p>
-      </div>
-    </main>
+      </article>
+    </MarcoDeSolicitudes>
   );
 }

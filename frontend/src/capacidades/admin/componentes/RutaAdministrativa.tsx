@@ -50,7 +50,9 @@ function AccesoDenegado({ explicacion }: { explicacion: string }) {
           {explicacion}
         </p>
         <p className={estilos.pie}>
-          <Link to="/">Volver al inicio</Link>
+          <Link className={estilos.enlaceDePie} to="/">
+            Volver al inicio
+          </Link>
         </p>
       </div>
     </main>

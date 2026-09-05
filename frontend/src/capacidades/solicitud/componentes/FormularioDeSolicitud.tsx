@@ -2,15 +2,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { Boton } from '../../../comun/componentes/ui';
 import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
 import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
 import {
   esquemaDeContratacion,
   type CamposDeContratacion,
   type DatosValidadosDeContratacion,
 } from '../esquemas';
 import { useCatalogoDeMunicipios, useCreacionDeSolicitud } from '../hooks/useSolicitudes';
+import propios from '../paginas/solicitudes.module.css';
 
 /**
  * Formulario para enviar una solicitud a un servicio ajeno.
@@ -69,7 +70,11 @@ export default function FormularioDeSolicitud({
     fallo instanceof ErrorDeApi && fallo.errores.length === 0 ? fallo.message : null;
 
   return (
-    <form className={estilos.formulario} onSubmit={(evento) => void enviar(evento)} noValidate>
+    <form
+      className={propios.formularioDeContratacion}
+      onSubmit={(evento) => void enviar(evento)}
+      noValidate
+    >
       {mensajeGeneral !== null && (
         <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
           {mensajeGeneral}
@@ -132,10 +137,10 @@ export default function FormularioDeSolicitud({
         <label className={estilos.etiqueta} htmlFor="indicacion-ubicacion">
           Dirección, sector o referencia
         </label>
-        <textarea
+        <input
           className={claseDeEntrada(errors.indicacionUbicacion !== undefined)}
           id="indicacion-ubicacion"
-          rows={3}
+          type="text"
           disabled={creacion.isPending}
           aria-invalid={errors.indicacionUbicacion !== undefined}
           aria-describedby={
@@ -169,11 +174,11 @@ export default function FormularioDeSolicitud({
         )}
       </div>
 
-      <button className={estilos.boton} type="submit" disabled={creacion.isPending}>
+      <Boton className={propios.botonEnviar} type="submit" disabled={creacion.isPending}>
         {creacion.isPending ? 'Enviando solicitud…' : 'Enviar solicitud'}
-      </button>
+      </Boton>
 
-      <p className={secciones.explicacion}>
+      <p className={propios.explicacion}>
         El prestador verá esta solicitud. Los contactos siguen ocultos hasta que la acepte.
       </p>
     </form>

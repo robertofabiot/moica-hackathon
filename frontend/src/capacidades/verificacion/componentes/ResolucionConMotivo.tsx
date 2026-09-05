@@ -2,11 +2,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useId } from 'react';
 import { useForm } from 'react-hook-form';
 
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
+import { Boton } from '../../../comun/componentes/ui';
 import { esquemaDeRevocacion, type CamposDeRevocacion } from '../esquemas';
-import propios from './verificacion.module.css';
+import revision from '../paginas/revision.module.css';
 
 /**
  * El formulario con el que se cierra una solicitud en negativo.
@@ -51,25 +49,28 @@ export default function ResolucionConMotivo({
 
   return (
     <form
-      className={estilos.formulario}
+      className={revision.formularioDeMotivo}
       onSubmit={(evento) => void handleSubmit((campos) => alConfirmar(campos.observacion))(evento)}
       noValidate
     >
-      <h4 className={propios.subtitulo}>{titulo}</h4>
+      <h4 className={revision.subtitulo}>{titulo}</h4>
 
-      {advertencia !== undefined && (
-        <p className={propios.explicacionDeLaInsignia}>{advertencia}</p>
-      )}
+      {advertencia !== undefined && <p className={revision.advertencia}>{advertencia}</p>}
 
-      <div className={estilos.campo}>
-        <label className={estilos.etiqueta} htmlFor={`${identificador}-observacion`}>
+      <div className={revision.campo}>
+        <label className={revision.etiqueta} htmlFor={`${identificador}-observacion`}>
           Motivo
         </label>
         <textarea
-          className={claseDeEntrada(errors.observacion !== undefined)}
+          className={
+            errors.observacion === undefined
+              ? revision.motivoEscrito
+              : `${revision.motivoEscrito} ${revision.motivoConError}`
+          }
           id={`${identificador}-observacion`}
-          rows={3}
+          rows={4}
           disabled={enCurso}
+          placeholder="Describe con claridad qué debe corregir quien presentó el expediente."
           aria-invalid={errors.observacion !== undefined}
           aria-describedby={
             errors.observacion === undefined ? undefined : `${identificador}-error-observacion`
@@ -77,45 +78,40 @@ export default function ResolucionConMotivo({
           {...register('observacion')}
         />
         {errors.observacion !== undefined && (
-          <p className={estilos.error} id={`${identificador}-error-observacion`} role="alert">
+          <p className={revision.error} id={`${identificador}-error-observacion`} role="alert">
             {errors.observacion.message}
           </p>
         )}
-        <p className={estilos.pista}>Lo verá quien presentó el expediente.</p>
+        <p className={revision.pista}>Lo verá quien presentó el expediente.</p>
       </div>
 
       {exigeConfirmacion === true && (
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor={`${identificador}-confirmo`}>
+        <div className={revision.campo}>
+          <label className={revision.confirmacionTactil} htmlFor={`${identificador}-confirmo`}>
             <input
               id={`${identificador}-confirmo`}
               type="checkbox"
               disabled={enCurso}
               aria-invalid={errors.confirmo !== undefined}
               {...register('confirmo')}
-            />{' '}
+            />
             {textoDeConfirmacion}
           </label>
           {errors.confirmo !== undefined && (
-            <p className={estilos.error} role="alert">
+            <p className={revision.error} role="alert">
               {errors.confirmo.message}
             </p>
           )}
         </div>
       )}
 
-      <div className={propios.acciones}>
-        <button className={estilos.boton} type="submit" disabled={enCurso}>
+      <div className={revision.accionesDeResolucion}>
+        <Boton className={revision.botonPeligro} type="submit" disabled={enCurso}>
           {enCurso ? 'Guardando…' : textoDeAccion}
-        </button>
-        <button
-          className={secciones.botonSecundario}
-          type="button"
-          onClick={alCancelar}
-          disabled={enCurso}
-        >
+        </Boton>
+        <Boton variante="secundario" type="button" onClick={alCancelar} disabled={enCurso}>
           Cancelar
-        </button>
+        </Boton>
       </div>
     </form>
   );

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 
 import { ErrorDeApi } from '../../../comun/api';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
+import { Boton, IconoDocumento } from '../../../comun/componentes/ui';
 import { rutaDeAccesoADocumento } from '../api';
 import {
   fechaLegible,
@@ -17,10 +16,10 @@ import {
   useRevocacionDeExpediente,
   useTomaDeExpediente,
 } from '../hooks/useRevisionDeVerificaciones';
-import type { Expediente } from '../tipos';
+import type { EstadoDeSolicitud, Expediente } from '../tipos';
 import InsigniaDeVerificacion from './InsigniaDeVerificacion';
 import ResolucionConMotivo from './ResolucionConMotivo';
-import propios from './verificacion.module.css';
+import revision from '../paginas/revision.module.css';
 
 /** Qué formulario de motivo está abierto, si hay alguno. */
 type Resolucion = 'RECHAZO' | 'REVOCACION' | null;
@@ -67,60 +66,69 @@ export default function ExpedienteEnRevision({
   };
 
   return (
-    <article className={secciones.seccion} aria-labelledby={`expediente-${id}`}>
-      <h3 className={secciones.tituloDeSeccion} id={`expediente-${id}`}>
+    <article className={revision.expediente} aria-labelledby={`expediente-${id}`}>
+      <h3 className={revision.tituloDeExpediente} id={`expediente-${id}`}>
         {expediente.prestador.nombrePublico}
       </h3>
 
-      <p className={propios.encabezadoDelNivel}>
-        <span className={secciones.etiquetaDeEstado}>
+      <p className={revision.encabezadoDelNivel}>
+        <span
+          className={`${revision.pildoraDeEstado} ${claseDePildora(expediente.estadoSolicitud)}`}
+        >
           {nombreDelEstado(expediente.estadoSolicitud)}
         </span>
-        <span>{nombreDelNivelSolicitado(expediente.nivelSolicitado)}</span>
+        <span className={revision.pildoraDeNivel}>
+          {nombreDelNivelSolicitado(expediente.nivelSolicitado)}
+        </span>
         <InsigniaDeVerificacion nivel={expediente.prestador.nivelVerificacion} />
       </p>
 
-      <dl className={secciones.lista}>
+      <dl className={revision.datos}>
         <div>
-          <dt className={secciones.metadatoDelElemento}>Cuenta</dt>
-          <dd className={secciones.contenidoDelElemento}>
+          <dt className={revision.metadato}>Cuenta</dt>
+          <dd className={revision.dato}>
             {expediente.prestador.nombreCompleto} · {expediente.prestador.correoElectronico}
           </dd>
         </div>
         <div>
-          <dt className={secciones.metadatoDelElemento}>Enviada</dt>
-          <dd>{fechaLegible(expediente.fechaSolicitud)}</dd>
+          <dt className={revision.metadato}>Enviada</dt>
+          <dd className={revision.dato}>{fechaLegible(expediente.fechaSolicitud)}</dd>
         </div>
       </dl>
 
       {expediente.observacionResolucion !== null && (
-        <p className={propios.motivo}>
+        <p className={revision.motivoRegistrado}>
           <strong>Motivo registrado:</strong> {expediente.observacionResolucion}
         </p>
       )}
 
       {mensajeDeError !== null && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <p className={revision.avisoDeError} role="alert">
           {mensajeDeError}
         </p>
       )}
 
-      <h4 className={propios.subtitulo}>Expediente</h4>
-      <ul className={secciones.lista}>
+      <h4 className={revision.subtitulo}>Expediente</h4>
+      <ul className={revision.visorDeDocumentos}>
         {expediente.documentos.map((documento) => (
-          <li className={secciones.elemento} key={documento.idDocumentoVerificacion}>
-            <p className={secciones.tituloDelElemento}>
-              {nombreDelTipoDeDocumento(documento.tipoDocumento)}
-            </p>
-            <p className={secciones.contenidoDelElemento}>{documento.nombreOriginal}</p>
-            <p className={secciones.metadatoDelElemento}>
-              {documento.tipoMime} · {tamanoLegible(documento.tamanoBytes)}
-            </p>
+          <li className={revision.tarjetaDeDocumento} key={documento.idDocumentoVerificacion}>
+            <div className={revision.cabeceraDeDocumento}>
+              <span className={revision.iconoDeDocumento} aria-hidden="true">
+                <IconoDocumento />
+              </span>
+              <div className={revision.cuerpoDeDocumento}>
+                <p className={revision.tituloDeDocumento}>
+                  {nombreDelTipoDeDocumento(documento.tipoDocumento)}
+                </p>
+                <p className={revision.nombreDeDocumento}>{documento.nombreOriginal}</p>
+                <p className={revision.tamanoDeDocumento}>{tamanoLegible(documento.tamanoBytes)}</p>
+              </div>
+            </div>
             <a
-              className={secciones.botonPequeno}
+              className={revision.enlaceDeDocumento}
               href={rutaDeAccesoADocumento(id, documento.idDocumentoVerificacion)}
               target="_blank"
-              rel="noreferrer noopener"
+              rel="noopener noreferrer"
             >
               Abrir {documento.nombreOriginal}
             </a>
@@ -156,55 +164,55 @@ export default function ExpedienteEnRevision({
       )}
 
       {resolviendo === null && (
-        <div className={propios.acciones}>
+        <div className={revision.accionesDeResolucion}>
           {expediente.estadoSolicitud === 'PENDIENTE' && (
-            <button
-              className={estilos.boton}
+            <Boton
+              className={revision.botonConfianza}
               type="button"
               disabled={enCurso}
               onClick={() => toma.mutate(id, { onSuccess: alResolver })}
             >
               {toma.isPending ? 'Tomando…' : 'Tomar para revisar'}
-            </button>
+            </Boton>
           )}
 
           {expediente.estadoSolicitud === 'EN_REVISION' && laRevisoYo && (
             <>
-              <button
-                className={estilos.boton}
+              <Boton
+                className={revision.botonConfianza}
                 type="button"
                 disabled={enCurso}
                 onClick={() => aprobacion.mutate(id, { onSuccess: alResolver })}
               >
                 {aprobacion.isPending ? 'Aprobando…' : 'Aprobar'}
-              </button>
-              <button
-                className={secciones.botonSecundario}
+              </Boton>
+              <Boton
+                className={revision.botonPeligro}
                 type="button"
                 disabled={enCurso}
                 onClick={() => setResolviendo('RECHAZO')}
               >
                 Rechazar con motivo
-              </button>
+              </Boton>
             </>
           )}
 
           {expediente.estadoSolicitud === 'EN_REVISION' && !laRevisoYo && (
-            <p className={secciones.explicacion} role="status">
+            <p className={revision.explicacion} role="status">
               Esta solicitud la está revisando otra persona administradora. Solo quien la tomó puede
               resolverla.
             </p>
           )}
 
           {expediente.estadoSolicitud === 'APROBADA' && (
-            <button
-              className={secciones.botonSecundario}
+            <Boton
+              className={revision.botonPeligro}
               type="button"
               disabled={enCurso}
               onClick={() => setResolviendo('REVOCACION')}
             >
               Revocar con motivo
-            </button>
+            </Boton>
           )}
         </div>
       )}
@@ -231,4 +239,20 @@ function mensajeDe(error: unknown): string | null {
     return error.message;
   }
   return error instanceof Error ? error.message : null;
+}
+
+function claseDePildora(estado: EstadoDeSolicitud): string | undefined {
+  switch (estado) {
+    case 'PENDIENTE':
+      return revision.pildoraPendiente;
+    case 'EN_REVISION':
+      return revision.pildoraEnRevision;
+    case 'APROBADA':
+      return revision.pildoraAprobada;
+    case 'RECHAZADA':
+    case 'REVOCADA':
+      return revision.pildoraRechazada;
+    default:
+      return undefined;
+  }
 }

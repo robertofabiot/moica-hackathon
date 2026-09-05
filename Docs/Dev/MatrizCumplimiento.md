@@ -1515,8 +1515,9 @@ Es la sección a la que remiten las filas 1, 3, 4, 5, 6 y 7 para este incremento
   Failsafe incluyen las **65 nuevas de P10B**: `CatalogoDeMedidasIT` 14,
   `MedidasDeCasoIT` 22, `ApelacionesDeCasoIT` 15, `ExpiracionDeMedidasIT` 9 y
   `ConcurrenciaDeMedidasIT` 5. En `frontend`, `format:check`, `lint`,
-  `typecheck`, `test` (**390 en 44 archivos**, 39 más que antes) y `build` en
-  verde.
+  `typecheck`, `test` (**392 en 44 archivos**) y `build` en verde. Los números son
+  los de después de integrar `develop`: la validación se repitió entera tras el
+  merge.
 - **Recorrido integrado sin dobles** (misma fecha). Compose local, backend real
   en `:8080` —`/actuator/health` respondió `{"status":"UP"}`— y Vite en `:5173`.
   Flyway aplicó `V52` y dejó el esquema en esa versión. Un script contra la API
@@ -1538,8 +1539,13 @@ Es la sección a la que remiten las filas 1, 3, 4, 5, 6 y 7 para este incremento
   `scrollWidth == clientWidth`: **cero desbordamientos horizontales**. Quedan
   adjuntas al PR junto con `medidas.json`; **no se versionan en el árbol**, según
   la regla que fijó el PR #35.
-- **Rama**: `feature/admin-medidas-moderacion` nace de `develop` en `9932cba`,
-  el merge del #36, sin conflictos y sin `merge` posteriores.
+- **Rama**: `feature/admin-medidas-moderacion` nace de `develop` en `9932cba`, el
+  merge del #36, comprobado con `git merge-base origin/develop HEAD`. Mientras se
+  trabajaba entraron los PR **#37 y #38** —flujo de solicitudes y rediseño del
+  área administrativa—, que se integraron con el merge `caec603`: **sin ningún
+  conflicto**, porque tocan capacidades distintas. Después se repitieron las dos
+  baterías completas, y el enlace al catálogo se añadió al panel administrativo
+  ya rediseñado, donde antes no existía.
 - **Una migración, `V52`, y solo una.** `V50` ya había creado
   `medida_administrativa`, `caso_moderacion` con
   `id_medida_administrativa_actual` y `fecha_fin_medida_actual`, e

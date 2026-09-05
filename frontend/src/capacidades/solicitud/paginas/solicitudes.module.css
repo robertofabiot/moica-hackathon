@@ -304,6 +304,7 @@
 .tarjetaInfo,
 .panelAcciones,
 .bloqueHistorial,
+.tarjetaContactos,
 .tarjetaFormulario {
   display: flex;
   flex-direction: column;
@@ -580,6 +581,7 @@
   .tarjetaInfo,
   .panelAcciones,
   .bloqueHistorial,
+  .tarjetaContactos,
   .tarjetaFormulario {
     padding: 2rem;
   }

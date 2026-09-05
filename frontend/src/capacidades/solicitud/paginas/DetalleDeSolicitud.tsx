@@ -13,6 +13,7 @@ import PildoraDeEstado from '../componentes/PildoraDeEstado';
 import ReporteDeSolicitud from '../componentes/ReporteDeSolicitud';
 import { useSolicitud } from '../hooks/useSolicitudes';
 import { diaVisible, fechaVisible, nombreDelEstado } from '../presentacion';
+import type { EstadoSolicitud } from '../tipos';
 import { RUTA_SOLICITUDES } from '../rutas';
 import MarcoDeSolicitudes from './MarcoDeSolicitudes';
 import propios from './solicitudes.module.css';
@@ -128,17 +129,21 @@ export default function DetalleDeSolicitud() {
           <ol className={propios.historial} aria-label="Historial">
             {solicitud.historial.map((cambio) => (
               <li key={cambio.idCambioEstadoSolicitud} className={propios.cambio}>
-                <p>
-                  <strong>
-                    {cambio.estadoAnterior === null
-                      ? nombreDelEstado(cambio.estadoNuevo)
-                      : `${nombreDelEstado(cambio.estadoAnterior)} → ${nombreDelEstado(cambio.estadoNuevo)}`}
-                  </strong>
+                <span
+                  className={unirClases(propios.nodoDeHistorial, claseDeNodo(cambio.estadoNuevo))}
+                  aria-hidden="true"
+                />
+                <p className={propios.tituloDeCambio}>
+                  {cambio.estadoAnterior === null
+                    ? nombreDelEstado(cambio.estadoNuevo)
+                    : `${nombreDelEstado(cambio.estadoAnterior)} → ${nombreDelEstado(cambio.estadoNuevo)}`}
                 </p>
                 <p className={propios.metaDeCambio}>
                   {cambio.nombreActor} · {fechaVisible(cambio.fechaCambio)}
                 </p>
-                {cambio.motivo !== null && cambio.motivo !== '' ? <p>{cambio.motivo}</p> : null}
+                {cambio.motivo !== null && cambio.motivo !== '' ? (
+                  <p className={propios.motivoDeCambio}>{cambio.motivo}</p>
+                ) : null}
               </li>
             ))}
           </ol>
@@ -154,4 +159,21 @@ export default function DetalleDeSolicitud() {
       </div>
     </MarcoDeSolicitudes>
   );
+}
+
+function claseDeNodo(estado: EstadoSolicitud): string | undefined {
+  if (estado === 'ACEPTADA') {
+    return propios.nodoAceptada;
+  }
+  if (estado === 'COMPLETADA') {
+    return propios.nodoCompletada;
+  }
+  if (estado === 'RECHAZADA' || estado === 'CANCELADA') {
+    return propios.nodoCerrado;
+  }
+  return undefined;
+}
+
+function unirClases(...partes: Array<string | undefined>): string {
+  return partes.filter((parte) => parte !== undefined && parte !== '').join(' ');
 }

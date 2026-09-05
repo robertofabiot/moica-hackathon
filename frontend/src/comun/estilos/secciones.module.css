@@ -109,6 +109,10 @@
 
 /* Botones pequeños de subir, bajar, editar y quitar dentro de una fila. */
 .botonPequeno {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
   padding: 0.375rem 0.75rem;
   border: 1px solid var(--moica-borde);
   border-radius: 0.375rem;

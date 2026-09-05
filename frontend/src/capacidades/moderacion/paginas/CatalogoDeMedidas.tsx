@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { IconoChevronIzquierda } from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import AvisoDeAccion from '../componentes/AvisoDeAccion';
@@ -47,7 +48,10 @@ export default function CatalogoDeMedidas() {
     <main className={propios.pantalla}>
       <div className={propios.contenido}>
         <p className={propios.migaDePan}>
-          <Link to={RUTA_ADMIN_CASOS}>Casos de moderación</Link>
+          <Link className={propios.enlaceVolver} to={RUTA_ADMIN_CASOS}>
+            <IconoChevronIzquierda />
+            Casos de moderación
+          </Link>
         </p>
 
         <header className={propios.encabezado}>

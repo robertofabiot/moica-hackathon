@@ -119,7 +119,9 @@ export default function BandejaDeCasos() {
           ))}
 
         <p className={propios.pie}>
-          <Link to="/admin">Volver al área administrativa</Link>
+          <Link className={propios.enlaceDePie} to="/admin">
+            Volver al área administrativa
+          </Link>
         </p>
       </div>
     </main>

@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { IconoChevronIzquierda } from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import AccionesDelCaso from '../componentes/AccionesDelCaso';
@@ -34,7 +35,9 @@ export default function ExpedienteDeCaso() {
             Ese caso no existe.
           </p>
           <p className={propios.pie}>
-            <Link to={RUTA_ADMIN_CASOS}>Volver a la bandeja</Link>
+            <Link className={propios.enlaceDePie} to={RUTA_ADMIN_CASOS}>
+              Volver a la bandeja
+            </Link>
           </p>
         </div>
       </main>
@@ -51,7 +54,10 @@ function Expediente({ idCaso }: { idCaso: number }) {
     <main className={propios.pantalla}>
       <div className={propios.contenido}>
         <p className={propios.migaDePan}>
-          <Link to={RUTA_ADMIN_CASOS}>Casos de moderación</Link>
+          <Link className={propios.enlaceVolver} to={RUTA_ADMIN_CASOS}>
+            <IconoChevronIzquierda />
+            Casos de moderación
+          </Link>
         </p>
 
         {expediente.isPending && (

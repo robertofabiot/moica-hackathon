@@ -43,7 +43,31 @@
 }
 
 .migaDePan {
-  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  font-size: var(--font-size-sm);
+}
+
+.enlaceVolver {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  min-height: 2.75rem;
+  padding: var(--gap-xs) 0;
+  color: var(--color-primary-500);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.enlaceVolver:hover {
+  color: var(--color-primary-700);
+}
+
+.enlaceVolver svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex-shrink: 0;
 }
 
 /* La etapa del caso, destacada sin depender solo del color. */
@@ -174,8 +198,25 @@
 }
 
 .pie {
-  color: var(--moica-texto-suave);
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
   text-align: center;
+}
+
+.enlaceDePie {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: var(--gap-sm) var(--gap-md);
+  color: var(--color-primary-500);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.enlaceDePie:hover {
+  color: var(--color-primary-700);
 }
 
 @media (min-width: 48rem) {

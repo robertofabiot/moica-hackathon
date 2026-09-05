@@ -46,7 +46,8 @@ export default function AvisoDeEstadoDeCuenta() {
         {EXPLICACION[estado]}
       </p>
       {aviso.fechaFin !== null && (
-        <p className={estilos.detalle}>Termina el {fechaLegible(aviso.fechaFin)}.</p>
+        // El formato local ya termina en punto («a. m.»), así que no se añade otro.
+        <p className={estilos.detalle}>Termina el {fechaLegible(aviso.fechaFin)}</p>
       )}
       <p className={estilos.detalle}>
         Si crees que es un error, escribe a{' '}

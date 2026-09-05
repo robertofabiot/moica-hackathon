@@ -40,27 +40,190 @@
 }
 
 .lista {
-  display: flex;
-  flex-direction: column;
-  gap: var(--moica-espacio-2);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap: var(--gap-md);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+.resumenRapido {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+}
+
+.chipDeResumen {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  padding: 0.375rem 0.75rem;
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.conteoChip {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+}
+
 .tarjeta {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-1);
-  padding: var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-radius: 0.5rem;
-  background-color: var(--moica-fondo-suave);
+  gap: var(--gap-md);
+  height: 100%;
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-neutral-0);
+  box-shadow: var(--shadow-sm);
+}
+
+.cabeceraDeTarjeta {
+  position: relative;
+}
+
+.miniatura,
+.miniaturaVacia {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background-color: var(--color-secondary-100);
+}
+
+.miniaturaVacia {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-secondary-700);
+}
+
+.iconoDeRespaldo {
+  display: flex;
+}
+
+.iconoDeRespaldo svg {
+  display: block;
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.pildoraDeEstado {
+  position: absolute;
+  top: var(--gap-xs);
+  right: var(--gap-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.02em;
+}
+
+.pildoraActiva {
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-500);
+}
+
+.pildoraInactiva {
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+}
+
+.puntoDeEstado {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.puntoActivo,
+.puntoPulsante {
+  background-color: var(--color-secondary-500);
+}
+
+.puntoPulsante {
+  animation: pulsoDeEstado 1.6s ease-in-out infinite;
+}
+
+.puntoInactivo {
+  background-color: var(--color-neutral-400);
+}
+
+@keyframes pulsoDeEstado {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+}
+
+.cuerpoDeTarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  min-width: 0;
+}
+
+.filaDePildoras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs);
+}
+
+.pildoraCategoria {
+  display: inline-flex;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
 }
 
 .nombre {
+  font-family: var(--font-family-primary);
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.25;
+  color: var(--color-neutral-900);
+  overflow-wrap: anywhere;
+}
+
+.precio {
+  margin: 0;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+}
+
+.precioConvenido {
+  color: var(--color-secondary-500);
+}
+
+.barraDeAcciones {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-sm);
+  margin-top: auto;
+  padding-top: var(--gap-sm);
+  border-top: var(--border-width-xs) solid var(--color-neutral-200);
 }
 
 .meta {

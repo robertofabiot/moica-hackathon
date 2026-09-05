@@ -55,7 +55,9 @@ describe('Servicios propios', () => {
     renderizarConProveedores(<App />, '/prestador/servicios');
 
     expect(await screen.findByText(/A convenir/)).toBeVisible();
-    expect(screen.getByText(/Inactivo/)).toBeVisible();
+    expect(screen.getByText('INACTIVO')).toBeVisible();
+    expect(screen.getByText('Hogar y mantenimiento')).toBeVisible();
+    expect(screen.getByText('Plomería')).toBeVisible();
 
     await persona.click(screen.getByRole('button', { name: 'Activar' }));
 

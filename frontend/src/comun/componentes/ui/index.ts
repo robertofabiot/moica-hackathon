@@ -18,6 +18,7 @@ export {
   IconoEstrella,
   IconoGuardar,
   IconoHerramienta,
+  IconoLapiz,
   IconoLupa,
   IconoMaletin,
   IconoMarcador,

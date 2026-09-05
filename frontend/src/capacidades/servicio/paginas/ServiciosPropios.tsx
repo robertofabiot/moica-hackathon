@@ -1,11 +1,13 @@
-import { Link } from 'react-router';
-
 import { ErrorDeApi } from '../../../comun/api';
-import { Boton } from '../../../comun/componentes/ui';
+import {
+  Boton,
+  IconoDeCategoria,
+  IconoLapiz,
+} from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import { useCambioDeEstadoDeServicio, useServiciosPropios } from '../hooks/useServiciosPropios';
-import { nombreDelEstado, precioPropio } from '../presentacion';
+import { precioPropio } from '../presentacion';
 import { RUTA_NUEVO_SERVICIO, rutaDeEdicionDeServicio } from '../rutas';
 import type { ServicioPropio } from '../tipos';
 import MarcoDeGestionDeServicios from './MarcoDeGestionDeServicios';
@@ -47,6 +49,8 @@ export default function ServiciosPropios() {
   }
 
   const lista = servicios.data;
+  const activos = lista.filter((servicio) => servicio.estado === 'ACTIVO').length;
+  const inactivos = lista.length - activos;
 
   return (
     <MarcoDeGestionDeServicios>
@@ -69,11 +73,26 @@ export default function ServiciosPropios() {
       {lista.length === 0 ? (
         <p className={secciones.vacio}>Todavía no tienes servicios. Publica el primero.</p>
       ) : (
-        <ul className={propios.lista}>
-          {lista.map((servicio) => (
-            <TarjetaPropia key={servicio.idServicioPublicado} servicio={servicio} />
-          ))}
-        </ul>
+        <>
+          <div className={propios.resumenRapido} aria-label="Resumen de publicaciones">
+            <span className={propios.chipDeResumen}>
+              Total publicados <strong className={propios.conteoChip}>{lista.length}</strong>
+            </span>
+            <span className={propios.chipDeResumen}>
+              <span className={unirClases(propios.puntoDeEstado, propios.puntoActivo)} />
+              Activos <strong className={propios.conteoChip}>{activos}</strong>
+            </span>
+            <span className={propios.chipDeResumen}>
+              <span className={unirClases(propios.puntoDeEstado, propios.puntoInactivo)} />
+              Inactivos <strong className={propios.conteoChip}>{inactivos}</strong>
+            </span>
+          </div>
+          <ul className={propios.lista}>
+            {lista.map((servicio) => (
+              <TarjetaPropia key={servicio.idServicioPublicado} servicio={servicio} />
+            ))}
+          </ul>
+        </>
       )}
     </MarcoDeGestionDeServicios>
   );
@@ -82,16 +101,56 @@ export default function ServiciosPropios() {
 function TarjetaPropia({ servicio }: { servicio: ServicioPropio }) {
   const cambio = useCambioDeEstadoDeServicio();
   const siguiente = servicio.estado === 'ACTIVO' ? 'INACTIVO' : 'ACTIVO';
+  const activo = servicio.estado === 'ACTIVO';
+  const imagen = servicio.imagenes[0];
+  const precio = precioPropio(servicio.precioReferencia);
+  const aConvenir = servicio.precioReferencia === null;
 
   return (
     <li className={propios.tarjeta}>
-      <h2 className={propios.nombre}>{servicio.nombre}</h2>
-      <p className={propios.meta}>
-        {servicio.nombreCategoria} · {servicio.nombreSubcategoria}
-      </p>
-      <p className={propios.meta}>
-        {precioPropio(servicio.precioReferencia)} · {nombreDelEstado(servicio.estado)}
-      </p>
+      <div className={propios.cabeceraDeTarjeta}>
+        {imagen === undefined ? (
+          <div className={propios.miniaturaVacia}>
+            <span className={propios.iconoDeRespaldo}>
+              <IconoDeCategoria nombreCategoria={servicio.nombreCategoria} />
+            </span>
+          </div>
+        ) : (
+          <img
+            className={propios.miniatura}
+            src={imagen.urlImagen}
+            alt={imagen.textoAlternativo ?? servicio.nombre}
+            loading="lazy"
+          />
+        )}
+        <span
+          className={unirClases(
+            propios.pildoraDeEstado,
+            activo ? propios.pildoraActiva : propios.pildoraInactiva
+          )}
+        >
+          <span
+            className={unirClases(
+              propios.puntoDeEstado,
+              activo ? propios.puntoPulsante : propios.puntoInactivo
+            )}
+            aria-hidden="true"
+          />
+          {activo ? 'ACTIVO' : 'INACTIVO'}
+        </span>
+      </div>
+
+      <div className={propios.cuerpoDeTarjeta}>
+        <div className={propios.filaDePildoras}>
+          <span className={propios.pildoraCategoria}>{servicio.nombreCategoria}</span>
+          <span className={propios.pildoraCategoria}>{servicio.nombreSubcategoria}</span>
+        </div>
+        <h2 className={propios.nombre}>{servicio.nombre}</h2>
+        <p className={unirClases(propios.precio, aConvenir ? propios.precioConvenido : undefined)}>
+          {precio}
+        </p>
+      </div>
+
       {cambio.isError && (
         <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
           {cambio.error instanceof ErrorDeApi
@@ -99,13 +158,8 @@ function TarjetaPropia({ servicio }: { servicio: ServicioPropio }) {
             : 'No pudimos cambiar el estado.'}
         </p>
       )}
-      <div className={secciones.accionesDelElemento}>
-        <Link
-          className={secciones.botonPequeno}
-          to={rutaDeEdicionDeServicio(servicio.idServicioPublicado)}
-        >
-          Editar
-        </Link>
+
+      <div className={propios.barraDeAcciones}>
         <button
           className={secciones.botonPequeno}
           type="button"
@@ -119,7 +173,15 @@ function TarjetaPropia({ servicio }: { servicio: ServicioPropio }) {
         >
           {cambio.isPending ? 'Actualizando…' : siguiente === 'ACTIVO' ? 'Activar' : 'Desactivar'}
         </button>
+        <Boton variante="secundario" to={rutaDeEdicionDeServicio(servicio.idServicioPublicado)}>
+          <IconoLapiz />
+          Editar
+        </Boton>
       </div>
     </li>
   );
+}
+
+function unirClases(...partes: Array<string | undefined>): string {
+  return partes.filter((parte) => parte !== undefined && parte !== '').join(' ');
 }

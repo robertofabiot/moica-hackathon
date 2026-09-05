@@ -2,8 +2,7 @@ import { useId, useState } from 'react';
 import type { z } from 'zod';
 
 import { ErrorDeApi } from '../../../comun/api';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
+import { Boton } from '../../../comun/componentes/ui';
 import {
   nombreDelNivelSolicitado,
   nombreDelTipoDeDocumento,
@@ -103,21 +102,21 @@ export default function EnvioDeExpediente({
       </p>
 
       {envio.error !== null && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
           {mensajeDe(envio.error)}
         </p>
       )}
 
       {rechazados.length > 0 && (
-        <ul className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <ul className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
           {rechazados.map((problema) => (
             <li key={problema}>{problema}</li>
           ))}
         </ul>
       )}
 
-      <div className={estilos.campo}>
-        <label className={estilos.etiqueta} htmlFor={`${identificador}-archivos`}>
+      <div className={propios.campo}>
+        <label className={propios.etiqueta} htmlFor={`${identificador}-archivos`}>
           Elige tus documentos
         </label>
         <input
@@ -129,25 +128,25 @@ export default function EnvioDeExpediente({
           disabled={envio.isPending}
           aria-describedby={`${identificador}-pista`}
         />
-        <p className={estilos.pista} id={`${identificador}-pista`}>
+        <p className={propios.metadatoDelElemento} id={`${identificador}-pista`}>
           JPEG, PNG o PDF, hasta 5 MB cada uno. Puedes elegir varios a la vez.
         </p>
       </div>
 
       {elegidos.length === 0 ? (
-        <p className={secciones.vacio}>Todavía no has elegido ningún documento.</p>
+        <p className={propios.vacio}>Todavía no has elegido ningún documento.</p>
       ) : (
-        <ul className={secciones.lista}>
+        <ul className={propios.lista}>
           {elegidos.map((elegido) => (
-            <li className={secciones.elemento} key={elegido.id}>
-              <p className={secciones.contenidoDelElemento}>{elegido.archivo.name}</p>
-              <p className={secciones.metadatoDelElemento}>{tamanoLegible(elegido.archivo.size)}</p>
-              <div className={estilos.campo}>
-                <label className={estilos.etiqueta} htmlFor={`${identificador}-${elegido.id}`}>
+            <li className={propios.elemento} key={elegido.id}>
+              <p className={propios.contenidoDelElemento}>{elegido.archivo.name}</p>
+              <p className={propios.metadatoDelElemento}>{tamanoLegible(elegido.archivo.size)}</p>
+              <div className={propios.campo}>
+                <label className={propios.etiqueta} htmlFor={`${identificador}-${elegido.id}`}>
                   Qué es este documento
                 </label>
                 <select
-                  className={estilos.entrada}
+                  className={propios.control}
                   id={`${identificador}-${elegido.id}`}
                   value={elegido.tipoDocumento}
                   onChange={(evento) =>
@@ -162,15 +161,15 @@ export default function EnvioDeExpediente({
                   ))}
                 </select>
               </div>
-              <div className={secciones.accionesDelElemento}>
-                <button
-                  className={secciones.botonPequeno}
+              <div className={propios.accionesDelElemento}>
+                <Boton
+                  variante="contorno"
                   type="button"
                   onClick={() => quitar(elegido.id)}
                   disabled={envio.isPending}
                 >
                   Quitar {elegido.archivo.name}
-                </button>
+                </Boton>
               </div>
             </li>
           ))}
@@ -178,7 +177,7 @@ export default function EnvioDeExpediente({
       )}
 
       {loQueFalta !== null && elegidos.length > 0 && (
-        <p className={estilos.error} role="status">
+        <p className={propios.error} role="status">
           {loQueFalta}
         </p>
       )}
@@ -191,43 +190,38 @@ export default function EnvioDeExpediente({
             <strong>Después de enviarlo no podrás editarlo ni sustituirlo:</strong> si algo cambia,
             tendrás que presentar una solicitud nueva.
           </p>
-          <div className={secciones.accionesDelElemento}>
-            <button
-              className={estilos.boton}
-              type="button"
-              onClick={enviar}
-              disabled={envio.isPending}
-            >
+          <div className={propios.accionesDelElemento}>
+            <Boton variante="primario" type="button" onClick={enviar} disabled={envio.isPending}>
               {envio.isPending ? 'Enviando el expediente…' : 'Confirmar y enviar'}
-            </button>
-            <button
-              className={secciones.botonSecundario}
+            </Boton>
+            <Boton
+              variante="secundario"
               type="button"
               onClick={() => setConfirmando(false)}
               disabled={envio.isPending}
             >
               Seguir editando
-            </button>
+            </Boton>
           </div>
         </div>
       ) : (
-        <div className={secciones.accionesDelElemento}>
-          <button
-            className={estilos.boton}
+        <div className={propios.accionesDelElemento}>
+          <Boton
+            variante="primario"
             type="button"
             onClick={() => setConfirmando(true)}
             disabled={loQueFalta !== null || envio.isPending}
           >
             Revisar y enviar
-          </button>
-          <button
-            className={secciones.botonSecundario}
+          </Boton>
+          <Boton
+            variante="secundario"
             type="button"
             onClick={alCancelar}
             disabled={envio.isPending}
           >
             Cancelar
-          </button>
+          </Boton>
         </div>
       )}
     </div>

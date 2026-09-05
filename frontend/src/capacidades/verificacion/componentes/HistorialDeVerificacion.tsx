@@ -1,6 +1,4 @@
 import { ErrorDeApi } from '../../../comun/api';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
 import {
   fechaLegible,
   nombreDelEstado,
@@ -9,7 +7,7 @@ import {
   tamanoLegible,
 } from '../etiquetas';
 import { useSolicitudesPropias } from '../hooks/useVerificacion';
-import type { SolicitudDeVerificacion } from '../tipos';
+import type { EstadoDeSolicitud, SolicitudDeVerificacion } from '../tipos';
 import propios from './verificacion.module.css';
 
 /**
@@ -26,7 +24,7 @@ export default function HistorialDeVerificacion() {
 
   if (historial.isPending) {
     return (
-      <p className={secciones.estado} role="status">
+      <p className={propios.estado} role="status">
         Cargando tus solicitudes…
       </p>
     );
@@ -34,12 +32,12 @@ export default function HistorialDeVerificacion() {
 
   if (historial.isError) {
     return (
-      <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+      <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
         {historial.error instanceof ErrorDeApi
           ? historial.error.message
           : 'No pudimos cargar tus solicitudes.'}{' '}
         <button
-          className={estilos.enlaceDeTexto}
+          className={propios.enlaceDeTexto}
           type="button"
           onClick={() => void historial.refetch()}
         >
@@ -50,11 +48,11 @@ export default function HistorialDeVerificacion() {
   }
 
   if (historial.data.length === 0) {
-    return <p className={secciones.vacio}>Todavía no has presentado ninguna solicitud.</p>;
+    return <p className={propios.vacio}>Todavía no has presentado ninguna solicitud.</p>;
   }
 
   return (
-    <ul className={secciones.lista}>
+    <ul className={propios.lista}>
       {historial.data.map((solicitud) => (
         <SolicitudDelHistorial key={solicitud.idSolicitudVerificacion} solicitud={solicitud} />
       ))}
@@ -64,16 +62,16 @@ export default function HistorialDeVerificacion() {
 
 function SolicitudDelHistorial({ solicitud }: { solicitud: SolicitudDeVerificacion }) {
   return (
-    <li className={secciones.elemento}>
-      <p className={secciones.tituloDelElemento}>
+    <li className={propios.elemento}>
+      <p className={propios.tituloDelElemento}>
         {nombreDelNivelSolicitado(solicitud.nivelSolicitado)}
       </p>
-      <p className={secciones.estado}>
-        <span className={secciones.etiquetaDeEstado}>
+      <p className={propios.estado}>
+        <span className={claseDePildora(solicitud.estadoSolicitud)}>
           {nombreDelEstado(solicitud.estadoSolicitud)}
         </span>
       </p>
-      <p className={secciones.metadatoDelElemento}>
+      <p className={propios.metadatoDelElemento}>
         Enviada el {fechaLegible(solicitud.fechaSolicitud)}
         {solicitud.fechaResolucion !== null &&
           ` · Resuelta el ${fechaLegible(solicitud.fechaResolucion)}`}
@@ -85,15 +83,31 @@ function SolicitudDelHistorial({ solicitud }: { solicitud: SolicitudDeVerificaci
         </p>
       )}
 
-      <ul className={secciones.lista}>
+      <ul className={propios.lista}>
         {solicitud.documentos.map((documento) => (
-          <li className={secciones.metadatoDelElemento} key={documento.idDocumentoVerificacion}>
+          <li className={propios.metadatoDelElemento} key={documento.idDocumentoVerificacion}>
             {nombreDelTipoDeDocumento(documento.tipoDocumento)}:{' '}
-            <span className={secciones.contenidoDelElemento}>{documento.nombreOriginal}</span> (
+            <span className={propios.contenidoDelElemento}>{documento.nombreOriginal}</span> (
             {tamanoLegible(documento.tamanoBytes)})
           </li>
         ))}
       </ul>
     </li>
   );
+}
+
+function claseDePildora(estado: EstadoDeSolicitud): string {
+  const extra =
+    estado === 'PENDIENTE'
+      ? propios.pildoraPendiente
+      : estado === 'EN_REVISION'
+        ? propios.pildoraEnRevision
+        : estado === 'APROBADA'
+          ? propios.pildoraAprobada
+          : estado === 'RECHAZADA'
+            ? propios.pildoraRechazada
+            : undefined;
+  return [propios.pildoraDeEstado, extra]
+    .filter((parte) => parte !== undefined && parte !== '')
+    .join(' ');
 }

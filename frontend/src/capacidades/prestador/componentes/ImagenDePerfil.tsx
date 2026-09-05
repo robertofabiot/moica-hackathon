@@ -1,12 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { ErrorDeApi } from '../../../comun/api';
-import estilos from '../../../comun/estilos/formulario.module.css';
+import { Boton, IconoCamara, IconoUsuario } from '../../../comun/componentes/ui';
 import {
   useEliminacionDeImagenDePerfil,
   useSubidaDeImagenDePerfil,
 } from '../hooks/usePerfilPrestador';
-import secciones from '../../../comun/estilos/secciones.module.css';
 import propios from '../paginas/prestador.module.css';
 import type { PerfilPrestador } from '../tipos';
 
@@ -88,13 +87,13 @@ export default function ImagenDePerfil({ perfil }: { perfil: PerfilPrestador }) 
   const mensajeDeError = mensajeDe(subida.error) ?? mensajeDe(eliminacion.error);
 
   return (
-    <section className={secciones.seccion} aria-labelledby="titulo-imagen">
-      <h2 className={secciones.tituloDeSeccion} id="titulo-imagen">
+    <section className={propios.bloqueIdentidad} aria-labelledby="titulo-imagen">
+      <h2 className={propios.tituloDeTarjeta} id="titulo-imagen">
         Imagen de perfil
       </h2>
 
       {mensajeDeError !== null && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
           {mensajeDeError}
         </p>
       )}
@@ -103,17 +102,20 @@ export default function ImagenDePerfil({ perfil }: { perfil: PerfilPrestador }) 
         <div className={propios.retratos}>
           <figure className={propios.retratoConPie}>
             {perfil.urlImagenPerfil === null ? (
-              <p className={propios.retratoVacio}>Sin imagen todavía</p>
+              <p className={propios.retratoVacio}>
+                <IconoUsuario className={propios.iconoDeRetrato} />
+                Sin imagen todavía
+              </p>
             ) : (
               <img
                 className={propios.retrato}
                 src={perfil.urlImagenPerfil}
                 alt={`Imagen de perfil de ${perfil.nombrePublico}`}
-                width={128}
-                height={128}
+                width={88}
+                height={88}
               />
             )}
-            {seleccion !== null && <figcaption className={estilos.pista}>Imagen actual</figcaption>}
+            {seleccion !== null && <figcaption className={propios.pista}>Imagen actual</figcaption>}
           </figure>
 
           {seleccion !== null && (
@@ -125,8 +127,8 @@ export default function ImagenDePerfil({ perfil }: { perfil: PerfilPrestador }) 
                   className={propios.retrato}
                   src={seleccion.url}
                   alt={`Imagen elegida para el perfil de ${perfil.nombrePublico}, todavía sin guardar`}
-                  width={128}
-                  height={128}
+                  width={88}
+                  height={88}
                   onError={() =>
                     setSeleccion((actual) =>
                       actual === null ? null : { ...actual, ilegible: true }
@@ -134,19 +136,21 @@ export default function ImagenDePerfil({ perfil }: { perfil: PerfilPrestador }) 
                   }
                 />
               )}
-              <figcaption className={estilos.pista}>
+              <figcaption className={propios.pista}>
                 {subida.isPending ? 'Elegida, subiendo…' : 'Elegida, sin guardar'}
               </figcaption>
             </figure>
           )}
         </div>
 
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="archivoDeImagen">
+        <div className={propios.campoDeSubida}>
+          <label className={propios.etiquetaDeSubida} htmlFor="archivoDeImagen">
+            <IconoCamara />
             {perfil.urlImagenPerfil === null ? 'Subir una imagen' : 'Sustituir la imagen'}
           </label>
           <input
             id="archivoDeImagen"
+            className={propios.entradaDeArchivo}
             ref={entradaDeArchivo}
             type="file"
             accept="image/jpeg,image/png,image/webp"
@@ -154,38 +158,40 @@ export default function ImagenDePerfil({ perfil }: { perfil: PerfilPrestador }) 
             disabled={enCurso}
             aria-describedby="pista-imagen"
           />
-          <p className={estilos.pista} id="pista-imagen">
+          <p className={propios.pista} id="pista-imagen">
             JPEG, PNG o WebP, hasta 5 MB.
           </p>
         </div>
 
         {subida.isPending && (
-          <p className={secciones.estado} role="status">
+          <p className={propios.estado} role="status">
             Subiendo la imagen… La actual sigue vigente hasta que termine.
           </p>
         )}
 
-        {subida.isError && seleccion !== null && (
-          <button
-            className={secciones.botonSecundario}
-            type="button"
-            onClick={() => subir(seleccion.archivo)}
-            disabled={enCurso}
-          >
-            Reintentar la subida
-          </button>
-        )}
+        <div className={propios.accionesDeImagen}>
+          {subida.isError && seleccion !== null && (
+            <Boton
+              variante="secundario"
+              type="button"
+              onClick={() => subir(seleccion.archivo)}
+              disabled={enCurso}
+            >
+              Reintentar la subida
+            </Boton>
+          )}
 
-        {perfil.urlImagenPerfil !== null && (
-          <button
-            className={secciones.botonSecundario}
-            type="button"
-            onClick={() => eliminacion.mutate()}
-            disabled={enCurso}
-          >
-            {eliminacion.isPending ? 'Quitando la imagen…' : 'Quitar imagen'}
-          </button>
-        )}
+          {perfil.urlImagenPerfil !== null && (
+            <Boton
+              variante="contorno"
+              type="button"
+              onClick={() => eliminacion.mutate()}
+              disabled={enCurso}
+            >
+              {eliminacion.isPending ? 'Quitando la imagen…' : 'Quitar imagen'}
+            </Boton>
+          )}
+        </div>
       </div>
     </section>
   );

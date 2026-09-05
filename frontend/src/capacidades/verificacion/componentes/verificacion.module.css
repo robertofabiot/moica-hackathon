@@ -1,12 +1,156 @@
 /*
  * Estilos propios de la verificación documental.
  *
- * Las secciones, listas y botones que comparte con el perfil y el portafolio
- * viven en `src/comun/estilos/secciones.module.css`; aquí queda lo que solo usa
- * esta capacidad. Reutiliza las variables neutras de `src/estilos/global.css`:
- * la paleta de marca todavía no está aprobada. Mobile-first: la hoja base
- * describe el teléfono y la media query amplía a tableta y escritorio.
+ * Solo tokens de `src/estilos/global.css`. El acento lateral teal marca el
+ * módulo frente al resto de tarjetas del perfil.
  */
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  padding: var(--gap-lg);
+  background-color: var(--color-neutral-0);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-left: 4px solid var(--color-secondary-500);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.titulo {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.subtitulo {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.explicacion {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--gap-xs);
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.aviso {
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-left-width: var(--border-width-sm);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.avisoDeError {
+  border-left-color: var(--color-error-500);
+}
+
+.enlaceDeTexto {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary-700);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.vacio {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.elemento {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-50);
+}
+
+.contenidoDelElemento {
+  overflow-wrap: anywhere;
+}
+
+.metadatoDelElemento {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.tituloDelElemento {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.accionesDelElemento {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.etiqueta {
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-neutral-900);
+}
+
+.control {
+  width: 100%;
+  padding: var(--gap-sm);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-base);
+}
+
+.control:hover {
+  border-color: var(--color-neutral-600);
+}
+
+.control:focus-visible {
+  border-color: var(--color-primary-500);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-error-500);
+  font-size: var(--font-size-sm);
+}
 
 /*
  * La insignia no se distingue solo por color: cada nivel lleva su texto y su
@@ -18,88 +162,117 @@
   align-items: baseline;
   gap: 0.375rem;
   padding: 0.125rem 0.625rem;
-  border: 1px solid var(--moica-borde);
-  border-radius: 999px;
-  background-color: var(--moica-fondo-suave);
-  font-size: 0.875rem;
-  font-weight: 600;
-  /* Un nombre largo se parte antes que desbordar la pantalla de un teléfono. */
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-50);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
   overflow-wrap: anywhere;
 }
 
 .insigniaSinVerificar {
-  color: var(--moica-texto-suave);
+  color: var(--color-neutral-600);
 }
 
 .insigniaBasica {
-  border-color: var(--moica-texto-suave);
-  color: var(--moica-texto);
+  border-color: var(--color-secondary-500);
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-700);
 }
 
 .insigniaProfesional {
-  border-color: var(--moica-texto);
-  border-width: 2px;
-  color: var(--moica-texto);
+  border-color: var(--color-secondary-700);
+  border-width: var(--border-width-sm);
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-900);
 }
 
 .encabezadoDelNivel {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--moica-espacio-1);
+  gap: var(--gap-sm);
 }
 
-.subtitulo {
-  font-size: 1rem;
-  font-weight: 600;
+.pildoraDeEstado {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem var(--gap-sm);
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
-/* Lo que significa una insignia y lo que no. Se lee antes de solicitar nada. */
+.pildoraPendiente {
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+}
+
+.pildoraEnRevision {
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-700);
+}
+
+.pildoraAprobada {
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-700);
+}
+
+.pildoraRechazada {
+  background-color: #fdecea;
+  color: var(--color-error-500);
+}
+
 .explicacionDeLaInsignia,
 .avisoDePrivacidad {
-  padding: var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-left-width: 4px;
-  border-left-color: var(--moica-texto-suave);
-  border-radius: 0.5rem;
-  background-color: var(--moica-fondo-suave);
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-left-width: var(--border-width-sm);
+  border-left-color: var(--color-secondary-500);
+  border-radius: var(--radius-md);
+  background-color: var(--color-secondary-50);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
 }
 
 .envio {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-2);
-  padding: var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-radius: 0.5rem;
+  gap: var(--gap-md);
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-50);
 }
 
 .confirmacion {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-2);
-  padding: var(--moica-espacio-2);
-  border: 2px solid var(--moica-texto);
-  border-radius: 0.5rem;
-  background-color: var(--moica-fondo-suave);
+  gap: var(--gap-md);
+  padding: var(--gap-md);
+  border: var(--border-width-sm) solid var(--color-secondary-500);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-secondary-50);
 }
 
-/* El motivo de un rechazo o de una revocación, tal como lo escribió quien revisó. */
 .motivo {
-  padding: var(--moica-espacio-2);
-  border-left: 4px solid var(--moica-error);
-  background-color: var(--moica-fondo-suave);
+  padding: var(--gap-md);
+  border-left: 4px solid var(--color-error-500);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-neutral-0);
   overflow-wrap: anywhere;
 }
 
 .acciones {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--moica-espacio-1);
+  gap: var(--gap-sm);
 }
 
 @media (min-width: 48rem) {
   .envio {
-    padding: var(--moica-espacio-3);
+    padding: var(--gap-lg);
   }
 }

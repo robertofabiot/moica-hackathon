@@ -1,11 +1,10 @@
 import { useState } from 'react';
 
 import { ErrorDeApi } from '../../../comun/api';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
+import { Boton, InsigniaVerificado } from '../../../comun/componentes/ui';
 import { nombreDelEstado, nombreDelNivelSolicitado } from '../etiquetas';
 import { useEstadoDeVerificacion } from '../hooks/useVerificacion';
-import type { EstadoDeVerificacion, NivelSolicitado } from '../tipos';
+import type { EstadoDeSolicitud, EstadoDeVerificacion, NivelSolicitado } from '../tipos';
 import EnvioDeExpediente from './EnvioDeExpediente';
 import HistorialDeVerificacion from './HistorialDeVerificacion';
 import InsigniaDeVerificacion from './InsigniaDeVerificacion';
@@ -23,26 +22,27 @@ import propios from './verificacion.module.css';
 export default function Verificacion() {
   const estado = useEstadoDeVerificacion();
   const [enviando, setEnviando] = useState<NivelSolicitado | null>(null);
+  const verificado = estado.data !== undefined && estado.data.nivelVerificacion !== 'SIN_VERIFICAR';
 
   return (
-    <section className={secciones.seccion} aria-labelledby="titulo-verificacion">
-      <h2 className={secciones.tituloDeSeccion} id="titulo-verificacion">
+    <section className={propios.tarjeta} aria-labelledby="titulo-verificacion">
+      <h2 className={propios.titulo} id="titulo-verificacion">
         Verificación de tu perfil
       </h2>
 
       {estado.isPending && (
-        <p className={secciones.estado} role="status">
+        <p className={propios.estado} role="status">
           Cargando tu verificación…
         </p>
       )}
 
       {estado.isError && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
           {estado.error instanceof ErrorDeApi
             ? estado.error.message
             : 'No pudimos cargar tu verificación.'}{' '}
           <button
-            className={estilos.enlaceDeTexto}
+            className={propios.enlaceDeTexto}
             type="button"
             onClick={() => void estado.refetch()}
           >
@@ -56,8 +56,9 @@ export default function Verificacion() {
           <p className={propios.encabezadoDelNivel}>
             <span>Nivel vigente:</span>
             <InsigniaDeVerificacion nivel={estado.data.nivelVerificacion} />
+            {verificado ? <InsigniaVerificado /> : null}
           </p>
-          <p className={secciones.explicacion}>{estado.data.significado}</p>
+          <p className={propios.explicacion}>{estado.data.significado}</p>
 
           <p className={propios.explicacionDeLaInsignia}>
             Una insignia dice que Moica <strong>revisó la documentación que presentaste</strong> en
@@ -102,12 +103,12 @@ function QueSePuedeHacer({
   return (
     <>
       {abierta !== null && (
-        <p className={secciones.estado} role="status">
+        <p className={propios.estado} role="status">
           {nombreDelNivelSolicitado(abierta.nivelSolicitado)}:{' '}
-          <span className={secciones.etiquetaDeEstado}>
+          <span className={claseDePildora(abierta.estadoSolicitud)}>
             {nombreDelEstado(abierta.estadoSolicitud)}
           </span>{' '}
-          <span className={secciones.metadatoDelElemento}>
+          <span className={propios.metadatoDelElemento}>
             Ya enviaste {abierta.documentos.length}{' '}
             {abierta.documentos.length === 1 ? 'documento' : 'documentos'}. Te avisaremos aquí
             cuando se resuelva.
@@ -117,29 +118,41 @@ function QueSePuedeHacer({
 
       <div className={propios.acciones}>
         {estado.puedeSolicitarBasica && (
-          <button className={estilos.boton} type="button" onClick={() => alElegirNivel('BASICA')}>
+          <Boton variante="primario" type="button" onClick={() => alElegirNivel('BASICA')}>
             Solicitar verificación básica
-          </button>
+          </Boton>
         )}
         {estado.puedeSolicitarProfesional && (
-          <button
-            className={secciones.botonSecundario}
-            type="button"
-            onClick={() => alElegirNivel('PROFESIONAL')}
-          >
+          <Boton variante="secundario" type="button" onClick={() => alElegirNivel('PROFESIONAL')}>
             Solicitar verificación profesional
-          </button>
+          </Boton>
         )}
       </div>
 
       {!estado.puedeSolicitarProfesional &&
         estado.nivelVerificacion === 'SIN_VERIFICAR' &&
         abierta === null && (
-          <p className={secciones.explicacion}>
+          <p className={propios.explicacion}>
             La verificación profesional es opcional y llega después: primero necesitas la básica
             vigente.
           </p>
         )}
     </>
   );
+}
+
+function claseDePildora(estado: EstadoDeSolicitud): string {
+  const extra =
+    estado === 'PENDIENTE'
+      ? propios.pildoraPendiente
+      : estado === 'EN_REVISION'
+        ? propios.pildoraEnRevision
+        : estado === 'APROBADA'
+          ? propios.pildoraAprobada
+          : estado === 'RECHAZADA'
+            ? propios.pildoraRechazada
+            : undefined;
+  return [propios.pildoraDeEstado, extra]
+    .filter((parte) => parte !== undefined && parte !== '')
+    .join(' ');
 }

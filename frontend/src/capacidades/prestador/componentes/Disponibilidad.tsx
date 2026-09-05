@@ -1,7 +1,7 @@
 import { ErrorDeApi } from '../../../comun/api';
-import estilos from '../../../comun/estilos/formulario.module.css';
+import { Boton } from '../../../comun/componentes/ui';
 import { useDisponibilidad } from '../hooks/usePerfilPrestador';
-import secciones from '../../../comun/estilos/secciones.module.css';
+import propios from '../paginas/prestador.module.css';
 import type { PerfilPrestador } from '../tipos';
 
 /**
@@ -17,40 +17,41 @@ export default function Disponibilidad({ perfil }: { perfil: PerfilPrestador }) 
   const alternar = () => cambio.mutate(estaDisponible ? 'NO_DISPONIBLE' : 'DISPONIBLE');
 
   return (
-    <section className={secciones.seccion} aria-labelledby="titulo-disponibilidad">
-      <h2 className={secciones.tituloDeSeccion} id="titulo-disponibilidad">
+    <section className={propios.bloqueIdentidad} aria-labelledby="titulo-disponibilidad">
+      <h2 className={propios.tituloDeTarjeta} id="titulo-disponibilidad">
         Disponibilidad
       </h2>
 
       {cambio.error !== null && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
           {cambio.error instanceof ErrorDeApi
             ? cambio.error.message
             : 'No pudimos cambiar tu disponibilidad. Inténtalo otra vez.'}
         </p>
       )}
 
-      <p className={secciones.estado}>
+      <p className={propios.filaDeDisponibilidad}>
         Estado actual:{' '}
-        <span className={secciones.etiquetaDeEstado}>
+        <span className={estaDisponible ? propios.pildoraDisponible : propios.pildoraNoDisponible}>
           {estaDisponible ? 'Disponible' : 'No disponible'}
         </span>
       </p>
 
-      <p className={secciones.explicacion}>
+      <p className={propios.explicacion}>
         {estaDisponible
           ? 'Estás aceptando nuevas solicitudes de servicio.'
           : 'No estás aceptando nuevas solicitudes. Tu perfil y tu portafolio siguen guardados.'}
       </p>
 
-      <button
-        className={secciones.botonSecundario}
+      <Boton
+        variante="secundario"
         type="button"
         onClick={alternar}
         disabled={cambio.isPending}
+        forma="pildora"
       >
         {textoDelBoton(estaDisponible, cambio.isPending)}
-      </button>
+      </Boton>
     </section>
   );
 }

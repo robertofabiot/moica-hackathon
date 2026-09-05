@@ -2,6 +2,7 @@ package com.moica.moderacion.dto;
 
 import com.moica.servicio.dto.DatosDeImagenDeServicio;
 import com.moica.solicitud.dto.DatosDeSolicitudServicio;
+import com.moica.usuario.entity.EstadoCuenta;
 import java.util.List;
 
 /**
@@ -25,6 +26,13 @@ import java.util.List;
  *     revisión o cerrar el caso; la interfaz lo usa para no ofrecer una acción que el backend
  *     rechazaría
  * @param imagenesDelServicio vacía si el servicio contratado no tiene imágenes
+ * @param estadoCuentaReportada el estado operativo que la cuenta reportada tiene ahora mismo. Es la
+ *     proyección de {@code medidaVigente}, y viaja aparte porque una cuenta puede estar {@code
+ *     ACTIVA} sin ninguna medida y quien revisa necesita verlo sin deducirlo
+ * @param medidaVigente la única medida que la cuenta sostiene, aunque la haya impuesto otro
+ *     expediente; nula si no tiene ninguna. Es lo que permite a la interfaz advertir del reemplazo
+ *     <b>antes</b> de que el backend responda 409
+ * @param apelacion en qué punto va la apelación de este caso, leída de su historial
  */
 public record DatosDeExpedienteDeCaso(
     ResumenDeCasoAdministrativo caso,
@@ -33,7 +41,10 @@ public record DatosDeExpedienteDeCaso(
     DatosDeSolicitudServicio solicitud,
     List<DatosDeImagenDeServicio> imagenesDelServicio,
     List<DatosDeVersionDeCaso> historial,
-    boolean puedeResolver) {
+    boolean puedeResolver,
+    EstadoCuenta estadoCuentaReportada,
+    MedidaVigenteDeCuenta medidaVigente,
+    EstadoDeApelacion apelacion) {
 
   public DatosDeExpedienteDeCaso {
     imagenesDelServicio = List.copyOf(imagenesDelServicio);

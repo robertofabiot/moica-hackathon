@@ -79,12 +79,60 @@ export interface VersionDeCaso {
   estadoCaso: EstadoDeCaso;
   resultadoCaso: ResultadoDeCaso | null;
   estadoCuenta: EstadoDeCuenta;
+  /** La medida que el caso sostenía en esa versión. `null` cuando no sostenía ninguna. */
+  idMedidaAdministrativa: number | null;
+  /**
+   * Nombre de aquella medida.
+   *
+   * Se resuelve aunque la medida se haya deshabilitado después: una medida retirada del catálogo
+   * sigue describiendo correctamente las decisiones que la citaron, porque nunca se borra.
+   */
+  nombreMedida: string | null;
+  fechaFinMedida: string | null;
   resolucion: string | null;
   detalleCambio: string;
   fechaInicioVigencia: string;
   fechaFinVigencia: string | null;
   esVersionActual: boolean;
 }
+
+/** Una medida del catálogo, tal como la administra el área administrativa. */
+export interface MedidaAdministrativa {
+  idMedidaAdministrativa: number;
+  codigo: string;
+  nombre: string;
+  descripcion: string | null;
+  /**
+   * Ordena las medidas para quien decide y nada más.
+   *
+   * Es descriptivo: Moica no recomienda medidas ni escala sanciones por severidad.
+   */
+  nivelSeveridad: number;
+  /** `null` cuando la medida no cambia el acceso, como una advertencia. */
+  estadoCuentaResultante: EstadoDeCuenta | null;
+  requiereFechaFin: boolean;
+  /** Una deshabilitada sigue describiendo decisiones pasadas pero ya no se ofrece. */
+  habilitada: boolean;
+}
+
+/**
+ * La única medida que la cuenta reportada sostiene ahora mismo.
+ *
+ * La regla de una sola medida vigente es de la **cuenta**, no del expediente, así que puede venir de
+ * otro caso. Es lo que permite advertir del reemplazo antes de que el backend responda 409.
+ */
+export interface MedidaVigenteDeCuenta {
+  idCasoModeracion: number;
+  esDeEsteCaso: boolean;
+  idMedidaAdministrativa: number;
+  codigo: string;
+  nombre: string;
+  estadoCuentaResultante: EstadoDeCuenta | null;
+  fechaFinMedida: string | null;
+}
+
+/** En qué punto va la apelación del caso, deducida de su historial. */
+export type EstadoDeApelacion = 'SIN_APELACION' | 'PENDIENTE' | 'ACEPTADA' | 'RECHAZADA';
 
 /** El expediente completo. Los mensajes no viajan aquí: tienen su propia consulta. */
 export interface ExpedienteDeCaso {
@@ -96,7 +144,39 @@ export interface ExpedienteDeCaso {
   historial: VersionDeCaso[];
   /** Si esta sesión es la responsable y puede, por tanto, revisar y resolver. */
   puedeResolver: boolean;
+  /** El estado operativo que la cuenta reportada tiene ahora mismo. */
+  estadoCuentaReportada: EstadoDeCuenta;
+  /** `null` si la cuenta no sostiene ninguna medida. */
+  medidaVigente: MedidaVigenteDeCuenta | null;
+  apelacion: EstadoDeApelacion;
 }
+
+/** Lo que se envía para aplicar una medida a la cuenta reportada. */
+export interface MedidaAAplicar {
+  idMedidaAdministrativa: number;
+  /** Obligatoria cuando la medida lo exige y prohibida cuando no. */
+  fechaFinMedida: string | null;
+  justificacion: string;
+  /**
+   * La confirmación explícita que exige sustituir una medida vigente.
+   *
+   * Sin ella, una segunda aplicación responde 409 y no sustituye nada.
+   */
+  confirmaReemplazo: boolean;
+}
+
+/** Lo que se envía para crear una medida del catálogo. */
+export interface MedidaACrear {
+  codigo: string;
+  nombre: string;
+  descripcion: string | null;
+  nivelSeveridad: number;
+  estadoCuentaResultante: EstadoDeCuenta | null;
+  requiereFechaFin: boolean;
+}
+
+/** Lo que se envía para reescribir una medida. El código no se toca: identifica decisiones. */
+export type MedidaAEditar = Omit<MedidaACrear, 'codigo'>;
 
 /** Una persona administradora, para elegirla al asignar. */
 export interface Administrador {

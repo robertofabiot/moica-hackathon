@@ -26,6 +26,11 @@ import java.time.OffsetDateTime;
  * @param nombreActor nombre de quien originó el evento; nulo cuando el actor fue el sistema
  * @param nombreAdministradorResponsable nombre de quien respondía por el caso en esa versión; nulo
  *     mientras nadie lo tuviera asignado
+ * @param nombreMedida nombre de la medida que el caso sostenía en esa versión; nulo cuando no
+ *     sostenía ninguna. Se resuelve contra el catálogo incluso si la medida se deshabilitó después:
+ *     una medida retirada del catálogo <b>sigue describiendo</b> las decisiones que la citaron,
+ *     porque nunca se borra
+ * @param fechaFinMedida cuándo terminaba aquella medida; nulo si no terminaba sola o si no había
  */
 public record DatosDeVersionDeCaso(
     Long idHistorialCaso,
@@ -39,6 +44,9 @@ public record DatosDeVersionDeCaso(
     EstadoCasoModeracion estadoCaso,
     ResultadoCasoModeracion resultadoCaso,
     EstadoCuenta estadoCuenta,
+    Short idMedidaAdministrativa,
+    String nombreMedida,
+    OffsetDateTime fechaFinMedida,
     String resolucion,
     String detalleCambio,
     OffsetDateTime fechaInicioVigencia,
@@ -46,7 +54,10 @@ public record DatosDeVersionDeCaso(
     boolean esVersionActual) {
 
   public static DatosDeVersionDeCaso de(
-      HistorialCaso version, String nombreActor, String nombreAdministradorResponsable) {
+      HistorialCaso version,
+      String nombreActor,
+      String nombreAdministradorResponsable,
+      String nombreMedida) {
     return new DatosDeVersionDeCaso(
         version.getIdHistorialCaso(),
         version.getNumeroVersion(),
@@ -59,6 +70,9 @@ public record DatosDeVersionDeCaso(
         version.getEstadoCaso(),
         version.getResultadoCaso(),
         version.getEstadoCuenta(),
+        version.getIdMedidaAdministrativa(),
+        nombreMedida,
+        version.getFechaFinMedida(),
         version.getResolucion(),
         version.getDetalleCambio(),
         version.getFechaInicioVigencia(),

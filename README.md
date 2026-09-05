@@ -132,6 +132,7 @@ El MVP cuenta con un flujo funcional completo de punta a punta, enfocado en la f
 * **Chat y Contacto Seguro:** Hilo de mensajería interna habilitado tras la aceptación del servicio y revelación controlada de contactos externos.
 * **Reputación Bidireccional:** Calificación mutua (1 a 5 estrellas + reseña) al completar el trabajo, con reputación pública para prestadores.
 * **Moderación y Auditoría:** Apertura de reportes entre participantes y bandeja administrativa para asignar responsables, revisar el caso con su solicitud, mensajes y evidencias, y registrar la resolución; cada cambio queda versionado en un historial auditable (SCD2).
+* **Medidas y Apelaciones:** Catálogo administrable de sanciones que **siempre elige una persona** —Moica no recomienda ni escala nada—, con una sola medida vigente por cuenta, sustitución que exige confirmación explícita, revocación de las sesiones afectadas y vencimiento automático del plazo que un administrador ya había fijado. La apelación se recibe por un canal externo de soporte y se registra desde el área administrativa, que puede aceptarla, rechazarla y reabrir el mismo expediente.
 
 > **Alcance del MVP:** Se priorizó la verificación humana y la contratación segura. Pagos en línea integrados y mapas interactivos forman parte del roadmap posterior ([Docs/Core/post-mvp.md](Docs/Core/post-mvp.md)).
 

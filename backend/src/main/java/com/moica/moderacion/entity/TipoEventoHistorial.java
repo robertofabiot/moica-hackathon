@@ -9,8 +9,17 @@ package com.moica.moderacion.entity;
  * podría leer una fila escrita por otro incremento.
  *
  * <p>Reportar escribe {@link #CASO_ABIERTO}. La revisión administrativa escribe {@link
- * #RESPONSABLE_ASIGNADO}, {@link #ESTADO_CASO_CAMBIADO} y {@link #RESOLUCION_REGISTRADA}. Los
- * restantes describen medidas, cambios de estado de cuenta y apelaciones, que son P10B.
+ * #RESPONSABLE_ASIGNADO}, {@link #ESTADO_CASO_CAMBIADO} y {@link #RESOLUCION_REGISTRADA}. Las
+ * medidas y las apelaciones escriben {@link #MEDIDA_APLICADA}, {@link #MEDIDA_REVOCADA}, {@link
+ * #APELACION_PRESENTADA}, {@link #APELACION_ACEPTADA}, {@link #APELACION_RECHAZADA} y {@link
+ * #CASO_REABIERTO}. {@link #MEDIDA_EXPIRADA} es el único que no origina ninguna persona: lo escribe
+ * el barrido que cumple el plazo de una medida temporal que sí decidió alguien.
+ *
+ * <p>{@link #ESTADO_CUENTA_CAMBIADO} no lo escribe nadie. El estado de la cuenta viaja como columna
+ * en <em>todas</em> las versiones, así que cada evento de medida ya retrata en qué quedó el acceso.
+ * Un evento aparte solo tendría sentido si el estado pudiera moverse sin que ninguna medida lo
+ * moviera, y en el MVP no puede: la moderación es su única causa. El valor se conserva porque el
+ * dominio del diccionario lo declara y {@code ck_historial_caso_tipo_evento} lo admite.
  */
 public enum TipoEventoHistorial {
   /** Se creó el caso y su primera versión. */

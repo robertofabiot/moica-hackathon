@@ -1,15 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import {
+  aplicarMedida,
   asignarCaso,
+  cambiarHabilitacionDeMedida,
   cerrarCaso,
+  crearMedida,
+  editarMedida,
   iniciarRevisionDelCaso,
   listarAdministradores,
   listarCasos,
+  listarMedidas,
   obtenerExpediente,
   obtenerMensajesDelCaso,
+  reabrirCaso,
+  registrarApelacion,
+  resolverApelacion,
+  revocarMedida,
 } from '../api';
-import type { FiltroDeBandeja, ResultadoDeCaso } from '../tipos';
+import type {
+  FiltroDeBandeja,
+  MedidaAAplicar,
+  MedidaACrear,
+  MedidaAEditar,
+  ResultadoDeCaso,
+} from '../tipos';
 
 /**
  * Estado remoto de la revisión administrativa de casos.
@@ -94,4 +109,97 @@ export function useCierreDeCaso(idCaso: number) {
 function useRefrescoDelCaso() {
   const cliente = useQueryClient();
   return () => cliente.invalidateQueries({ queryKey: PREFIJO });
+}
+
+// --- Catálogo de medidas ---------------------------------------------------
+
+/** Clave con la que React Query guarda el catálogo. */
+export const CLAVE_DE_MEDIDAS = ['admin', 'medidas'] as const;
+
+export function useCatalogoDeMedidas() {
+  return useQuery({ queryKey: CLAVE_DE_MEDIDAS, queryFn: listarMedidas, retry: false });
+}
+
+export function useCreacionDeMedida() {
+  const refrescar = useRefrescoDelCatalogo();
+  return useMutation({
+    mutationFn: (medida: MedidaACrear) => crearMedida(medida),
+    onSettled: refrescar,
+  });
+}
+
+export function useEdicionDeMedida() {
+  const refrescar = useRefrescoDelCatalogo();
+  return useMutation({
+    mutationFn: ({ idMedida, medida }: { idMedida: number; medida: MedidaAEditar }) =>
+      editarMedida(idMedida, medida),
+    onSettled: refrescar,
+  });
+}
+
+export function useHabilitacionDeMedida() {
+  const refrescar = useRefrescoDelCatalogo();
+  return useMutation({
+    mutationFn: ({ idMedida, habilitada }: { idMedida: number; habilitada: boolean }) =>
+      cambiarHabilitacionDeMedida(idMedida, habilitada),
+    onSettled: refrescar,
+  });
+}
+
+// --- Medidas y apelaciones de un caso --------------------------------------
+
+export function useAplicacionDeMedida(idCaso: number) {
+  const refrescar = useRefrescoDelCaso();
+  return useMutation({
+    mutationFn: (medida: MedidaAAplicar) => aplicarMedida(idCaso, medida),
+    onSettled: refrescar,
+  });
+}
+
+export function useRevocacionDeMedida(idCaso: number) {
+  const refrescar = useRefrescoDelCaso();
+  return useMutation({
+    mutationFn: (motivo: string) => revocarMedida(idCaso, motivo),
+    onSettled: refrescar,
+  });
+}
+
+export function useRegistroDeApelacion(idCaso: number) {
+  const refrescar = useRefrescoDelCaso();
+  return useMutation({
+    mutationFn: (relato: string) => registrarApelacion(idCaso, relato),
+    onSettled: refrescar,
+  });
+}
+
+export function useResolucionDeApelacion(idCaso: number) {
+  const refrescar = useRefrescoDelCaso();
+  return useMutation({
+    mutationFn: ({ aceptada, resolucion }: { aceptada: boolean; resolucion: string }) =>
+      resolverApelacion(idCaso, aceptada, resolucion),
+    onSettled: refrescar,
+  });
+}
+
+export function useReaperturaDeCaso(idCaso: number) {
+  const refrescar = useRefrescoDelCaso();
+  return useMutation({
+    mutationFn: (motivo: string) => reabrirCaso(idCaso, motivo),
+    onSettled: refrescar,
+  });
+}
+
+/**
+ * Invalida el catálogo tras administrarlo.
+ *
+ * También invalida los expedientes: el desplegable de medidas aplicables sale del catálogo, y
+ * deshabilitar una debe retirarla de las pantallas abiertas en lugar de dejar ofrecer algo que el
+ * backend ya rechaza.
+ */
+function useRefrescoDelCatalogo() {
+  const cliente = useQueryClient();
+  return () => {
+    void cliente.invalidateQueries({ queryKey: CLAVE_DE_MEDIDAS });
+    void cliente.invalidateQueries({ queryKey: PREFIJO });
+  };
 }

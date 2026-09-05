@@ -14,12 +14,16 @@ import java.time.OffsetDateTime;
  * @param esAdministrador si la cuenta tiene permisos administrativos. La interfaz lo necesita para
  *     saber si debe ofrecer el área {@code /admin}; quien decide si puede entrar es siempre el
  *     backend
+ * @param fechaFinEstadoCuenta cuándo termina el estado vigente, cuando es temporal. Nulo en {@link
+ *     EstadoCuenta#ACTIVA} y en {@link EstadoCuenta#SUSPENDIDA_PERMANENTE}, que no terminan solos.
+ *     Es lo que permite al aviso decir «hasta cuándo» en lugar de dejar a la persona sin plazo
  */
 public record DatosDeUsuario(
     Long idUsuario,
     String nombreCompleto,
     String correoElectronico,
     EstadoCuenta estadoCuenta,
+    OffsetDateTime fechaFinEstadoCuenta,
     boolean esAdministrador,
     OffsetDateTime fechaRegistro) {
 
@@ -29,6 +33,7 @@ public record DatosDeUsuario(
         usuario.getNombreCompleto(),
         usuario.getCorreoElectronico(),
         usuario.getEstadoCuenta(),
+        usuario.getFechaFinEstadoCuenta(),
         esAdministrador,
         usuario.getFechaRegistro());
   }

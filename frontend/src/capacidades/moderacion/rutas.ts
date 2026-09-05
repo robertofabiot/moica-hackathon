@@ -6,6 +6,7 @@
  */
 
 export const RUTA_ADMIN_CASOS = '/admin/casos';
+export const RUTA_ADMIN_MEDIDAS = '/admin/medidas';
 export const RUTA_ADMIN_EXPEDIENTE = '/admin/casos/:idCaso';
 
 export function rutaDeExpediente(idCaso: number): string {

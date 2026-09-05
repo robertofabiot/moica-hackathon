@@ -152,6 +152,10 @@ export interface OpcionesDeSesion {
   segundoFactorRequerido?: boolean;
   /** Esta sesión ya presentó un código válido. */
   segundoFactorVerificado?: boolean;
+  /** Cuándo termina el estado de cuenta, cuando es temporal. */
+  fechaFinEstadoCuenta?: string | null;
+  /** A dónde escribir para apelar. Solo viaja cuando la cuenta no está activa. */
+  canalDeSoporte?: string;
 }
 
 /**
@@ -168,6 +172,8 @@ export function sesionDeEjemplo(opciones: OpcionesDeSesion = {}) {
     estadoCuenta = 'ACTIVA',
     segundoFactorRequerido = false,
     segundoFactorVerificado = false,
+    fechaFinEstadoCuenta = null,
+    canalDeSoporte = 'soporte@moica.ni',
   } = opciones;
 
   const ahora = Date.now();
@@ -178,6 +184,7 @@ export function sesionDeEjemplo(opciones: OpcionesDeSesion = {}) {
       nombreCompleto: 'Erving Miranda',
       correoElectronico: 'erving@moica.test',
       estadoCuenta,
+      fechaFinEstadoCuenta,
       esAdministrador,
       fechaRegistro: new Date(ahora).toISOString(),
     },
@@ -188,6 +195,10 @@ export function sesionDeEjemplo(opciones: OpcionesDeSesion = {}) {
       segundoFactorVerificado,
       pendienteDeSegundoFactor: segundoFactorRequerido && !segundoFactorVerificado,
     },
+    // Nulo cuando la cuenta está activa, igual que en la API: el caso normal no
+    // necesita ningún aviso.
+    avisoDeCuenta:
+      estadoCuenta === 'ACTIVA' ? null : { fechaFin: fechaFinEstadoCuenta, canalDeSoporte },
   };
 }
 
@@ -800,6 +811,9 @@ function versionDeCasoBase() {
     estadoCaso: 'ABIERTO',
     resultadoCaso: null as string | null,
     estadoCuenta: 'ACTIVA',
+    idMedidaAdministrativa: null as number | null,
+    nombreMedida: null as string | null,
+    fechaFinMedida: null as string | null,
     resolucion: null as string | null,
     detalleCambio: 'El participante reportó a la contraparte y se abrió el caso.',
     fechaInicioVigencia: '2026-08-30T12:00:00-06:00',
@@ -827,5 +841,47 @@ function expedienteDeCasoBase() {
     imagenesDelServicio: [imagenDeServicioDeEjemplo()] as unknown[],
     historial: [versionDeCasoDeEjemplo()] as unknown[],
     puedeResolver: false,
+    estadoCuentaReportada: 'ACTIVA' as
+      'ACTIVA' | 'RESTRINGIDA_TEMPORAL' | 'SUSPENDIDA_TEMPORAL' | 'SUSPENDIDA_PERMANENTE',
+    medidaVigente: null as ReturnType<typeof medidaVigenteDeEjemplo> | null,
+    apelacion: 'SIN_APELACION' as 'SIN_APELACION' | 'PENDIENTE' | 'ACEPTADA' | 'RECHAZADA',
+  };
+}
+
+/** Una medida del catálogo, tal como la devuelve `GET /api/admin/medidas`. */
+export function medidaDeEjemplo(cambios: Partial<ReturnType<typeof medidaBase>> = {}) {
+  return { ...medidaBase(), ...cambios };
+}
+
+function medidaBase() {
+  return {
+    idMedidaAdministrativa: 1,
+    codigo: 'RESTRICCION_TEMPORAL',
+    nombre: 'Restricción temporal',
+    descripcion: 'Limita las funciones de negocio durante un plazo.' as string | null,
+    nivelSeveridad: 2,
+    estadoCuentaResultante: 'RESTRINGIDA_TEMPORAL' as
+      'ACTIVA' | 'RESTRINGIDA_TEMPORAL' | 'SUSPENDIDA_TEMPORAL' | 'SUSPENDIDA_PERMANENTE' | null,
+    requiereFechaFin: true,
+    habilitada: true,
+  };
+}
+
+/** La medida que la cuenta reportada sostiene, tal como viaja en el expediente. */
+export function medidaVigenteDeEjemplo(
+  cambios: Partial<ReturnType<typeof medidaVigenteBase>> = {}
+) {
+  return { ...medidaVigenteBase(), ...cambios };
+}
+
+function medidaVigenteBase() {
+  return {
+    idCasoModeracion: 5,
+    esDeEsteCaso: true,
+    idMedidaAdministrativa: 1,
+    codigo: 'RESTRICCION_TEMPORAL',
+    nombre: 'Restricción temporal',
+    estadoCuentaResultante: 'RESTRINGIDA_TEMPORAL' as string | null,
+    fechaFinMedida: '2026-09-30T12:00:00-06:00' as string | null,
   };
 }

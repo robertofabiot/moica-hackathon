@@ -4,8 +4,10 @@ import { ErrorDeApi } from '../../../comun/api';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import AccionesDelCaso from '../componentes/AccionesDelCaso';
+import ApelacionDelCaso from '../componentes/ApelacionDelCaso';
 import EvidenciasDelCaso from '../componentes/EvidenciasDelCaso';
 import HistorialDelCaso from '../componentes/HistorialDelCaso';
+import MedidaDelCaso from '../componentes/MedidaDelCaso';
 import MensajesDelCaso from '../componentes/MensajesDelCaso';
 import { fechaLegible, nombreDelEstado, nombreDelResultado } from '../etiquetas';
 import { useExpedienteDeCaso } from '../hooks/useRevisionDeCasos';
@@ -106,6 +108,9 @@ function Expediente({ idCaso }: { idCaso: number }) {
                 <p className={propios.textoLargo}>{expediente.data.resolucionActual}</p>
               </section>
             )}
+
+            <MedidaDelCaso expediente={expediente.data} />
+            <ApelacionDelCaso expediente={expediente.data} />
 
             <SolicitudDelCaso expediente={expediente.data} />
             <EvidenciasDelCaso imagenes={expediente.data.imagenesDelServicio} />

@@ -6,9 +6,13 @@ import com.moica.auth.dto.SolicitudDeInicioSesion;
 import com.moica.auth.entity.MotivoRevocacionSesion;
 import com.moica.auth.entity.Sesion;
 import com.moica.auth.seguridad.UsuarioAutenticado;
+import com.moica.comun.configuracion.PropiedadesDeSoporte;
 import com.moica.comun.error.ErrorDeAplicacion;
 import com.moica.usuario.dto.DatosDeUsuario;
+import com.moica.usuario.entity.EstadoCuenta;
 import com.moica.usuario.service.UsuarioService;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,16 +32,19 @@ public class AutenticacionService {
   private final SesionService sesiones;
   private final SegundoFactorService segundoFactor;
   private final TokenDeSesionService tokens;
+  private final PropiedadesDeSoporte soporte;
 
   public AutenticacionService(
       UsuarioService usuarios,
       SesionService sesiones,
       SegundoFactorService segundoFactor,
-      TokenDeSesionService tokens) {
+      TokenDeSesionService tokens,
+      PropiedadesDeSoporte soporte) {
     this.usuarios = usuarios;
     this.sesiones = sesiones;
     this.segundoFactor = segundoFactor;
     this.tokens = tokens;
+    this.soporte = soporte;
   }
 
   /**
@@ -66,17 +73,14 @@ public class AutenticacionService {
     // contraseña: quien no acierta las credenciales no debe averiguar nada
     // sobre el estado de una cuenta ajena.
     if (usuario.estadoCuenta().bloqueaElAcceso()) {
-      throw new ErrorDeAplicacion(
-          HttpStatus.FORBIDDEN,
-          "CUENTA_SUSPENDIDA",
-          "Esta cuenta está suspendida. Escribe al equipo de Moica si crees que es un error.");
+      throw cuentaSuspendida(usuario);
     }
 
     Sesion sesion = sesiones.abrir(usuario.idUsuario());
     boolean requerido = segundoFactor.estaActivoEn(usuario.idUsuario());
 
     return new SesionIniciada(
-        tokens.emitir(sesion), RespuestaDeSesion.de(usuario, sesion, requerido));
+        tokens.emitir(sesion), RespuestaDeSesion.de(usuario, sesion, requerido, soporte.canal()));
   }
 
   /** Describe la sesión con la que llega la petición en curso. */
@@ -87,7 +91,8 @@ public class AutenticacionService {
     return RespuestaDeSesion.de(
         usuarios.obtener(sujeto.idUsuario()),
         sesiones.obtener(sujeto.idSesion()),
-        segundoFactor.estaActivoEn(sujeto.idUsuario()));
+        segundoFactor.estaActivoEn(sujeto.idUsuario()),
+        soporte.canal());
   }
 
   /**
@@ -139,5 +144,38 @@ public class AutenticacionService {
     public String toString() {
       return "SesionIniciada[token=(oculto), respuesta=" + respuesta + "]";
     }
+  }
+
+  /**
+   * El rechazo con el que se topa una cuenta suspendida al intentar entrar.
+   *
+   * <p>Es <b>lo único</b> que esa persona llega a leer dentro de Moica, y por eso lleva el aviso
+   * completo: aplicar una suspensión revoca sus sesiones, así que ya no puede consultar la suya
+   * para enterarse. Sin este mensaje quedaría fuera sin saber hasta cuándo ni a quién escribir, y
+   * la apelación que la definición 11.5 le reconoce sería inalcanzable en la práctica.
+   *
+   * <p>No revela nada administrativo: ni qué medida se le aplicó, ni desde qué caso, ni quién la
+   * decidió. Solo el estado de su propia cuenta —que ya conoce— y el canal externo, que es público.
+   * Y se comprueba después de la contraseña, así que quien no acierte las credenciales sigue sin
+   * averiguar nada de una cuenta ajena.
+   */
+  private ErrorDeAplicacion cuentaSuspendida(DatosDeUsuario usuario) {
+    String plazo =
+        usuario.estadoCuenta() == EstadoCuenta.SUSPENDIDA_TEMPORAL
+                && usuario.fechaFinEstadoCuenta() != null
+            ? "Esta cuenta está suspendida hasta el " + fechaLegible(usuario) + "."
+            : "Esta cuenta está suspendida.";
+
+    return new ErrorDeAplicacion(
+        HttpStatus.FORBIDDEN,
+        "CUENTA_SUSPENDIDA",
+        plazo + " Si crees que es un error, escribe a " + soporte.canal() + ".");
+  }
+
+  /** La fecha de fin en la forma en que se lee, no en la que se almacena. */
+  private static String fechaLegible(DatosDeUsuario usuario) {
+    return usuario
+        .fechaFinEstadoCuenta()
+        .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", new Locale("es")));
   }
 }

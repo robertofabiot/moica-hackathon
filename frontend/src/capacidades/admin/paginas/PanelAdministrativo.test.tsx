@@ -117,6 +117,32 @@ describe('área administrativa', () => {
     expect(await screen.findByText('erving@moica.test')).toBeVisible();
   });
 
+  it('ofrece las tres funciones administrativas, incluida el catálogo de medidas', async () => {
+    sesionAdministrativaVerificada();
+    api.responder('GET /api/admin/resumen', {
+      estado: 200,
+      cuerpo: {
+        nombreCompleto: 'Erving Miranda',
+        correoElectronico: 'erving@moica.test',
+        fechaAsignacion: '2026-08-24T10:00:00-06:00',
+      },
+    });
+    renderizarConProveedores(<App />, '/admin');
+
+    await screen.findByRole('heading', { name: 'Área administrativa' });
+
+    // Sin este enlace el catálogo no seria alcanzable desde ninguna parte.
+    expect(screen.getByRole('link', { name: 'Catálogo de medidas' })).toHaveAttribute(
+      'href',
+      '/admin/medidas'
+    );
+    expect(screen.getByRole('link', { name: 'Casos de moderación' })).toHaveAttribute(
+      'href',
+      '/admin/casos'
+    );
+    expect(screen.getByRole('link', { name: 'Verificaciones documentales' })).toBeVisible();
+  });
+
   it('muestra el mensaje del backend si aun así deniega el acceso', async () => {
     sesionAdministrativaVerificada();
     api.responder('GET /api/admin/resumen', {

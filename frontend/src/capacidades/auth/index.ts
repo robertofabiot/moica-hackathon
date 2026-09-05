@@ -9,6 +9,7 @@
  */
 
 export { crearClienteDeConsultas } from './clienteDeConsultas';
+export { default as AvisoDeEstadoDeCuenta } from './componentes/AvisoDeEstadoDeCuenta';
 export { default as RutaProtegida, RutaDeVerificacion } from './componentes/RutaProtegida';
 export { useSesionActual } from './hooks/useSesionActual';
 export { useCierreSesion, useInicioSesion, useRegistro } from './hooks/useAcceso';
@@ -29,4 +30,10 @@ export {
   RUTA_VERIFICACION_SEGUNDO_FACTOR,
   rutaDeInicioSesion,
 } from './rutas';
-export type { EstadoCuenta, EstadoSegundoFactor, SesionActual, Usuario } from './tipos';
+export type {
+  AvisoDeCuenta,
+  EstadoCuenta,
+  EstadoSegundoFactor,
+  SesionActual,
+  Usuario,
+} from './tipos';

@@ -854,8 +854,9 @@ no existe es 404 `CASO_NO_ENCONTRADO`.
 
 **Resolver no sanciona.** Cerrar un caso como `PROCEDENTE` declara que amerita
 una decision administrativa; no elige medida, no cambia el `EstadoCuenta` de
-nadie y no revoca ninguna sesion. Elegir y aplicar la medida es P10B, y segun la
-definicion 11.3 siempre lo hace una persona.
+nadie y no revoca ninguna sesion. Elegir y aplicar la medida es una decision
+aparte y posterior, descrita en «Medidas administrativas», y segun la definicion
+11.3 siempre la toma una persona.
 
 ### Quien puede que
 
@@ -879,8 +880,8 @@ Las que P10A admite son exactamente estas:
 Cualquier otra responde **409 `TRANSICION_NO_PERMITIDA`** y el mensaje nombra el
 estado real, que es lo que quien revisa necesita para entender que paso mientras
 tenia la pantalla abierta. `CERRADO` a `REABIERTO` nace de aceptar una apelacion
-y es P10B. Un caso cerrado tampoco se reasigna: su resolucion dejaria de decir
-quien la firmo.
+y vive en `POST /{id}/reapertura`. Un caso cerrado tampoco se reasigna: su
+resolucion dejaria de decir quien la firmo.
 
 Cada accion es un recurso propio en lugar de un campo de estado que se
 sobrescribe, igual que en la revision de verificaciones. **No existe `PUT`,
@@ -914,6 +915,9 @@ vinculado al caso:
 | `imagenesDelServicio` | Las imagenes del servicio contratado |
 | `historial` | Las versiones SCD2 del caso, de la mas antigua a la mas reciente |
 | `puedeResolver` | Si la sesion es la responsable |
+| `estadoCuentaReportada` | El estado operativo que la cuenta reportada tiene ahora mismo |
+| `medidaVigente` | La unica medida que esa cuenta sostiene, o `null` |
+| `apelacion` | `SIN_APELACION`, `PENDIENTE`, `ACEPTADA` o `RECHAZADA` |
 
 `imagenesDelServicio` es la unica evidencia material que Moica ya guarda del
 trato; **no existe ninguna forma de adjuntar algo nuevo a un caso**. Se devuelven
@@ -1006,6 +1010,299 @@ firmada por quien ya no llevaba el caso.
 las cuentas con rol, ordenadas por nombre. Lo consume la reasignacion. No lleva
 correo, fecha de asignacion ni estado de cuenta: es un desplegable para elegir a
 quien pasar un expediente, no un directorio de cuentas.
+
+## Medidas administrativas
+
+El catalogo cuelga de `/api/admin/medidas` y la aplicacion de una medida, de
+`/api/admin/casos/{id}`. Las dos superficies heredan las condiciones del area
+administrativa: **rol y segundo factor verificado en esa misma sesion**. Sin
+sesion es 401; con sesion pero sin rol, o con rol y sin el segundo factor
+verificado en esa sesion, es 403 `ACCESO_DENEGADO`.
+
+**La sancion la decide siempre una persona.** Moica no recomienda medidas, no las
+elige por reincidencia, no escala por severidad y no puntua riesgos: la
+definicion 11.3 y la decision D-MOD-01 lo dejan fuera del MVP. El
+`nivelSeveridad` del catalogo es descriptivo y solo ordena la lista para quien
+elige.
+
+Lo unico que ocurre sin nadie delante es la **expiracion** de una medida temporal
+cuyo plazo fijo una persona, descrita mas abajo.
+
+### El catalogo
+
+| Verbo y ruta | Que hace | Exito |
+|---|---|---|
+| `GET /api/admin/medidas` | El catalogo entero, de la mas leve a la mas grave | 200 |
+| `POST /api/admin/medidas` | Anade una medida | 201 |
+| `PUT /api/admin/medidas/{id}` | Reescribe nombre, descripcion, severidad, estado resultante y plazo | 200 |
+| `PUT /api/admin/medidas/{id}/habilitacion` | Deja de ofrecerla, o vuelve a ofrecerla | 200 |
+
+**No existe `DELETE`, y no es un olvido.** Una medida citada por un caso o por
+una version del historial es la evidencia de una decision, y todas sus claves
+foraneas son `RESTRICT`. Lo que el negocio llama «eliminar» es deshabilitarla:
+deja de poder elegirse para aplicaciones nuevas, las ya aplicadas siguen vigentes
+sobre sus cuentas y el historial la sigue nombrando. La lectura devuelve tambien
+las deshabilitadas, porque la pantalla de gestion necesita poder rehabilitarlas.
+
+Cada medida publica `idMedidaAdministrativa`, `codigo`, `nombre`, `descripcion`,
+`nivelSeveridad`, `estadoCuentaResultante`, `requiereFechaFin` y `habilitada`.
+
+El **codigo** solo viaja al crear. Es lo que identifica la medida ante las
+decisiones que ya la citaron, asi que la edicion no lo acepta: cambiarlo dejaria
+un historial hablando de algo que no existe. Se normaliza a mayusculas y solo
+admite mayusculas, digitos y guion bajo.
+
+`estadoCuentaResultante` puede ser `null`: una advertencia queda registrada en el
+expediente sin tocar el acceso.
+
+**El plazo y el estado tienen que decir lo mismo.** Los dos estados temporales
+terminan en una fecha, asi que la medida que los impone debe exigirla; `ACTIVA` y
+`SUSPENDIDA_PERMANENTE` no terminan solos, asi que pedirla seria prometer una
+reactivacion que nunca llegaria.
+
+| `estadoCuentaResultante` | `requiereFechaFin` obligatorio |
+|---|---|
+| `null` (advertencia) | `false` |
+| `RESTRINGIDA_TEMPORAL` | `true` |
+| `SUSPENDIDA_TEMPORAL` | `true` |
+| `SUSPENDIDA_PERMANENTE` | `false` |
+
+Cualquier otra combinacion responde **400 `MEDIDA_INCOHERENTE`**. Un codigo o un
+nombre repetidos responden **409 `MEDIDA_DUPLICADA`**: la comprobacion previa
+cubre el caso normal y las restricciones unicas de PostgreSQL arbitran dos altas
+simultaneas, de modo que la perdedora recibe 409 y no un 500. Una medida
+inexistente es **404 `MEDIDA_NO_ENCONTRADA`**.
+
+### Aplicar una medida
+
+`POST /api/admin/casos/{id}/medida`
+
+```json
+{
+  "idMedidaAdministrativa": 3,
+  "fechaFinMedida": "2026-10-05T12:00:00-06:00",
+  "justificacion": "La conducta acreditada amerita limitar la cuenta.",
+  "confirmaReemplazo": false
+}
+```
+
+Devuelve **200** con el expediente completo ya actualizado, para que la interfaz
+pinte el resultado sin encadenar una segunda consulta que podria llegar tarde.
+
+Solo se aplica desde un caso **`CERRADO` con resultado `PROCEDENTE`**, que es la
+unica decision que segun la definicion 11.2 declara que el caso amerita una
+decision administrativa. Desde cualquier otro estado, o tras un `DESESTIMADO`, la
+respuesta es **409 `MEDIDA_NO_APLICABLE`**. Y solo la aplica **el responsable
+asignado**: 409 `CASO_SIN_RESPONSABLE` si no hay ninguno, 403
+`CASO_DE_OTRO_ADMINISTRADOR` si lo lleva otra persona.
+
+`fechaFinMedida` debe estar presente exactamente cuando la medida la exige, y
+siempre en el futuro:
+
+| Situacion | Respuesta |
+|---|---|
+| La medida no la exige y llega una fecha | 400 `FECHA_FIN_NO_ADMITIDA` |
+| La medida la exige y no llega ninguna | 400 `FECHA_FIN_REQUERIDA` |
+| Llega una fecha ya pasada | 400 `FECHA_FIN_INVALIDA` |
+
+Una medida deshabilitada entre que se pinto el formulario y se envio responde
+**409 `MEDIDA_DESHABILITADA`**.
+
+### Una sola medida vigente por cuenta
+
+La regla D-MOD-03 es de la **cuenta**, no del expediente: una persona con tres
+casos abiertos sostiene como mucho una sancion, la sostenga el caso que la
+sostenga.
+
+Aplicar una segunda **no sustituye nada en silencio**. La primera peticion
+responde **409 `MEDIDA_VIGENTE_EXISTENTE`** y el mensaje dice que expediente la
+impuso, que es lo que la interfaz necesita para advertir antes de preguntar. El
+expediente ya publica lo mismo en `medidaVigente`, con `esDeEsteCaso` para
+distinguir la propia de la de otro caso.
+
+Solo un reenvio con `"confirmaReemplazo": true` sustituye, y entonces todo ocurre
+**dentro de la misma transaccion**: se revoca la anterior, se aplica la nueva, se
+proyecta el estado de cuenta, se versionan los expedientes afectados y se revocan
+las sesiones si corresponde. No existe ningun instante confirmado en el que la
+cuenta tenga dos.
+
+Cuando la medida sustituida la sostenia **otro** expediente, cada uno registra su
+parte: el que la pierde deja `MEDIDA_REVOCADA` y el que la recibe,
+`MEDIDA_APLICADA`. Cuando la sostenia el mismo caso, la sustitucion deja una sola
+version `MEDIDA_APLICADA`: dos fotografias en el mismo instante no cabrian en la
+exclusion temporal del historial.
+
+**Concurrencia.** Toda decision bloquea primero la fila de la **cuenta afectada**
+y despues la del expediente. Bloquear solo el caso no serviria, porque dos
+expedientes distintos de la misma persona son filas distintas y las dos
+transacciones leerian que no hay ninguna medida vigente. El orden fijo evita
+ademas un abrazo mortal con el reemplazo, que necesita dos expedientes. Por
+encima de todo eso, `uq_caso_moderacion_medida_vigente_por_cuenta` sostiene la
+regla desde PostgreSQL aunque el codigo se equivocara, y una carrera que llegara
+alli sale como 409 y no como 500.
+
+### Efecto sobre la cuenta y sus sesiones
+
+Aplicar proyecta en la cuenta el `estadoCuenta` que la medida impone y su fecha
+de fin. Es una proyeccion, no una decision: la evidencia de por que la cuenta
+quedo asi vive en el historial del caso.
+
+| Estado resultante | Sesiones abiertas |
+|---|---|
+| `ACTIVA` (advertencia) | Se conservan |
+| `RESTRINGIDA_TEMPORAL` | **Se conservan** |
+| `SUSPENDIDA_TEMPORAL` | Se revocan con motivo `MEDIDA_ADMINISTRATIVA` |
+| `SUSPENDIDA_PERMANENTE` | Se revocan con motivo `MEDIDA_ADMINISTRATIVA` |
+
+Una cuenta restringida conserva la sesion a proposito: sigue pudiendo consultar
+su historial, cerrar compromisos existentes y abrir casos propios, y expulsarla
+no protegeria nada. Lo que no puede hacer se lo impide la autorizacion, que relee
+el estado de la cuenta en cada peticion.
+
+Con una suspension no basta con eso: mientras el JWT siga siendo valido, su
+portador seguiria llegando al servidor. Revocar la fila de sesion es lo que hace
+que **la peticion siguiente ya no tenga acceso aunque el token no haya
+expirado**.
+
+### Revocar una medida
+
+`POST /api/admin/casos/{id}/medida/revocacion` con `{ "motivo": "..." }`.
+Devuelve 200 con el expediente.
+
+Levanta la medida que **este** expediente sostenia y devuelve la cuenta a
+`ACTIVA`; la regla de una sola vigente garantiza que no habia otra esperando
+debajo. No revoca sesiones: volver a estar activa devuelve acceso, no lo quita.
+
+**No exige ningun estado del caso**, a diferencia de aplicar. Revocar siempre
+reduce la sancion, y condicionarla dejaria sancionada a una persona justo
+mientras su expediente vuelve a revisarse, que es cuando una apelacion aceptada
+pide levantarla. Si el caso ya no sostiene ninguna, la respuesta es **409
+`SIN_MEDIDA_VIGENTE`**.
+
+### Expiracion automatica
+
+Un barrido periodico levanta las medidas temporales cuyo plazo ya se cumplio. El
+periodo se configura con `MOICA_EXPIRACION_MEDIDAS_PERIODO` (por omision un
+minuto), que es por tanto el retraso maximo entre que una medida vence y la
+cuenta vuelve a estar activa.
+
+**No es una sancion automatica.** No elige medida, no escala severidad, no mira
+reincidencia y no sanciona a nadie: ejecuta el plazo que una persona fijo al
+aplicarla, que es exactamente lo que la definicion 11.3 admite. Por eso su
+version del historial lleva `tipoActor` `SISTEMA` e `idActor` nulo, los unicos
+valores que `ck_historial_caso_actor` admite para un evento sin persona detras.
+
+Al vencer, el caso suelta la medida, la cuenta vuelve a `ACTIVA` y se registra
+`MEDIDA_EXPIRADA`. Es idempotente y vuelve a comprobar cada caso despues de
+bloquearlo, asi que una medida revocada a mano o sustituida entre la consulta y
+el bloqueo simplemente se salta.
+
+No hay ninguna ruta para dispararlo: no es una operacion que nadie decida.
+
+## Apelaciones de un caso
+
+**La apelacion no se presenta dentro de Moica.** No hay formulario, ni endpoint
+publico, ni adjuntos, ni buzon, ni correo automatizado: la decision D-MOD-04 y la
+definicion 11.5 lo excluyen del MVP. La aplicacion solo **muestra** el canal
+externo junto al aviso de la medida, y lo que existe aqui es el registro
+administrativo de lo que llego por ese canal.
+
+Las tres rutas cuelgan de `/api/admin/casos/{id}` y las tres exigen ser **el
+responsable asignado**. Todas devuelven 200 con el expediente completo.
+
+| Verbo y ruta | Cuerpo | Precondicion | Evento |
+|---|---|---|---|
+| `POST /{id}/apelacion` | `{ "relato": "..." }` | Caso `CERRADO` y sin apelacion pendiente | `APELACION_PRESENTADA` |
+| `POST /{id}/apelacion/resolucion` | `{ "aceptada": true, "resolucion": "..." }` | Apelacion `PENDIENTE` | `APELACION_ACEPTADA` o `APELACION_RECHAZADA` |
+| `POST /{id}/reapertura` | `{ "motivo": "..." }` | Caso `CERRADO` y apelacion `ACEPTADA` | `CASO_REABIERTO` |
+
+Errores: **409 `TRANSICION_NO_PERMITIDA`** si el caso no esta cerrado, **409
+`APELACION_PENDIENTE`** si ya hay una sin resolver, **409
+`SIN_APELACION_PENDIENTE`** si no hay ninguna que resolver y **409
+`APELACION_NO_ACEPTADA`** al intentar reabrir sin una apelacion aceptada.
+
+**La apelacion no es una tabla.** El diccionario de datos no la modela como
+entidad: la representa con los eventos del historial, y eso basta porque una
+apelacion no tiene mas estado que el de la ultima decision tomada sobre ella. El
+campo `apelacion` del expediente se lee de ahi, mirando el ultimo evento
+relevante del caso. `CASO_REABIERTO` cuenta como relevante y devuelve
+`SIN_APELACION`: reabrir **consume** el derecho que aceptar la apelacion
+concedio, de modo que reabrir dos veces exige que la persona vuelva a apelar.
+
+El actor de `APELACION_PRESENTADA` es **la persona administradora que registra**,
+no quien apelo. Es lo honesto: dentro de Moica el acto verificable es el
+registro, y la persona sancionada no ejecuto nada aqui —ni podria, si una
+suspension le revoco las sesiones—. El detalle de la version deja constancia de
+que lo apelado vino de fuera.
+
+### Aceptar y reabrir son dos decisiones
+
+Aceptar una apelacion **no reabre el caso ni levanta la medida**. La definicion
+11.5 las separa —se aceptara o se rechazara «y, cuando proceda, se reabrira el
+mismo expediente»— y a veces basta con aceptarla y revocar la medida sin volver a
+investigar. Separarlas deja ademas un evento por decision, en lugar de dos
+fotografias en el mismo instante que la exclusion temporal no admitiria.
+
+Reabrir completa la unica transicion que faltaba, `CERRADO` a `REABIERTO`. Desde
+ahi el caso sigue el camino de siempre, `REABIERTO` a `EN_REVISION`.
+
+**La resolucion anterior no se pierde.** La fila del caso la suelta porque
+`ck_caso_moderacion_cierre` solo admite resultado, resolucion y fecha de cierre
+en `CERRADO`: una decision que dejo de ser definitiva no puede seguir figurando
+como vigente. La version del historial que la registro la conserva integra, y por
+eso reabrir crea una version nueva en lugar de reescribir la anterior.
+
+La medida **sobrevive** a la reapertura: volver a mirar el expediente no absuelve
+a nadie. Si quien revisa decide levantarla, la revoca, y eso es otra decision con
+su propio motivo y su propio evento.
+
+## Aviso de la cuenta sancionada
+
+Lo unico que la persona afectada ve dentro de Moica, y lo unico que necesita: en
+que estado esta su cuenta, hasta cuando si es temporal y a donde escribir para
+apelar. **No dice que medida se aplico, ni desde que caso, ni quien la decidio**:
+eso es informacion del expediente y no sale de `/api/admin`.
+
+El canal se configura con `MOICA_SOPORTE_CANAL`. No es un secreto: se publica a
+quien esta sancionado.
+
+`GET /api/auth/sesion` gana un campo:
+
+```json
+{
+  "usuario": {
+    "estadoCuenta": "RESTRINGIDA_TEMPORAL",
+    "fechaFinEstadoCuenta": "2026-10-05T12:00:00-06:00"
+  },
+  "sesion": { },
+  "avisoDeCuenta": {
+    "fechaFin": "2026-10-05T12:00:00-06:00",
+    "canalDeSoporte": "soporte@moica.ni"
+  }
+}
+```
+
+`avisoDeCuenta` es `null` cuando la cuenta esta `ACTIVA`, que es el caso normal y
+no necesita ningun aviso. `fechaFinEstadoCuenta` se anade tambien a
+`DatosDeUsuario`, cuyas unicas dos salidas son el registro y la consulta de la
+sesion: solo viaja al propio titular.
+
+**Una cuenta suspendida no llega a esa respuesta.** Aplicar la suspension le
+revoco las sesiones y ademas `POST /api/auth/sesion` le niega abrir otra. Lo
+unico que lee es ese rechazo, asi que **su mensaje lleva el aviso completo**:
+
+```json
+{
+  "estado": 403,
+  "codigo": "CUENTA_SUSPENDIDA",
+  "mensaje": "Esta cuenta esta suspendida hasta el 5 de octubre de 2026. Si crees que es un error, escribe a soporte@moica.ni."
+}
+```
+
+Sin eso quedaria fuera sin saber hasta cuando ni a quien escribir, y la apelacion
+que la definicion 11.5 le reconoce seria inalcanzable en la practica. Se sigue
+comprobando **despues** de la contrasena, de modo que quien no acierte las
+credenciales sigue sin averiguar nada de una cuenta ajena.
 
 ## Verificacion documental del prestador
 
@@ -1189,4 +1486,4 @@ Todos los errores comparten cuerpo. El detalle por campo solo aparece cuando el 
 }
 ```
 
-Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `SUBCATEGORIA_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ADMITIDO`, `DOCUMENTO_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ENCONTRADO`, `EXPEDIENTE_INCOMPLETO`, `SOLICITUD_ABIERTA_DUPLICADA`, `SOLICITUD_NO_ENCONTRADA`, `SOLICITUD_YA_TOMADA`, `NIVEL_YA_VIGENTE`, `VERIFICACION_BASICA_REQUERIDA`, `TRANSICION_NO_PERMITIDA`, `REVISION_DE_OTRO_ADMINISTRADOR`, `SERVICIO_PROPIO`, `SERVICIO_INACTIVO`, `PRESTADOR_NO_DISPONIBLE`, `MOTIVO_OBLIGATORIO`, `CHAT_NO_HABILITADO`, `CHAT_SOLO_LECTURA`, `CONTACTOS_NO_REVELADOS`, `SOLICITUD_NO_COMPLETADA`, `CALIFICACION_DUPLICADA`, `SOLICITUD_NO_REPORTABLE`, `REPORTE_DUPLICADO`, `CASO_NO_ENCONTRADO`, `CASO_SIN_RESPONSABLE`, `CASO_DE_OTRO_ADMINISTRADOR`, `ADMINISTRADOR_NO_VALIDO`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. `SUBCATEGORIA_NO_DISPONIBLE` responde 400; `SOLICITUD_NO_COMPLETADA` y `CALIFICACION_DUPLICADA` responden 409, como ya fijan «Descubrimiento publico» y «Registrar una calificacion». Los de la revision administrativa: `CASO_NO_ENCONTRADO` 404, `ADMINISTRADOR_NO_VALIDO` 400, `CASO_SIN_RESPONSABLE` 409 y `CASO_DE_OTRO_ADMINISTRADOR` 403. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento, URL prefirmadas ni valores internos.
+Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `SUBCATEGORIA_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ADMITIDO`, `DOCUMENTO_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ENCONTRADO`, `EXPEDIENTE_INCOMPLETO`, `SOLICITUD_ABIERTA_DUPLICADA`, `SOLICITUD_NO_ENCONTRADA`, `SOLICITUD_YA_TOMADA`, `NIVEL_YA_VIGENTE`, `VERIFICACION_BASICA_REQUERIDA`, `TRANSICION_NO_PERMITIDA`, `REVISION_DE_OTRO_ADMINISTRADOR`, `SERVICIO_PROPIO`, `SERVICIO_INACTIVO`, `PRESTADOR_NO_DISPONIBLE`, `MOTIVO_OBLIGATORIO`, `CHAT_NO_HABILITADO`, `CHAT_SOLO_LECTURA`, `CONTACTOS_NO_REVELADOS`, `SOLICITUD_NO_COMPLETADA`, `CALIFICACION_DUPLICADA`, `SOLICITUD_NO_REPORTABLE`, `REPORTE_DUPLICADO`, `CASO_NO_ENCONTRADO`, `CASO_SIN_RESPONSABLE`, `CASO_DE_OTRO_ADMINISTRADOR`, `ADMINISTRADOR_NO_VALIDO`, `MEDIDA_NO_ENCONTRADA`, `MEDIDA_DUPLICADA`, `MEDIDA_INCOHERENTE`, `MEDIDA_DESHABILITADA`, `MEDIDA_NO_APLICABLE`, `MEDIDA_VIGENTE_EXISTENTE`, `SIN_MEDIDA_VIGENTE`, `FECHA_FIN_REQUERIDA`, `FECHA_FIN_NO_ADMITIDA`, `FECHA_FIN_INVALIDA`, `APELACION_PENDIENTE`, `SIN_APELACION_PENDIENTE`, `APELACION_NO_ACEPTADA`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. `SUBCATEGORIA_NO_DISPONIBLE` responde 400; `SOLICITUD_NO_COMPLETADA` y `CALIFICACION_DUPLICADA` responden 409, como ya fijan «Descubrimiento publico» y «Registrar una calificacion». Los de la revision administrativa: `CASO_NO_ENCONTRADO` 404, `ADMINISTRADOR_NO_VALIDO` 400, `CASO_SIN_RESPONSABLE` 409 y `CASO_DE_OTRO_ADMINISTRADOR` 403. Los de las medidas: `MEDIDA_NO_ENCONTRADA` 404; `MEDIDA_INCOHERENTE`, `FECHA_FIN_REQUERIDA`, `FECHA_FIN_NO_ADMITIDA` y `FECHA_FIN_INVALIDA` 400; y `MEDIDA_DUPLICADA`, `MEDIDA_DESHABILITADA`, `MEDIDA_NO_APLICABLE`, `MEDIDA_VIGENTE_EXISTENTE` y `SIN_MEDIDA_VIGENTE` 409. Los de las apelaciones —`APELACION_PENDIENTE`, `SIN_APELACION_PENDIENTE` y `APELACION_NO_ACEPTADA`— responden 409. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento, URL prefirmadas ni valores internos.

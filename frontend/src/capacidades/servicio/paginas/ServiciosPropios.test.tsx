@@ -36,8 +36,9 @@ describe('Servicios propios', () => {
     api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
     renderizarConProveedores(<App />, '/prestador/servicios');
 
+    expect(await screen.findByRole('heading', { name: 'Mis servicios' })).toBeVisible();
     expect(await screen.findByText(/Todavía no tienes servicios/)).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Publicar un servicio' })).toBeVisible();
+    expect(screen.getByRole('link', { name: '+ Publicar nuevo servicio' })).toBeVisible();
   });
 
   it('muestra A convenir y permite activar o desactivar desde el listado', async () => {

@@ -66,7 +66,7 @@ describe('Asistente de nuevo servicio', () => {
 
     await persona.click(await screen.findByRole('button', { name: 'Cancelar' }));
 
-    expect(await screen.findByRole('heading', { name: 'Tus servicios' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Mis servicios' })).toBeVisible();
   });
 
   it('exige una descripción antes de dejar el paso de detalles', async () => {

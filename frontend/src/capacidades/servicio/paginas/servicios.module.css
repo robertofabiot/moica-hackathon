@@ -113,6 +113,49 @@
   padding: var(--gap-md);
 }
 
+.contenidoGestion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xl);
+  width: 100%;
+  max-width: 64rem;
+}
+
+.cabeceraDeListado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.filaDeCabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap-md);
+}
+
+.grupoDeTitulo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  min-width: 0;
+  flex: 1 1 16rem;
+}
+
+.tituloDeListado {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+  letter-spacing: -0.01em;
+}
+
+.explicacionDeListado {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
 .tarjetaAsistente {
   display: flex;
   flex-direction: column;

@@ -8,6 +8,7 @@ import FormularioDeServicio from '../componentes/FormularioDeServicio';
 import ImagenesDelServicio from '../componentes/ImagenesDelServicio';
 import { useServicioPropio } from '../hooks/useServiciosPropios';
 import { RUTA_SERVICIOS } from '../rutas';
+import MarcoDeGestionDeServicios from './MarcoDeGestionDeServicios';
 import propios from './servicios.module.css';
 
 /** Edita un servicio propio: datos, estado e imágenes. */
@@ -18,56 +19,52 @@ export default function EditarServicio() {
 
   if (servicio.isPending) {
     return (
-      <main className={propios.pantalla}>
+      <MarcoDeGestionDeServicios>
         <p className={secciones.estado} role="status">
           Cargando el servicio…
         </p>
-      </main>
+      </MarcoDeGestionDeServicios>
     );
   }
 
   if (servicio.isError || servicio.data === undefined) {
     return (
-      <main className={propios.pantalla}>
-        <div className={propios.contenido}>
-          <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
-            {servicio.error instanceof ErrorDeApi
-              ? servicio.error.message
-              : 'No encontramos ese servicio.'}{' '}
-            <button
-              className={estilos.enlaceDeTexto}
-              type="button"
-              onClick={() => void servicio.refetch()}
-            >
-              Reintentar
-            </button>
-          </p>
-          <p className={propios.pie}>
-            <Link to={RUTA_SERVICIOS}>Volver a tus servicios</Link>
-          </p>
-        </div>
-      </main>
+      <MarcoDeGestionDeServicios>
+        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+          {servicio.error instanceof ErrorDeApi
+            ? servicio.error.message
+            : 'No encontramos ese servicio.'}{' '}
+          <button
+            className={estilos.enlaceDeTexto}
+            type="button"
+            onClick={() => void servicio.refetch()}
+          >
+            Reintentar
+          </button>
+        </p>
+        <p className={propios.pie}>
+          <Link to={RUTA_SERVICIOS}>Volver a tus servicios</Link>
+        </p>
+      </MarcoDeGestionDeServicios>
     );
   }
 
   const datos = servicio.data;
 
   return (
-    <main className={propios.pantalla}>
-      <div className={propios.contenido}>
-        <header className={propios.encabezado}>
-          <h1 className={propios.titulo}>{datos.nombre}</h1>
-          <p className={secciones.explicacion}>
-            {datos.nombreCategoria} · {datos.nombreSubcategoria}
-          </p>
-        </header>
-        <FormularioDeServicio servicio={datos} />
-        <EstadoDelServicio servicio={datos} />
-        <ImagenesDelServicio servicio={datos} />
-        <p className={propios.pie}>
-          <Link to={RUTA_SERVICIOS}>Volver a tus servicios</Link>
+    <MarcoDeGestionDeServicios>
+      <header className={propios.encabezado}>
+        <h1 className={propios.titulo}>{datos.nombre}</h1>
+        <p className={secciones.explicacion}>
+          {datos.nombreCategoria} · {datos.nombreSubcategoria}
         </p>
-      </div>
-    </main>
+      </header>
+      <FormularioDeServicio servicio={datos} />
+      <EstadoDelServicio servicio={datos} />
+      <ImagenesDelServicio servicio={datos} />
+      <p className={propios.pie}>
+        <Link to={RUTA_SERVICIOS}>Volver a tus servicios</Link>
+      </p>
+    </MarcoDeGestionDeServicios>
   );
 }

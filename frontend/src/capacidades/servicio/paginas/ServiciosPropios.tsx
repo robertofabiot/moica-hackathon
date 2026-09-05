@@ -1,12 +1,14 @@
 import { Link } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { Boton } from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import { useCambioDeEstadoDeServicio, useServiciosPropios } from '../hooks/useServiciosPropios';
 import { nombreDelEstado, precioPropio } from '../presentacion';
 import { RUTA_NUEVO_SERVICIO, rutaDeEdicionDeServicio } from '../rutas';
 import type { ServicioPropio } from '../tipos';
+import MarcoDeGestionDeServicios from './MarcoDeGestionDeServicios';
 import propios from './servicios.module.css';
 
 /**
@@ -17,72 +19,63 @@ export default function ServiciosPropios() {
 
   if (servicios.isPending) {
     return (
-      <main className={propios.pantalla}>
+      <MarcoDeGestionDeServicios>
         <p className={secciones.estado} role="status">
           Cargando tus servicios…
         </p>
-      </main>
+      </MarcoDeGestionDeServicios>
     );
   }
 
   if (servicios.isError) {
     return (
-      <main className={propios.pantalla}>
-        <div className={propios.contenido}>
-          <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
-            {servicios.error instanceof ErrorDeApi
-              ? servicios.error.message
-              : 'No pudimos cargar tus servicios.'}{' '}
-            <button
-              className={estilos.enlaceDeTexto}
-              type="button"
-              onClick={() => void servicios.refetch()}
-            >
-              Reintentar
-            </button>
-          </p>
-          <p className={propios.pie}>
-            <Link to="/">Volver al inicio</Link>
-          </p>
-        </div>
-      </main>
+      <MarcoDeGestionDeServicios>
+        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+          {servicios.error instanceof ErrorDeApi
+            ? servicios.error.message
+            : 'No pudimos cargar tus servicios.'}{' '}
+          <button
+            className={estilos.enlaceDeTexto}
+            type="button"
+            onClick={() => void servicios.refetch()}
+          >
+            Reintentar
+          </button>
+        </p>
+      </MarcoDeGestionDeServicios>
     );
   }
 
   const lista = servicios.data;
 
   return (
-    <main className={propios.pantalla}>
-      <div className={propios.contenido}>
-        <header className={propios.encabezado}>
-          <h1 className={propios.titulo}>Tus servicios</h1>
-          <p className={secciones.explicacion}>
-            Prepara publicaciones aunque tu perfil aún no esté verificado. Solo se muestran en el
-            descubrimiento cuando están activas, tu cuenta está operativa y tu perfil verificado
-            está disponible.
-          </p>
-          <div className={propios.accionesDeEncabezado}>
-            <Link className={estilos.boton} to={RUTA_NUEVO_SERVICIO}>
-              Publicar un servicio
-            </Link>
+    <MarcoDeGestionDeServicios>
+      <header className={propios.cabeceraDeListado}>
+        <div className={propios.filaDeCabecera}>
+          <div className={propios.grupoDeTitulo}>
+            <h1 className={propios.tituloDeListado}>Mis servicios</h1>
+            <p className={propios.explicacionDeListado}>
+              Las publicaciones activas aparecen en el directorio cuando tu cuenta está operativa y
+              tu perfil verificado está disponible. Puedes preparar servicios aunque todavía no
+              estés verificado.
+            </p>
           </div>
-        </header>
+          <Boton variante="primario" to={RUTA_NUEVO_SERVICIO}>
+            + Publicar nuevo servicio
+          </Boton>
+        </div>
+      </header>
 
-        {lista.length === 0 ? (
-          <p className={secciones.vacio}>Todavía no tienes servicios. Publica el primero.</p>
-        ) : (
-          <ul className={propios.lista}>
-            {lista.map((servicio) => (
-              <TarjetaPropia key={servicio.idServicioPublicado} servicio={servicio} />
-            ))}
-          </ul>
-        )}
-
-        <p className={propios.pie}>
-          <Link to="/">Volver al inicio</Link>
-        </p>
-      </div>
-    </main>
+      {lista.length === 0 ? (
+        <p className={secciones.vacio}>Todavía no tienes servicios. Publica el primero.</p>
+      ) : (
+        <ul className={propios.lista}>
+          {lista.map((servicio) => (
+            <TarjetaPropia key={servicio.idServicioPublicado} servicio={servicio} />
+          ))}
+        </ul>
+      )}
+    </MarcoDeGestionDeServicios>
   );
 }
 

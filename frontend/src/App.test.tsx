@@ -77,4 +77,40 @@ describe('navegación base', () => {
 
     expect(await screen.findByRole('heading', { name: 'Explorar servicios' })).toBeInTheDocument();
   });
+
+  it('muestra la pantalla de acceso no autorizado en /acceso-denegado', () => {
+    renderizarConProveedores(<App />, '/acceso-denegado');
+
+    expect(
+      screen.getByRole('heading', { name: 'Esta zona requiere otros permisos' })
+    ).toBeInTheDocument();
+  });
+
+  it('muestra la variante según query params en /acceso-denegado', () => {
+    renderizarConProveedores(<App />, '/acceso-denegado?codigo=401');
+
+    expect(screen.getByRole('heading', { name: 'Tu sesión no está activa' })).toBeInTheDocument();
+  });
+
+  it('muestra la pantalla de sesión requerida en /401', () => {
+    renderizarConProveedores(<App />, '/401');
+
+    expect(screen.getByRole('heading', { name: 'Tu sesión no está activa' })).toBeInTheDocument();
+  });
+
+  it('muestra la pantalla de permisos insuficientes en /403', () => {
+    renderizarConProveedores(<App />, '/403');
+
+    expect(
+      screen.getByRole('heading', { name: 'Esta zona requiere otros permisos' })
+    ).toBeInTheDocument();
+  });
+
+  it('muestra la pantalla de segundo factor requerido en /403-2fa', () => {
+    renderizarConProveedores(<App />, '/403-2fa');
+
+    expect(
+      screen.getByRole('heading', { name: 'Verificación adicional requerida' })
+    ).toBeInTheDocument();
+  });
 });

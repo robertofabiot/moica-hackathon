@@ -155,6 +155,13 @@ El backend lee estas variables del entorno del sistema y, si no estan definidas,
 
 ## PostgreSQL y pgAdmin
 
+Este Compose es solo desarrollo. Las imagenes productivas y su validacion
+aislada usan `compose.smoke.yml`: desde la raiz ejecutar
+`node scripts/smoke-produccion.mjs` con Docker y Node 22 disponibles. El script
+crea una base nueva y retira su propio volumen al terminar, sin tocar la base
+local. Ver [DespliegueProduccion.md](DespliegueProduccion.md) para Railway,
+variables del perfil `prod`, healthchecks y la diferencia con el smoke publico.
+
 Desde la raiz del proyecto:
 
 ```bash

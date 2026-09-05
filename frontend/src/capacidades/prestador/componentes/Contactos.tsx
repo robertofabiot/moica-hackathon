@@ -3,9 +3,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { Boton, Entrada, IconoMensaje } from '../../../comun/componentes/ui';
 import { intercambiar } from '../../../comun/listas';
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
-import estilos from '../../../comun/estilos/formulario.module.css';
 import { esquemaDeContacto, type CamposDeContacto } from '../esquemas';
 import {
   useActualizacionDeContacto,
@@ -14,7 +13,7 @@ import {
   useEliminacionDeContacto,
   useOrdenDeContactos,
 } from '../hooks/useContactos';
-import secciones from '../../../comun/estilos/secciones.module.css';
+import propios from '../paginas/prestador.module.css';
 import type { MedioContacto } from '../tipos';
 
 /**
@@ -56,31 +55,56 @@ export default function Contactos() {
     mensajeDe(creacion.error) ?? mensajeDe(eliminacion.error) ?? mensajeDe(orden.error);
 
   return (
-    <section className={secciones.seccion} aria-labelledby="titulo-contactos">
-      <h2 className={secciones.tituloDeSeccion} id="titulo-contactos">
+    <section className={propios.tarjeta} aria-labelledby="titulo-contactos">
+      <h2 className={propios.tituloDeTarjeta} id="titulo-contactos">
         Medios de contacto
       </h2>
-      <p className={secciones.explicacion}>
+      <p className={propios.explicacion}>
         Solo tú los ves. Se muestran a un cliente cuando aceptas su solicitud de servicio.
       </p>
 
       {mensajeDeError !== null && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
           {mensajeDeError}
         </p>
       )}
 
+      <form className={propios.formulario} onSubmit={agregar} noValidate>
+        <div className={propios.campo}>
+          <label className={propios.etiqueta} htmlFor="nuevo-contacto">
+            Agregar un contacto
+          </label>
+          <div className={propios.filaDeAlta}>
+            <div className={propios.campoFlexible}>
+              <Entrada
+                id="nuevo-contacto"
+                type="text"
+                aria-describedby={errors.contenido ? undefined : 'pista-contenido'}
+                mensajeDeError={errors.contenido?.message}
+                {...register('contenido')}
+              />
+            </div>
+            <Boton type="submit" variante="primario" disabled={creacion.isPending}>
+              {creacion.isPending ? 'Agregando…' : 'Agregar contacto'}
+            </Boton>
+          </div>
+          <p className={propios.pista} id="pista-contenido">
+            Un teléfono, un correo, un usuario o un enlace. Por ejemplo: WhatsApp 8888-8888.
+          </p>
+        </div>
+      </form>
+
       {contactos.isPending && (
-        <p className={secciones.estado} role="status">
+        <p className={propios.estado} role="status">
           Cargando tus contactos…
         </p>
       )}
 
       {contactos.isError && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
           No pudimos cargar tus contactos.{' '}
           <button
-            className={estilos.enlaceDeTexto}
+            className={propios.enlaceDeTexto}
             type="button"
             onClick={() => void contactos.refetch()}
           >
@@ -91,52 +115,61 @@ export default function Contactos() {
 
       {contactos.isSuccess &&
         (lista.length === 0 ? (
-          <p className={secciones.vacio}>Todavía no agregaste ningún contacto.</p>
+          <p className={propios.vacio}>Todavía no agregaste ningún contacto.</p>
         ) : (
-          <ul className={secciones.lista}>
+          <ul className={propios.listaDeContactos}>
             {lista.map((contacto, posicion) => (
-              <li className={secciones.elemento} key={contacto.idMedioContactoPrestador}>
+              <li className={propios.tarjetaDeContacto} key={contacto.idMedioContactoPrestador}>
                 {editando === contacto.idMedioContactoPrestador ? (
                   <EdicionDeContacto contacto={contacto} alTerminar={() => setEditando(null)} />
                 ) : (
                   <>
-                    <p className={secciones.contenidoDelElemento}>{contacto.contenido}</p>
-                    <div className={secciones.accionesDelElemento}>
-                      <button
-                        className={secciones.botonPequeno}
+                    <div className={propios.filaDeContacto}>
+                      <span className={propios.iconoDeContacto} aria-hidden="true">
+                        <IconoMensaje />
+                      </span>
+                      <p className={propios.contenidoDeContacto}>{contacto.contenido}</p>
+                    </div>
+                    <div className={propios.accionesDeFila}>
+                      <Boton
+                        className={propios.botonCompacto}
+                        variante="secundario"
                         type="button"
                         onClick={() => mover(posicion, -1)}
                         disabled={posicion === 0 || orden.isPending}
                         aria-label={`Subir el contacto ${contacto.contenido}`}
                       >
                         Subir
-                      </button>
-                      <button
-                        className={secciones.botonPequeno}
+                      </Boton>
+                      <Boton
+                        className={propios.botonCompacto}
+                        variante="secundario"
                         type="button"
                         onClick={() => mover(posicion, 1)}
                         disabled={posicion === lista.length - 1 || orden.isPending}
                         aria-label={`Bajar el contacto ${contacto.contenido}`}
                       >
                         Bajar
-                      </button>
-                      <button
-                        className={secciones.botonPequeno}
+                      </Boton>
+                      <Boton
+                        className={propios.botonCompacto}
+                        variante="secundario"
                         type="button"
                         onClick={() => setEditando(contacto.idMedioContactoPrestador)}
                         aria-label={`Editar el contacto ${contacto.contenido}`}
                       >
                         Editar
-                      </button>
-                      <button
-                        className={secciones.botonPequeno}
+                      </Boton>
+                      <Boton
+                        className={propios.botonCompacto}
+                        variante="contorno"
                         type="button"
                         onClick={() => eliminacion.mutate(contacto.idMedioContactoPrestador)}
                         disabled={eliminacion.isPending}
                         aria-label={`Quitar el contacto ${contacto.contenido}`}
                       >
                         Quitar
-                      </button>
+                      </Boton>
                     </div>
                   </>
                 )}
@@ -144,34 +177,6 @@ export default function Contactos() {
             ))}
           </ul>
         ))}
-
-      <form className={estilos.formulario} onSubmit={agregar} noValidate>
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="contenidoDeContacto">
-            Agregar un contacto
-          </label>
-          <input
-            id="contenidoDeContacto"
-            className={claseDeEntrada(errors.contenido !== undefined)}
-            type="text"
-            aria-invalid={errors.contenido !== undefined}
-            aria-describedby={errors.contenido ? 'error-contenido' : 'pista-contenido'}
-            {...register('contenido')}
-          />
-          <p className={estilos.pista} id="pista-contenido">
-            Un teléfono, un correo, un usuario o un enlace. Por ejemplo: WhatsApp 8888-8888.
-          </p>
-          {errors.contenido && (
-            <p className={estilos.error} id="error-contenido">
-              {errors.contenido.message}
-            </p>
-          )}
-        </div>
-
-        <button className={estilos.boton} type="submit" disabled={creacion.isPending}>
-          {creacion.isPending ? 'Agregando…' : 'Agregar contacto'}
-        </button>
-      </form>
     </section>
   );
 }
@@ -206,27 +211,25 @@ function EdicionDeContacto({
   const identificador = `contacto-${contacto.idMedioContactoPrestador}`;
 
   return (
-    <form className={estilos.formulario} onSubmit={guardar} noValidate>
-      <div className={estilos.campo}>
-        <label className={estilos.etiqueta} htmlFor={identificador}>
+    <form className={propios.formulario} onSubmit={guardar} noValidate>
+      <div className={propios.campo}>
+        <label className={propios.etiqueta} htmlFor={identificador}>
           Editar contacto
         </label>
-        <input
+        <Entrada
           id={identificador}
-          className={claseDeEntrada(errors.contenido !== undefined)}
           type="text"
-          aria-invalid={errors.contenido !== undefined}
+          mensajeDeError={errors.contenido?.message}
           {...register('contenido')}
         />
-        {errors.contenido && <p className={estilos.error}>{errors.contenido.message}</p>}
       </div>
-      <div className={secciones.accionesDelElemento}>
-        <button className={secciones.botonPequeno} type="submit" disabled={actualizacion.isPending}>
+      <div className={propios.accionesDeFila}>
+        <Boton type="submit" variante="primario" disabled={actualizacion.isPending}>
           {actualizacion.isPending ? 'Guardando…' : 'Guardar'}
-        </button>
-        <button className={secciones.botonPequeno} type="button" onClick={alTerminar}>
+        </Boton>
+        <Boton variante="secundario" type="button" onClick={alTerminar}>
           Cancelar
-        </button>
+        </Boton>
       </div>
     </form>
   );

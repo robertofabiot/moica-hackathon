@@ -3,10 +3,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { Boton, Entrada } from '../../../comun/componentes/ui';
 import { intercambiar } from '../../../comun/listas';
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
 import { esquemaDeTrabajo, type CamposDeTrabajo } from '../esquemas';
 import {
   useActualizacionDeTrabajo,
@@ -17,6 +15,7 @@ import {
 } from '../hooks/usePortafolio';
 import type { DatosDeTrabajo, Trabajo } from '../tipos';
 import ImagenesDelTrabajo from './ImagenesDelTrabajo';
+import propios from './portafolio.module.css';
 
 /**
  * El portafolio: trabajos que el prestador administra a mano.
@@ -62,31 +61,87 @@ export default function Portafolio() {
     mensajeDe(creacion.error) ?? mensajeDe(eliminacion.error) ?? mensajeDe(orden.error);
 
   return (
-    <section className={secciones.seccion} aria-labelledby="titulo-portafolio">
-      <h2 className={secciones.tituloDeSeccion} id="titulo-portafolio">
+    <section className={propios.tarjeta} aria-labelledby="titulo-portafolio">
+      <h2 className={propios.titulo} id="titulo-portafolio">
         Portafolio
       </h2>
-      <p className={secciones.explicacion}>
+      <p className={propios.explicacion}>
         Agrega los trabajos que quieras mostrar. Tú decides cuáles aparecen y en qué orden.
       </p>
 
       {mensajeDeError !== null && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
           {mensajeDeError}
         </p>
       )}
 
+      <form className={propios.formulario} onSubmit={agregar} noValidate>
+        <h3 className={propios.subtitulo}>Agregar un trabajo</h3>
+
+        <div className={propios.campo}>
+          <label className={propios.etiqueta} htmlFor="tituloDelTrabajo">
+            Título
+          </label>
+          <Entrada
+            id="tituloDelTrabajo"
+            type="text"
+            mensajeDeError={errors.titulo?.message}
+            {...register('titulo')}
+          />
+        </div>
+
+        <div className={propios.campo}>
+          <label className={propios.etiqueta} htmlFor="descripcionDelTrabajo">
+            Descripción
+          </label>
+          <textarea
+            id="descripcionDelTrabajo"
+            className={unirClases(
+              propios.control,
+              errors.descripcion !== undefined ? propios.controlConError : undefined
+            )}
+            rows={4}
+            aria-invalid={errors.descripcion !== undefined}
+            aria-describedby={errors.descripcion ? 'error-descripcionDelTrabajo' : undefined}
+            {...register('descripcion')}
+          />
+          {errors.descripcion && (
+            <p className={propios.error} id="error-descripcionDelTrabajo">
+              {errors.descripcion.message}
+            </p>
+          )}
+        </div>
+
+        <div className={propios.campo}>
+          <label className={propios.etiqueta} htmlFor="fechaDelTrabajo">
+            Fecha de realización (opcional)
+          </label>
+          <Entrada
+            id="fechaDelTrabajo"
+            type="date"
+            mensajeDeError={errors.fechaRealizacion?.message}
+            {...register('fechaRealizacion')}
+          />
+        </div>
+
+        <div className={propios.accionesDeFormulario}>
+          <Boton type="submit" variante="primario" disabled={creacion.isPending}>
+            {creacion.isPending ? 'Agregando…' : 'Agregar trabajo'}
+          </Boton>
+        </div>
+      </form>
+
       {portafolio.isPending && (
-        <p className={secciones.estado} role="status">
+        <p className={propios.estado} role="status">
           Cargando tu portafolio…
         </p>
       )}
 
       {portafolio.isError && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
           No pudimos cargar tu portafolio.{' '}
           <button
-            className={estilos.enlaceDeTexto}
+            className={propios.enlaceDeTexto}
             type="button"
             onClick={() => void portafolio.refetch()}
           >
@@ -97,58 +152,62 @@ export default function Portafolio() {
 
       {portafolio.isSuccess &&
         (lista.length === 0 ? (
-          <p className={secciones.vacio}>Todavía no agregaste ningún trabajo.</p>
+          <p className={propios.vacio}>Todavía no agregaste ningún trabajo.</p>
         ) : (
-          <ul className={secciones.lista}>
+          <ul className={propios.rejillaDeTrabajos}>
             {lista.map((trabajo, posicion) => (
-              <li className={secciones.elemento} key={trabajo.idTrabajo}>
+              <li className={propios.tarjetaDeTrabajo} key={trabajo.idTrabajo}>
                 {editando === trabajo.idTrabajo ? (
                   <EdicionDeTrabajo trabajo={trabajo} alTerminar={() => setEditando(null)} />
                 ) : (
                   <>
-                    <h3 className={secciones.tituloDelElemento}>{trabajo.titulo}</h3>
+                    <h3 className={propios.tituloDelTrabajo}>{trabajo.titulo}</h3>
                     {trabajo.fechaRealizacion !== null && (
-                      <p className={secciones.metadatoDelElemento}>
+                      <p className={propios.metadato}>
                         Realizado el {formatearFecha(trabajo.fechaRealizacion)}
                       </p>
                     )}
-                    <p className={secciones.contenidoDelElemento}>{trabajo.descripcion}</p>
-                    <div className={secciones.accionesDelElemento}>
-                      <button
-                        className={secciones.botonPequeno}
+                    <p className={propios.descripcionDelTrabajo}>{trabajo.descripcion}</p>
+                    <div className={propios.accionesDeFila}>
+                      <Boton
+                        className={propios.botonCompacto}
+                        variante="secundario"
                         type="button"
                         onClick={() => mover(posicion, -1)}
                         disabled={posicion === 0 || orden.isPending}
                         aria-label={`Subir el trabajo ${trabajo.titulo}`}
                       >
                         Subir
-                      </button>
-                      <button
-                        className={secciones.botonPequeno}
+                      </Boton>
+                      <Boton
+                        className={propios.botonCompacto}
+                        variante="secundario"
                         type="button"
                         onClick={() => mover(posicion, 1)}
                         disabled={posicion === lista.length - 1 || orden.isPending}
                         aria-label={`Bajar el trabajo ${trabajo.titulo}`}
                       >
                         Bajar
-                      </button>
-                      <button
-                        className={secciones.botonPequeno}
+                      </Boton>
+                      <Boton
+                        className={propios.botonCompacto}
+                        variante="secundario"
                         type="button"
                         onClick={() => setEditando(trabajo.idTrabajo)}
                         aria-label={`Editar el trabajo ${trabajo.titulo}`}
                       >
                         Editar
-                      </button>
-                      <button
-                        className={secciones.botonPequeno}
+                      </Boton>
+                      <Boton
+                        className={propios.botonCompacto}
+                        variante="contorno"
                         type="button"
                         onClick={() => eliminacion.mutate(trabajo.idTrabajo)}
                         disabled={eliminacion.isPending}
                         aria-label={`Quitar el trabajo ${trabajo.titulo}`}
                       >
                         Quitar
-                      </button>
+                      </Boton>
                     </div>
                     <ImagenesDelTrabajo trabajo={trabajo} />
                   </>
@@ -157,68 +216,6 @@ export default function Portafolio() {
             ))}
           </ul>
         ))}
-
-      <form className={estilos.formulario} onSubmit={agregar} noValidate>
-        <h3 className={secciones.tituloDelElemento}>Agregar un trabajo</h3>
-
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="tituloDelTrabajo">
-            Título
-          </label>
-          <input
-            id="tituloDelTrabajo"
-            className={claseDeEntrada(errors.titulo !== undefined)}
-            type="text"
-            aria-invalid={errors.titulo !== undefined}
-            aria-describedby={errors.titulo ? 'error-titulo' : undefined}
-            {...register('titulo')}
-          />
-          {errors.titulo && (
-            <p className={estilos.error} id="error-titulo">
-              {errors.titulo.message}
-            </p>
-          )}
-        </div>
-
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="descripcionDelTrabajo">
-            Descripción
-          </label>
-          <textarea
-            id="descripcionDelTrabajo"
-            className={claseDeEntrada(errors.descripcion !== undefined)}
-            rows={4}
-            aria-invalid={errors.descripcion !== undefined}
-            aria-describedby={errors.descripcion ? 'error-descripcionDelTrabajo' : undefined}
-            {...register('descripcion')}
-          />
-          {errors.descripcion && (
-            <p className={estilos.error} id="error-descripcionDelTrabajo">
-              {errors.descripcion.message}
-            </p>
-          )}
-        </div>
-
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="fechaDelTrabajo">
-            Fecha de realización (opcional)
-          </label>
-          <input
-            id="fechaDelTrabajo"
-            className={claseDeEntrada(errors.fechaRealizacion !== undefined)}
-            type="date"
-            aria-invalid={errors.fechaRealizacion !== undefined}
-            {...register('fechaRealizacion')}
-          />
-          {errors.fechaRealizacion && (
-            <p className={estilos.error}>{errors.fechaRealizacion.message}</p>
-          )}
-        </div>
-
-        <button className={estilos.boton} type="submit" disabled={creacion.isPending}>
-          {creacion.isPending ? 'Agregando…' : 'Agregar trabajo'}
-        </button>
-      </form>
     </section>
   );
 }
@@ -249,54 +246,55 @@ function EdicionDeTrabajo({ trabajo, alTerminar }: { trabajo: Trabajo; alTermina
   });
 
   return (
-    <form className={estilos.formulario} onSubmit={guardar} noValidate>
-      <div className={estilos.campo}>
-        <label className={estilos.etiqueta} htmlFor={`titulo-${trabajo.idTrabajo}`}>
+    <form className={propios.formulario} onSubmit={guardar} noValidate>
+      <div className={propios.campo}>
+        <label className={propios.etiqueta} htmlFor={`titulo-${trabajo.idTrabajo}`}>
           Título
         </label>
-        <input
+        <Entrada
           id={`titulo-${trabajo.idTrabajo}`}
-          className={claseDeEntrada(errors.titulo !== undefined)}
           type="text"
-          aria-invalid={errors.titulo !== undefined}
+          mensajeDeError={errors.titulo?.message}
           {...register('titulo')}
         />
-        {errors.titulo && <p className={estilos.error}>{errors.titulo.message}</p>}
       </div>
 
-      <div className={estilos.campo}>
-        <label className={estilos.etiqueta} htmlFor={`descripcion-${trabajo.idTrabajo}`}>
+      <div className={propios.campo}>
+        <label className={propios.etiqueta} htmlFor={`descripcion-${trabajo.idTrabajo}`}>
           Descripción
         </label>
         <textarea
           id={`descripcion-${trabajo.idTrabajo}`}
-          className={claseDeEntrada(errors.descripcion !== undefined)}
+          className={unirClases(
+            propios.control,
+            errors.descripcion !== undefined ? propios.controlConError : undefined
+          )}
           rows={4}
           aria-invalid={errors.descripcion !== undefined}
           {...register('descripcion')}
         />
-        {errors.descripcion && <p className={estilos.error}>{errors.descripcion.message}</p>}
+        {errors.descripcion && <p className={propios.error}>{errors.descripcion.message}</p>}
       </div>
 
-      <div className={estilos.campo}>
-        <label className={estilos.etiqueta} htmlFor={`fecha-${trabajo.idTrabajo}`}>
+      <div className={propios.campo}>
+        <label className={propios.etiqueta} htmlFor={`fecha-${trabajo.idTrabajo}`}>
           Fecha de realización (opcional)
         </label>
-        <input
+        <Entrada
           id={`fecha-${trabajo.idTrabajo}`}
-          className={claseDeEntrada(errors.fechaRealizacion !== undefined)}
           type="date"
+          mensajeDeError={errors.fechaRealizacion?.message}
           {...register('fechaRealizacion')}
         />
       </div>
 
-      <div className={secciones.accionesDelElemento}>
-        <button className={secciones.botonPequeno} type="submit" disabled={actualizacion.isPending}>
+      <div className={propios.accionesDeFila}>
+        <Boton type="submit" variante="primario" disabled={actualizacion.isPending}>
           {actualizacion.isPending ? 'Guardando…' : 'Guardar'}
-        </button>
-        <button className={secciones.botonPequeno} type="button" onClick={alTerminar}>
+        </Boton>
+        <Boton variante="secundario" type="button" onClick={alTerminar}>
           Cancelar
-        </button>
+        </Boton>
       </div>
     </form>
   );
@@ -326,4 +324,8 @@ function mensajeDe(error: unknown): string | null {
     return error.message;
   }
   return error instanceof Error ? error.message : null;
+}
+
+function unirClases(...partes: Array<string | undefined>): string {
+  return partes.filter((parte) => parte !== undefined && parte !== '').join(' ');
 }

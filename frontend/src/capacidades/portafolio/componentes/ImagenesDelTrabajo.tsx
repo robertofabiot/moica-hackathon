@@ -1,11 +1,8 @@
 import { useRef, useState } from 'react';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { Boton, Entrada, IconoCamara } from '../../../comun/componentes/ui';
 import { intercambiar } from '../../../comun/listas';
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
-import propios from './portafolio.module.css';
 import {
   useEliminacionDeImagen,
   useOrdenDeImagenes,
@@ -13,6 +10,7 @@ import {
   useTextoAlternativo,
 } from '../hooks/usePortafolio';
 import type { Trabajo } from '../tipos';
+import propios from './portafolio.module.css';
 
 /**
  * Las imágenes de un trabajo: subirlas con su texto alternativo, ordenarlas y quitarlas.
@@ -68,48 +66,51 @@ export default function ImagenesDelTrabajo({ trabajo }: { trabajo: Trabajo }) {
     mensajeDe(texto.error);
 
   return (
-    <div>
-      <h4 className={secciones.metadatoDelElemento}>Imágenes</h4>
+    <div className={propios.bloqueDeImagenes}>
+      <h4 className={propios.metadato}>Imágenes</h4>
 
       {mensajeDeError !== null && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
           {mensajeDeError}
         </p>
       )}
 
       {trabajo.imagenes.length === 0 ? (
-        <p className={secciones.vacio}>Este trabajo todavía no tiene imágenes.</p>
+        <p className={propios.vacio}>Este trabajo todavía no tiene imágenes.</p>
       ) : (
         <ul className={propios.galeria}>
           {trabajo.imagenes.map((imagen, posicion) => (
-            <li key={imagen.idImagenTrabajoPortafolio}>
+            <li className={propios.miniaturaEnvoltorio} key={imagen.idImagenTrabajoPortafolio}>
               <img
                 className={propios.miniatura}
                 src={imagen.urlImagen}
                 alt={imagen.textoAlternativo ?? `Imagen del trabajo ${trabajo.titulo}`}
                 loading="lazy"
               />
-              <div className={secciones.accionesDelElemento}>
-                <button
-                  className={secciones.botonPequeno}
+              <div className={propios.accionesDeFila}>
+                <Boton
+                  className={propios.botonCompacto}
+                  variante="secundario"
                   type="button"
                   onClick={() => mover(posicion, -1)}
                   disabled={posicion === 0 || orden.isPending}
                   aria-label={`Subir la imagen ${posicion + 1} de ${trabajo.titulo}`}
                 >
                   Subir
-                </button>
-                <button
-                  className={secciones.botonPequeno}
+                </Boton>
+                <Boton
+                  className={propios.botonCompacto}
+                  variante="secundario"
                   type="button"
                   onClick={() => mover(posicion, 1)}
                   disabled={posicion === trabajo.imagenes.length - 1 || orden.isPending}
                   aria-label={`Bajar la imagen ${posicion + 1} de ${trabajo.titulo}`}
                 >
                   Bajar
-                </button>
-                <button
-                  className={secciones.botonPequeno}
+                </Boton>
+                <Boton
+                  className={propios.botonCompacto}
+                  variante="contorno"
                   type="button"
                   onClick={() =>
                     eliminacion.mutate({
@@ -121,17 +122,16 @@ export default function ImagenesDelTrabajo({ trabajo }: { trabajo: Trabajo }) {
                   aria-label={`Quitar la imagen ${posicion + 1} de ${trabajo.titulo}`}
                 >
                   Quitar
-                </button>
+                </Boton>
               </div>
               <label
-                className={estilos.pista}
+                className={propios.metadato}
                 htmlFor={`texto-${imagen.idImagenTrabajoPortafolio}`}
               >
                 Texto alternativo
               </label>
-              <input
+              <Entrada
                 id={`texto-${imagen.idImagenTrabajoPortafolio}`}
-                className={claseDeEntrada(false)}
                 type="text"
                 defaultValue={imagen.textoAlternativo ?? ''}
                 maxLength={200}
@@ -151,37 +151,38 @@ export default function ImagenesDelTrabajo({ trabajo }: { trabajo: Trabajo }) {
         </ul>
       )}
 
-      <div className={estilos.campo}>
-        <label className={estilos.etiqueta} htmlFor={`${identificador}-texto`}>
+      <div className={propios.campo}>
+        <label className={propios.etiqueta} htmlFor={`${identificador}-texto`}>
           Texto alternativo de la imagen nueva
         </label>
-        <input
+        <Entrada
           id={`${identificador}-texto`}
-          className={claseDeEntrada(false)}
           type="text"
           maxLength={200}
           value={textoAlternativo}
           onChange={(evento) => setTextoAlternativo(evento.target.value)}
           aria-describedby={`${identificador}-pista`}
         />
-        <p className={estilos.pista} id={`${identificador}-pista`}>
+        <p className={propios.metadato} id={`${identificador}-pista`}>
           Describe brevemente lo que se ve, para quien no puede verla.
         </p>
 
-        <label className={estilos.etiqueta} htmlFor={identificador}>
+        <label className={propios.etiquetaDeSubida} htmlFor={identificador}>
+          <IconoCamara />
           Agregar imagen
         </label>
         <input
           id={identificador}
+          className={propios.entradaOculta}
           ref={entradaDeArchivo}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           onChange={elegir}
           disabled={subida.isPending}
         />
-        <p className={estilos.pista}>JPEG, PNG o WebP, hasta 5 MB.</p>
+        <p className={propios.metadato}>JPEG, PNG o WebP, hasta 5 MB.</p>
         {subida.isPending && (
-          <p className={secciones.estado} role="status">
+          <p className={propios.estado} role="status">
             Subiendo la imagen…
           </p>
         )}

@@ -1,108 +1,525 @@
 /*
- * Estilos propios de la pantalla del perfil de prestador.
- *
- * Las secciones, listas y botones que comparte con el portafolio viven en
- * `src/comun/estilos/secciones.module.css`; aquí queda lo que solo usa esta
- * pantalla. Reutiliza las variables neutras de `src/estilos/global.css`: la
- * paleta de marca todavía no está aprobada. Mobile-first: la hoja base describe
- * el teléfono y la media query amplía a tableta y escritorio.
+ * Perfil privado del prestador. Solo tokens de `src/estilos/global.css`, salvo
+ * el aviso de privacidad, que usa el tono crema/ámbar pedido para ese banner.
+ * Mobile-first: la barra lateral aparece desde tableta; el contenido se
+ * ensancha en escritorio.
  */
 
-.pantalla {
+.pagina {
   display: flex;
   flex-direction: column;
-  align-items: center;
   min-height: 100dvh;
-  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+  background-color: var(--color-neutral-50);
+}
+
+.barraLateral {
+  display: none;
+}
+
+.principal {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .contenido {
-  width: 100%;
-  max-width: 40rem;
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-4);
+  gap: var(--gap-xl);
+  width: 100%;
+  max-width: 58rem;
+  margin: 0 auto;
+  padding: var(--gap-xl) var(--gap-lg);
 }
 
 .encabezado {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-1);
+  gap: var(--gap-xs);
 }
 
 .titulo {
-  font-size: 1.5rem;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
   letter-spacing: -0.01em;
+  color: var(--color-neutral-900);
 }
 
-/* Aviso de que el perfil todavía no es público mientras esté SIN_VERIFICAR. */
+.subtitulo {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
 .avisoDePrivacidad {
-  padding: var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-left-width: 4px;
-  border-left-color: var(--moica-texto-suave);
-  border-radius: 0.5rem;
-  background-color: var(--moica-fondo-suave);
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid #ffe082;
+  border-radius: var(--radius-lg);
+  background-color: #fffde7;
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.avisoDeError {
+  border-left-color: var(--color-error-500);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-error-500);
+  font-size: var(--font-size-sm);
+}
+
+.estado {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.tarjeta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  padding: var(--gap-lg);
+  background-color: var(--color-neutral-0);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.tituloDeTarjeta {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.explicacion {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.tarjetaIdentidad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  padding: var(--gap-lg);
+  background-color: var(--color-neutral-0);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.bloqueIdentidad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  min-width: 0;
+}
+
+.divisorIdentidad {
+  width: 100%;
+  height: 0;
+  margin: 0;
+  border: none;
+  border-top: var(--border-width-xs) solid var(--color-neutral-200);
 }
 
 .imagenDePerfil {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--moica-espacio-2);
+  gap: var(--gap-md);
 }
 
-/*
- * Mientras hay un archivo elegido conviven dos retratos: el guardado y el local.
- * En teléfono caben los dos en fila (2 x 8rem mas el hueco), y `wrap` los apila
- * si el texto crece o la letra del sistema es mayor.
- */
 .retratos {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: var(--moica-espacio-2);
+  gap: var(--gap-md);
 }
 
 .retratoConPie {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--moica-espacio-1);
+  gap: var(--gap-xs);
   margin: 0;
   text-align: center;
 }
 
 .retrato {
-  width: 8rem;
-  height: 8rem;
-  border: 1px solid var(--moica-borde);
-  border-radius: 50%;
+  width: 5.5rem;
+  height: 5.5rem;
+  border: 3px solid var(--color-neutral-0);
+  border-radius: var(--radius-full);
   object-fit: cover;
-  background-color: var(--moica-fondo-suave);
+  background-color: var(--color-neutral-100);
+  box-shadow: var(--shadow-md);
 }
 
 .retratoVacio {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 8rem;
-  height: 8rem;
-  border: 1px dashed var(--moica-borde);
-  border-radius: 50%;
-  background-color: var(--moica-fondo-suave);
-  color: var(--moica-texto-suave);
-  font-size: 0.875rem;
+  gap: 0.125rem;
+  width: 5.5rem;
+  height: 5.5rem;
+  padding: var(--gap-xs);
+  border: 3px solid var(--color-neutral-0);
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-50);
+  box-shadow: var(--shadow-md);
+  color: var(--color-primary-700);
+  font-size: var(--font-size-xs);
   text-align: center;
+}
+
+.iconoDeRetrato {
+  display: block;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.accionesDeImagen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-sm);
+}
+
+.entradaDeArchivo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.etiquetaDeSubida {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-xs);
+  padding: var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.etiquetaDeSubida:hover {
+  border-color: var(--color-neutral-600);
+  background-color: var(--color-neutral-50);
+}
+
+.campoDeSubida:has(.entradaDeArchivo:disabled) .etiquetaDeSubida {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.campoDeSubida {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-xs);
+}
+
+.pista {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.filaDeDisponibilidad {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-sm);
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.pildoraDisponible,
+.pildoraNoDisponible {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem var(--gap-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.pildoraDisponible {
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-700);
+}
+
+.pildoraNoDisponible {
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.etiqueta {
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-neutral-900);
+}
+
+.control {
+  width: 100%;
+  padding: var(--gap-sm);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-base);
+}
+
+.control:hover {
+  border-color: var(--color-neutral-600);
+}
+
+.control:focus-visible {
+  border-color: var(--color-primary-500);
+}
+
+.controlConError {
+  border-color: var(--color-error-500);
+}
+
+.grupoDeTipos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-sm);
+}
+
+.opcionDeTipo {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  padding: var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  cursor: pointer;
+}
+
+.opcionDeTipo:hover {
+  border-color: var(--color-neutral-600);
+}
+
+.opcionDeTipo:has(input:checked) {
+  border-color: var(--color-primary-500);
+  background-color: var(--color-primary-50);
+}
+
+.opcionDeTipo input {
+  accent-color: var(--color-primary-500);
+}
+
+.accionesDeFormulario {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.aviso {
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-left-width: var(--border-width-sm);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-50);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.avisoExito {
+  border-left-color: var(--color-secondary-500);
+  background-color: var(--color-secondary-50);
+}
+
+.listaDeContactos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tarjetaDeContacto {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-50);
+}
+
+.filaDeContacto {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-sm);
+  min-width: 0;
+}
+
+.iconoDeContacto {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-500);
+}
+
+.iconoDeContacto svg {
+  display: block;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.contenidoDeContacto {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: var(--font-weight-medium);
+}
+
+.accionesDeFila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs);
+}
+
+.botonCompacto {
+  padding: 0.375rem 0.75rem;
+  font-size: var(--font-size-sm);
+}
+
+.filaDeAlta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.campoFlexible {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.vacio {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.enlaceDeTexto {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary-700);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .pie {
-  color: var(--moica-texto-suave);
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
   text-align: center;
 }
 
+.pie a {
+  color: var(--color-neutral-600);
+  text-decoration: none;
+}
+
+.pie a:hover {
+  color: var(--color-primary-700);
+  text-decoration: underline;
+}
+
 @media (min-width: 48rem) {
-  .titulo {
-    font-size: 2rem;
+  .barraLateral {
+    display: block;
+  }
+
+  .pagina {
+    padding-left: calc(var(--font-size-xl) + var(--gap-md) * 2);
+  }
+
+  .grupoDeTipos {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .filaDeAlta {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .filaDeAlta button {
+    flex-shrink: 0;
+    margin-top: 0;
+  }
+}
+
+@media (min-width: 64rem) {
+  .contenido {
+    padding: 2rem 1.5rem;
+  }
+
+  .tarjetaIdentidad {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+    align-items: start;
+    column-gap: var(--gap-xl);
+    row-gap: var(--gap-lg);
+  }
+
+  .divisorIdentidad {
+    display: none;
+  }
+
+  .imagenDePerfil {
+    align-items: flex-start;
+  }
+
+  .retratos {
+    justify-content: flex-start;
+  }
+
+  .campoDeSubida,
+  .pista {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .accionesDeImagen {
+    justify-content: flex-start;
   }
 }

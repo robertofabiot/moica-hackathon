@@ -2,15 +2,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 
 import { ErrorDeApi } from '../../../comun/api';
-import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
+import { Boton, Entrada } from '../../../comun/componentes/ui';
 import { esquemaDePerfil, type CamposDePerfil, type DatosValidadosDePerfil } from '../esquemas';
 import {
   useActualizacionDePerfil,
   useCatalogoTerritorial,
   useCreacionDePerfil,
 } from '../hooks/usePerfilPrestador';
+import propios from '../paginas/prestador.module.css';
 import type { PerfilPrestador } from '../tipos';
 
 /**
@@ -66,69 +65,69 @@ export default function FormularioDePerfil({ perfil }: { perfil: PerfilPrestador
     fallo instanceof ErrorDeApi && fallo.errores.length === 0 ? fallo.message : null;
 
   return (
-    <section className={secciones.seccion} aria-labelledby="titulo-datos-del-perfil">
-      <h2 className={secciones.tituloDeSeccion} id="titulo-datos-del-perfil">
+    <section className={propios.tarjeta} aria-labelledby="titulo-datos-del-perfil">
+      <h2 className={propios.tituloDeTarjeta} id="titulo-datos-del-perfil">
         {perfil === null ? 'Crea tu perfil' : 'Datos de tu perfil'}
       </h2>
 
       {mensajeGeneral !== null && (
-        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
           {mensajeGeneral}
         </p>
       )}
 
       {guardado.isSuccess && (
-        <p className={estilos.aviso} role="status">
+        <p className={`${propios.aviso} ${propios.avisoExito}`} role="status">
           {perfil === null ? 'Tu perfil quedó creado.' : 'Guardamos tus cambios.'}
         </p>
       )}
 
-      <form className={estilos.formulario} onSubmit={enviar} noValidate>
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="nombrePublico">
+      <form className={propios.formulario} onSubmit={enviar} noValidate>
+        <div className={propios.campo}>
+          <label className={propios.etiqueta} htmlFor="nombrePublico">
             Nombre público
           </label>
-          <input
+          <Entrada
             id="nombrePublico"
-            className={claseDeEntrada(errors.nombrePublico !== undefined)}
             type="text"
             autoComplete="organization"
-            aria-invalid={errors.nombrePublico !== undefined}
-            aria-describedby={errors.nombrePublico ? 'error-nombrePublico' : 'pista-nombrePublico'}
+            aria-describedby={errors.nombrePublico ? undefined : 'pista-nombrePublico'}
+            mensajeDeError={errors.nombrePublico?.message}
             {...register('nombrePublico')}
           />
-          <p className={estilos.pista} id="pista-nombrePublico">
+          <p className={propios.pista} id="pista-nombrePublico">
             Tu nombre personal, profesional o el de tu negocio.
           </p>
-          {errors.nombrePublico && (
-            <p className={estilos.error} id="error-nombrePublico">
-              {errors.nombrePublico.message}
-            </p>
-          )}
         </div>
 
-        <fieldset className={estilos.campo}>
-          <legend className={estilos.etiqueta}>¿Cómo trabajas?</legend>
-          {OPCIONES_DE_TIPO.map((opcion) => (
-            <label key={opcion.valor} htmlFor={`tipo-${opcion.valor}`}>
-              <input
-                id={`tipo-${opcion.valor}`}
-                type="radio"
-                value={opcion.valor}
-                {...register('tipoPrestador')}
-              />{' '}
-              {opcion.etiqueta}
-            </label>
-          ))}
+        <fieldset className={propios.campo}>
+          <legend className={propios.etiqueta}>¿Cómo trabajas?</legend>
+          <div className={propios.grupoDeTipos}>
+            {OPCIONES_DE_TIPO.map((opcion) => (
+              <label
+                className={propios.opcionDeTipo}
+                key={opcion.valor}
+                htmlFor={`tipo-${opcion.valor}`}
+              >
+                <input
+                  id={`tipo-${opcion.valor}`}
+                  type="radio"
+                  value={opcion.valor}
+                  {...register('tipoPrestador')}
+                />
+                {opcion.etiqueta}
+              </label>
+            ))}
+          </div>
           {errors.tipoPrestador && (
-            <p className={estilos.error} id="error-tipoPrestador">
+            <p className={propios.error} id="error-tipoPrestador">
               {errors.tipoPrestador.message}
             </p>
           )}
         </fieldset>
 
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="idMunicipioPrincipal">
+        <div className={propios.campo}>
+          <label className={propios.etiqueta} htmlFor="idMunicipioPrincipal">
             Municipio principal
           </label>
           {/*
@@ -144,7 +143,10 @@ export default function FormularioDePerfil({ perfil }: { perfil: PerfilPrestador
             render={({ field }) => (
               <select
                 id="idMunicipioPrincipal"
-                className={claseDeEntrada(errors.idMunicipioPrincipal !== undefined)}
+                className={unirClases(
+                  propios.control,
+                  errors.idMunicipioPrincipal !== undefined ? propios.controlConError : undefined
+                )}
                 aria-invalid={errors.idMunicipioPrincipal !== undefined}
                 aria-describedby={
                   errors.idMunicipioPrincipal ? 'error-idMunicipioPrincipal' : undefined
@@ -181,46 +183,52 @@ export default function FormularioDePerfil({ perfil }: { perfil: PerfilPrestador
             )}
           />
           {catalogo.isError && (
-            <p className={estilos.error} role="alert">
+            <p className={propios.error} role="alert">
               No pudimos cargar los municipios. Recarga la página e inténtalo otra vez.
             </p>
           )}
           {errors.idMunicipioPrincipal && (
-            <p className={estilos.error} id="error-idMunicipioPrincipal">
+            <p className={propios.error} id="error-idMunicipioPrincipal">
               {errors.idMunicipioPrincipal.message}
             </p>
           )}
         </div>
 
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="descripcion">
+        <div className={propios.campo}>
+          <label className={propios.etiqueta} htmlFor="descripcion">
             Presentación
           </label>
           <textarea
             id="descripcion"
-            className={claseDeEntrada(errors.descripcion !== undefined)}
+            className={unirClases(
+              propios.control,
+              errors.descripcion !== undefined ? propios.controlConError : undefined
+            )}
             rows={5}
             aria-invalid={errors.descripcion !== undefined}
             aria-describedby={errors.descripcion ? 'error-descripcion' : 'pista-descripcion'}
             {...register('descripcion')}
           />
-          <p className={estilos.pista} id="pista-descripcion">
+          <p className={propios.pista} id="pista-descripcion">
             Cuenta tu experiencia y qué ofreces. Hasta 3000 caracteres.
           </p>
           {errors.descripcion && (
-            <p className={estilos.error} id="error-descripcion">
+            <p className={propios.error} id="error-descripcion">
               {errors.descripcion.message}
             </p>
           )}
         </div>
 
-        <div className={estilos.campo}>
-          <label className={estilos.etiqueta} htmlFor="descripcionCobertura">
+        <div className={propios.campo}>
+          <label className={propios.etiqueta} htmlFor="descripcionCobertura">
             Cobertura
           </label>
           <textarea
             id="descripcionCobertura"
-            className={claseDeEntrada(errors.descripcionCobertura !== undefined)}
+            className={unirClases(
+              propios.control,
+              errors.descripcionCobertura !== undefined ? propios.controlConError : undefined
+            )}
             rows={3}
             aria-invalid={errors.descripcionCobertura !== undefined}
             aria-describedby={
@@ -228,19 +236,21 @@ export default function FormularioDePerfil({ perfil }: { perfil: PerfilPrestador
             }
             {...register('descripcionCobertura')}
           />
-          <p className={estilos.pista} id="pista-cobertura">
+          <p className={propios.pista} id="pista-cobertura">
             Barrios, sectores o puntos de referencia donde atiendes.
           </p>
           {errors.descripcionCobertura && (
-            <p className={estilos.error} id="error-descripcionCobertura">
+            <p className={propios.error} id="error-descripcionCobertura">
               {errors.descripcionCobertura.message}
             </p>
           )}
         </div>
 
-        <button className={estilos.boton} type="submit" disabled={guardado.isPending}>
-          {textoDelBoton(perfil !== null, guardado.isPending)}
-        </button>
+        <div className={propios.accionesDeFormulario}>
+          <Boton type="submit" variante="primario" disabled={guardado.isPending}>
+            {textoDelBoton(perfil !== null, guardado.isPending)}
+          </Boton>
+        </div>
       </form>
     </section>
   );
@@ -267,4 +277,8 @@ function esCampoDelFormulario(campo: string): campo is keyof CamposDePerfil {
     'idMunicipioPrincipal',
     'descripcionCobertura',
   ].includes(campo);
+}
+
+function unirClases(...partes: Array<string | undefined>): string {
+  return partes.filter((parte) => parte !== undefined && parte !== '').join(' ');
 }

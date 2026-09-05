@@ -1,11 +1,8 @@
 /*
- * Estilos propios de la cola administrativa de verificaciones.
- *
- * Lo que comparte con el resto de pantallas de contenido vive en
- * `src/comun/estilos/secciones.module.css`. Reutiliza las variables neutras de
- * `src/estilos/global.css`: la paleta de marca todavía no está aprobada.
- * Mobile-first: la hoja base describe el teléfono y la media query amplía a
- * tableta y escritorio.
+ * Cola administrativa de verificaciones y expediente en revisión.
+ * Solo tokens de `src/estilos/global.css`, salvo las píldoras semánticas de
+ * estado (ámbar, azul, verde #2E7D32 y rojo #C62828) que el flujo pide y no
+ * tienen escala propia en la paleta. Mobile-first.
  */
 
 .pantalla {
@@ -13,100 +10,580 @@
   flex-direction: column;
   align-items: center;
   min-height: 100dvh;
-  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+  padding-top: max(var(--gap-lg), env(safe-area-inset-top));
+  padding-right: var(--gap-md);
+  padding-bottom: max(var(--gap-lg), env(safe-area-inset-bottom));
+  padding-left: var(--gap-md);
+  background-color: var(--color-neutral-50);
 }
 
 .contenido {
-  width: 100%;
-  max-width: 52rem;
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-3);
+  gap: var(--gap-lg);
+  width: 100%;
+  max-width: 52rem;
 }
 
 .encabezado {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-1);
+  gap: var(--gap-xs);
 }
 
 .titulo {
-  font-size: 1.5rem;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   letter-spacing: -0.01em;
+  color: var(--color-neutral-900);
+}
+
+.explicacion {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.estado,
+.vacio {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.avisoDeError {
+  margin: 0;
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-left-width: var(--border-width-sm);
+  border-left-color: var(--color-error-500);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.enlaceDeTexto {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-primary-700);
+  font: inherit;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .filtros {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--moica-espacio-2);
+  flex-direction: column;
+  gap: var(--gap-md);
 }
 
-/*
- * Red de seguridad: si en algún idioma o con la letra muy grande la tabla no
- * cupiera, se desplaza dentro de su propio contenedor y la página nunca se
- * desborda en horizontal. Con los tamaños del entregable no hace falta usarlo.
- */
+.filtro {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  width: 100%;
+}
+
+.etiqueta {
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-neutral-900);
+}
+
+.selector {
+  width: 100%;
+  min-height: 3rem;
+  padding: var(--gap-sm) 2.75rem var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.25rem;
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-secondary);
+  font-size: 1rem;
+  appearance: none;
+}
+
+.selector:hover {
+  border-color: var(--color-neutral-600);
+}
+
+.selector:focus-visible {
+  border-color: var(--color-primary-500);
+}
+
 .tablaDesplazable {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-neutral-0);
+  box-shadow: var(--shadow-sm);
 }
 
 .tabla {
   width: 100%;
+  min-width: 22rem;
   border-collapse: collapse;
   text-align: left;
 }
 
 .tabla caption {
-  padding-bottom: var(--moica-espacio-1);
+  padding: var(--gap-md) var(--gap-md) var(--gap-xs);
   text-align: left;
 }
 
-/*
- * El contenido envuelve por palabras en lugar de ensanchar la tabla: con tres
- * columnas cabe entera en un teléfono sin partir ninguna a la mitad.
- */
 .tabla th,
 .tabla td {
-  padding: var(--moica-espacio-1) 0.375rem;
-  border-bottom: 1px solid var(--moica-borde);
-  vertical-align: top;
+  padding: var(--gap-md);
+  border-bottom: var(--border-width-xs) solid var(--color-neutral-200);
+  vertical-align: middle;
+}
+
+.tabla tbody tr:last-child th,
+.tabla tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .tabla thead th {
-  color: var(--moica-texto-suave);
-  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
-/* Un nombre comercial puede ser una sola palabra larga; ahí sí se parte. */
+.filaActiva th,
+.filaActiva td {
+  background-color: var(--color-secondary-50);
+}
+
 .celdaDePrestador {
   overflow-wrap: anywhere;
 }
 
-/* El nivel y la fecha, bajo el nombre y en segundo plano. */
-.detalleDeLaFila {
+.nombrePublico {
   display: block;
-  color: var(--moica-texto-suave);
-  font-size: 0.875rem;
-  font-weight: 400;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-neutral-900);
+}
+
+.detalleDeLaFila {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-xs);
+  margin-top: 0.25rem;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+}
+
+.pildoraDeNivel {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.5rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.pildoraDeEstado {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.125rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.pildoraPendiente {
+  background-color: #fff8e1;
+  color: #f57f17;
+}
+
+.pildoraEnRevision {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.pildoraAprobada {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.pildoraRechazada {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.botonDeFila {
+  min-width: 5.5rem;
+  min-height: 2.75rem;
 }
 
 .pie {
-  color: var(--moica-texto-suave);
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
   text-align: center;
 }
 
+.enlaceDePie {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: var(--gap-sm) var(--gap-md);
+  color: var(--color-primary-500);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.enlaceDePie:hover {
+  color: var(--color-primary-700);
+}
+
+/* ─── Expediente en revisión ─── */
+
+.expediente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  padding: var(--gap-md);
+  background-color: var(--color-neutral-0);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-left: 4px solid var(--color-secondary-500);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.tituloDeExpediente {
+  margin: 0;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+  overflow-wrap: anywhere;
+}
+
+.subtitulo {
+  margin: 0;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.encabezadoDelNivel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-sm);
+}
+
+.datos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  margin: 0;
+}
+
+.datos div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.metadato {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.dato {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.motivoRegistrado {
+  margin: 0;
+  padding: var(--gap-md);
+  border-left: 4px solid var(--color-error-500);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-neutral-50);
+  overflow-wrap: anywhere;
+}
+
+.visorDeDocumentos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-sm);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tarjetaDeDocumento {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+  min-height: 3rem;
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-50);
+}
+
+.cabeceraDeDocumento {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-sm);
+}
+
+.iconoDeDocumento {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-md);
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-500);
+}
+
+.iconoDeDocumento svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.cuerpoDeDocumento {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.tituloDeDocumento {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.nombreDeDocumento,
+.tamanoDeDocumento {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+}
+
+.enlaceDeDocumento {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-900);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  text-decoration: none;
+}
+
+.enlaceDeDocumento:hover {
+  border-color: var(--color-primary-500);
+  color: var(--color-primary-700);
+}
+
+.accionesDeResolucion {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.accionesDeResolucion button {
+  width: 100%;
+  min-height: 3rem;
+}
+
+.accionesDeResolucion button.botonConfianza {
+  background-color: var(--color-secondary-500);
+  border-color: var(--color-secondary-500);
+  color: var(--color-neutral-0);
+}
+
+.accionesDeResolucion button.botonConfianza:hover:not(:disabled) {
+  background-color: var(--color-secondary-700);
+  border-color: var(--color-secondary-700);
+}
+
+.accionesDeResolucion button.botonPeligro {
+  background-color: #c62828;
+  border-color: #c62828;
+  color: var(--color-neutral-0);
+}
+
+.accionesDeResolucion button.botonPeligro:hover:not(:disabled) {
+  background-color: #b71c1c;
+  border-color: #b71c1c;
+}
+
+.formularioDeMotivo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+  background-color: var(--color-neutral-50);
+  animation: desplegarMotivo 0.22s ease-out;
+}
+
+.advertencia {
+  margin: 0;
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-left-width: var(--border-width-sm);
+  border-left-color: var(--color-secondary-500);
+  border-radius: var(--radius-md);
+  background-color: var(--color-secondary-50);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.motivoEscrito {
+  width: 100%;
+  min-height: 8rem;
+  padding: var(--gap-sm);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-secondary);
+  font-size: 1rem;
+  resize: vertical;
+  scroll-margin-bottom: 8rem;
+}
+
+.motivoEscrito:focus-visible {
+  border-color: var(--color-primary-500);
+}
+
+.motivoConError {
+  border-color: var(--color-error-500);
+}
+
+.error {
+  margin: 0;
+  color: var(--color-error-500);
+  font-size: var(--font-size-sm);
+}
+
+.pista {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+}
+
+.confirmacionTactil {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gap-sm);
+  min-height: 2.75rem;
+  padding: var(--gap-sm);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.confirmacionTactil input {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+  accent-color: var(--color-primary-500);
+}
+
+@keyframes desplegarMotivo {
+  from {
+    opacity: 0;
+    transform: translateY(-0.4rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .formularioDeMotivo {
+    animation: none;
+  }
+}
+
 @media (min-width: 48rem) {
+  .pantalla {
+    padding-top: max(var(--gap-xl), env(safe-area-inset-top));
+    padding-right: var(--gap-xl);
+    padding-bottom: max(var(--gap-xl), env(safe-area-inset-bottom));
+    padding-left: var(--gap-xl);
+  }
+
   .titulo {
-    font-size: 2rem;
+    font-size: var(--font-size-2xl);
   }
 
-  .tabla th,
-  .tabla td {
-    padding: var(--moica-espacio-2) var(--moica-espacio-1);
+  .filtros {
+    flex-direction: row;
   }
 
-  .celdaDePrestador {
-    min-width: 10rem;
+  .filtro {
+    flex: 1;
+  }
+
+  .tabla {
+    min-width: 0;
+  }
+
+  .expediente {
+    padding: var(--gap-lg);
+  }
+
+  .visorDeDocumentos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .accionesDeResolucion {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .accionesDeResolucion button {
+    width: auto;
+    flex: 1 1 12rem;
   }
 }

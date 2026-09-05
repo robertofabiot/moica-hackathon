@@ -47,3 +47,6 @@ Este documento contiene las reglas estrictas de arquitectura y desarrollo para l
 - **Rol administrativo:** **prohibido** el registro público de administradores, un endpoint de promoción, una contraseña fija o un secreto versionado. El rol se asigna al arrancar, de forma idempotente, sobre una cuenta ordinaria ya registrada que indica una variable de entorno.
 - **Estado de cuenta:** `Usuario.estadoCuenta` es una proyección operativa que solo cambia la moderación. Las suspensiones bloquean el acceso; quien las lea no las recalcula ni las expira por su cuenta.
 - **Ocultar un control en React no es autorización.** Toda regla se aplica en el backend y se prueba allí; la interfaz solo evita proponer algo que el servidor va a rechazar.
+
+## 7. Evidencia visual de Pull Requests
+La evidencia visual de un PR no forma parte del árbol fuente. Antes de versionar PNG, JPG, WebP o `medidas*.json` generados al validar la interfaz, consultar `Docs/Core/GIT_WORKFLOW.md` y `.github/pull_request_template.md`. Por defecto se adjuntan al PR; no se hace commit.

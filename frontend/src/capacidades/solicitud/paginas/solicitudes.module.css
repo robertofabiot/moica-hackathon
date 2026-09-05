@@ -221,6 +221,76 @@
   font-size: var(--font-size-sm);
 }
 
+.contenedorCliente {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-lg);
+  width: 100%;
+  max-width: 48rem;
+}
+
+.cajaVacia {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-md);
+  text-align: center;
+  padding: var(--gap-md) 0;
+}
+
+.accionVacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-md);
+}
+
+.explicacionVacio {
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
+  max-width: 28rem;
+}
+
+.tarjetaPromocionPrestador {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  padding: var(--gap-lg);
+  border: var(--border-width-xs) solid var(--color-secondary-200);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-secondary-50);
+}
+
+.cuerpoPromocion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.tituloPromocion {
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.textoPromocion {
+  margin: 0;
+  color: var(--color-neutral-700);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+@media (min-width: 48rem) {
+  .tarjetaPromocionPrestador {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap-lg);
+  }
+}
+
 /* ─── Píldoras de estado ─── */
 
 .pildoraDeEstado {
@@ -299,6 +369,39 @@
   gap: var(--gap-lg);
   width: 100%;
   min-width: 0;
+}
+
+.columnaPrincipal,
+.columnaLateral {
+  display: contents;
+}
+
+.tarjetaInfo {
+  order: 1;
+}
+
+.panelAcciones {
+  order: 2;
+}
+
+.bloqueContactos {
+  order: 3;
+}
+
+.bloqueChat {
+  order: 4;
+}
+
+.bloqueHistorial {
+  order: 5;
+}
+
+.bloqueCalificacion {
+  order: 6;
+}
+
+.bloqueReporte {
+  order: 7;
 }
 
 .tarjetaInfo,
@@ -590,44 +693,29 @@
 
   .cuerpoDetalle {
     display: grid;
-    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    grid-template-areas:
-      'info acciones'
-      'contactos acciones'
-      'chat historial'
-      'calificacion historial'
-      'reporte historial';
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
     gap: 1.5rem;
     align-items: start;
   }
 
-  .tarjetaInfo {
-    grid-area: info;
+  .columnaPrincipal {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-width: 0;
   }
 
-  .panelAcciones {
-    grid-area: acciones;
+  .columnaLateral {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-width: 0;
     position: sticky;
     top: var(--gap-md);
   }
 
-  .bloqueContactos {
-    grid-area: contactos;
-  }
-
-  .bloqueChat {
-    grid-area: chat;
-  }
-
-  .bloqueHistorial {
-    grid-area: historial;
-  }
-
-  .bloqueCalificacion {
-    grid-area: calificacion;
-  }
-
-  .bloqueReporte {
-    grid-area: reporte;
+  .columnaPrincipal > *,
+  .columnaLateral > * {
+    order: initial;
   }
 }

@@ -84,77 +84,81 @@ export default function DetalleDeSolicitud() {
       </header>
 
       <div className={propios.cuerpoDetalle}>
-        <section className={propios.tarjetaInfo} aria-labelledby="titulo-necesidad">
-          <h2 className={propios.tituloDeSeccion} id="titulo-necesidad">
-            Necesidad
-          </h2>
-          <p className={propios.necesidad}>{solicitud.descripcionNecesidad}</p>
-          <div className={propios.datoDeInfo}>
-            <span className={propios.etiquetaDeDato}>Ubicación</span>
-            <p className={propios.valorDeDato}>
-              {solicitud.indicacionUbicacion}
-              {' · '}
-              {solicitud.nombreMunicipio}, {solicitud.nombreDepartamento}
-            </p>
+        <div className={propios.columnaPrincipal}>
+          <section className={propios.tarjetaInfo} aria-labelledby="titulo-necesidad">
+            <h2 className={propios.tituloDeSeccion} id="titulo-necesidad">
+              Necesidad
+            </h2>
+            <p className={propios.necesidad}>{solicitud.descripcionNecesidad}</p>
+            <div className={propios.datoDeInfo}>
+              <span className={propios.etiquetaDeDato}>Ubicación</span>
+              <p className={propios.valorDeDato}>
+                {solicitud.indicacionUbicacion}
+                {' · '}
+                {solicitud.nombreMunicipio}, {solicitud.nombreDepartamento}
+              </p>
+            </div>
+            <div className={propios.datoDeInfo}>
+              <span className={propios.etiquetaDeDato}>Fecha preferida</span>
+              {solicitud.fechaPreferida !== null ? (
+                <p className={propios.valorDeDato}>{diaVisible(solicitud.fechaPreferida)}</p>
+              ) : (
+                <p className={propios.explicacion}>Sin fecha preferida.</p>
+              )}
+            </div>
+          </section>
+
+          <div className={propios.bloqueContactos}>
+            <ContactosDelPrestador solicitud={solicitud} />
           </div>
-          <div className={propios.datoDeInfo}>
-            <span className={propios.etiquetaDeDato}>Fecha preferida</span>
-            {solicitud.fechaPreferida !== null ? (
-              <p className={propios.valorDeDato}>{diaVisible(solicitud.fechaPreferida)}</p>
-            ) : (
-              <p className={propios.explicacion}>Sin fecha preferida.</p>
-            )}
+
+          <div className={propios.bloqueChat}>
+            <ChatDeSolicitud solicitud={solicitud} />
           </div>
-        </section>
 
-        <section className={propios.panelAcciones} aria-labelledby="titulo-acciones">
-          <h2 className={propios.tituloDeSeccion} id="titulo-acciones">
-            Acciones
-          </h2>
-          <AccionesDeSolicitud solicitud={solicitud} />
-        </section>
+          <div className={propios.bloqueCalificacion}>
+            <CalificacionDeSolicitud solicitud={solicitud} />
+          </div>
 
-        <div className={propios.bloqueContactos}>
-          <ContactosDelPrestador solicitud={solicitud} />
+          <div className={propios.bloqueReporte}>
+            <ReporteDeSolicitud solicitud={solicitud} />
+          </div>
         </div>
 
-        <div className={propios.bloqueChat}>
-          <ChatDeSolicitud solicitud={solicitud} />
-        </div>
+        <div className={propios.columnaLateral}>
+          <section className={propios.panelAcciones} aria-labelledby="titulo-acciones">
+            <h2 className={propios.tituloDeSeccion} id="titulo-acciones">
+              Acciones
+            </h2>
+            <AccionesDeSolicitud solicitud={solicitud} />
+          </section>
 
-        <section className={propios.bloqueHistorial} aria-labelledby="titulo-historial">
-          <h2 className={propios.tituloDeSeccion} id="titulo-historial">
-            Historial
-          </h2>
-          <ol className={propios.historial} aria-label="Historial">
-            {solicitud.historial.map((cambio) => (
-              <li key={cambio.idCambioEstadoSolicitud} className={propios.cambio}>
-                <span
-                  className={unirClases(propios.nodoDeHistorial, claseDeNodo(cambio.estadoNuevo))}
-                  aria-hidden="true"
-                />
-                <p className={propios.tituloDeCambio}>
-                  {cambio.estadoAnterior === null
-                    ? nombreDelEstado(cambio.estadoNuevo)
-                    : `${nombreDelEstado(cambio.estadoAnterior)} → ${nombreDelEstado(cambio.estadoNuevo)}`}
-                </p>
-                <p className={propios.metaDeCambio}>
-                  {cambio.nombreActor} · {fechaVisible(cambio.fechaCambio)}
-                </p>
-                {cambio.motivo !== null && cambio.motivo !== '' ? (
-                  <p className={propios.motivoDeCambio}>{cambio.motivo}</p>
-                ) : null}
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <div className={propios.bloqueCalificacion}>
-          <CalificacionDeSolicitud solicitud={solicitud} />
-        </div>
-
-        <div className={propios.bloqueReporte}>
-          <ReporteDeSolicitud solicitud={solicitud} />
+          <section className={propios.bloqueHistorial} aria-labelledby="titulo-historial">
+            <h2 className={propios.tituloDeSeccion} id="titulo-historial">
+              Historial
+            </h2>
+            <ol className={propios.historial} aria-label="Historial">
+              {solicitud.historial.map((cambio) => (
+                <li key={cambio.idCambioEstadoSolicitud} className={propios.cambio}>
+                  <span
+                    className={unirClases(propios.nodoDeHistorial, claseDeNodo(cambio.estadoNuevo))}
+                    aria-hidden="true"
+                  />
+                  <p className={propios.tituloDeCambio}>
+                    {cambio.estadoAnterior === null
+                      ? nombreDelEstado(cambio.estadoNuevo)
+                      : `${nombreDelEstado(cambio.estadoAnterior)} → ${nombreDelEstado(cambio.estadoNuevo)}`}
+                  </p>
+                  <p className={propios.metaDeCambio}>
+                    {cambio.nombreActor} · {fechaVisible(cambio.fechaCambio)}
+                  </p>
+                  {cambio.motivo !== null && cambio.motivo !== '' ? (
+                    <p className={propios.motivoDeCambio}>{cambio.motivo}</p>
+                  ) : null}
+                </li>
+              ))}
+            </ol>
+          </section>
         </div>
       </div>
     </MarcoDeSolicitudes>

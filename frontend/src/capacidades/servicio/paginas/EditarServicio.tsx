@@ -45,7 +45,7 @@ export default function EditarServicio() {
             Reintentar
           </button>
         </p>
-        <Boton variante="secundario" to={RUTA_SERVICIOS}>
+        <Boton className={propios.accionAlineada} variante="secundario" to={RUTA_SERVICIOS}>
           Volver al listado
         </Boton>
       </MarcoDeGestionDeServicios>

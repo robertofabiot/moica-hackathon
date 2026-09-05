@@ -959,6 +959,10 @@
   gap: var(--gap-md);
 }
 
+.accionAlineada {
+  align-self: start;
+}
+
 @media (min-width: 48rem) {
   .barraLateralDeAsistente {
     display: block;

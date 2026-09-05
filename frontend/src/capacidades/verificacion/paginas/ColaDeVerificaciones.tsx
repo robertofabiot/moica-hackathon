@@ -3,8 +3,7 @@ import { Link } from 'react-router';
 
 import { useSesionActual } from '../../auth';
 import { ErrorDeApi } from '../../../comun/api';
-import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
+import { Boton } from '../../../comun/componentes/ui';
 import ExpedienteEnRevision from '../componentes/ExpedienteEnRevision';
 import { fechaLegible, nombreDelEstado, nombreDelNivelSolicitado } from '../etiquetas';
 import { useColaDeVerificaciones } from '../hooks/useRevisionDeVerificaciones';
@@ -43,7 +42,7 @@ export default function ColaDeVerificaciones() {
       <div className={propios.contenido}>
         <header className={propios.encabezado}>
           <h1 className={propios.titulo}>Verificaciones documentales</h1>
-          <p className={secciones.explicacion}>
+          <p className={propios.explicacion}>
             Toda solicitud la resuelve una persona. Moica no aprueba, rechaza ni revoca nada por su
             cuenta.
           </p>
@@ -52,18 +51,18 @@ export default function ColaDeVerificaciones() {
         <Filtros filtro={filtro} alCambiar={cambiarFiltro} />
 
         {cola.isPending && (
-          <p className={secciones.estado} role="status">
+          <p className={propios.estado} role="status">
             Cargando la cola…
           </p>
         )}
 
         {cola.isError && (
-          <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+          <p className={propios.avisoDeError} role="alert">
             {cola.error instanceof ErrorDeApi
               ? cola.error.message
               : 'No pudimos cargar la cola de verificaciones.'}{' '}
             <button
-              className={estilos.enlaceDeTexto}
+              className={propios.enlaceDeTexto}
               type="button"
               onClick={() => void cola.refetch()}
             >
@@ -74,11 +73,11 @@ export default function ColaDeVerificaciones() {
 
         {cola.data !== undefined &&
           (cola.data.length === 0 ? (
-            <p className={secciones.vacio}>No hay solicitudes con estos filtros.</p>
+            <p className={propios.vacio}>No hay solicitudes con estos filtros.</p>
           ) : (
             <div className={propios.tablaDesplazable}>
               <table className={propios.tabla}>
-                <caption className={secciones.explicacion}>
+                <caption className={propios.explicacion}>
                   Solicitudes de verificación, de la más antigua a la más reciente.
                 </caption>
                 <thead>
@@ -90,24 +89,36 @@ export default function ColaDeVerificaciones() {
                 </thead>
                 <tbody>
                   {cola.data.map((fila) => (
-                    <tr key={fila.idSolicitudVerificacion}>
-                      {/*
-                        El nivel y la fecha acompañan al nombre en lugar de
-                        ocupar dos columnas propias: con cinco, la tabla no cabe
-                        en un teléfono y las palabras se parten a la mitad. Con
-                        tres se lee entera en 375 px y sigue siendo una tabla.
-                      */}
+                    <tr
+                      key={fila.idSolicitudVerificacion}
+                      className={
+                        seleccionada === fila.idSolicitudVerificacion
+                          ? propios.filaActiva
+                          : undefined
+                      }
+                    >
                       <th scope="row" className={propios.celdaDePrestador}>
-                        {fila.prestador.nombrePublico}
+                        <span className={propios.nombrePublico}>
+                          {fila.prestador.nombrePublico}
+                        </span>
                         <span className={propios.detalleDeLaFila}>
-                          {nombreDelNivelSolicitado(fila.nivelSolicitado)} · Enviada el{' '}
-                          {fechaLegible(fila.fechaSolicitud)}
+                          <span className={propios.pildoraDeNivel}>
+                            {nombreDelNivelSolicitado(fila.nivelSolicitado)}
+                          </span>
+                          Enviada el {fechaLegible(fila.fechaSolicitud)}
                         </span>
                       </th>
-                      <td>{nombreDelEstado(fila.estadoSolicitud)}</td>
                       <td>
-                        <button
-                          className={secciones.botonPequeno}
+                        <span
+                          className={`${propios.pildoraDeEstado} ${claseDePildora(fila.estadoSolicitud)}`}
+                        >
+                          {nombreDelEstado(fila.estadoSolicitud)}
+                        </span>
+                      </td>
+                      <td>
+                        <Boton
+                          className={propios.botonDeFila}
+                          variante="secundario"
                           type="button"
                           onClick={() =>
                             setSeleccionada(
@@ -117,10 +128,6 @@ export default function ColaDeVerificaciones() {
                             )
                           }
                           aria-expanded={seleccionada === fila.idSolicitudVerificacion}
-                          // El texto visible cabe en una celda de teléfono; el
-                          // nombre accesible sigue diciendo de qué expediente
-                          // se trata, que es lo que necesita quien no ve la
-                          // fila entera.
                           aria-label={
                             seleccionada === fila.idSolicitudVerificacion
                               ? `Cerrar el expediente de ${fila.prestador.nombrePublico}`
@@ -128,7 +135,7 @@ export default function ColaDeVerificaciones() {
                           }
                         >
                           {seleccionada === fila.idSolicitudVerificacion ? 'Cerrar' : 'Abrir'}
-                        </button>
+                        </Boton>
                       </td>
                     </tr>
                   ))}
@@ -146,7 +153,9 @@ export default function ColaDeVerificaciones() {
         )}
 
         <p className={propios.pie}>
-          <Link to="/admin">Volver al área administrativa</Link>
+          <Link className={propios.enlaceDePie} to="/admin">
+            Volver al área administrativa
+          </Link>
         </p>
       </div>
     </main>
@@ -163,12 +172,12 @@ function Filtros({
 }) {
   return (
     <div className={propios.filtros}>
-      <div className={estilos.campo}>
-        <label className={estilos.etiqueta} htmlFor="filtro-estado">
+      <div className={propios.filtro}>
+        <label className={propios.etiqueta} htmlFor="filtro-estado">
           Estado
         </label>
         <select
-          className={estilos.entrada}
+          className={propios.selector}
           id="filtro-estado"
           value={filtro.estados.join(',')}
           onChange={(evento) =>
@@ -185,12 +194,12 @@ function Filtros({
         </select>
       </div>
 
-      <div className={estilos.campo}>
-        <label className={estilos.etiqueta} htmlFor="filtro-nivel">
+      <div className={propios.filtro}>
+        <label className={propios.etiqueta} htmlFor="filtro-nivel">
           Nivel
         </label>
         <select
-          className={estilos.entrada}
+          className={propios.selector}
           id="filtro-nivel"
           value={filtro.nivel ?? ''}
           onChange={(evento) =>
@@ -207,4 +216,20 @@ function Filtros({
       </div>
     </div>
   );
+}
+
+function claseDePildora(estado: EstadoDeSolicitud): string | undefined {
+  switch (estado) {
+    case 'PENDIENTE':
+      return propios.pildoraPendiente;
+    case 'EN_REVISION':
+      return propios.pildoraEnRevision;
+    case 'APROBADA':
+      return propios.pildoraAprobada;
+    case 'RECHAZADA':
+    case 'REVOCADA':
+      return propios.pildoraRechazada;
+    default:
+      return undefined;
+  }
 }

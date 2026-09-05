@@ -1,8 +1,6 @@
 /*
- * Estilos del área administrativa.
- *
- * Reutiliza las variables neutras de `src/estilos/global.css`: la paleta de marca
- * todavía no está aprobada. Mobile-first, igual que el resto de la aplicación.
+ * Área administrativa. Solo tokens de `src/estilos/global.css`.
+ * Mobile-first: una columna en teléfono y dos módulos desde 48 rem.
  */
 
 .pantalla {
@@ -10,71 +8,237 @@
   flex-direction: column;
   align-items: center;
   min-height: 100dvh;
-  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+  padding-top: max(var(--gap-lg), env(safe-area-inset-top));
+  padding-right: var(--gap-md);
+  padding-bottom: max(var(--gap-lg), env(safe-area-inset-bottom));
+  padding-left: var(--gap-md);
+  background-color: var(--color-neutral-50);
 }
 
 .contenido {
-  width: 100%;
-  max-width: 34rem;
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-3);
+  gap: var(--gap-lg);
+  width: 100%;
+  max-width: 48rem;
+}
+
+.encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: var(--gap-xs);
+  min-height: 2.75rem;
+  padding: 0.375rem 0.875rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-500);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.insignia svg {
+  display: block;
+  width: 1.125rem;
+  height: 1.125rem;
+  flex-shrink: 0;
 }
 
 .titulo {
-  font-size: 1.5rem;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
   letter-spacing: -0.01em;
+  color: var(--color-neutral-900);
 }
 
 .explicacion {
-  color: var(--moica-texto-suave);
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
 }
 
-.ficha {
+.aviso {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-2);
+  align-items: flex-start;
+  gap: var(--gap-sm);
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-left-width: var(--border-width-sm);
+  border-left-color: var(--color-error-500);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+}
+
+.credencial {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  padding: var(--gap-lg);
+  background-color: var(--color-neutral-0);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.avatar {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-700);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+}
+
+.datosDeLaCuenta {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
   margin: 0;
-  padding: var(--moica-espacio-3) var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-radius: 0.75rem;
-  background-color: var(--moica-fondo-suave);
 }
 
 .etiqueta {
-  color: var(--moica-texto-suave);
-  font-size: 0.875rem;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
 }
 
-/* Un correo largo se parte en lugar de desbordar la pantalla de un teléfono. */
 .valor {
   margin: 0;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
   overflow-wrap: anywhere;
 }
 
-.pendiente {
+.modulos {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-md);
+}
+
+.modulo {
   display: flex;
   flex-direction: column;
-  gap: var(--moica-espacio-1);
-  padding: var(--moica-espacio-2);
-  border: 1px solid var(--moica-borde);
-  border-left-width: 4px;
-  border-radius: 0.5rem;
-  background-color: var(--moica-fondo-suave);
+  gap: var(--gap-sm);
+  min-height: 3rem;
+  padding: var(--gap-lg);
+  background-color: var(--color-neutral-0);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.iconoDeModulo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--radius-lg);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-500);
+}
+
+.iconoDeAlerta {
+  background-color: var(--color-secondary-50);
+  color: var(--color-secondary-500);
+}
+
+.iconoDeModulo svg {
+  display: block;
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.cabeceraDeModulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-xs);
+}
+
+.tituloDeModulo {
+  margin: 0;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.pildoraProxima {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0.125rem 0.625rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-neutral-100);
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.accionDeModulo {
+  width: 100%;
+  min-height: 3rem;
+  margin-top: auto;
 }
 
 .pie {
-  color: var(--moica-texto-suave);
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-sm);
   text-align: center;
 }
 
+.enlaceDePie {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: var(--gap-sm) var(--gap-md);
+  color: var(--color-primary-500);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.enlaceDePie:hover {
+  color: var(--color-primary-700);
+}
+
 @media (min-width: 48rem) {
-  .titulo {
-    font-size: 2rem;
+  .pantalla {
+    padding-top: max(var(--gap-xl), env(safe-area-inset-top));
+    padding-right: var(--gap-xl);
+    padding-bottom: max(var(--gap-xl), env(safe-area-inset-bottom));
+    padding-left: var(--gap-xl);
   }
 
-  .ficha {
-    padding: var(--moica-espacio-3);
+  .titulo {
+    font-size: var(--font-size-2xl);
+  }
+
+  .credencial {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--gap-lg);
+  }
+
+  .modulos {
+    grid-template-columns: repeat(2, 1fr);
+    align-items: stretch;
   }
 }

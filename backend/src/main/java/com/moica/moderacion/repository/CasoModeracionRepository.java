@@ -78,15 +78,44 @@ public interface CasoModeracionRepository extends JpaRepository<CasoModeracion, 
       Long idReportado);
 
   /**
+   * A quién sanciona un expediente, sin cargar el expediente.
+   *
+   * <p>Devuelve solo el identificador a propósito. Quien va a bloquear necesita saber <em>qué
+   * cuenta bloquear</em> antes de tocar el caso, y cargar la entidad para averiguarlo la dejaría en
+   * el contexto de persistencia: el {@code SELECT … FOR UPDATE} posterior bloquearía la fila, pero
+   * Hibernate devolvería la copia que ya tenía en memoria en lugar de releerla. La transacción
+   * seguiría trabajando con el estado anterior al bloqueo, que es justo lo que el bloqueo venía a
+   * evitar.
+   *
+   * <p>{@code idReportado} es inmutable desde la apertura del caso, así que leerlo sin bloqueo es
+   * seguro.
+   */
+  @Query(
+      """
+      SELECT caso.idReportado FROM CasoModeracion caso
+      WHERE caso.idCasoModeracion = :idCasoModeracion
+      """)
+  Optional<Long> idReportadoDe(@Param("idCasoModeracion") Long idCasoModeracion);
+
+  /**
    * Los expedientes cuya medida temporal ya cumplió su plazo.
    *
    * <p>La consulta el barrido de expiración. Filtra por fecha en la base y no en memoria porque el
    * barrido corre periódicamente sobre toda la tabla y no debe traerse los casos que no vencen.
    *
+   * <p>Devuelve identificadores y no entidades por el mismo motivo que {@link #idReportadoDe}: el
+   * barrido bloquea cada caso antes de tocarlo, y una entidad ya cargada haría que ese bloqueo no
+   * refrescara nada.
+   *
    * <p>Una medida sin fecha de fin nunca entra: {@code fechaFinMedidaActual} nulo significa que
    * solo se levanta revocándola, y la comparación descarta los nulos por sí sola.
    */
-  List<CasoModeracion>
-      findByIdMedidaAdministrativaActualNotNullAndFechaFinMedidaActualLessThanEqual(
-          OffsetDateTime instante);
+  @Query(
+      """
+      SELECT caso.idCasoModeracion FROM CasoModeracion caso
+      WHERE caso.idMedidaAdministrativaActual IS NOT NULL
+        AND caso.fechaFinMedidaActual <= :instante
+      ORDER BY caso.idCasoModeracion
+      """)
+  List<Long> idsConMedidaVencida(@Param("instante") OffsetDateTime instante);
 }

@@ -78,13 +78,16 @@ public class ExpiracionDeMedidas {
   public int expirarLasVencidas() {
     OffsetDateTime instante = OffsetDateTime.now(reloj);
 
-    List<CasoModeracion> vencidos =
-        casos.findByIdMedidaAdministrativaActualNotNullAndFechaFinMedidaActualLessThanEqual(
-            instante);
+    // La consulta devuelve identificadores y no entidades: cargar los casos aquí
+    // los dejaría en el contexto de persistencia, y entonces el bloqueo que toma
+    // `expirar` devolvería esa copia en memoria en lugar de releer la fila. El
+    // barrido trabajaría con el estado anterior al bloqueo y podría expirar una
+    // medida que otra transacción acababa de revocar o sustituir.
+    List<Long> vencidos = casos.idsConMedidaVencida(instante);
 
     int levantadas = 0;
-    for (CasoModeracion vencido : vencidos) {
-      if (expirar(vencido.getIdCasoModeracion(), instante)) {
+    for (Long idCaso : vencidos) {
+      if (expirar(idCaso, instante)) {
         levantadas++;
       }
     }
@@ -102,14 +105,14 @@ public class ExpiracionDeMedidas {
    * @return si de verdad se levantó una medida
    */
   private boolean expirar(Long idCaso, OffsetDateTime instante) {
-    CasoModeracion sinBloquear = casos.findById(idCaso).orElse(null);
-    if (sinBloquear == null) {
+    Long idReportado = casos.idReportadoDe(idCaso).orElse(null);
+    if (idReportado == null) {
       return false;
     }
 
     // La cuenta primero y el expediente después, el mismo orden que usan las
-    // decisiones administrativas.
-    usuarios.bloquearCuenta(sinBloquear.getIdReportado());
+    // decisiones administrativas. El caso se lee ya bloqueado, nunca antes.
+    usuarios.bloquearCuenta(idReportado);
     CasoModeracion caso = casos.bloquearPorId(idCaso).orElse(null);
 
     if (caso == null || !yaVencio(caso, instante)) {

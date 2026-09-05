@@ -345,14 +345,17 @@ public class MedidasDeCasoService {
   /**
    * Bloquea la cuenta afectada y después el expediente, siempre en ese orden.
    *
-   * <p>La lectura sin bloqueo previa solo sirve para saber a quién bloquear, y es segura porque
-   * {@code idReportado} es inmutable desde la apertura del caso.
+   * <p>La consulta previa devuelve <b>solo el identificador</b> de la persona reportada, y eso no
+   * es un detalle: cargar el caso entero para averiguarlo lo dejaría en el contexto de
+   * persistencia, y entonces el {@code SELECT … FOR UPDATE} de {@link #bloquear} bloquearía la fila
+   * pero devolvería la copia en memoria sin releerla. La transacción trabajaría con el estado
+   * <em>anterior</em> al bloqueo y podría, por ejemplo, revocar una medida que otra transacción
+   * acababa de sustituir, dejando la cuenta activa con una sanción viva en otro expediente.
    */
   private CasoModeracion bloquearTrasLaCuenta(Long idCaso) {
-    CasoModeracion sinBloquear =
-        casos.findById(idCaso).orElseThrow(GuardiasDeCaso::casoNoEncontrado);
+    Long idReportado = casos.idReportadoDe(idCaso).orElseThrow(GuardiasDeCaso::casoNoEncontrado);
 
-    usuarios.bloquearCuenta(sinBloquear.getIdReportado());
+    usuarios.bloquearCuenta(idReportado);
     return bloquear(idCaso);
   }
 

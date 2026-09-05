@@ -537,25 +537,6 @@
   text-decoration: none;
 }
 
-/* Compatibilidad con pantallas que todavía usan el andamiaje previo. */
-.pantalla {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  min-height: 100dvh;
-  padding: var(--gap-lg) var(--gap-md);
-  background-color: var(--color-neutral-50);
-}
-
-.contenido {
-  width: 100%;
-  max-width: 40rem;
-  display: flex;
-  flex-direction: column;
-  gap: var(--gap-xl);
-  min-width: 0;
-}
-
 @media (min-width: 48rem) {
   .principalAsistente {
     padding: var(--gap-xl);

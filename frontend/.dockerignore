@@ -1,0 +1,15 @@
+**
+!package.json
+!package-lock.json
+!index.html
+!tsconfig*.json
+!vite.config.ts
+!src/
+!src/**
+!public/
+!public/**
+!nginx/
+!nginx/**
+**/.env*
+**/CLAUDE.md
+**/AGENTS.md

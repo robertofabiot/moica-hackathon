@@ -71,10 +71,10 @@ describe('área administrativa', () => {
     api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesionDeEjemplo() });
     renderizarConProveedores(<App />, '/admin');
 
-    expect(await screen.findByRole('heading', { name: 'Acceso denegado' })).toBeVisible();
-    expect(screen.getByRole('alert')).toHaveTextContent(
-      'Esta cuenta no tiene permisos administrativos'
-    );
+    expect(
+      await screen.findByRole('heading', { name: 'Esta zona requiere otros permisos' })
+    ).toBeVisible();
+    expect(screen.getByRole('alert')).toHaveTextContent('no dispone de los privilegios necesarios');
     expect(api.ultima('GET /api/admin/resumen')).toBeUndefined();
   });
 
@@ -85,8 +85,12 @@ describe('área administrativa', () => {
     });
     renderizarConProveedores(<App />, '/admin');
 
-    expect(await screen.findByRole('heading', { name: 'Acceso denegado' })).toBeVisible();
-    expect(screen.getByRole('alert')).toHaveTextContent('exige el segundo factor verificado');
+    expect(
+      await screen.findByRole('heading', { name: 'Verificación adicional requerida' })
+    ).toBeVisible();
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'segundo factor de autenticación verificado'
+    );
   });
 
   it('lleva a verificar a un administrador con la sesión provisional', async () => {

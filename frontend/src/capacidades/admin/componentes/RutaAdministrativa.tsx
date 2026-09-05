@@ -1,8 +1,7 @@
 import type { ReactNode } from 'react';
-import { Link } from 'react-router';
 
+import AccesoNoAutorizado from '../../../paginas/AccesoNoAutorizado';
 import { RutaProtegida, useSesionActual } from '../../auth';
-import estilos from '../paginas/admin.module.css';
 
 /**
  * Deja ver el área administrativa solo a quien cumple sus dos condiciones.
@@ -29,32 +28,12 @@ function ConPermisosAdministrativos({ children }: { children: ReactNode }) {
   }
 
   if (!sesion.data.usuario.esAdministrador) {
-    return <AccesoDenegado explicacion="Esta cuenta no tiene permisos administrativos en Moica." />;
+    return <AccesoNoAutorizado tipo="permisos-insuficientes" />;
   }
 
   if (!sesion.data.sesion.segundoFactorVerificado) {
-    return (
-      <AccesoDenegado explicacion="El área administrativa exige el segundo factor verificado en esta sesión. Actívalo en la seguridad de tu cuenta y vuelve a entrar." />
-    );
+    return <AccesoNoAutorizado tipo="requiere-segundo-factor" />;
   }
 
   return <>{children}</>;
-}
-
-function AccesoDenegado({ explicacion }: { explicacion: string }) {
-  return (
-    <main className={estilos.pantalla}>
-      <div className={estilos.contenido}>
-        <h1 className={estilos.titulo}>Acceso denegado</h1>
-        <p className={estilos.explicacion} role="alert">
-          {explicacion}
-        </p>
-        <p className={estilos.pie}>
-          <Link className={estilos.enlaceDePie} to="/">
-            Volver al inicio
-          </Link>
-        </p>
-      </div>
-    </main>
-  );
 }

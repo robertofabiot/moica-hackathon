@@ -1,10 +1,11 @@
-import type { MouseEvent } from 'react';
+import type { MouseEvent, ReactNode } from 'react';
 import { Link } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
-import { IconoPin } from '../../../comun/componentes/ui';
+import { Boton, IconoPin } from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
+import { usePerfilPrestador } from '../../prestador';
 import PildoraDeEstado from '../componentes/PildoraDeEstado';
 import { useSolicitudesEnviadas, useSolicitudesRecibidas } from '../hooks/useSolicitudes';
 import { fechaVisible } from '../presentacion';
@@ -17,40 +18,84 @@ import propios from './solicitudes.module.css';
 export default function MisSolicitudes() {
   const enviadas = useSolicitudesEnviadas();
   const recibidas = useSolicitudesRecibidas();
+  const perfil = usePerfilPrestador();
+
+  // Una cuenta es prestador si tiene perfil creado o ya recibió solicitudes en sus servicios.
+  const esPrestador =
+    Boolean(perfil.data) || (recibidas.data !== undefined && recibidas.data.length > 0);
 
   return (
     <MarcoDeSolicitudes className={propios.contenidoBandejas}>
       <header className={propios.encabezado}>
         <h1 className={propios.titulo}>Mis solicitudes</h1>
         <p className={propios.explicacion}>
-          Las que enviaste como cliente y las que recibiste en tus servicios.
+          {esPrestador
+            ? 'Gestiona las solicitudes que recibes en tus servicios y las que envías como cliente.'
+            : 'Sigue el estado y los mensajes de los servicios que has solicitado.'}
         </p>
       </header>
 
-      <nav className={propios.resumenRapido} aria-label="Resumen de solicitudes">
-        <ChipDeBandeja destino="enviadas" etiqueta="Enviadas" cantidad={enviadas.data?.length} />
-        <ChipDeBandeja destino="recibidas" etiqueta="Recibidas" cantidad={recibidas.data?.length} />
-      </nav>
+      {esPrestador ? (
+        <>
+          <nav className={propios.resumenRapido} aria-label="Resumen de solicitudes">
+            <ChipDeBandeja destino="recibidas" etiqueta="Recibidas" cantidad={recibidas.data?.length} />
+            <ChipDeBandeja destino="enviadas" etiqueta="Enviadas" cantidad={enviadas.data?.length} />
+          </nav>
 
-      <div className={propios.bandejas}>
-        <Bandeja
-          id="enviadas"
-          titulo="Enviadas"
-          descripcion="Solicitudes que enviaste a otros prestadores."
-          consulta={enviadas}
-          vacio="Todavía no has enviado solicitudes."
-          contraparte={(item) => item.nombrePublicoPrestador}
-        />
+          <div className={propios.bandejas}>
+            <Bandeja
+              id="recibidas"
+              titulo="Recibidas"
+              descripcion="Solicitudes dirigidas a tus servicios."
+              consulta={recibidas}
+              vacio="Todavía no has recibido solicitudes."
+              contraparte={(item) => item.nombreCliente}
+            />
 
-        <Bandeja
-          id="recibidas"
-          titulo="Recibidas"
-          descripcion="Solicitudes dirigidas a tus servicios."
-          consulta={recibidas}
-          vacio="Todavía no has recibido solicitudes."
-          contraparte={(item) => item.nombreCliente}
-        />
-      </div>
+            <Bandeja
+              id="enviadas"
+              titulo="Enviadas"
+              descripcion="Solicitudes que enviaste a otros prestadores."
+              consulta={enviadas}
+              vacio="Todavía no has enviado solicitudes."
+              contraparte={(item) => item.nombrePublicoPrestador}
+            />
+          </div>
+        </>
+      ) : (
+        <div className={propios.contenedorCliente}>
+          <Bandeja
+            id="enviadas"
+            titulo="Solicitudes enviadas"
+            descripcion="Servicios que has solicitado a prestadores en Moica."
+            consulta={enviadas}
+            vacio="Todavía no has enviado solicitudes."
+            contraparte={(item) => item.nombrePublicoPrestador}
+            accionVacio={
+              <div className={propios.accionVacio}>
+                <p className={propios.explicacionVacio}>
+                  ¿Necesitas una reparación, instalación o mantenimiento? Encuentra profesionales verificados en tu zona.
+                </p>
+                <Boton to="/explorar" variante="primario">
+                  Explorar servicios
+                </Boton>
+              </div>
+            }
+          />
+
+          <aside className={propios.tarjetaPromocionPrestador} aria-label="Ofrecer servicios en Moica">
+            <div className={propios.cuerpoPromocion}>
+              <h2 className={propios.tituloPromocion}>¿Ofreces servicios profesionales o técnicos?</h2>
+              <p className={propios.textoPromocion}>
+                Crea tu perfil de prestador para recibir solicitudes de clientes, mostrar tu portafolio y gestionar trabajos en Moica.
+              </p>
+            </div>
+            <Boton to="/prestador" variante="contorno">
+              Crear perfil de prestador
+            </Boton>
+          </aside>
+        </div>
+      )}
     </MarcoDeSolicitudes>
   );
 }
@@ -86,6 +131,7 @@ function Bandeja({
   consulta,
   vacio,
   contraparte,
+  accionVacio,
 }: {
   id: string;
   titulo: string;
@@ -93,6 +139,7 @@ function Bandeja({
   consulta: ReturnType<typeof useSolicitudesEnviadas>;
   vacio: string;
   contraparte: (item: ResumenDeSolicitudServicio) => string;
+  accionVacio?: ReactNode;
 }) {
   return (
     <section className={propios.bandeja} id={id} aria-labelledby={`titulo-${id}`}>
@@ -123,7 +170,10 @@ function Bandeja({
       ) : null}
 
       {consulta.data !== undefined && consulta.data.length === 0 ? (
-        <p className={propios.vacio}>{vacio}</p>
+        <div className={propios.cajaVacia}>
+          <p className={propios.vacio}>{vacio}</p>
+          {accionVacio}
+        </div>
       ) : null}
 
       {consulta.data !== undefined && consulta.data.length > 0 ? (

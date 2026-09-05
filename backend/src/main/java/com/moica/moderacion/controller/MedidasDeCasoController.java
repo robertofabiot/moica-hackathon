@@ -1,9 +1,13 @@
 package com.moica.moderacion.controller;
 
 import com.moica.auth.seguridad.UsuarioAutenticado;
+import com.moica.moderacion.dto.ApelacionRecibida;
 import com.moica.moderacion.dto.DatosDeExpedienteDeCaso;
 import com.moica.moderacion.dto.MedidaAAplicar;
+import com.moica.moderacion.dto.ReaperturaDeCaso;
+import com.moica.moderacion.dto.ResolucionDeApelacion;
 import com.moica.moderacion.dto.RevocacionDeMedida;
+import com.moica.moderacion.service.ApelacionesDeCasoService;
 import com.moica.moderacion.service.MedidasDeCasoService;
 import jakarta.validation.Valid;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Las medidas administrativas de un caso de moderación.
+ * Las medidas y las apelaciones de un caso de moderación.
  *
  * <p>Cuelga de {@code /api/admin/casos/{id}} porque una sanción no se decide en abstracto: nace de
  * un expediente concreto y con una resolución detrás. No existe ninguna ruta para sancionar una
@@ -36,9 +40,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class MedidasDeCasoController {
 
   private final MedidasDeCasoService medidas;
+  private final ApelacionesDeCasoService apelaciones;
 
-  public MedidasDeCasoController(MedidasDeCasoService medidas) {
+  public MedidasDeCasoController(
+      MedidasDeCasoService medidas, ApelacionesDeCasoService apelaciones) {
     this.medidas = medidas;
+    this.apelaciones = apelaciones;
   }
 
   /**
@@ -63,5 +70,32 @@ public class MedidasDeCasoController {
       @PathVariable Long idCasoModeracion,
       @Valid @RequestBody RevocacionDeMedida pedido) {
     return medidas.revocar(sujeto, idCasoModeracion, pedido.motivo());
+  }
+
+  /** Registra en el expediente una apelación recibida por el canal externo de soporte. */
+  @PostMapping("/apelacion")
+  public DatosDeExpedienteDeCaso registrarApelacion(
+      @AuthenticationPrincipal UsuarioAutenticado sujeto,
+      @PathVariable Long idCasoModeracion,
+      @Valid @RequestBody ApelacionRecibida pedido) {
+    return apelaciones.registrar(sujeto, idCasoModeracion, pedido.relato());
+  }
+
+  /** Acepta o rechaza la apelación registrada. Aceptarla no reabre el caso por sí sola. */
+  @PostMapping("/apelacion/resolucion")
+  public DatosDeExpedienteDeCaso resolverApelacion(
+      @AuthenticationPrincipal UsuarioAutenticado sujeto,
+      @PathVariable Long idCasoModeracion,
+      @Valid @RequestBody ResolucionDeApelacion pedido) {
+    return apelaciones.resolver(sujeto, idCasoModeracion, pedido.aceptada(), pedido.resolucion());
+  }
+
+  /** Devuelve a revisión un caso cerrado cuya apelación fue aceptada. */
+  @PostMapping("/reapertura")
+  public DatosDeExpedienteDeCaso reabrir(
+      @AuthenticationPrincipal UsuarioAutenticado sujeto,
+      @PathVariable Long idCasoModeracion,
+      @Valid @RequestBody ReaperturaDeCaso pedido) {
+    return apelaciones.reabrir(sujeto, idCasoModeracion, pedido.motivo());
   }
 }

@@ -23,6 +23,13 @@ export interface Usuario {
   nombreCompleto: string;
   correoElectronico: string;
   estadoCuenta: EstadoCuenta;
+  /**
+   * Cuándo termina el estado vigente, cuando es temporal.
+   *
+   * `null` en `ACTIVA` y en `SUSPENDIDA_PERMANENTE`, que no terminan solos. Es lo que permite al
+   * aviso decir «hasta cuándo» en lugar de dejar a la persona sin plazo.
+   */
+  fechaFinEstadoCuenta: string | null;
   /** Solo sirve para decidir qué ofrecer; quien decide si puede entrar es el backend. */
   esAdministrador: boolean;
   fechaRegistro: string;
@@ -40,10 +47,25 @@ export interface VigenciaDeSesion {
   pendienteDeSegundoFactor: boolean;
 }
 
+/**
+ * Lo que hay que decirle a quien arrastra una medida administrativa.
+ *
+ * No dice qué medida se aplicó, ni desde qué caso, ni quién la decidió: eso es información del
+ * expediente y no sale del área administrativa.
+ */
+export interface AvisoDeCuenta {
+  /** Cuándo termina la restricción. `null` si no termina sola. */
+  fechaFin: string | null;
+  /** A dónde escribir para apelar. La apelación se presenta fuera de Moica. */
+  canalDeSoporte: string;
+}
+
 /** Respuesta de la API cuando hay una sesión activa. */
 export interface SesionActual {
   usuario: Usuario;
   sesion: VigenciaDeSesion;
+  /** `null` cuando la cuenta está `ACTIVA`, que es el caso normal y no necesita aviso. */
+  avisoDeCuenta: AvisoDeCuenta | null;
 }
 
 /** Estado del segundo factor tal como lo describe la API. */

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import { ErrorDeApi } from '../../../comun/api';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import {
@@ -11,6 +10,8 @@ import {
 } from '../hooks/useRevisionDeCasos';
 import type { ExpedienteDeCaso, ResultadoDeCaso } from '../tipos';
 import propios from './acciones.module.css';
+import AvisoDeAccion from './AvisoDeAccion';
+import { errorMasReciente } from './errorMasReciente';
 
 /**
  * Las decisiones que caben sobre un caso, según su estado y quién lo lleva.
@@ -112,7 +113,7 @@ export default function AccionesDelCaso({ expediente }: { expediente: Expediente
 
       {puedeCerrar && <FormularioDeCierre cierre={cierre} />}
 
-      <Aviso error={errorMasReciente(asignacion, revision, cierre)} />
+      <AvisoDeAccion error={errorMasReciente(asignacion, revision, cierre)} />
     </section>
   );
 }
@@ -202,26 +203,3 @@ function FormularioDeCierre({ cierre }: { cierre: MutacionDeCierre }) {
 }
 
 type MutacionDeCierre = ReturnType<typeof useCierreDeCaso>;
-
-/**
- * El error de la acción que se intentó última.
- *
- * Se elige la última mutación, incluso si ya no tiene error: una asignación exitosa debe retirar
- * el aviso de un cierre anterior. El refresco del expediente no cambia `submittedAt`.
- */
-function errorMasReciente(...mutaciones: { error: unknown; submittedAt: number }[]): unknown {
-  return mutaciones.sort((una, otra) => otra.submittedAt - una.submittedAt)[0]?.error;
-}
-
-/** El error que devolvió la API, tal cual: es quien conoce el estado real del caso. */
-function Aviso({ error }: { error: unknown }) {
-  if (error === null || error === undefined) {
-    return null;
-  }
-
-  return (
-    <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
-      {error instanceof ErrorDeApi ? error.message : 'No pudimos completar la acción.'}
-    </p>
-  );
-}

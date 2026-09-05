@@ -2,7 +2,11 @@
 FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS build
 WORKDIR /build
 COPY package.json package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+# Sin cache montada, por el mismo motivo que en `backend/Dockerfile`: el builder
+# de Railway exige un `id` con su prefijo de servicio y fijarlo ataria la imagen
+# a un proveedor. `npm ci` va en su capa, antes de copiar el resto, asi que el
+# cache de capas de Docker la reutiliza mientras el lockfile no cambie.
+RUN npm ci
 COPY . .
 RUN npm run build
 

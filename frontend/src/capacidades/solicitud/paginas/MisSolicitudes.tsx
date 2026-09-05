@@ -38,8 +38,16 @@ export default function MisSolicitudes() {
       {esPrestador ? (
         <>
           <nav className={propios.resumenRapido} aria-label="Resumen de solicitudes">
-            <ChipDeBandeja destino="recibidas" etiqueta="Recibidas" cantidad={recibidas.data?.length} />
-            <ChipDeBandeja destino="enviadas" etiqueta="Enviadas" cantidad={enviadas.data?.length} />
+            <ChipDeBandeja
+              destino="recibidas"
+              etiqueta="Recibidas"
+              cantidad={recibidas.data?.length}
+            />
+            <ChipDeBandeja
+              destino="enviadas"
+              etiqueta="Enviadas"
+              cantidad={enviadas.data?.length}
+            />
           </nav>
 
           <div className={propios.bandejas}>
@@ -74,7 +82,8 @@ export default function MisSolicitudes() {
             accionVacio={
               <div className={propios.accionVacio}>
                 <p className={propios.explicacionVacio}>
-                  ¿Necesitas una reparación, instalación o mantenimiento? Encuentra profesionales verificados en tu zona.
+                  ¿Necesitas una reparación, instalación o mantenimiento? Encuentra profesionales
+                  verificados en tu zona.
                 </p>
                 <Boton to="/explorar" variante="primario">
                   Explorar servicios
@@ -83,11 +92,17 @@ export default function MisSolicitudes() {
             }
           />
 
-          <aside className={propios.tarjetaPromocionPrestador} aria-label="Ofrecer servicios en Moica">
+          <aside
+            className={propios.tarjetaPromocionPrestador}
+            aria-label="Ofrecer servicios en Moica"
+          >
             <div className={propios.cuerpoPromocion}>
-              <h2 className={propios.tituloPromocion}>¿Ofreces servicios profesionales o técnicos?</h2>
+              <h2 className={propios.tituloPromocion}>
+                ¿Ofreces servicios profesionales o técnicos?
+              </h2>
               <p className={propios.textoPromocion}>
-                Crea tu perfil de prestador para recibir solicitudes de clientes, mostrar tu portafolio y gestionar trabajos en Moica.
+                Crea tu perfil de prestador para recibir solicitudes de clientes, mostrar tu
+                portafolio y gestionar trabajos en Moica.
               </p>
             </div>
             <Boton to="/prestador" variante="contorno">

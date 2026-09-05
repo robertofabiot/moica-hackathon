@@ -704,9 +704,10 @@ cuenta, no asigna administrador, no elige ni aplica una medida, no revoca
 sesiones y no depende de reincidencia, severidad ni numero de casos. Segun la
 definicion 11.3, en el MVP cada medida la elige una persona administradora.
 
-Lo que ve el reportante es **su** expediente. La bandeja administrativa, la
-asignacion de responsable, los cambios de estado, las resoluciones y las
-medidas son otra superficie, la de P10A y P10B, y todavia no existen.
+Lo que ve el reportante es **su** expediente y solo el suyo. La bandeja
+administrativa, la asignacion de responsable, los cambios de estado y las
+resoluciones son otra superficie, la de P10A, descrita mas abajo. El catalogo de
+medidas y su aplicacion siguen siendo P10B y todavia no existen.
 
 ### Cuando se puede reportar
 
@@ -820,8 +821,8 @@ llega con estos valores, y ninguno lo elige el navegador:
 
 `fechaApertura`, `fechaActualizacion` y `fechaInicioVigencia` salen del mismo
 reloj de la operacion, de modo que el historial no empiece antes ni despues de
-existir el expediente que describe. El historial no se publica en ninguna ruta:
-leerlo es parte de la revision administrativa de P10A.
+existir el expediente que describe. El historial no se publica al reportante:
+solo lo lee el area administrativa, dentro del expediente del caso.
 
 ### Consultar el caso propio
 
@@ -838,6 +839,164 @@ solicitud, para que la interfaz no tenga que deducir la regla:
 `nombreReportado` es el mismo nombre que ya viaja en el detalle de la
 solicitud: `nombrePublico` del perfil para el prestador y `nombreCompleto` para
 el cliente. No se publican correos, contactos ni datos administrativos.
+
+## Revision administrativa de casos
+
+Todo lo que sigue cuelga de `/api/admin/casos` y hereda las dos condiciones del
+area administrativa: **rol administrativo y segundo factor verificado en esa
+misma sesion**. Las impone la cadena de seguridad y el servicio las repite como
+ultima red, tambien en las lecturas: una bandeja de casos son datos sobre
+personas reportadas, no informacion publica.
+
+Sin sesion la respuesta es 401. Con sesion pero sin rol, o con rol y sin el
+segundo factor verificado en esa sesion, es 403 `ACCESO_DENEGADO`. Un caso que
+no existe es 404 `CASO_NO_ENCONTRADO`.
+
+**Resolver no sanciona.** Cerrar un caso como `PROCEDENTE` declara que amerita
+una decision administrativa; no elige medida, no cambia el `EstadoCuenta` de
+nadie y no revoca ninguna sesion. Elegir y aplicar la medida es P10B, y segun la
+definicion 11.3 siempre lo hace una persona.
+
+### Quien puede que
+
+| Accion | Quien | Regla adicional |
+|---|---|---|
+| Consultar la bandeja y un expediente | Cualquier administrador con TOTP | Ninguna: revisar exige poder leer lo que aun no se tiene asignado |
+| Consultar los mensajes del caso | Cualquier administrador con TOTP | Solo desde el caso; no existe ruta administrativa por solicitud |
+| Asignar y reasignar | Cualquier administrador con TOTP | Repartir trabajo es coordinacion; queda en el historial |
+| Iniciar la revision y cerrar | **Solo el responsable asignado** | 409 `CASO_SIN_RESPONSABLE` si no hay ninguno; 403 `CASO_DE_OTRO_ADMINISTRADOR` si lo lleva otra persona |
+
+### Transiciones
+
+Las que P10A admite son exactamente estas:
+
+| Estado actual | Accion | Estado resultante |
+|---|---|---|
+| `ABIERTO` | `POST /{id}/revision` | `EN_REVISION` |
+| `REABIERTO` | `POST /{id}/revision` | `EN_REVISION` |
+| `EN_REVISION` | `POST /{id}/cierre` | `CERRADO` |
+
+Cualquier otra responde **409 `TRANSICION_NO_PERMITIDA`** y el mensaje nombra el
+estado real, que es lo que quien revisa necesita para entender que paso mientras
+tenia la pantalla abierta. `CERRADO` a `REABIERTO` nace de aceptar una apelacion
+y es P10B. Un caso cerrado tampoco se reasigna: su resolucion dejaria de decir
+quien la firmo.
+
+Cada accion es un recurso propio en lugar de un campo de estado que se
+sobrescribe, igual que en la revision de verificaciones. **No existe `PUT`,
+`PATCH` ni `DELETE`**: un caso es la evidencia de una investigacion y solo avanza
+por sus transiciones.
+
+### La bandeja
+
+`GET /api/admin/casos` devuelve los casos del mas antiguo al mas reciente, que
+es el orden en que conviene atenderlos. Sin parametros muestra lo que espera
+decision: `ABIERTO`, `EN_REVISION` y `REABIERTO`. Con `estado` se piden otros
+—`CERRADO`, para consultar una decision anterior— y con `mios=true` se acota a
+los del responsable que consulta.
+
+Cada fila lleva `idCasoModeracion`, `idSolicitudServicio`, quien reporto y a
+quien con sus nombres, `motivo`, `estadoActual`, `resultadoActual`, el
+responsable con su nombre y las fechas de apertura y de ultima actualizacion. La
+descripcion del reporte y el historial no viajan aqui: son del expediente.
+
+### El expediente
+
+`GET /api/admin/casos/{id}` reune en una respuesta todo lo que hoy existe
+vinculado al caso:
+
+| Campo | Que lleva |
+|---|---|
+| `caso` | La misma fila de la bandeja |
+| `descripcion` | Lo que escribio quien reporto |
+| `resolucionActual` | La decision vigente, o `null` |
+| `solicitud` | El detalle de la solicitud reportada, con su historial de transiciones |
+| `imagenesDelServicio` | Las imagenes del servicio contratado |
+| `historial` | Las versiones SCD2 del caso, de la mas antigua a la mas reciente |
+| `puedeResolver` | Si la sesion es la responsable |
+
+`imagenesDelServicio` es la unica evidencia material que Moica ya guarda del
+trato; **no existe ninguna forma de adjuntar algo nuevo a un caso**. Se devuelven
+aunque el servicio ya no este activo, porque el expediente describe lo que hubo.
+
+No viajan correos, contactos ni documentos de verificacion, que tienen su propia
+superficie autorizada. Los nombres son los mismos que ya publica el detalle de
+la solicitud.
+
+### Los mensajes del caso
+
+`GET /api/admin/casos/{id}/mensajes` devuelve el hilo de la solicitud reportada,
+en orden cronologico y con la misma forma que ven los participantes.
+
+**Cuelga del caso y no de la solicitud, a proposito.** Sin un expediente que lo
+justifique no hay forma de leer una conversacion privada desde el area
+administrativa, ni siquiera conociendo el identificador de la solicitud. Es la
+lectura acotada al contexto que exige la matriz de permisos del plan.
+
+Solo se lee: no existe ninguna ruta para escribir en el hilo desde `/api/admin`.
+
+### Asignar y reasignar
+
+`POST /api/admin/casos/{id}/asignacion` con `{ "idAdministrador": 9 }`. La misma
+ruta cubre la primera asignacion y un traspaso posterior; lo que cambia es el
+detalle que queda en el historial.
+
+Si esa cuenta no tiene rol administrativo la respuesta es **400
+`ADMINISTRADOR_NO_VALIDO`**. Reasignar a quien ya lo tiene responde 200 y no
+crea version: una fotografia identica a la vigente solo ensuciaria el historial.
+
+Asignar no cambia el estado. Un caso puede tener responsable y seguir `ABIERTO`.
+
+### Cerrar el caso
+
+`POST /api/admin/casos/{id}/cierre` con `{ "resultado": "PROCEDENTE",
+"resolucion": "..." }`. Los dos campos viajan juntos porque el cierre es un
+bloque: `ck_caso_moderacion_cierre` exige resultado, resolucion y fecha de cierre
+a la vez, y una decision sin explicacion no seria auditable meses despues.
+
+`resultado` es `PROCEDENTE` o `DESESTIMADO`; no hay un tercer valor. La
+resolucion se recorta antes de validarla —igual que el reporte—, asi que un texto
+de solo espacios se rechaza con 400 `VALIDACION`, y no puede pasar de 3000
+caracteres.
+
+### Como versiona cada cambio
+
+Toda mutacion administrativa hace lo mismo, **en una sola transaccion**: bloquea
+la fila del caso, comprueba la transicion, la aplica, cierra la version vigente y
+crea la siguiente. Si algo falla no queda un caso mutado sin historial ni dos
+versiones diciendo ser la actual.
+
+| Accion | `tipoEvento` de la version nueva |
+|---|---|
+| Asignar o reasignar | `RESPONSABLE_ASIGNADO` |
+| Iniciar la revision | `ESTADO_CASO_CAMBIADO` |
+| Cerrar | `RESOLUCION_REGISTRADA` |
+
+La version nueva retrata el caso **ya mutado**: responsable, estado, resultado y
+resolucion salen de la fila vigente, `tipoActor` es `ADMINISTRADOR` e `idActor`
+es quien decidio. `numeroVersion` es el de la anterior mas uno.
+
+`estadoCuenta` es el estado real y vigente de la cuenta reportada en ese
+instante. P10A nunca lo cambia: se copia porque el historial retrata tambien que
+acceso tenia la persona cuando se tomo cada decision.
+
+El fin de la version anterior es el mismo instante en que empieza la nueva. Como
+el intervalo es semiabierto `[inicio, fin)`, los dos periodos se tocan sin
+superponerse: `ex_historial_caso_vigencia` lo comprueba y
+`uq_historial_caso_version_actual` garantiza que solo quede una vigente.
+
+El bloqueo es lo que ordena a dos administradores simultaneos. Quien llega
+segundo lee el estado que dejo el primero, de modo que un cierre repetido sale
+como 409 y no como una segunda resolucion, y una reasignacion cruzada con un
+cierre deja siempre uno de los dos desenlaces coherentes, nunca una decision
+firmada por quien ya no llevaba el caso.
+
+### Directorio de administradores
+
+`GET /api/admin/administradores` devuelve `idAdministrador` y `nombreCompleto` de
+las cuentas con rol, ordenadas por nombre. Lo consume la reasignacion. No lleva
+correo, fecha de asignacion ni estado de cuenta: es un desplegable para elegir a
+quien pasar un expediente, no un directorio de cuentas.
 
 ## Verificacion documental del prestador
 
@@ -1021,4 +1180,4 @@ Todos los errores comparten cuerpo. El detalle por campo solo aparece cuando el 
 }
 ```
 
-Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `SUBCATEGORIA_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ADMITIDO`, `DOCUMENTO_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ENCONTRADO`, `EXPEDIENTE_INCOMPLETO`, `SOLICITUD_ABIERTA_DUPLICADA`, `SOLICITUD_NO_ENCONTRADA`, `SOLICITUD_YA_TOMADA`, `NIVEL_YA_VIGENTE`, `VERIFICACION_BASICA_REQUERIDA`, `TRANSICION_NO_PERMITIDA`, `REVISION_DE_OTRO_ADMINISTRADOR`, `SERVICIO_PROPIO`, `SERVICIO_INACTIVO`, `PRESTADOR_NO_DISPONIBLE`, `MOTIVO_OBLIGATORIO`, `CHAT_NO_HABILITADO`, `CHAT_SOLO_LECTURA`, `CONTACTOS_NO_REVELADOS`, `SOLICITUD_NO_COMPLETADA`, `CALIFICACION_DUPLICADA`, `SOLICITUD_NO_REPORTABLE`, `REPORTE_DUPLICADO`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. `SUBCATEGORIA_NO_DISPONIBLE` responde 400; `SOLICITUD_NO_COMPLETADA` y `CALIFICACION_DUPLICADA` responden 409, como ya fijan «Descubrimiento publico» y «Registrar una calificacion». Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento, URL prefirmadas ni valores internos.
+Codigos que devuelve hoy la API: `VALIDACION`, `SOLICITUD_INVALIDA`, `CORREO_YA_REGISTRADO`, `CREDENCIALES_INVALIDAS`, `CUENTA_SUSPENDIDA`, `CUENTA_RESTRINGIDA`, `NO_AUTENTICADO`, `ACCESO_DENEGADO`, `CODIGO_INVALIDO`, `SEGUNDO_FACTOR_NO_ACTIVO`, `SEGUNDO_FACTOR_YA_ACTIVO`, `SEGUNDO_FACTOR_SIN_ACTIVACION_PENDIENTE`, `SEGUNDO_FACTOR_OBLIGATORIO`, `PERFIL_YA_EXISTE`, `PERFIL_NO_ENCONTRADO`, `MUNICIPIO_NO_DISPONIBLE`, `SUBCATEGORIA_NO_DISPONIBLE`, `ORDEN_INVALIDO`, `IMAGEN_NO_ADMITIDA`, `IMAGEN_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ADMITIDO`, `DOCUMENTO_DEMASIADO_GRANDE`, `DOCUMENTO_NO_ENCONTRADO`, `EXPEDIENTE_INCOMPLETO`, `SOLICITUD_ABIERTA_DUPLICADA`, `SOLICITUD_NO_ENCONTRADA`, `SOLICITUD_YA_TOMADA`, `NIVEL_YA_VIGENTE`, `VERIFICACION_BASICA_REQUERIDA`, `TRANSICION_NO_PERMITIDA`, `REVISION_DE_OTRO_ADMINISTRADOR`, `SERVICIO_PROPIO`, `SERVICIO_INACTIVO`, `PRESTADOR_NO_DISPONIBLE`, `MOTIVO_OBLIGATORIO`, `CHAT_NO_HABILITADO`, `CHAT_SOLO_LECTURA`, `CONTACTOS_NO_REVELADOS`, `SOLICITUD_NO_COMPLETADA`, `CALIFICACION_DUPLICADA`, `SOLICITUD_NO_REPORTABLE`, `REPORTE_DUPLICADO`, `CASO_NO_ENCONTRADO`, `CASO_SIN_RESPONSABLE`, `CASO_DE_OTRO_ADMINISTRADOR`, `ADMINISTRADOR_NO_VALIDO`, `ALMACENAMIENTO_NO_DISPONIBLE`, `RECURSO_NO_ENCONTRADO`, `METODO_NO_PERMITIDO`, `CONTENIDO_DEMASIADO_GRANDE`, `TIPO_DE_CONTENIDO_NO_ADMITIDO` y `ERROR_INTERNO`. `SUBCATEGORIA_NO_DISPONIBLE` responde 400; `SOLICITUD_NO_COMPLETADA` y `CALIFICACION_DUPLICADA` responden 409, como ya fijan «Descubrimiento publico» y «Registrar una calificacion». Los de la revision administrativa: `CASO_NO_ENCONTRADO` 404, `ADMINISTRADOR_NO_VALIDO` 400, `CASO_SIN_RESPONSABLE` 409 y `CASO_DE_OTRO_ADMINISTRADOR` 403. Ninguna respuesta de error lleva trazas, SQL, secretos TOTP, hashes, claves de almacenamiento, URL prefirmadas ni valores internos.

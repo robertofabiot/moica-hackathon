@@ -10,8 +10,9 @@ package com.moica.moderacion.entity;
  * <p>El estado describe en qué punto va la revisión; el resultado describe la decisión. Son cosas
  * distintas y por eso viajan en columnas distintas.
  *
- * <p>P9 solo produce {@link #ABIERTO}: reportar abre el expediente y nada más. Las transiciones a
- * los demás estados son administrativas y llegan en P10A.
+ * <p>Reportar solo produce {@link #ABIERTO}: abre el expediente y nada más. Las transiciones a
+ * {@link #EN_REVISION} y {@link #CERRADO} son administrativas y las hace {@code
+ * RevisionDeCasosService}. A {@link #REABIERTO} se llega aceptando una apelación, que es P10B.
  */
 public enum EstadoCasoModeracion {
   /** El caso fue recibido y espera asignación o revisión. */

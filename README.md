@@ -131,7 +131,7 @@ El MVP cuenta con un flujo funcional completo de punta a punta, enfocado en la f
 * **Gestión de Solicitudes:** Ciclo de contratación de extremo a extremo (solicitar, aceptar, rechazar, cancelar y completar) con trazabilidad histórica.
 * **Chat y Contacto Seguro:** Hilo de mensajería interna habilitado tras la aceptación del servicio y revelación controlada de contactos externos.
 * **Reputación Bidireccional:** Calificación mutua (1 a 5 estrellas + reseña) al completar el trabajo, con reputación pública para prestadores.
-* **Moderación y Auditoría:** Apertura de reportes con historial auditable (SCD2) para resolver controversias entre las partes.
+* **Moderación y Auditoría:** Apertura de reportes entre participantes y bandeja administrativa para asignar responsables, revisar el caso con su solicitud, mensajes y evidencias, y registrar la resolución; cada cambio queda versionado en un historial auditable (SCD2).
 
 > **Alcance del MVP:** Se priorizó la verificación humana y la contratación segura. Pagos en línea integrados y mapas interactivos forman parte del roadmap posterior ([Docs/Core/post-mvp.md](Docs/Core/post-mvp.md)).
 

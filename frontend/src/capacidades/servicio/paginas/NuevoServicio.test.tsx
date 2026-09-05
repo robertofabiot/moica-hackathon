@@ -66,7 +66,7 @@ describe('Asistente de nuevo servicio', () => {
 
     await persona.click(await screen.findByRole('button', { name: 'Cancelar' }));
 
-    expect(await screen.findByRole('heading', { name: 'Tus servicios' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Mis servicios' })).toBeVisible();
   });
 
   it('exige una descripción antes de dejar el paso de detalles', async () => {
@@ -133,7 +133,9 @@ describe('Asistente de nuevo servicio', () => {
     await persona.click(screen.getByRole('button', { name: 'Publicar servicio' }));
 
     expect(await screen.findByRole('heading', { name: 'Reparación de fugas' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Activar servicio' })).toBeVisible();
+    expect(
+      screen.getByRole('switch', { name: 'Publicación de Reparación de fugas' })
+    ).toBeVisible();
   });
 
   it('rechaza un precio inválido y acepta el vacío como A convenir', async () => {
@@ -198,7 +200,9 @@ describe('Asistente de nuevo servicio', () => {
     await persona.click(screen.getByRole('button', { name: 'Publicar servicio' }));
 
     expect(await screen.findByRole('heading', { name: 'Reparación de fugas' })).toBeVisible();
-    expect(screen.getByRole('button', { name: 'Activar servicio' })).toBeVisible();
+    expect(
+      screen.getByRole('switch', { name: 'Publicación de Reparación de fugas' })
+    ).toBeVisible();
   });
 
   it('conserva los datos al volver atrás y no publica hasta el último paso', async () => {

@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 
 import estilos from './Boton.module.css';
 
-export type VarianteDeBoton = 'primario' | 'secundario' | 'contorno';
+export type VarianteDeBoton = 'primario' | 'secundario' | 'contorno' | 'fantasma';
 export type FormaDeBoton = 'normal' | 'pildora';
 
 type PropiedadesComunes = {
@@ -68,6 +68,9 @@ function claseDeVariante(variante: VarianteDeBoton): string | undefined {
   }
   if (variante === 'contorno') {
     return estilos.contorno;
+  }
+  if (variante === 'fantasma') {
+    return estilos.fantasma;
   }
   return estilos.primario;
 }

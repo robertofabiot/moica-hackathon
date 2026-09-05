@@ -36,8 +36,11 @@ describe('Servicios propios', () => {
     api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
     renderizarConProveedores(<App />, '/prestador/servicios');
 
-    expect(await screen.findByText(/Todavía no tienes servicios/)).toBeVisible();
-    expect(screen.getByRole('link', { name: 'Publicar un servicio' })).toBeVisible();
+    expect(await screen.findByRole('heading', { name: 'Mis servicios' })).toBeVisible();
+    expect(
+      await screen.findByRole('heading', { name: 'Aún no has publicado ningún servicio' })
+    ).toBeVisible();
+    expect(screen.getAllByRole('link', { name: '+ Publicar nuevo servicio' })).toHaveLength(2);
   });
 
   it('muestra A convenir y permite activar o desactivar desde el listado', async () => {
@@ -54,9 +57,15 @@ describe('Servicios propios', () => {
     renderizarConProveedores(<App />, '/prestador/servicios');
 
     expect(await screen.findByText(/A convenir/)).toBeVisible();
-    expect(screen.getByText(/Inactivo/)).toBeVisible();
+    expect(screen.getByText('INACTIVO')).toBeVisible();
+    expect(screen.getByText('Hogar y mantenimiento')).toBeVisible();
+    expect(screen.getByText('Plomería')).toBeVisible();
 
-    await persona.click(screen.getByRole('button', { name: 'Activar' }));
+    const interruptor = screen.getByRole('switch', {
+      name: 'Publicación de Reparación de fugas',
+    });
+    expect(interruptor).toHaveAttribute('aria-checked', 'false');
+    await persona.click(interruptor);
 
     await waitFor(() => {
       expect(api.ultima('PUT /api/prestador/servicios/10/estado')?.cuerpo).toEqual({
@@ -75,6 +84,9 @@ describe('Servicios propios', () => {
       expect(screen.getByLabelText('Subcategoría')).toHaveValue('1');
     });
     expect(screen.getByLabelText('Categoría')).toHaveValue('1');
+    expect(screen.getByRole('navigation', { name: 'Migas de pan' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Mis servicios' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Guardar cambios generales' })).toBeVisible();
   });
 
   it('sube una imagen con previsualización y texto alternativo', async () => {

@@ -32,6 +32,8 @@ Copy-Item .env.example .env
 | `MOICA_COOKIE_SEGURA` | Marca `Secure` en las cookies; `false` en desarrollo, `true` en produccion | Backend |
 | `MOICA_TOTP_CLAVE_CIFRADO` | Clave con la que se cifra el secreto TOTP de cada cuenta (Base64 de 16, 24 o 32 bytes) | Backend |
 | `MOICA_ADMIN_CORREO` | Correo de una cuenta ya registrada que recibe el rol administrativo al arrancar; vacia por omision | Backend |
+| `MOICA_EXPIRACION_MEDIDAS_PERIODO` | Cada cuanto se comprueba si una medida temporal ya vencio, en formato ISO-8601 (por omision `PT1M`) | Backend |
+| `MOICA_SOPORTE_CANAL` | Canal externo al que escribe quien quiere apelar una medida; se muestra junto al aviso de la cuenta sancionada | Backend |
 | `MOICA_R2_ID_CUENTA` | Identificador de la cuenta de Cloudflare; forma parte del endpoint S3 de R2 | Backend |
 | `MOICA_R2_ACCESS_KEY_ID` | Identificador del token de API de R2 | Backend |
 | `MOICA_R2_SECRET_ACCESS_KEY` | Secreto del token de API de R2; nunca se versiona | Backend |

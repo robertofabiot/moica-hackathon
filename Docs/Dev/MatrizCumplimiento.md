@@ -1498,6 +1498,89 @@ El contenedor `moica_pgadmin` sigue reiniciándose por el correo `.local` de
 `MOICA_PGADMIN_EMAIL`. No afecta a PostgreSQL, a Testcontainers ni a este
 incremento, y no se tocó.
 
+## Catálogo de medidas, aplicación manual y apelaciones de P10B
+
+Controles que P10B deja funcionando, con el resultado real de cada comprobación.
+Es la sección a la que remiten las filas 1, 3, 4, 5, 6 y 7 para este incremento.
+
+- **Local**: máquina de desarrollo (Windows 11 Pro, Docker Engine 29.7.2 con
+  Docker Desktop, Node 22, JDK compilando con `release 21`), PostgreSQL de
+  Testcontainers para las pruebas y el Compose local —`moica_db` **healthy** en
+  `localhost:5433`— para el recorrido integrado.
+- **Validación completa con Docker activo** (5 de septiembre de 2026, sobre el
+  código de esta rama). En `backend`, `./mvnw -B -ntp verify`: **Surefire 167 y
+  Failsafe 582, ambos con 0 fallos, 0 errores y 0 omitidas**, Spotless limpio,
+  SpotBugs sin hallazgos y `BUILD SUCCESS` en 7:00 min. Testcontainers
+  levantó `postgres:15-alpine` real; **no se usa H2 en ninguna prueba**. Las de
+  Failsafe incluyen las **65 nuevas de P10B**: `CatalogoDeMedidasIT` 14,
+  `MedidasDeCasoIT` 22, `ApelacionesDeCasoIT` 15, `ExpiracionDeMedidasIT` 9 y
+  `ConcurrenciaDeMedidasIT` 5. En `frontend`, `format:check`, `lint`,
+  `typecheck`, `test` (**390 en 44 archivos**, 39 más que antes) y `build` en
+  verde.
+- **Recorrido integrado sin dobles** (misma fecha). Compose local, backend real
+  en `:8080` —`/actuator/health` respondió `{"status":"UP"}`— y Vite en `:5173`.
+  Flyway aplicó `V52` y dejó el esquema en esa versión. Un script contra la API
+  registró una administradora con su segundo factor **activado y verificado de
+  verdad** (TOTP calculado con HMAC-SHA1 sobre la clave manual que devuelve la
+  API), un prestador y dos clientes; publicó un servicio, abrió y aceptó una
+  solicitud, abrió el caso y lo llevó por asignación, revisión, cierre, medida,
+  reemplazo confirmado, expiración, apelación y reapertura. Las **56
+  comprobaciones pasaron y 0 fallaron**, incluidas las que se hacen directamente
+  en PostgreSQL. La verificación básica del prestador se proyectó con SQL porque
+  el expediente documental necesita los buckets de R2, que no están configurados
+  en local; la verificación tiene sus propias pruebas de integración.
+- **Interfaz**: 15 capturas de página completa a **375x812, 768x1024 y
+  1280x800** —catálogo, expediente sin medida, expediente que exige confirmar el
+  reemplazo, expediente con medida vigente y apelación aceptada, y el aviso de la
+  cuenta restringida— tomadas con Chrome headless por CDP
+  (`Emulation.setDeviceMetricsOverride`, que es la única vía que fija el viewport
+  exacto) contra la aplicación real y con sesiones verdaderas. En las quince,
+  `scrollWidth == clientWidth`: **cero desbordamientos horizontales**. Quedan
+  adjuntas al PR junto con `medidas.json`; **no se versionan en el árbol**, según
+  la regla que fijó el PR #35.
+- **Rama**: `feature/admin-medidas-moderacion` nace de `develop` en `9932cba`,
+  el merge del #36, sin conflictos y sin `merge` posteriores.
+- **Una migración, `V52`, y solo una.** `V50` ya había creado
+  `medida_administrativa`, `caso_moderacion` con
+  `id_medida_administrativa_actual` y `fecha_fin_medida_actual`, e
+  `historial_caso` con los doce eventos del dominio: no hacía falta ninguna tabla
+  ni columna nueva, y **la apelación no es una tabla** porque el diccionario la
+  representa con los eventos del historial. Lo único que el esquema no sabía
+  decir era la regla D-MOD-03, que no vive dentro de una fila sino entre filas.
+  `V52` añade el índice único parcial
+  `uq_caso_moderacion_medida_vigente_por_cuenta`.
+
+Una casilla vacía significa que ahí no aplica, no que fallara.
+
+| Control | Cómo se comprueba | Local | CI | Evidencia |
+|---|---|---|---|---|
+| Migración `V52` | Recorrido integrado y `ConcurrenciaDeMedidasIT` | Sí | Sí | `pg_indexes` contiene `uq_caso_moderacion_medida_vigente_por_cuenta`, único y parcial sobre `id_reportado` con `WHERE id_medida_administrativa_actual IS NOT NULL`. Es la única migración del incremento: `V50` ya traía las tres tablas y los doce eventos. |
+| Ninguna operación de medidas sin rol y TOTP | `CatalogoDeMedidasIT.sinSesionNoSeLlegaAlCatalogo`, `unaCuentaCorrienteNoTocaElCatalogo` y `unAdministradorSinSegundoFactorVerificadoNoEntra`; `MedidasDeCasoIT.soloUnAdministradorConSegundoFactorAplicaMedidas` | Sí | Sí | Sin sesión, catálogo y aplicación responden **401**. Una cuenta corriente recibe **403**. Una cuenta **con rol pero sin el segundo factor verificado en esa sesión** también recibe 403: el rol por sí solo no abre el área. Ninguna petición rechazada crea medida ni cambia el estado de la cuenta. |
+| La medida la elige una persona, nunca el sistema | `MedidasDeCasoIT` completo; `MedidaDelCaso.test.tsx.noProponeNingunaMedida`; recorrido integrado | Sí | Sí | `idMedidaAdministrativa` es obligatorio: no existe ninguna vía de aplicar «la que corresponda». No hay reincidencia, umbrales, recomendación, escalamiento ni puntuación en el código. `nivelSeveridad` solo ordena la lista. En la pantalla el desplegable nace sin nada marcado y el botón sale deshabilitado. |
+| Solo se sanciona desde una decisión legítima | `MedidasDeCasoIT.soloSeAplicaDesdeUnCasoCerradoYProcedente` y `soloElResponsableAplicaYRevoca`; recorrido integrado | Sí | Sí | Desde `ABIERTO`, desde `EN_REVISION` y tras un `DESESTIMADO`, aplicar responde **409 `MEDIDA_NO_APLICABLE`** y no toca nada. Con otro responsable, **403 `CASO_DE_OTRO_ADMINISTRADOR`**. Cerrar como `PROCEDENTE` sigue sin sancionar por su cuenta. |
+| Una sola medida vigente por cuenta | `MedidasDeCasoIT.unaSegundaMedidaSinConfirmarNoSustituyeNada`, `confirmarElReemplazoSustituyeLaMedidaEnUnaSolaOperacion` y `sustituirLaMedidaDelMismoCasoDejaUnaSolaVersion`; recorrido integrado | Sí | Sí | La segunda aplicación responde **409 `MEDIDA_VIGENTE_EXISTENTE`** nombrando el expediente que la impuso, y no cambia el estado de cuenta ni añade versión. Confirmada, queda **exactamente una** medida vigente en toda la cuenta, comprobado contando en PostgreSQL los casos de esa persona con medida. La regla es de la cuenta, no del caso: los dos expedientes del escenario apuntan a la misma persona. |
+| El reemplazo es una sola operación | Las mismas pruebas | Sí | Sí | Revocar la anterior, aplicar la nueva, proyectar el estado de cuenta, versionar los dos expedientes y revocar sesiones ocurren dentro de **una transacción**. El expediente que pierde la medida deja `MEDIDA_REVOCADA` fotografiando el estado **ya sustituido**, no `ACTIVA`: su vigencia empieza en el mismo instante en que la nueva entra. Cuando la medida sustituida era del mismo caso, la operación deja **una sola** versión, porque dos fotografías en el mismo instante no caben en `ex_historial_caso_vigencia`. |
+| Concurrencia sobre la misma cuenta | `ConcurrenciaDeMedidasIT` (5 casos) | Sí | Sí | Dos aplicaciones simultáneas desde **expedientes distintos**: un 200 y un 409, nunca dos vigentes ni un 500. Dos reemplazos confirmados a la vez: los dos 200, se serializan y la fila del caso coincide con su fotografía. Revocar mientras se aplica otra, expirar mientras se revoca y expirar mientras se reemplaza: los dos órdenes posibles se comprueban por separado y en ninguno quedan dos medidas ni un estado de cuenta que contradiga a la que quedó. El orden de bloqueo es siempre **cuenta y después expediente**. |
+| El estado de cuenta refleja la medida | `MedidasDeCasoIT.aplicarProyectaElEstadoDeCuenta`, `unaAdvertenciaNoCambiaElAcceso` y `revocarDevuelveLaCuentaAActiva`; recorrido integrado | Sí | Sí | Una restricción deja la cuenta `RESTRINGIDA_TEMPORAL` con su `fecha_fin_estado_cuenta`; una advertencia la deja `ACTIVA` sin fecha; una suspensión permanente, `SUSPENDIDA_PERMANENTE` sin fecha. Revocar devuelve a `ACTIVA` y limpia la fecha. Se comprueba en la respuesta **y** en PostgreSQL. |
+| Sesiones revocadas cuando el acceso se cierra | `MedidasDeCasoIT.unaSuspensionRevocaLasSesionesAbiertas`, `unaRestriccionConservaLaSesion` y `unaCuentaSuspendidaNoEntraYLeeElCanalDeSoporte`; recorrido integrado | Sí | Sí | Una suspensión deja **cero** sesiones vigentes, todas con `motivo_revocacion = MEDIDA_ADMINISTRATIVA`, y la petición siguiente responde **401 aunque el JWT no haya expirado**. Una restricción **conserva** la sesión a propósito: esa persona sigue pudiendo consultar su historial y cerrar compromisos, y lo que no puede hacer se lo impide la autorización, que relee el estado en cada petición. |
+| Revocar reactiva la cuenta | `MedidasDeCasoIT.revocarDevuelveLaCuentaAActiva`, `revocarDosVecesEsUnConflictoControlado` y `revocarUnaSuspensionDejaVolverAEntrar` | Sí | Sí | Revocar la única medida devuelve la cuenta a `ACTIVA` y deja `MEDIDA_REVOCADA` con el motivo en el detalle. Revocar dos veces responde **409 `SIN_MEDIDA_VIGENTE`** y no añade versión. Tras revocar una suspensión permanente, la persona vuelve a poder iniciar sesión. |
+| Expiración automática segura | `ExpiracionDeMedidasIT` (9 casos); recorrido integrado | Sí | Sí | Antes de la fecha no expira nada. Al vencer, la cuenta vuelve a `ACTIVA` y queda `MEDIDA_EXPIRADA` con `tipo_actor = SISTEMA` e `id_actor` **nulo** —los únicos valores que `ck_historial_caso_actor` admite sin persona detrás— conservando el responsable histórico. Es **idempotente**: repetirlo devuelve cero y no añade versiones. Una medida revocada a mano o sustituida entre la consulta y el bloqueo simplemente se salta. Una permanente no vence sola. El barrido levanta a la vez las de personas distintas. |
+| La expiración no decide ninguna sanción | Las mismas pruebas; revisión del código | Sí | Sí | Solo pone a nulo la medida del caso y devuelve la cuenta a `ACTIVA`. No elige medida, no escala severidad, no mira reincidencia y no consulta el catálogo salvo para nombrar en el detalle la que expiró. Ejecuta el plazo que una persona fijó, que es lo único automático que admite la definición 11.3. |
+| Las medidas usadas no se borran | `CatalogoDeMedidasIT.noExisteNingunBorrado`, `deshabilitaYVuelveAHabilitar` y `unaMedidaReferenciadaNoSeBorraYSigueDescribiendoElHistorial`; recorrido integrado | Sí | Sí | `DELETE /api/admin/medidas/{id}` responde **405** y la fila sigue ahí. Deshabilitar una medida ya aplicada conserva su fila, deja la medida **vigente** sobre la cuenta y el historial la **sigue nombrando**. Una deshabilitada no se ofrece para aplicaciones nuevas: `MedidasDeCasoIT.noSeAplicaUnaMedidaDeshabilitada` responde 409 `MEDIDA_DESHABILITADA`. |
+| Catálogo coherente y sin duplicados | `CatalogoDeMedidasIT.exigeCoherenciaEntreElPlazoYElEstadoResultante`, `rechazaCodigoONombreDuplicado`, `normalizaYValidaElCodigo` y `editaLaMedidaSinTocarElCodigo` | Sí | Sí | Una temporal sin plazo, una permanente con plazo y una advertencia con plazo responden **400 `MEDIDA_INCOHERENTE`**. Código o nombre repetidos, aun cambiando mayúsculas, responden **409 `MEDIDA_DUPLICADA`**. El código se normaliza a mayúsculas y rechaza espacios; la edición no lo acepta, porque identifica decisiones ya tomadas. |
+| La apelación llega de fuera de Moica | `ApelacionesDeCasoIT.laPersonaSancionadaNoApelaDesdeLaAplicacion`; `ApelacionDelCaso.test.tsx`; recorrido integrado | Sí | Sí | La propia persona reportada recibe **403** en registrar, resolver y reabrir, y una petición sin sesión, **401**. No existe formulario, endpoint público, adjunto ni buzón. La aplicación solo **muestra** el canal externo. El actor de `APELACION_PRESENTADA` es la persona administradora que registra, no quien apeló: dentro de Moica el acto verificable es el registro. |
+| Aceptar, rechazar y reabrir | `ApelacionesDeCasoIT` (15 casos); recorrido integrado | Sí | Sí | Registrar exige caso `CERRADO` (409 `TRANSICION_NO_PERMITIDA` si no) y que no haya otra pendiente (409 `APELACION_PENDIENTE`). Resolver exige una pendiente (409 `SIN_APELACION_PENDIENTE`). Reabrir exige una **aceptada** (409 `APELACION_NO_ACEPTADA`) y completa `CERRADO → REABIERTO`, la única transición que P10A dejó pendiente. Desde ahí se retoma `REABIERTO → EN_REVISION` por el camino de siempre. |
+| Aceptar y reabrir son dos decisiones | `ApelacionesDeCasoIT.aceptarNoReabreElCasoPorSiSola` y `reabrirConsumeLaApelacionAceptada` | Sí | Sí | Aceptar deja la apelación `ACEPTADA` y el caso **sigue `CERRADO`**: la definición 11.5 las separa y a veces basta con aceptar y revocar la medida. Reabrir **consume** la apelación aceptada, así que reabrir dos veces exige que la persona vuelva a apelar por el canal externo. |
+| Reabrir preserva la decisión anterior | `ApelacionesDeCasoIT.elHistorialConservaLaResolucionAnterior` y `reabrirNoLevantaLaMedida`; recorrido integrado | Sí | Sí | La fila del caso suelta resultado, resolución y fecha de cierre porque `ck_caso_moderacion_cierre` solo los admite en `CERRADO`, pero la versión que los registró **los conserva íntegros**. La medida **sobrevive** a la reapertura: volver a mirar el expediente no absuelve a nadie, y desde el caso reabierto sí se puede revocar. |
+| SCD2 completo del recorrido | `MedidasDeCasoIT.elRecorridoCompletoMantieneElScd2`, `ApelacionesDeCasoIT.elRecorridoDeApelacionMantieneElScd2`, `ExpiracionDeMedidasIT` y `ConcurrenciaDeMedidasIT`; recorrido integrado | Sí | Sí | El recorrido integrado deja **once versiones** encadenadas: `CASO_ABIERTO`, `RESPONSABLE_ASIGNADO`, `ESTADO_CASO_CAMBIADO`, `RESOLUCION_REGISTRADA`, `MEDIDA_APLICADA`, `MEDIDA_APLICADA`, `MEDIDA_EXPIRADA`, `APELACION_PRESENTADA`, `APELACION_ACEPTADA`, `CASO_REABIERTO` y `ESTADO_CASO_CAMBIADO`, con números 1 a 11 sin huecos, **una sola** vigente y **cero** periodos superpuestos, contados con los mismos rangos semiabiertos que usa `ex_historial_caso_vigencia`. Cada versión conserva qué medida sostenía el caso en ese momento. |
+| El aviso al usuario no filtra el expediente | `AvisoDeEstadoDeCuenta.test.tsx` (7); recorrido integrado | Sí | Sí | El aviso dice el estado, hasta cuándo si es temporal y el canal externo, y **nada más**: la prueba comprueba que no contiene «medida», «caso», «expediente» ni «administrador». El recorrido lo confirma sobre la respuesta real de la sesión. Una cuenta activa no recibe ningún aviso y no hay formulario de apelación en él. |
+| La cuenta suspendida sí llega a leer su aviso | `MedidasDeCasoIT.unaCuentaSuspendidaNoEntraYLeeElCanalDeSoporte`; recorrido integrado | Sí | Sí | Una suspensión revoca sus sesiones y le niega abrir otra, así que lo único que lee es el rechazo del inicio de sesión: su mensaje lleva **hasta cuándo dura y a dónde escribir**. Sin eso quedaría fuera sin saber ninguna de las dos cosas. Se sigue comprobando después de la contraseña, de modo que quien no acierte las credenciales no averigua nada de una cuenta ajena. |
+| Regresión de P9 y P10A | `EsquemaDeCasosDeModeracionIT` 35, `ReporteDeParticipanteIT` 28, `ConcurrenciaDeReporteIT` 3, `RevisionDeCasosIT` 26, `ConcurrenciaDeRevisionDeCasosIT` 3, `ReporteAPresentarTest` 7; `BandejaDeCasos.test.tsx` 6 y `ExpedienteDeCaso.test.tsx` 12 | Sí | Sí | Todos siguen en verde dentro del `verify` completo. La limpieza compartida de las pruebas vacía ahora `medida_administrativa` después de los casos y sus versiones: hasta P10B ninguna prueba escribía el catálogo, y sin esa limpieza `ReporteDeParticipanteIT` heredaba las medidas de la clase anterior y su invariante de que reportar no crea medidas fallaba. |
+| Interfaz responsiva y accesible | Chrome headless por CDP a 375x812, 768x1024 y 1280x800; `CatalogoDeMedidas.test.tsx` (10), `MedidaDelCaso.test.tsx` (12), `ApelacionDelCaso.test.tsx` (10) y `AvisoDeEstadoDeCuenta.test.tsx` (7) | Sí | Sí | En las **quince** capturas `scrollWidth == clientWidth`. Cada campo tiene `label` asociado, la decisión sobre la apelación va en `fieldset`/`legend`, la confirmación del reemplazo es una casilla con nombre accesible, el aviso de cuenta es un `aside` con `role="status"` y `aria-labelledby`, y el canal de soporte es un enlace `mailto:` real. |
+| La pantalla no propone lo que la API rechaza | `MedidaDelCaso.test.tsx` y `ApelacionDelCaso.test.tsx` | Sí | Sí | Un caso desestimado no ofrece aplicar y explica por qué. Una medida de otro expediente no ofrece revocar. Sin apelación aceptada no aparece «Reabrir el caso». El catálogo no ofrece plazo para una medida que no termina sola, porque lo deriva del estado que impone, de modo que nunca envía la combinación que el backend rechazaría. |
+| Los avisos sobreviven al refresco | `MedidaDelCaso.test.tsx.elAvisoDelConflictoSobreviveAlRefrescoDelExpediente` | Sí | Sí | `AvisoDeAccion` y `errorMasReciente` se extraen para que los cuatro sitios que ahora los necesitan compartan uno solo, y el aviso vive **fuera** de los bloques de acción. La prueba refresca el expediente hasta retirar el permiso de resolver: el formulario desaparece y el aviso sigue explicando por qué la acción no salió. Es el mismo aprendizaje que corrigió P10A. |
+| Confirmación explícita del reemplazo en la interfaz | `MedidaDelCaso.test.tsx.advierteDeLaMedidaVigenteDeOtroCaso…`, `cancelarLaConfirmacion…` y `unConflictoDeReemplazoSeExplicaYPasaAExigirConfirmacion` | Sí | Sí | Con una medida vigente, la pantalla lo advierte **antes** de enviar nada, el botón cambia a «Sustituir la medida vigente» y queda deshabilitado hasta marcar la casilla. Desmarcarla vuelve a bloquearlo y no se envía nada. Si el 409 llega igualmente porque alguien sancionó mientras tanto, la confirmación pasa a exigirse **a partir de ese error**, aunque el expediente cargado dijera que no había ninguna. |
+
 ## Perfil privado del prestador
 
 Controles del rediseño de `/prestador` (perfil privado: formulario, imagen,

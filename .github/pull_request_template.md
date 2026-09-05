@@ -55,6 +55,10 @@ recurso, estado de cuenta y segundo factor cuando corresponda. Escribe
 
 <!--
 Obligatorias cuando cambia la interfaz: teléfono, tableta y escritorio.
+Se adjuntan al PR mediante GitHub (arrastrar al cuerpo). No se guardan
+en Docs/, frontend/, una carpeta Evidencias/ ni otra parte del repositorio,
+salvo exigencia expresa de la competencia o decisión documentada del equipo.
+medidas.json (o medidas-*.json) sigue la misma regla.
 Escribe «No aplica» si el PR no toca UI.
 -->
 
@@ -79,4 +83,5 @@ Nombre y para qué sirve cada variable, sin valores secretos. Confirma que
 - [ ] No hay secretos, `.env` reales, tokens ni credenciales versionados
 - [ ] `Docs/Dev/MatrizCumplimiento.md` quedó actualizado con evidencia real
 - [ ] La documentación afectada (README, variables, comandos) quedó al día
+- [ ] Las capturas y mediciones de UI están adjuntas al PR y no se versionaron como binarios de evidencia (solo si este PR cambia la interfaz)
 - [ ] Otro integrante del equipo revisará este PR antes de integrarlo

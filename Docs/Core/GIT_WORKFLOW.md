@@ -103,6 +103,9 @@ Cuando un desarrollador inicie una nueva tarea, debe seguir este proceso exacto:
 *   **Aprobación Cruzada (Code Review):** Cuando un desarrollador abre un PR, **otro miembro del equipo debe revisarlo y aprobarlo**. Esto asegura conocimiento compartido de la base de código y ayuda a prevenir bugs evidentes.
 *   **Título del PR:** Debe utilizar la misma convención de commits, con el scope igualmente opcional (Ej: `feat: módulo de autenticación` o `feat(auth): implementar módulo de autenticación`).
 *   **Borrar ramas:** Una vez que el PR es aprobado y se integra a `develop` exitosamente, la rama `feature/` correspondiente debe ser eliminada del repositorio remoto para mantener el orden.
+*   **Evidencia visual:** Las capturas de validación de interfaz y los archivos auxiliares de medición (`medidas.json`, `medidas-*.json` o equivalentes) se adjuntan al Pull Request mediante GitHub y no se versionan dentro del repositorio. Solo podrán incorporarse al árbol cuando constituyan un entregable permanente exigido expresamente por la competencia o por una decisión documentada del equipo.
+*   **Tamaños cuando cambia la UI:** hay que comprobar teléfono, tableta y escritorio.
+*   **Evidencia real:** lo declarado en el PR o en la matriz debe existir. Prohibido inventar URLs, capturas, resultados o mediciones.
 
 ---
 

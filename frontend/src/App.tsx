@@ -1,4 +1,6 @@
-import { Navigate, Route, Routes } from 'react-router';
+import { Navigate, Route, Routes, useSearchParams } from 'react-router';
+
+import AccesoNoAutorizado, { type TipoDeAccesoDenegado } from './paginas/AccesoNoAutorizado';
 
 import { PanelAdministrativo, RUTA_ADMIN, RutaAdministrativa } from './capacidades/admin';
 import {
@@ -215,8 +217,21 @@ export default function App() {
             </RutaAdministrativa>
           }
         />
+        <Route path="/acceso-denegado" element={<VistaDeAccesoDenegado />} />
+        <Route path="/acceso-no-autorizado" element={<VistaDeAccesoDenegado />} />
+        <Route path="/401" element={<AccesoNoAutorizado tipo="sesion-expirada" />} />
+        <Route path="/403" element={<AccesoNoAutorizado tipo="permisos-insuficientes" />} />
+        <Route path="/403-2fa" element={<AccesoNoAutorizado tipo="requiere-segundo-factor" />} />
         <Route path="*" element={<RutaNoEncontrada />} />
       </Routes>
     </>
   );
+}
+
+function VistaDeAccesoDenegado() {
+  const [parametros] = useSearchParams();
+  const tipo = parametros.get('tipo') as TipoDeAccesoDenegado | null;
+  const codigoRaw = parametros.get('codigo');
+  const codigo = codigoRaw === '401' ? 401 : codigoRaw === '403' ? 403 : undefined;
+  return <AccesoNoAutorizado tipo={tipo ?? undefined} codigo={codigo} />;
 }

@@ -3,7 +3,7 @@ import { Link } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
 import { Boton, IconoBalanza, IconoDocumento, IconoEscudo } from '../../../comun/componentes/ui';
-import { RUTA_ADMIN_CASOS } from '../../moderacion';
+import { RUTA_ADMIN_CASOS, RUTA_ADMIN_MEDIDAS } from '../../moderacion';
 import { RUTA_ADMIN_VERIFICACIONES } from '../../verificacion';
 import { obtenerResumenAdministrativo } from '../api';
 import estilos from './admin.module.css';
@@ -115,6 +115,25 @@ export default function PanelAdministrativo() {
               to={RUTA_ADMIN_CASOS}
             >
               Casos de moderación
+            </Boton>
+          </article>
+
+          <article className={estilos.modulo}>
+            <span className={estilos.iconoDeModulo} aria-hidden="true">
+              <IconoEscudo />
+            </span>
+            <h2 className={estilos.tituloDeModulo}>Catálogo de medidas</h2>
+            <p className={estilos.explicacion}>
+              Administra las sanciones que se pueden elegir al resolver un caso. El catálogo
+              describe cada medida; quién la aplica y cuándo lo decide siempre una persona.
+            </p>
+            <Boton
+              className={estilos.accionDeModulo}
+              forma="pildora"
+              variante="contorno"
+              to={RUTA_ADMIN_MEDIDAS}
+            >
+              Catálogo de medidas
             </Boton>
           </article>
         </nav>

@@ -35,7 +35,10 @@ export async function obtenerPerfil(): Promise<PerfilPrestador | null> {
   try {
     return await obtenerJson<PerfilPrestador>(RUTA_PERFIL);
   } catch (error) {
-    if (error instanceof ErrorDeApi && error.codigo === 'PERFIL_NO_ENCONTRADO') {
+    if (
+      error instanceof ErrorDeApi &&
+      (error.codigo === 'PERFIL_NO_ENCONTRADO' || error.estado === 404)
+    ) {
       return null;
     }
     throw error;

@@ -6,5 +6,6 @@
  */
 
 export { default as PerfilPrestador } from './paginas/PerfilPrestador';
+export { usePerfilPrestador } from './hooks/usePerfilPrestador';
 export { RUTA_PRESTADOR } from './rutas';
 export type { EstadoDisponibilidad, NivelVerificacion, TipoPrestador } from './tipos';

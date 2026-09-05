@@ -1,11 +1,12 @@
 import { useSesionActual } from '../../auth';
 import { ErrorDeApi } from '../../../comun/api';
+import { IconoMensaje } from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import { useContactosRevelados } from '../hooks/useChat';
 import { puedeVerContactos } from '../presentacion';
 import type { DatosDeSolicitudServicio } from '../tipos';
-import chat from './chat.module.css';
+import propios from '../paginas/solicitudes.module.css';
 
 /**
  * Los contactos externos del prestador, revelados al cliente después de la aceptación.
@@ -31,11 +32,11 @@ export default function ContactosDelPrestador({
   }
 
   return (
-    <section className={secciones.seccion} aria-labelledby="titulo-contactos">
-      <h2 className={secciones.tituloDeSeccion} id="titulo-contactos">
+    <section className={propios.tarjetaContactos} aria-labelledby="titulo-contactos">
+      <h2 className={propios.tituloDeSeccion} id="titulo-contactos">
         Contactos de {solicitud.nombrePublicoPrestador}
       </h2>
-      <p className={secciones.explicacion}>
+      <p className={propios.explicacion}>
         Se muestran porque el prestador aceptó tu solicitud. Son las entradas que publicó en su
         perfil; Moica no verifica a dónde llevan.
       </p>
@@ -62,16 +63,19 @@ export default function ContactosDelPrestador({
       ) : null}
 
       {contactos.data !== undefined && contactos.data.length === 0 ? (
-        <p className={secciones.vacio}>
+        <p className={propios.vacio}>
           Este prestador todavía no publicó ningún medio de contacto. Puedes coordinar el trabajo
           por los mensajes de esta solicitud.
         </p>
       ) : null}
 
       {contactos.data !== undefined && contactos.data.length > 0 ? (
-        <ul className={chat.contactos} aria-label="Medios de contacto del prestador">
+        <ul className={propios.contactos} aria-label="Medios de contacto del prestador">
           {contactos.data.map((contacto) => (
-            <li className={chat.contacto} key={contacto.idMedioContactoPrestador}>
+            <li className={propios.contacto} key={contacto.idMedioContactoPrestador}>
+              <span className={propios.iconoDeContacto} aria-hidden="true">
+                <IconoMensaje />
+              </span>
               {contacto.contenido}
             </li>
           ))}

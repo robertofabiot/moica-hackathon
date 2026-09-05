@@ -229,7 +229,7 @@ describe('Detalle de solicitud', () => {
 
     renderizarConProveedores(<App />, '/solicitudes/21');
 
-    const historial = await screen.findByRole('list');
+    const historial = await screen.findByRole('list', { name: 'Historial' });
     const entradas = historial.querySelectorAll('li');
     expect(entradas[0]).toHaveTextContent('Pendiente');
     expect(entradas[1]).toHaveTextContent('Pendiente → Aceptada');

@@ -4,9 +4,9 @@ import { useForm } from 'react-hook-form';
 
 import { useSesionActual } from '../../auth';
 import { ErrorDeApi } from '../../../comun/api';
+import { Boton } from '../../../comun/componentes/ui';
 import { claseDeEntrada } from '../../../comun/estilos/estilosDeFormulario';
 import estilos from '../../../comun/estilos/formulario.module.css';
-import secciones from '../../../comun/estilos/secciones.module.css';
 import { esquemaDeCancelacion, type CamposDeCancelacion } from '../esquemas';
 import {
   useAceptacionDeSolicitud,
@@ -47,7 +47,7 @@ export default function AccionesDeSolicitud({
 
   if (solicitud.estadoActual === 'RECHAZADA' || solicitud.estadoActual === 'CANCELADA') {
     return (
-      <p className={secciones.explicacion} role="status">
+      <p className={propios.avisoDeConfirmacion} role="status">
         Esta solicitud ya está cerrada. Un nuevo intento exige otra solicitud.
       </p>
     );
@@ -55,7 +55,7 @@ export default function AccionesDeSolicitud({
 
   if (solicitud.estadoActual === 'COMPLETADA') {
     return (
-      <p className={secciones.explicacion} role="status">
+      <p className={propios.avisoDeConfirmacion} role="status">
         El servicio se marcó como completado. Puedes calificar a la contraparte más abajo; hacerlo
         es opcional.
       </p>
@@ -114,7 +114,7 @@ export default function AccionesDeSolicitud({
           />
         ) : null}
         {pendiente === null && esPrestador && !cuentaActiva ? (
-          <p className={secciones.explicacion} role="status">
+          <p className={propios.avisoDeConfirmacion} role="status">
             Tu cuenta está restringida y por ahora no puede aceptar ni rechazar solicitudes.
           </p>
         ) : null}
@@ -122,33 +122,35 @@ export default function AccionesDeSolicitud({
           <div className={propios.acciones}>
             {esPrestador && cuentaActiva ? (
               <>
-                <button
-                  className={estilos.boton}
+                <Boton
+                  className={propios.botonDeAccion}
                   type="button"
                   disabled={enCurso}
                   onClick={() => setPendiente('aceptar')}
                 >
                   Aceptar
-                </button>
-                <button
-                  className={secciones.botonSecundario}
+                </Boton>
+                <Boton
+                  className={propios.botonDeAccion}
+                  variante="secundario"
                   type="button"
                   disabled={enCurso}
                   onClick={() => setPendiente('rechazar')}
                 >
                   Rechazar
-                </button>
+                </Boton>
               </>
             ) : null}
             {esCliente ? (
-              <button
-                className={secciones.botonSecundario}
+              <Boton
+                className={propios.botonDeAccion}
+                variante="secundario"
                 type="button"
                 disabled={enCurso}
                 onClick={() => setPendiente('cancelar')}
               >
                 Cancelar solicitud
-              </button>
+              </Boton>
             ) : null}
           </div>
         )}
@@ -190,31 +192,32 @@ export default function AccionesDeSolicitud({
         />
       ) : null}
       {pendiente === null && esPrestador && !cuentaActiva ? (
-        <p className={secciones.explicacion} role="status">
+        <p className={propios.avisoDeConfirmacion} role="status">
           Tu cuenta está restringida y por ahora no puede completar solicitudes.
         </p>
       ) : null}
       {pendiente === null && (
         <div className={propios.acciones}>
           {esPrestador && cuentaActiva ? (
-            <button
-              className={estilos.boton}
+            <Boton
+              className={propios.botonDeAccion}
               type="button"
               disabled={enCurso}
               onClick={() => setPendiente('completar')}
             >
               Marcar como completada
-            </button>
+            </Boton>
           ) : null}
           {esCliente || esPrestador ? (
-            <button
-              className={secciones.botonSecundario}
+            <Boton
+              className={propios.botonDeAccion}
+              variante="secundario"
               type="button"
               disabled={enCurso}
               onClick={() => setPendiente('cancelar')}
             >
               Cancelar con motivo
-            </button>
+            </Boton>
           ) : null}
         </div>
       )}
@@ -242,19 +245,25 @@ function Confirmacion({
       <p>
         <strong>{titulo}</strong>
       </p>
-      <p className={secciones.explicacion}>{advertencia}</p>
+      <p className={propios.avisoDeConfirmacion}>{advertencia}</p>
       <div className={propios.acciones}>
-        <button className={estilos.boton} type="button" disabled={enCurso} onClick={alConfirmar}>
+        <Boton
+          className={propios.botonDeAccion}
+          type="button"
+          disabled={enCurso}
+          onClick={alConfirmar}
+        >
           {enCurso ? 'Guardando…' : textoDeAccion}
-        </button>
-        <button
-          className={secciones.botonSecundario}
+        </Boton>
+        <Boton
+          className={propios.botonDeAccion}
+          variante="secundario"
           type="button"
           disabled={enCurso}
           onClick={alCancelar}
         >
           Volver
-        </button>
+        </Boton>
       </div>
     </div>
   );
@@ -287,7 +296,7 @@ function CancelacionConMotivo({
       <p>
         <strong>¿Cancelar esta solicitud aceptada?</strong>
       </p>
-      <p className={secciones.explicacion}>
+      <p className={propios.avisoDeConfirmacion}>
         Debes indicar el motivo. Esta acción no se puede deshacer.
       </p>
       <div className={estilos.campo}>
@@ -310,17 +319,18 @@ function CancelacionConMotivo({
         )}
       </div>
       <div className={propios.acciones}>
-        <button className={estilos.boton} type="submit" disabled={enCurso}>
+        <Boton className={propios.botonDeAccion} type="submit" disabled={enCurso}>
           {enCurso ? 'Cancelando…' : 'Confirmar cancelación'}
-        </button>
-        <button
-          className={secciones.botonSecundario}
+        </Boton>
+        <Boton
+          className={propios.botonDeAccion}
+          variante="secundario"
           type="button"
           disabled={enCurso}
           onClick={alCancelar}
         >
           Volver
-        </button>
+        </Boton>
       </div>
     </form>
   );

@@ -7,6 +7,7 @@ import {
   catalogoDeEjemplo,
   cuerpoDeError,
   instalarApiFalsa,
+  perfilDeEjemplo,
   resumenDeSolicitudDeEjemplo,
   sesionDeEjemplo,
   solicitudDeServicioDeEjemplo,
@@ -28,7 +29,8 @@ describe('Mis solicitudes', () => {
     vi.unstubAllGlobals();
   });
 
-  it('muestra el vacío de ambas bandejas', async () => {
+  it('muestra el vacío de ambas bandejas para una cuenta de prestador', async () => {
+    api.responder('GET /api/prestador/perfil', { estado: 200, cuerpo: perfilDeEjemplo() });
     api.responder('GET /api/solicitudes/enviadas', { estado: 200, cuerpo: [] });
     api.responder('GET /api/solicitudes/recibidas', { estado: 200, cuerpo: [] });
 
@@ -36,6 +38,19 @@ describe('Mis solicitudes', () => {
 
     expect(await screen.findByText('Todavía no has enviado solicitudes.')).toBeVisible();
     expect(screen.getByText('Todavía no has recibido solicitudes.')).toBeVisible();
+  });
+
+  it('para una cuenta de cliente no muestra recibidas e invita a ser prestador', async () => {
+    api.responder('GET /api/solicitudes/enviadas', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/solicitudes/recibidas', { estado: 200, cuerpo: [] });
+
+    renderizarConProveedores(<App />, '/solicitudes');
+
+    expect(await screen.findByText('Todavía no has enviado solicitudes.')).toBeVisible();
+    expect(screen.queryByText('Todavía no has recibido solicitudes.')).not.toBeInTheDocument();
+    expect(screen.getByText('¿Ofreces servicios profesionales o técnicos?')).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Explorar servicios' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Crear perfil de prestador' })).toBeVisible();
   });
 
   it('muestra el estado de carga de las bandejas', async () => {

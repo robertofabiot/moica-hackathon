@@ -23,6 +23,12 @@ import {
   RUTA_EXPLORAR,
   RUTA_PRESTADOR_PUBLICO,
 } from './capacidades/busqueda';
+import {
+  BandejaDeCasos,
+  ExpedienteDeCaso,
+  RUTA_ADMIN_CASOS,
+  RUTA_ADMIN_EXPEDIENTE,
+} from './capacidades/moderacion';
 import { PanelUsuario, RUTA_PANEL } from './capacidades/panel';
 import { PerfilPrestador, RUTA_PRESTADOR } from './capacidades/prestador';
 import {
@@ -53,7 +59,8 @@ import RutaNoEncontrada from './paginas/RutaNoEncontrada';
  * Cada incremento agrega las rutas de su propia capacidad. P2 añadió las de acceso, P3 las de
  * seguridad de la cuenta y el área administrativa, P4 la del perfil de prestador, P4V la cola
  * administrativa de verificaciones, P5 el descubrimiento público y la gestión de servicios, P6
- * el ciclo de solicitudes, y el panel de actividad en `/panel`.
+ * el ciclo de solicitudes, el panel de actividad en `/panel` y P10A la revisión administrativa de
+ * casos de moderación.
  *
  * Los envoltorios de ruta deciden a qué pantalla llevar a cada persona, no si puede hacer algo:
  * quien pida una ruta protegida de la API sin permiso recibe 401 o 403 del backend aunque llegue a
@@ -175,6 +182,22 @@ export default function App() {
         element={
           <RutaAdministrativa>
             <ColaDeVerificaciones />
+          </RutaAdministrativa>
+        }
+      />
+      <Route
+        path={RUTA_ADMIN_CASOS}
+        element={
+          <RutaAdministrativa>
+            <BandejaDeCasos />
+          </RutaAdministrativa>
+        }
+      />
+      <Route
+        path={RUTA_ADMIN_EXPEDIENTE}
+        element={
+          <RutaAdministrativa>
+            <ExpedienteDeCaso />
           </RutaAdministrativa>
         }
       />

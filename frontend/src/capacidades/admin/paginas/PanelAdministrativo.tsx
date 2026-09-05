@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { RUTA_ADMIN_CASOS } from '../../moderacion';
 import { RUTA_ADMIN_VERIFICACIONES } from '../../verificacion';
 import { obtenerResumenAdministrativo } from '../api';
 import estilos from './admin.module.css';
@@ -9,7 +10,8 @@ import estilos from './admin.module.css';
 /**
  * Pantalla mínima del área administrativa.
  *
- * P3 protegió el área y P4V le da su primera función: la cola de verificaciones documentales.
+ * P3 protegió el área, P4V le dio la cola de verificaciones documentales y P10A la bandeja de casos
+ * de moderación.
  * Además de ella se muestra con qué cuenta se entró y desde cuándo tiene permisos, que es lo que
  * demuestra que la protección funciona de extremo a extremo.
  */
@@ -74,7 +76,15 @@ export default function PanelAdministrativo() {
           </p>
         </nav>
 
-        <p className={estilos.pendiente}>La moderación de casos llega con su propio incremento.</p>
+        <nav className={estilos.pendiente} aria-label="Moderación">
+          <p>
+            <Link to={RUTA_ADMIN_CASOS}>Casos de moderación</Link>
+          </p>
+          <p className={estilos.explicacion}>
+            Revisa los casos que abren los participantes, asigna responsables y registra el
+            resultado y la resolución de cada uno.
+          </p>
+        </nav>
 
         <p className={estilos.pie}>
           <Link to="/">Volver al inicio</Link>

@@ -164,31 +164,12 @@
   height: 1.35rem;
 }
 
-.cabeceraDeModulo {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--gap-xs);
-}
-
 .tituloDeModulo {
   margin: 0;
   font-family: var(--font-family-primary);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--color-neutral-900);
-}
-
-.pildoraProxima {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.75rem;
-  padding: 0.125rem 0.625rem;
-  border-radius: var(--radius-full);
-  background-color: var(--color-neutral-100);
-  color: var(--color-neutral-600);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
 }
 
 .accionDeModulo {

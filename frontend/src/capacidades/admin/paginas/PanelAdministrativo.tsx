@@ -103,10 +103,7 @@ export default function PanelAdministrativo() {
             >
               <IconoBalanza />
             </span>
-            <div className={estilos.cabeceraDeModulo}>
-              <h2 className={estilos.tituloDeModulo}>Moderación de casos</h2>
-              <span className={estilos.pildoraProxima}>Próximamente</span>
-            </div>
+            <h2 className={estilos.tituloDeModulo}>Moderación de casos</h2>
             <p className={estilos.explicacion}>
               Revisa los casos que abren los participantes, asigna responsables y registra el
               resultado y la resolución de cada uno.

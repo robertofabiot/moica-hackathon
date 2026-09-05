@@ -1398,7 +1398,8 @@ Es la sección a la que remiten las filas 1, 3, 4, 5, 6 y 7 para este incremento
   fija el viewport exacto) contra la aplicación real y con sesión administrativa
   verdadera. En las nueve, `scrollWidth == clientWidth`: **cero desbordamientos
   horizontales**. Quedan en `C:\Users\ervin\Desktop\moica-pr-capturas-p10a`,
-  fuera del repositorio, y se adjuntan al PR.
+  fuera del repositorio. Las seis del expediente se sustituyen por las capturas
+  de las correcciones descritas abajo; las tres de bandeja se conservan como antecedente.
 - **Rama**: `feature/admin-casos-moderacion` nace de `develop` en `4d6c2d6`, el
   merge del #32, sin conflictos y sin `merge` posteriores.
 - **Sin migración nueva.** `V50` y `V51` de P9 ya crearon `caso_moderacion` e
@@ -1426,6 +1427,62 @@ Una casilla vacía significa que ahí no aplica, no que fallara.
 | Interfaz responsiva y accesible | Chrome headless por CDP a 375x812, 768x1024 y 1280x800; `BandejaDeCasos.test.tsx` (6) y `ExpedienteDeCaso.test.tsx` (9) | Sí | Sí | En las nueve capturas `scrollWidth == clientWidth`. La tabla usa encabezados de fila, los filtros anuncian su estado con `aria-pressed`, el hilo con `aria-expanded`, el resultado va en `fieldset`/`legend`, cada campo tiene `label` asociado y la marca de versión vigente lleva texto además del recuadro. Las imágenes sin texto alternativo propio quedan como decorativas en lugar de recibir una descripción inventada. |
 | El hilo privado no se descarga sin pedirlo | `ExpedienteDeCaso.test.tsx` | Sí | Sí | Al abrir el expediente no se pide `/mensajes`; solo al pulsar «Ver los mensajes». Abrir una ficha no debe arrastrar de paso una conversación privada que quizá nadie va a mirar. |
 | La pantalla no propone lo que la API rechaza | `ExpedienteDeCaso.test.tsx` | Sí | Sí | Sin ser responsable no aparecen «Iniciar la revisión» ni «Cerrar el caso», y se explica por qué. Un caso cerrado no ofrece reasignar ni decidir. Es experiencia, no seguridad: el backend rechaza igual, y por eso el aviso muestra el mensaje de la API tal cual cuando otra persona se adelanta. |
+
+### Correcciones del historial y los avisos (4 de septiembre de 2026)
+
+Continuación del PR #33 sobre `feature/admin-casos-moderacion`. Se conserva
+arriba la validación inicial como antecedente; este apartado registra una sola
+vez la evidencia de las correcciones, sin cambiar la fecha de corte del plan.
+
+- **Responsable histórico**: el DTO, el contrato y la pantalla distinguen
+  `idActor`/`nombreActor` de `idAdministradorResponsable`/
+  `nombreAdministradorResponsable` de cada versión. La apertura deja responsable
+  nulo. `RevisionDeCasosIT.elHistorialConservaElResponsableDeCadaVersion`
+  comprueba dos asignaciones cruzadas, identificadores y nombres distintos
+  (Lucía y Carlos), además de los responsables persistidos en las tres versiones.
+  La regresión del expediente exige la etiqueta «Responsable entonces» junto
+  al nombre correcto y su ausencia en la apertura.
+- **Avisos después del refresco**: las regresiones esperan la resolución del
+  expediente cerrado tras un 409 y el nuevo responsable tras un 403 que retira
+  `puedeResolver`. Después comprueban el aviso y las acciones: el cerrado no
+  permite asignar, revisar ni cerrar; el caso ajeno permite reasignar, pero no
+  resolver. Una reasignación posterior exitosa recupera el formulario de cierre
+  y retira el aviso anterior. Esta última comprobación falló antes de corregir
+  `errorMasReciente`, que filtraba errores antes de elegir la última mutación.
+- **Backend recuperado, sin repetición innecesaria**: la tarea local de Claude
+  `bgvfx6ksh.output` terminó a las 19:18:42 con `BUILD SUCCESS` y código 0.
+  Se contrastó con los XML de Surefire/Failsafe y SpotBugs en `backend/target`,
+  posteriores a los últimos cambios Java (19:07:21): **167 unitarias y 517 de
+  integración**, sin fallos, errores ni omitidas; **26** en `RevisionDeCasosIT`
+  y **3** de concurrencia. SpotBugs informa cero defectos. No se modificó Java
+  después de esa validación completa con Docker.
+- **Frontend comprobado al cierre**: `format:check`, `lint`, `typecheck` y
+  `build` terminaron con código 0. `npm run test` completó 348/350: fallaron por
+  espera la navegación al expediente en `BandejaDeCasos.test.tsx` y el cambio
+  de cuenta en `PanelAdministrativo.test.tsx`. La repetición
+  `npm run test -- --maxWorkers=2` pasó **350/350 en 40 archivos**, sin modificar
+  los límites de espera ni esas pruebas. Incluye las **18 de P10A**: 6 de
+  bandeja y 12 de expediente. Vite conserva el aviso de bundle mayor de 500 kB;
+  el build y la generación de la PWA terminaron correctamente.
+- **Capturas actualizadas**: seis expedientes reales (`/admin/casos/6` cerrado y
+  `/admin/casos/7` en revisión), con sesión y segundo factor reales, a 375x812,
+  768x1024 y 1280x800. Las seis muestran «Responsable entonces» y cumplen
+  `scrollWidth == clientWidth`; el cerrado ofrece solo leer mensajes, y el de
+  revisión conserva asignación y cierre. Se reutilizó el script CDP de P10A
+  porque Browser integrado falló al navegar (`ERR_CONNECTION_REFUSED` y bloqueo
+  de su página de error `data:`), aunque Vite respondía 200. No se reinstaló ni
+  reorganizó la configuración. [Capturas del expediente](Evidencias/P10A/).
+
+| Tamaño | Caso cerrado | Caso en revisión |
+|---|---|---|
+| Móvil, 375x812 | [Captura](Evidencias/P10A/expediente-cerrado-movil-375x812.png) | [Captura](Evidencias/P10A/expediente-en-revision-movil-375x812.png) |
+| Tableta, 768x1024 | [Captura](Evidencias/P10A/expediente-cerrado-tableta-768x1024.png) | [Captura](Evidencias/P10A/expediente-en-revision-tableta-768x1024.png) |
+| Escritorio, 1280x800 | [Captura](Evidencias/P10A/expediente-cerrado-escritorio-1280x800.png) | [Captura](Evidencias/P10A/expediente-en-revision-escritorio-1280x800.png) |
+
+Estas comprobaciones amplían las filas de asignación, SCD2, interfaz responsiva
+y acciones disponibles de la tabla anterior. Los controles automáticos del SHA
+final se consultan en el CI del PR #33; la aprobación previa de Roberto sobre
+`3a2ed8f` no constituye revisión de estas correcciones.
 
 ### Omisiones documentales cerradas en este PR
 

@@ -6,11 +6,15 @@ COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 RUN chmod +x mvnw
 
-RUN --mount=type=cache,id=moica-maven,target=/root/.m2 ./mvnw -B -ntp dependency:go-offline
+# Sin cache montada: el builder de Railway exige que el `id` lleve su propio
+# prefijo de servicio, y fijarlo aqui ataria la imagen a un proveedor. Las
+# dependencias se resuelven en su propia capa, antes de copiar `src/`, asi que
+# el cache de capas de Docker las reutiliza mientras el POM no cambie.
+RUN ./mvnw -B -ntp dependency:go-offline
 
 COPY src/ src/
 
-RUN --mount=type=cache,id=moica-maven,target=/root/.m2 ./mvnw -B -ntp -DskipTests package
+RUN ./mvnw -B -ntp -DskipTests package
 
 FROM eclipse-temurin:21-jre-noble@sha256:96975602e131485862eb8cd32927face8a06d7591a5e865944b634a701d9df72
 

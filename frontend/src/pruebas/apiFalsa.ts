@@ -749,3 +749,83 @@ function casoDeModeracionBase() {
     fechaApertura: '2026-08-30T12:00:00-06:00',
   };
 }
+
+/**
+ * Una fila de la bandeja administrativa de casos.
+ *
+ * Lleva ya lo que P9 no publicaba al reportante: quién reportó, quién responde por el caso y el
+ * resultado cuando lo hay.
+ */
+export function casoAdministrativoDeEjemplo(
+  cambios: Partial<ReturnType<typeof casoAdministrativoBase>> = {}
+) {
+  return { ...casoAdministrativoBase(), ...cambios };
+}
+
+function casoAdministrativoBase() {
+  return {
+    idCasoModeracion: 5,
+    idSolicitudServicio: 21,
+    idReportante: 2,
+    nombreReportante: 'Ana Cliente',
+    idReportado: 1,
+    nombreReportado: 'Taller La Esperanza',
+    motivo: 'Trato irrespetuoso',
+    estadoActual: 'ABIERTO' as 'ABIERTO' | 'EN_REVISION' | 'CERRADO' | 'REABIERTO',
+    resultadoActual: null as 'PROCEDENTE' | 'DESESTIMADO' | null,
+    idAdministradorResponsable: null as number | null,
+    nombreAdministradorResponsable: null as string | null,
+    fechaApertura: '2026-08-30T12:00:00-06:00',
+    fechaActualizacion: '2026-08-30T12:00:00-06:00',
+  };
+}
+
+/** Una versión del historial SCD2 de un caso. */
+export function versionDeCasoDeEjemplo(
+  cambios: Partial<ReturnType<typeof versionDeCasoBase>> = {}
+) {
+  return { ...versionDeCasoBase(), ...cambios };
+}
+
+function versionDeCasoBase() {
+  return {
+    idHistorialCaso: 90,
+    numeroVersion: 1,
+    tipoEvento: 'CASO_ABIERTO',
+    tipoActor: 'USUARIO',
+    idActor: 2 as number | null,
+    nombreActor: 'Ana Cliente' as string | null,
+    idAdministradorResponsable: null as number | null,
+    nombreAdministradorResponsable: null as string | null,
+    estadoCaso: 'ABIERTO',
+    resultadoCaso: null as string | null,
+    estadoCuenta: 'ACTIVA',
+    resolucion: null as string | null,
+    detalleCambio: 'El participante reportó a la contraparte y se abrió el caso.',
+    fechaInicioVigencia: '2026-08-30T12:00:00-06:00',
+    fechaFinVigencia: null as string | null,
+    esVersionActual: true,
+  };
+}
+
+/** El expediente completo que devuelve `GET /api/admin/casos/{id}`. */
+export function expedienteDeCasoDeEjemplo(
+  cambios: Partial<ReturnType<typeof expedienteDeCasoBase>> = {}
+) {
+  return { ...expedienteDeCasoBase(), ...cambios };
+}
+
+function expedienteDeCasoBase() {
+  return {
+    caso: casoAdministrativoDeEjemplo(),
+    descripcion: 'Usó insultos y no terminó el trabajo acordado.',
+    resolucionActual: null as string | null,
+    solicitud: solicitudDeServicioDeEjemplo({
+      estadoActual: 'COMPLETADA',
+      historial: historialConAceptacion(),
+    }),
+    imagenesDelServicio: [imagenDeServicioDeEjemplo()] as unknown[],
+    historial: [versionDeCasoDeEjemplo()] as unknown[],
+    puedeResolver: false,
+  };
+}

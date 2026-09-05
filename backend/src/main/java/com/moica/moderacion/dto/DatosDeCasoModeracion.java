@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
  * <p>Lo administrativo se queda fuera a propósito. No viajan el administrador responsable, la
  * medida vinculada, el resultado, la resolución ni las fechas de cierre y de fin de medida: son la
  * decisión de Moica sobre una persona, no el acuse del reporte, y su superficie es el área
- * administrativa de P10A. Tampoco viaja nada del caso que la contraparte haya podido presentar.
+ * administrativa. Tampoco viaja nada del caso que la contraparte haya podido presentar.
  *
  * @param estadoActual etapa vigente de la revisión; recién abierto es siempre {@link
  *     EstadoCasoModeracion#ABIERTO}

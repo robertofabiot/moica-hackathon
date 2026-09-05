@@ -22,9 +22,13 @@ import java.time.OffsetDateTime;
  *
  * <p>Lo que el reporte declara —la solicitud, quién reporta, a quién, el motivo y la descripción—
  * es inmutable: son {@code updatable = false}. En el MVP un reporte no se edita ni se borra. Los
- * campos administrativos —responsable, medida, estado, resultado, resolución y sus fechas— nacen
- * como los deja la apertura y solo los mueve la revisión administrativa de P10A y P10B; esta clase
- * no ofrece ninguna forma de cambiarlos porque P9 no cambia ninguno.
+ * campos administrativos —responsable, estado, resultado, resolución y sus fechas— nacen como los
+ * deja la apertura y los mueve la revisión administrativa: P10A añade las tres mutaciones que
+ * siguen. La medida y su fecha de fin siguen sin mutador porque aplicarlas es P10B.
+ *
+ * <p>Ninguna de las tres decide si puede ejecutarse: la autorización, la transición válida y el
+ * cierre de la versión histórica anterior son responsabilidad del servicio, que las envuelve en una
+ * sola transacción. Aquí solo se deja el estado vigente coherente con lo que la base exige.
  */
 @Entity
 @Table(name = "caso_moderacion")
@@ -167,5 +171,54 @@ public class CasoModeracion {
 
   public OffsetDateTime getFechaActualizacion() {
     return fechaActualizacion;
+  }
+
+  /**
+   * Deja el caso a cargo de una persona administradora.
+   *
+   * <p>Sirve tanto para la primera asignación como para una reasignación posterior: el efecto sobre
+   * la fila vigente es el mismo y lo que distingue una de otra queda en el historial.
+   *
+   * <p>No toca el estado. Asignar es decir quién responde por el caso, no empezar a revisarlo.
+   */
+  public void asignarResponsable(Long idAdministradorResponsable, OffsetDateTime instante) {
+    this.idAdministradorResponsable = idAdministradorResponsable;
+    this.fechaActualizacion = instante;
+  }
+
+  /**
+   * Pone el caso en revisión.
+   *
+   * <p>Llega desde {@link EstadoCasoModeracion#ABIERTO} o desde {@link
+   * EstadoCasoModeracion#REABIERTO}; en los dos casos el expediente vuelve al análisis y deja de
+   * tener una decisión vigente, así que resultado, resolución y fecha de cierre quedan nulos. Es lo
+   * que exige {@code ck_caso_moderacion_cierre}: solo un caso cerrado los lleva.
+   */
+  public void iniciarRevision(OffsetDateTime instante) {
+    this.estadoActual = EstadoCasoModeracion.EN_REVISION;
+    this.resultadoActual = null;
+    this.resolucionActual = null;
+    this.fechaCierreActual = null;
+    this.fechaActualizacion = instante;
+  }
+
+  /**
+   * Cierra el caso con la decisión de quien lo revisó.
+   *
+   * <p>Resultado, resolución y fecha de cierre entran juntos porque {@code
+   * ck_caso_moderacion_cierre} los exige a la vez: un caso cerrado sin decisión no diría nada, y
+   * una decisión sin cierre no sería vigente.
+   *
+   * <p>Cerrar no aplica ninguna medida ni cambia ninguna cuenta. {@link
+   * ResultadoCasoModeracion#PROCEDENTE} dice que el caso amerita una decisión administrativa, no
+   * que Moica ya la haya tomado: elegir y aplicar la medida es P10B y siempre lo hace una persona.
+   */
+  public void cerrar(
+      ResultadoCasoModeracion resultado, String resolucion, OffsetDateTime instante) {
+    this.estadoActual = EstadoCasoModeracion.CERRADO;
+    this.resultadoActual = resultado;
+    this.resolucionActual = resolucion;
+    this.fechaCierreActual = instante;
+    this.fechaActualizacion = instante;
   }
 }

@@ -26,7 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p>Solo hay consultar y crear. No existe {@code PUT}, {@code PATCH} ni {@code DELETE}: en el MVP
  * un reporte no se edita ni se retira. Y lo que se consulta es siempre el caso propio: la bandeja
- * administrativa, el expediente completo y sus resoluciones son otra superficie, la de P10A.
+ * administrativa, el expediente completo, el historial y las resoluciones son otra superficie,
+ * {@code /api/admin/casos}, que exige rol y segundo factor verificado.
  */
 @RestController
 @RequestMapping("/api/solicitudes/{idSolicitudServicio}")

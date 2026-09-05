@@ -1,0 +1,198 @@
+/*
+ * Estilos de la bandeja y del expediente de casos de moderación.
+ *
+ * Lo que comparte con el resto de pantallas de contenido vive en
+ * `src/comun/estilos/secciones.module.css`. Sigue el mismo lenguaje que la cola
+ * de verificaciones, que es la otra superficie del área administrativa: mismas
+ * variables, misma tabla de tres columnas y el mismo ancho de contenido.
+ * Mobile-first: la hoja base describe el teléfono y la media query amplía.
+ */
+
+.pantalla {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100dvh;
+  padding: var(--moica-espacio-3) var(--moica-espacio-2);
+}
+
+.contenido {
+  width: 100%;
+  max-width: 52rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-3);
+}
+
+.encabezado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+}
+
+.titulo {
+  font-size: 1.5rem;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.subtitulo {
+  margin-top: var(--moica-espacio-2);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.migaDePan {
+  font-size: 0.875rem;
+}
+
+/* La etapa del caso, destacada sin depender solo del color. */
+.estadoDestacado {
+  align-self: flex-start;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--moica-borde);
+  border-radius: 999px;
+  background-color: var(--moica-fondo-suave);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--moica-espacio-2);
+}
+
+/*
+ * Red de seguridad: si con la letra muy grande la tabla no cupiera, se desplaza
+ * dentro de su propio contenedor y la página nunca se desborda en horizontal.
+ */
+.tablaDesplazable {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tabla caption {
+  padding-bottom: var(--moica-espacio-1);
+  text-align: left;
+}
+
+.tabla th,
+.tabla td {
+  padding: var(--moica-espacio-1) 0.375rem;
+  border-bottom: 1px solid var(--moica-borde);
+  vertical-align: top;
+}
+
+.tabla thead th {
+  color: var(--moica-texto-suave);
+  font-size: 0.875rem;
+}
+
+/* Un motivo puede ser una sola palabra larga; ahí sí se parte. */
+.celdaDelCaso {
+  overflow-wrap: anywhere;
+}
+
+.enlaceDelCaso {
+  font-weight: 600;
+}
+
+/* Las personas y la fecha, bajo el motivo y en segundo plano. */
+.detalleDeLaFila {
+  display: block;
+  color: var(--moica-texto-suave);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.sinAsignar {
+  color: var(--moica-texto-suave);
+  font-style: italic;
+}
+
+.ficha {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+  margin: 0;
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.75rem;
+  background-color: var(--moica-fondo-suave);
+}
+
+.etiqueta {
+  color: var(--moica-texto-suave);
+  font-size: 0.875rem;
+}
+
+.valor {
+  margin: 0;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+/* Un reporte o una resolución son párrafos escritos por una persona. */
+.textoLargo {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* Las transiciones de la solicitud, como una línea de tiempo sobria. */
+.linea {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+  margin: var(--moica-espacio-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hito {
+  padding-left: var(--moica-espacio-2);
+  border-left: 3px solid var(--moica-borde);
+}
+
+.hitoTitulo {
+  margin: 0;
+  font-weight: 600;
+}
+
+.hitoDetalle {
+  margin: 0;
+  color: var(--moica-texto-suave);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.pie {
+  color: var(--moica-texto-suave);
+  text-align: center;
+}
+
+@media (min-width: 48rem) {
+  .titulo {
+    font-size: 2rem;
+  }
+
+  .tabla th,
+  .tabla td {
+    padding: var(--moica-espacio-2) var(--moica-espacio-1);
+  }
+
+  .celdaDelCaso {
+    min-width: 12rem;
+  }
+
+  .ficha {
+    padding: var(--moica-espacio-3);
+  }
+}

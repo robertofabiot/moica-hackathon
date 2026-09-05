@@ -5,6 +5,7 @@ import com.moica.usuario.entity.Usuario;
 import com.moica.usuario.repository.AdministradorRepository;
 import com.moica.usuario.repository.UsuarioRepository;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,21 @@ public class AdministradorService {
   @Transactional(readOnly = true)
   public Optional<OffsetDateTime> fechaDeAsignacion(Long idUsuario) {
     return administradores.findById(idUsuario).map(Administrador::getFechaAsignacion);
+  }
+
+  /**
+   * Los identificadores de todas las cuentas con rol administrativo.
+   *
+   * <p>Lo consume la reasignación de casos de moderación, que necesita ofrecer a quién pasar un
+   * expediente. Devuelve identificadores y no cuentas: quien los reciba pedirá los nombres a {@link
+   * UsuarioService}, y así el rol no se convierte en una vía para leer datos de cuenta.
+   *
+   * <p>En el MVP el rol se concede solo desde el arranque, así que la lista es corta y no se
+   * pagina.
+   */
+  @Transactional(readOnly = true)
+  public List<Long> idsDeAdministradores() {
+    return administradores.findAll().stream().map(Administrador::getIdAdministrador).toList();
   }
 
   /**

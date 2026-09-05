@@ -8,8 +8,9 @@ package com.moica.moderacion.entity;
  * declara completos porque la columna admite los doce: una entidad que solo conociera algunos no
  * podría leer una fila escrita por otro incremento.
  *
- * <p>P9 solo escribe {@link #CASO_ABIERTO}. Los demás describen eventos administrativos y de
- * apelación que corresponden a P10A y P10B.
+ * <p>Reportar escribe {@link #CASO_ABIERTO}. La revisión administrativa escribe {@link
+ * #RESPONSABLE_ASIGNADO}, {@link #ESTADO_CASO_CAMBIADO} y {@link #RESOLUCION_REGISTRADA}. Los
+ * restantes describen medidas, cambios de estado de cuenta y apelaciones, que son P10B.
  */
 public enum TipoEventoHistorial {
   /** Se creó el caso y su primera versión. */

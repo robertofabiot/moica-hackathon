@@ -1,0 +1,163 @@
+/*
+ * Estilos de las piezas del expediente: acciones, hilo, evidencias e historial.
+ *
+ * Reutiliza las variables de `src/estilos/global.css` y el lenguaje de
+ * `secciones.module.css`. Mobile-first, igual que el resto de la aplicación.
+ */
+
+.formularioDeAsignacion,
+.formularioDeCierre,
+.accion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+  margin-top: var(--moica-espacio-2);
+}
+
+/*
+ * En el teléfono el desplegable y el botón se apilan; desde tableta comparten
+ * fila. Apilar es lo correcto abajo: un select y un botón lado a lado en 375 px
+ * dejan los dos demasiado estrechos para tocarlos con seguridad.
+ */
+.filaDeAsignacion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+}
+
+.grupoDeResultado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-1);
+  margin: 0;
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+}
+
+/* Toda la etiqueta es zona de toque, no solo el círculo del radio. */
+.opcion {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--moica-espacio-1);
+  cursor: pointer;
+}
+
+/* --- Hilo de mensajes --------------------------------------------------- */
+
+.hilo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+  margin: var(--moica-espacio-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mensaje {
+  padding: var(--moica-espacio-2);
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.75rem;
+  background-color: var(--moica-fondo-suave);
+}
+
+.remitente {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--moica-espacio-1);
+  justify-content: space-between;
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+}
+
+.instante {
+  color: var(--moica-texto-suave);
+  font-size: 0.8125rem;
+  font-weight: 400;
+}
+
+.contenido {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* --- Evidencias --------------------------------------------------------- */
+
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--moica-espacio-2);
+  margin: var(--moica-espacio-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evidencia {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 1px solid var(--moica-borde);
+  border-radius: 0.5rem;
+}
+
+/* --- Historial ---------------------------------------------------------- */
+
+.versiones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--moica-espacio-2);
+  margin: var(--moica-espacio-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.version {
+  padding-left: var(--moica-espacio-2);
+  border-left: 3px solid var(--moica-borde);
+}
+
+.versionTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--moica-espacio-1);
+  margin: 0;
+  font-weight: 600;
+}
+
+/*
+ * La marca de versión vigente lleva texto además del recuadro: el color no
+ * puede ser lo único que distinga la fila que está en vigor.
+ */
+.insigniaVigente {
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--moica-borde);
+  border-radius: 999px;
+  background-color: var(--moica-fondo-suave);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.versionDetalle {
+  margin: 0;
+  color: var(--moica-texto-suave);
+  font-size: 0.875rem;
+  overflow-wrap: anywhere;
+}
+
+.versionCambio {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 48rem) {
+  .filaDeAsignacion {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .filaDeAsignacion select {
+    flex: 1;
+  }
+}

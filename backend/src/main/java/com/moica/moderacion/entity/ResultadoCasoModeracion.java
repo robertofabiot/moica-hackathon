@@ -7,8 +7,9 @@ package com.moica.moderacion.entity;
  * restricciones {@code ck_caso_moderacion_resultado} y {@code ck_historial_caso_resultado_caso} los
  * repiten en PostgreSQL.
  *
- * <p>P9 nunca lo escribe: un caso recién abierto no tiene resultado, y registrarlo es una acción
- * administrativa de P10A. Existe aquí porque la columna existe y las entidades la mapean.
+ * <p>Un caso recién abierto no tiene resultado: lo escribe quien lo cierra, y solo al cerrarlo.
+ * Ninguno de los dos valores aplica una medida ni cambia el estado de una cuenta; {@link
+ * #PROCEDENTE} dice que el caso amerita una decisión, no que Moica ya la haya tomado.
  */
 public enum ResultadoCasoModeracion {
   /** La investigación confirmó que el caso amerita una decisión administrativa. */

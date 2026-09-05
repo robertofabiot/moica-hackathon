@@ -218,6 +218,24 @@ public class ServicioPublicadoService {
    *
    * <p>Devuelve vacío si no hay fila. Quien pregunta decide si eso es 404 o un rechazo de negocio.
    */
+  /**
+   * Las imágenes de un servicio, en su orden de visualización.
+   *
+   * <p>Existe para el expediente administrativo de un caso: el servicio contratado es la evidencia
+   * material que ya vive en Moica sobre el trato reportado, y quien revisa necesita verla sin
+   * depender de que el servicio siga público. Por eso no filtra por estado ni por disponibilidad
+   * del prestador, a diferencia del descubrimiento.
+   *
+   * <p><b>No autoriza.</b> Devuelve las mismas URL públicas que ya publica el detalle del servicio,
+   * así que no revela nada nuevo, y quien la invoca comprobó antes sus permisos.
+   *
+   * @return vacío si el servicio no existe o no tiene imágenes
+   */
+  @Transactional(readOnly = true)
+  public List<DatosDeImagenDeServicio> describirImagenesDe(Long idServicioPublicado) {
+    return imagenesDe(idServicioPublicado).stream().map(DatosDeImagenDeServicio::de).toList();
+  }
+
   @Transactional(readOnly = true)
   public Optional<ReferenciaDeServicio> referenciar(Long idServicioPublicado) {
     return servicios.findById(idServicioPublicado).map(ReferenciaDeServicio::de);

@@ -223,6 +223,25 @@ public class SolicitudServicioService {
   }
 
   /**
+   * Detalle e historial de una solicitud, sin exigir participación.
+   *
+   * <p>Existe para el expediente administrativo de un caso de moderación: quien revisa no participa
+   * en la solicitud reportada y, sin embargo, necesita verla para decidir. Devuelve exactamente el
+   * mismo DTO que ven los dos participantes, ni un campo más: no lleva correos, contactos ni datos
+   * de cuenta.
+   *
+   * <p><b>No autoriza.</b> Quien lo invoca ya comprobó rol administrativo y segundo factor, y el
+   * caso que ampara la lectura. Por eso no recibe sujeto: pedírselo sugeriría que decide con él, y
+   * no lo hace.
+   *
+   * @throws ErrorDeAplicacion 404 si esa solicitud no existe
+   */
+  @Transactional(readOnly = true)
+  public DatosDeSolicitudServicio detalleParaModeracion(Long idSolicitudServicio) {
+    return detalleDe(solicitudes.findById(idSolicitudServicio).orElseThrow(this::noEncontrada));
+  }
+
+  /**
    * Quiénes participan en una solicitud y en qué condición está su hilo.
    *
    * <p>Es la colaboración estrecha que consume la capacidad {@code chat}: el hilo de mensajes y la

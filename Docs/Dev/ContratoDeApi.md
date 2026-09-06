@@ -1455,8 +1455,11 @@ ese expediente responde `404 DOCUMENTO_NO_ENCONTRADO`. Ver
 La proteccion CSRF esta activa para todas las operaciones mutables. El backend emite la cookie `XSRF-TOKEN` —legible por JavaScript a proposito— y espera recibirla de vuelta en la cabecera `X-XSRF-TOKEN`. El frontend lo hace solo; para probar con `curl` hay que repetir el tramite:
 
 ```bash
-# 1. Cualquier respuesta trae la cookie con el token
+# 1. Una peticion que atraviesa la cadena completa trae la cookie con el token.
+#    `GET /api/auth/sesion` sin sesion corta antes en 401 y puede no emitirla,
+#    asi que el tramite se cierra con un catalogo publico.
 curl -s -c galletas.txt -o /dev/null http://localhost:8080/api/auth/sesion
+curl -s -b galletas.txt -c galletas.txt -o /dev/null http://localhost:8080/api/catalogos/categorias
 
 # 2. Se devuelve en la cabecera de la operacion mutable
 TOKEN=$(grep XSRF-TOKEN galletas.txt | awk '{print $7}')

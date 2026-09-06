@@ -77,6 +77,13 @@ npm run build                          # build de produccion + PWA instalable
 
 Pruebas: `./mvnw verify` (backend, necesita Docker) y `npm run test` (frontend).
 
+Recorridos extremo a extremo: desde `frontend/`, `npm run test:e2e`. El comando
+levanta con Docker una PostgreSQL nueva, el backend y el frontend de produccion,
+ejecuta Playwright contra esa aplicacion real y apaga y borra el entorno al
+terminar, tambien si una prueba falla. La primera vez hace falta
+`npx playwright install chromium`. Las capturas y mediciones responsivas quedan
+en `frontend/test-results/`, que no se versiona.
+
 Moica usa **dos** buckets de Cloudflare R2, con credenciales distintas: uno
 publico para las imagenes de perfil y portafolio (`MOICA_R2_*`) y otro privado
 para los documentos de verificacion (`MOICA_R2_PRIVADO_*`). Sin esas variables

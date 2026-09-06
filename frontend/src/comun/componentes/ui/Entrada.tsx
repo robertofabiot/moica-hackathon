@@ -83,7 +83,7 @@ export const Entrada = forwardRef<HTMLInputElement, PropiedadesDeEntrada>(functi
             className={estilos.toggleDeContrasena}
             onClick={() => setVisible((v) => !v)}
             aria-label={visible ? 'Ocultar contraseña' : 'Mostrar contraseña'}
-            tabIndex={-1}
+            aria-controls={idDelCampo}
           >
             {visible ? <IconoOjoCerrado /> : <IconoOjoAbierto />}
           </button>

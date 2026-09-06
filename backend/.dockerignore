@@ -1,0 +1,11 @@
+**
+!.mvn/
+!.mvn/wrapper/
+!.mvn/wrapper/maven-wrapper.properties
+!mvnw
+!pom.xml
+!src/
+!src/**
+**/.env*
+**/CLAUDE.md
+**/AGENTS.md

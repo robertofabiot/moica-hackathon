@@ -16,8 +16,8 @@
   --color-primary-100: #ffe0b2;
   --color-primary-200: #ffcc80;
   --color-primary-300: #ffb74d;
-  --color-primary-500: #f57c00; /* Botones principales, acentos */
-  --color-primary-700: #e65100;
+  --color-primary-500: #b45309; /* Botones principales, acentos */
+  --color-primary-700: #8f3d00;
   --color-primary-900: #bf360c;
 
   /* Secondary - Verde/cian (footer, iconos, stats) */
@@ -40,7 +40,7 @@
   /* Semánticos */
   --color-success-500: #4caf50; /* Badge verificado */
   --color-warning-500: #f5a623; /* Estrellas de calificación */
-  --color-error-500: #e53935; /* Puntos de notificación */
+  --color-error-500: #c62828; /* Errores legibles también sobre fondos claros */
 
   /* ==========================================================================
      TIPOGRAFÍA (1rem = 16px)

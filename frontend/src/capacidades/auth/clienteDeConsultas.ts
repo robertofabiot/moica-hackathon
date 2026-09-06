@@ -37,11 +37,15 @@ export function crearClienteDeConsultas(): QueryClient {
     mutationCache: new MutationCache({ onError: olvidarLaSesionQueElServidorYaNoReconoce }),
     defaultOptions: {
       queries: {
+        // La capa HTTP explica el fallo offline; no dejamos la pantalla pausada.
+        networkMode: 'always',
         // Una peticion fallida se reintenta una vez; mas reintentos solo
         // retrasarian el mensaje de error en una conexion mala.
         retry: 1,
         refetchOnWindowFocus: false,
       },
+      // Nunca encolar una escritura para enviarla al volver la conexión.
+      mutations: { networkMode: 'always', retry: false },
     },
   });
 

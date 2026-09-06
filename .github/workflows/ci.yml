@@ -17,6 +17,48 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  e2e:
+    name: E2E (MVP, seguridad, PWA y accesibilidad)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: frontend/.nvmrc
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar dependencias exactas y Chromium
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Recorridos contra aplicación real y PostgreSQL nuevo
+        working-directory: frontend
+        run: npm run test:e2e
+      - name: Adjuntar capturas y mediciones sin credenciales
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencia-p11b-${{ github.event.pull_request.head.sha || github.sha }}
+          path: frontend/test-results/**/evidencia-*
+          if-no-files-found: warn
+          retention-days: 30
+
+  produccion:
+    name: Produccion (Docker y smoke)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Descargar el repositorio limpio
+        uses: actions/checkout@v7
+      - name: Preparar Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: frontend/.nvmrc
+      - name: Construir imagenes y comprobar PostgreSQL nuevo, Nginx y seguridad
+        run: node scripts/smoke-produccion.mjs
+
   backend:
     name: Backend (Java 21)
     runs-on: ubuntu-latest

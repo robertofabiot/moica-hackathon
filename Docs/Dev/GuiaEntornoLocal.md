@@ -155,6 +155,13 @@ El backend lee estas variables del entorno del sistema y, si no estan definidas,
 
 ## PostgreSQL y pgAdmin
 
+Este Compose es solo desarrollo. Las imagenes productivas y su validacion
+aislada usan `compose.smoke.yml`: desde la raiz ejecutar
+`node scripts/smoke-produccion.mjs` con Docker y Node 22 disponibles. El script
+crea una base nueva y retira su propio volumen al terminar, sin tocar la base
+local. Ver [DespliegueProduccion.md](DespliegueProduccion.md) para Railway,
+variables del perfil `prod`, healthchecks y la diferencia con el smoke publico.
+
 Desde la raiz del proyecto:
 
 ```bash
@@ -231,3 +238,28 @@ npm run dev
 ```
 
 La aplicacion queda en `http://localhost:5173`. El proxy de Vite reenvia `/api` y `/actuator` al backend, de modo que en desarrollo se conserva el mismo contrato de origen unico que habra en produccion.
+
+## Recorridos extremo a extremo (E2E)
+
+```bash
+cd frontend
+npx playwright install chromium   # solo la primera vez
+npm run test:e2e
+```
+
+`npm run test:e2e` ejecuta `scripts/e2e-local.mjs`, que construye las imagenes de
+`compose.smoke.yml` en un proyecto Docker propio y desechable, espera a que el
+healthcheck y el catalogo publico respondan, lanza Playwright contra esa
+aplicacion real y apaga el entorno con `down --volumes` al terminar, tambien si
+una prueba falla. No toca el `.env` ni la base de desarrollo.
+
+El wrapper fija `MOICA_SMOKE_PERFIL=local-e2e` y `MOICA_SMOKE_COOKIE_SEGURA=false`
+porque el entorno se publica en `http://127.0.0.1` y el perfil `prod` exige cookies
+`Secure`. Esos dos nombres son propios del wrapper: si se llamaran igual que las
+variables de la aplicacion, `--env-file .env.example` los alimentaria y ablandaria
+tambien el smoke de produccion. Sin ellos, `compose.smoke.yml` arranca con `prod` y
+cookies `Secure`. El puerto se cambia con `MOICA_E2E_PORT` (por omision `18081`).
+
+Las capturas y las mediciones de desbordamiento quedan en
+`frontend/test-results/` con el prefijo `evidencia-`. Esa carpeta no se versiona:
+las evidencias se adjuntan al PR.

@@ -72,8 +72,11 @@ describe('llamadas a la API de acceso', () => {
       clave: 'Moica2026$segura',
     });
 
+    // La sesión anónima corta en 401 sin emitir la cookie, así que el token se
+    // consigue con un catálogo público antes de enviar el registro.
     expect(api.peticiones.map((peticion) => `${peticion.metodo} ${peticion.ruta}`)).toEqual([
       'GET /api/auth/sesion',
+      'GET /api/catalogos/categorias',
       'POST /api/usuarios',
     ]);
   });

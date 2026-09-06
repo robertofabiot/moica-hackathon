@@ -20,9 +20,8 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['icono-192.png', 'icono-512.png'],
-        // Manifiesto minimo: solo lo necesario para que la aplicacion sea
-        // instalable. Los colores son neutros a proposito porque la paleta de
-        // marca todavia no esta aprobada.
+        // Solo recursos estáticos. Ninguna API ni documento autenticado se cachea.
+        workbox: { navigateFallbackDenylist: [/^\/api\//, /^\/actuator\//] },
         manifest: {
           name: 'Moica',
           short_name: 'Moica',
@@ -35,7 +34,7 @@ export default defineConfig(({ mode }) => {
           // Sin `orientation`: Moica se adapta a teléfono, tableta, escritorio
           // y plegables. Imponer vertical romperia esa adaptacion.
           background_color: '#ffffff',
-          theme_color: '#ffffff',
+          theme_color: '#b45309',
           icons: [
             { src: 'icono-192.png', sizes: '192x192', type: 'image/png' },
             { src: 'icono-512.png', sizes: '512x512', type: 'image/png' },

@@ -161,6 +161,7 @@ flowchart LR
 | | React Hook Form 7.85 · Zod 4.4 · qrcode.react | Manejo accesible de formularios, validación de esquemas y generación de QR para 2FA. |
 | **Pruebas** | Testcontainers 1.21 · PostgreSQL Container · MockMvc | Pruebas de integración reales (`*IT`) del backend contra PostgreSQL en Docker. |
 | | Vitest 4.1 · Testing Library 16.3 · JSDOM 30 | Pruebas unitarias y de componentes frontend orientadas a accesibilidad. |
+| | Playwright 1.63 · @axe-core/playwright 4.13 | Recorridos extremo a extremo y auditoría de accesibilidad contra la aplicación real. |
 | **Calidad** | SpotBugs 4.10 · Spotless 3.9 · ESLint 10 · Prettier | Análisis estático de defectos, Google Java Format y estandarización de estilo. |
 | **Infra** | Docker · Docker Compose · Nginx 1.27 Alpine | Contenedores de desarrollo y producción; reverse proxy de mismo origen. |
 
@@ -204,7 +205,7 @@ moica-hackathon/
 │       ├── capacidades/           # Módulos cliente espejados con el backend
 │       ├── comun/                 # Componentes UI compartidos, layout y diseño
 │       └── paginas/               # Vistas principales de enrutamiento
-├── scripts/                       # Automatización de capturas headless (BiDi) y verificación
+├── scripts/                       # Runner de pruebas E2E y smoke reproducible de producción
 ├── docker-compose.yml             # Servicios locales (PostgreSQL 15 + pgAdmin 4)
 ├── .env.example                   # Plantilla de variables de entorno seguras
 └── README.md                      # Este documento
@@ -281,6 +282,7 @@ curl http://localhost:8080/actuator/health
 ### Compilación y pruebas
 * **Backend:** `./mvnw verify` (Ejecuta pruebas unitarias, integración con **Testcontainers**, SpotBugs y Spotless).
 * **Frontend:** `npm run test` (Vitest), `npm run typecheck` (TypeScript) y `npm run lint` (ESLint).
+* **Extremo a extremo:** `cd frontend && npm run test:e2e` levanta con Docker una PostgreSQL nueva, el backend y la PWA de producción, y ejecuta Playwright contra esa aplicación real. La primera vez requiere `npx playwright install chromium`. Detalle en [`Docs/Dev/GuiaEntornoLocal.md`](Docs/Dev/GuiaEntornoLocal.md).
 * **Compilación a producción:**
   * Frontend: `cd frontend && npm run build` (Genera `dist/` con PWA Service Worker).
   * Backend: `cd backend && ./mvnw clean package -DskipTests` (Genera el `.jar` ejecutable).
@@ -300,7 +302,8 @@ curl http://localhost:8080/actuator/health
 | `./mvnw verify` | `backend/` | Valida compilación, pruebas Surefire, integración Failsafe (Testcontainers), Spotless y SpotBugs. |
 | `./mvnw spotless:apply` | `backend/` | Formatea el código fuente según Google Java Format. |
 | `docker compose up -d` | Raíz | Inicializa los contenedores de PostgreSQL 15 y pgAdmin 4 en segundo plano. |
-| `bash scripts/ejecutar_capturas.sh` | Raíz | Lanza Firefox headless (WebDriver BiDi) y ejecuta capturas de pantalla multi-viewport. |
+| `npm run test:e2e` | `frontend/` | Levanta el entorno Docker completo y ejecuta los recorridos Playwright de extremo a extremo. |
+| `node scripts/smoke-produccion.mjs` | Raíz | Construye ambas imágenes y verifica PostgreSQL nuevo, Nginx, PWA, API, cookies/CSRF y persistencia. |
 
 ---
 
@@ -429,6 +432,7 @@ curl -X POST http://localhost:8080/api/solicitudes \
 * [`Docs/Core/GIT_WORKFLOW.md`](Docs/Core/GIT_WORKFLOW.md) — Flujo de trabajo en Git (GitFlow simplificado) y Conventional Commits.
 * [`Docs/Dev/ContratoDeApi.md`](Docs/Dev/ContratoDeApi.md) — Contrato de API exhaustivo, endpoints, payloads y errores.
 * [`Docs/Dev/Almacenamiento.md`](Docs/Dev/Almacenamiento.md) — Especificación de Cloudflare R2 y compatibilidad S3.
+* [`Docs/Dev/GuiaEntornoLocal.md`](Docs/Dev/GuiaEntornoLocal.md) — Variables de entorno en detalle, entorno local y recorridos E2E.
 * [`Docs/Dev/DespliegueProduccion.md`](Docs/Dev/DespliegueProduccion.md) — Evidencias de infraestructura y verificación en Railway.
 * [`Docs/Dev/MatrizCumplimiento.md`](Docs/Dev/MatrizCumplimiento.md) — Trazabilidad de criterios de aceptación del Hackathon.
 

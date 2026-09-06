@@ -37,7 +37,7 @@ pruebas ejecutadas y el material de apoyo.
 | 8 | Verificación documental de prestadores en dos niveles | Cumplido | P4V | #10 | `8f82231`, `33cd1f7`, `91a4117`, `b48f9de`, `669875f`, `cd68f8f`, `27ae045`, `d096558` | 109 pruebas nuevas del backend —40 unitarias del almacenamiento privado y 69 de integración: 13 de `EsquemaDeVerificacionIT`, 27 de `EnvioDeExpedienteIT`, 20 de `RevisionDeVerificacionIT` y 9 de `RevocacionDeVerificacionIT`— y 29 del frontend: 16 en `Verificacion.test.tsx` y 13 en `ColaDeVerificaciones.test.tsx`. Recorrido manual completo contra el backend local con PostgreSQL real | Los dos niveles y sus cinco estados, con revisión **siempre manual**: ninguna transición ocurre sin una petición de una cuenta administrativa con segundo factor verificado en esa sesión. La básica exige un documento de identidad; la profesional, una básica vigente y un respaldo que no sea identidad. El expediente se envía completo en una sola operación —no existe `BORRADOR`— y un fallo a mitad no deja ni solicitud ni archivos huérfanos. Revocar la básica deja `SIN_VERIFICAR` y anula la profesional en la misma transacción, con el mismo motivo, administrador e instante; esa profesional no revive al obtener otra básica. Las solicitudes y sus documentos resueltos se conservan como evidencia. Los archivos viven en un bucket privado con su propio token; PostgreSQL guarda clave opaca y metadatos, nunca el binario ni una URL, y el archivo solo se abre con un acceso temporal autorizado en cada petición. Detalle en «Verificación documental de P4V» |
 | 9 | Autenticación de dos factores (TOTP) | Cumplido | P3 | #7 | `14a2d1a`, `ce9cfcc`, `bc4bfeb`, `1b1cc1f`, `2b7bf91`, `4b4e3f0`, `5bdbd43`, `f290d6b`, `8cf5957` | 22 pruebas de integración de `SegundoFactorIT`, 14 de `SesionProvisionalIT`, 9 unitarias de `AlgoritmoTotpTest` with reloj fijo, 7 de `CifradoDeSecretosTest`, 10 de `PropiedadesDeSegundoFactorTest`, 5 de `SegundoFactorUsuarioTest`, 5 de `RepresentacionSinSecretosTest` y 28 del frontend entre `SeguridadCuenta.test.tsx` y `VerificacionSegundoFactor.test.tsx` | Ciclo completo `PENDIENTE_ACTIVACION` → `ACTIVO` → `DESACTIVADO`, uno por cuenta (lo garantiza la clave primaria compartida). El algoritmo es RFC 6238 mediante `java-otp`; los dígitos, el periodo y la tolerancia viven solo en `moica.segundo-factor.*`. El secreto se genera con `SecureRandom`, se guarda cifrado con AES-GCM y nonce aleatorio, y se entrega una única vez al iniciar la activación; la respuesta que lo lleva pide `no-store` y el navegador lo descarta al dejar la pantalla. Obligatorio para el rol administrativo, opcional para el resto. **Pendiente de decisión del equipo:** un código aceptado admite reutilización dentro de su ventana y los intentos fallidos no están limitados (ver «Segundo factor: reutilización de código e intentos»). |
 | 10 | Expiración y revocación de sesión | Cumplido | P2 → P3 | #5, #7 | `6f09fdd`, `b3bcfcc`, `feff7ef`, `14a2d1a`, `1b1cc1f`, `2b7bf91`, `83597a3` | 10 pruebas de integración de `CicloDeSesionIT`, 13 de `CambioDeClaveIT`, 14 de `SesionProvisionalIT`, 6 unitarias de `TokenDeSesionServiceTest` y 5 del frontend en `useVigilanciaDeSesion.test.tsx`; recorrido manual con la base de datos a la vista | Cada login crea una fila `sesion` con expiración de siete días configurable; el JWT solo la señala con su `jti` y su `exp` nunca la supera. Cada petición comprueba la fila: expirada o revocada responde 401 aunque el token siga vigente. Cerrar sesión registra `CIERRE_VOLUNTARIO`. P3 añade la revocación por `CAMBIO_CREDENCIALES`: cambiar la contraseña o desactivar el segundo factor revoca en una sola operación todas las sesiones de la cuenta, incluida la actual, apoyándose en el índice `ix_sesion_id_usuario`. En el navegador, la vigilancia de la sesión vive en `App` y no en una pantalla: vence, se revoca o se pierde igual en `/`, en `/seguridad` y en `/admin`, y un 401 de cualquier consulta autenticada la da por terminada. La revocación por medida administrativa llega en P10B. |
-| 11 | Preparación para producción (contenedores, configuración por entorno, migraciones, healthcheck) | En progreso | P1 → P11 | #3, #9, #10, #12, #16, #17, #21, #28 | `78518ff`, `286ca5f`, `715fd3d`, `0f464d2`, `525695c`, `33cd1f7`, `e594fc0`, `26cec56`, `aec58f9`, `7b5abb1`, `ee75593`, `ed7b0d3` | `./mvnw verify` en CI; arranque local con Docker Compose | Configuración por variables de entorno comprobada en local incluso con el puerto 5432 ocupado, Flyway aplicando migraciones versionadas sobre PostgreSQL real y `GET /actuator/health` respondiendo `UP`. P4 agrega la configuración del almacenamiento de objetos por entorno: sin las variables `MOICA_R2_*` la aplicación arranca igual y solo las imágenes responden 503, mientras que una configuración a medias detiene el arranque con un mensaje que no revela ningún valor. La conexión con un bucket R2 real quedó comprobada en la revisión del #9 sobre `moica-publico-dev`: configuración, carga de imagen de perfil y de portafolio y persistencia de la URL. El 28 de agosto de 2026 se ejecutaron además los pasos 3 y 4 contra ese mismo bucket: sustituir cambia la URL y deja 404 el objeto anterior; eliminar deja `urlImagenPerfil` en `null` y 404 las dos URLs de la prueba. P4V agrega la segunda superficie con la misma política y dos límites propios: `MOICA_DOCUMENTO_TAMANO_MAXIMO` no admite más de 5 MB —es el tope de `ck_documento_verificacion_tamano`— y `MOICA_DOCUMENTO_URL_TEMPORAL_DURACION` no admite más de una hora; cualquiera de los dos por encima detiene el arranque. El 28 de agosto de 2026 el #12 ejecutó los diez pasos de `Almacenamiento.md` contra `moica-privado-dev`: sin lectura anónima, carga de los tres formatos, clave opaca en PostgreSQL, 403 al propietario y 404 a un ajeno, 302 con acceso temporal de cinco minutos que R2 acepta y luego rechaza, y compensación `503 ALMACENAMIENTO_NO_DISPONIBLE` sin filtrar el proveedor. P5 agrega `V31` y `V90` en el rango reservado, sin variables de entorno nuevas: las imágenes de servicio reutilizan el bucket público y el prefijo `servicios/`. P6 agrega `V40` en el rango `V40`–`V49`, también sin variables nuevas. P7 agrega `V41` en ese mismo rango, igualmente sin variables ni dependencias nuevas. Imágenes de producción, despliegue y proveedor corresponden a P11. Migraciones `V50` y `V51`, aplicadas por Flyway *out of order* sobre una base que estaba en `v90`. |
+| 11 | Preparación para producción (contenedores, configuración por entorno, migraciones, healthcheck) | En progreso | P1 → P11 | #3, #9, #10, #12, #16, #17, #21, #28, #40 | `78518ff`, `286ca5f`, `715fd3d`, `0f464d2`, `525695c`, `33cd1f7`, `e594fc0`, `26cec56`, `aec58f9`, `7b5abb1`, `ee75593`, `ed7b0d3` | `./mvnw verify` en CI; arranque local con Docker Compose; imágenes y smoke de producción en CI | Configuración por variables de entorno comprobada en local incluso con el puerto 5432 ocupado, Flyway aplicando migraciones versionadas sobre PostgreSQL real y `GET /actuator/health` respondiendo `UP`. P4 agrega la configuración del almacenamiento de objetos por entorno: sin las variables `MOICA_R2_*` la aplicación arranca igual y solo las imágenes responden 503, mientras que una configuración a medias detiene el arranque con un mensaje que no revela ningún valor. La conexión con un bucket R2 real quedó comprobada en la revisión del #9 sobre `moica-publico-dev`: configuración, carga de imagen de perfil y de portafolio y persistencia de la URL. El 28 de agosto de 2026 se ejecutaron además los pasos 3 y 4 contra ese mismo bucket: sustituir cambia la URL y deja 404 el objeto anterior; eliminar deja `urlImagenPerfil` en `null` y 404 las dos URLs de la prueba. P4V agrega la segunda superficie con la misma política y dos límites propios: `MOICA_DOCUMENTO_TAMANO_MAXIMO` no admite más de 5 MB —es el tope de `ck_documento_verificacion_tamano`— y `MOICA_DOCUMENTO_URL_TEMPORAL_DURACION` no admite más de una hora; cualquiera de los dos por encima detiene el arranque. El 28 de agosto de 2026 el #12 ejecutó los diez pasos de `Almacenamiento.md` contra `moica-privado-dev`: sin lectura anónima, carga de los tres formatos, clave opaca en PostgreSQL, 403 al propietario y 404 a un ajeno, 302 con acceso temporal de cinco minutos que R2 acepta y luego rechaza, y compensación `503 ALMACENAMIENTO_NO_DISPONIBLE` sin filtrar el proveedor. P5 agrega `V31` y `V90` en el rango reservado, sin variables de entorno nuevas: las imágenes de servicio reutilizan el bucket público y el prefijo `servicios/`. P6 agrega `V40` en el rango `V40`–`V49`, también sin variables nuevas. P7 agrega `V41` en ese mismo rango, igualmente sin variables ni dependencias nuevas. Imágenes de producción, despliegue y proveedor corresponden a P11. Migraciones `V50` y `V51`, aplicadas por Flyway *out of order* sobre una base que estaba en `v90`. P11-A construye las imágenes de backend y frontend, las publica bajo un mismo origen con Nginx, deja de Actuator solo la salud agregada y lo comprueba sobre un PostgreSQL nuevo: 15 migraciones hasta `V90`, SPA y PWA servidas, `/api` por el proxy sin CORS, cabeceras reenviadas bajo control de Nginx, cookies `HttpOnly`/`Secure`/`SameSite=Lax`, CSRF, revocación de sesión y persistencia tras reiniciar el backend. El detalle por control está en «Preparación de producción de P11-A». Railway, HTTPS, persistencia tras redeploy y ambos buckets R2 ya se comprobaron; el detalle y el único control pendiente (acreditar plan Free/Trial en dashboard) están en «Preparación de producción de P11-A». |
 
 ## Base técnica de P1
 
@@ -620,7 +620,7 @@ Una casilla vacía significa que ahí no aplica, no que fallara.
 
 | Control | Cómo se comprueba | Local | CI | Evidencia |
 |---|---|---|---|---|
-| Tokens de marca | Revisión de `frontend/src/estilos/global.css` | Sí | | `--color-primary-500` es `#F57C00`; el fondo de la app es `--color-neutral-50`; los alias `--moica-*` apuntan a estas tokens para no romper las pantallas que aún no se migran |
+| Tokens de marca | Revisión de `frontend/src/estilos/global.css` | Sí | | `--color-primary-500` era `#F57C00` cuando se escribió esta fila; P11-B lo oscurece a `#b45309` para cumplir el contraste AA sin cambiar el tono de marca (ver «Validación integral de P11-B»). El fondo de la app es `--color-neutral-50`; los alias `--moica-*` apuntan a estas tokens para no romper las pantallas que aún no se migran |
 | Componentes reutilizables | `npm run test` | Sí | | `Boton` (primario, secundario, contorno), `Entrada` (ref para React Hook Form y mensaje de error) y `BarraLateral` (siete destinos, aviso de mensajes). La barra **no** está enganchada todavía a las pantallas autenticadas |
 | Maqueta de acceso | Recorrido en `/iniciar-sesion` y `/registro` | Sí | | Tarjeta blanca, `radius-xl`, `shadow-sm`, copy del diseño. `Boton` y `Entrada` enlazados a `useInicioSesion` y `useRegistro`. Los avisos de sesión vencida, cuenta creada y credenciales cambiadas se conservan |
 | Sin OAuth ni recuperación de clave | Revisión del diff y de `DefinicionProducto.md` | Sí | | Google, Facebook y Apple se pintan deshabilitados. «¿Olvidaste tu contraseña?» no navega. «Recordarme» no se envía: la sesión ya persiste en cookie `HttpOnly` |
@@ -1802,6 +1802,66 @@ sin rol o sin el segundo factor verificado sigue recibiendo 403 del backend.
 `RutaProtegida` sigue llevando a iniciar sesión cuando no hay sesión. El
 contrato de la API no cambia.
 
+## Preparación de producción de P11-A
+
+Infraestructura de despliegue de `feature/preparar-entrega-mvp` y de su Pull
+Request #40, que sigue en borrador porque P11-B y P11-C continúan en la misma
+rama. Recoge lo comprobado el 5 de septiembre de 2026 sobre Windows 11 con
+Docker 29.7.2 y Node 22.23.2.
+
+- **Local**: `./mvnw -B -ntp verify` con BUILD SUCCESS en 8:32 —170 pruebas
+  unitarias en 28 clases y 584 de integración en 50 clases, sin fallos, errores
+  ni omitidas, y SpotBugs con `BugInstance size is 0`— y después la batería del
+  frontend: `format:check`, `lint`, `typecheck`, `vitest run --maxWorkers=2` con
+  392 pruebas en 44 archivos, y `build`. Se ejecutaron una detrás de otra, no en
+  paralelo.
+- **Docker**: `node scripts/smoke-produccion.mjs` construye las dos imágenes,
+  levanta un PostgreSQL vacío y retira su proyecto y su volumen al terminar.
+- **CI**: el #40 se abre contra `develop`. El merge-base con `origin/develop` es
+  `1e53383`, su HEAD actual.
+- **Rama**: `feature/preparar-entrega-mvp` nace de `develop` actualizado. No se
+  fusiona nada: la revisión cruzada sigue pendiente.
+
+Una casilla vacía significa que ahí no aplica, no que fallara.
+
+| Control | Cómo se comprueba | Local | CI | Evidencia |
+|---|---|---|---|---|
+| Imagen reproducible del backend | `docker build backend` | Sí | Sí | `moica-backend:p11`, 557 MB. JDK 21 para compilar y JRE 21 para ejecutar, ambas fijadas por digest; el JAR corre como UID 10001 |
+| Imagen reproducible del frontend | `docker build frontend` | Sí | Sí | `moica-frontend:p11`, 94,3 MB. Node 22 y Nginx 1.28 fijados por digest; la imagen final no ejecuta Node |
+| Configuración de Nginx | `nginx -t` dentro del contenedor | Sí | Sí | Correcto. La plantilla se resuelve con `envsubst` limitado a `PORT`, `MOICA_BACKEND_UPSTREAM`, esquema, puerto público y el DNS del contenedor |
+| PostgreSQL nuevo y Flyway | Consulta a `flyway_schema_history` | Sí | Sí | 15 migraciones en el orden `10,11,20,21,22,23,30,31,40,41,42,50,51,52,90`. V52 exitosa y V90 la última. La base nace sin usuarios |
+| SPA y PWA | Peticiones a rutas y archivos servidos | Sí | Sí | `/`, `/explorar` e `/iniciar-sesion` responden 200; el acceso directo a una ruta de React devuelve el mismo `index.html`, no un 404. `manifest.webmanifest`, `sw.js` (con tipo JavaScript) e iconos de 192 y 512 disponibles. Los assets versionados llegan con `immutable` |
+| Mismo origen para la API | `GET /api/servicios` a través de Nginx | Sí | Sí | 200 en JSON, con `Cache-Control: no-store` y **sin** `Access-Control-Allow-Origin`: no se introduce CORS |
+| Healthcheck público mínimo | `SaludPublicaEnProduccionIT` y el smoke | Sí | Sí | El cuerpo es exactamente `{"status":"UP"}`. Sin la desactivación explícita de las sondas, Spring devolvía `{"groups":["liveness","readiness"],"status":"UP"}`; se midió levantando la imagen del commit `298514c` |
+| Actuator cerrado | `SaludPublicaEnProduccionIT` y el smoke | Sí | Sí | `/actuator`, `env`, `beans`, `configprops`, `metrics`, `loggers`, `mappings`, `threaddump`, `heapdump`, `info` y las dos rutas de sondas responden **401** en el backend y **404** a través de Nginx. Doble barrera: no depende del proxy |
+| Cabeceras reenviadas | Petición con `X-Forwarded-*` falsificadas | Sí | Sí | Con `X-Forwarded-Proto: http`, `X-Forwarded-Host: attacker.invalid` y `Forwarded` falsificados, la respuesta conserva `Strict-Transport-Security`: Spring sigue viendo HTTPS. Nginx vacía `Forwarded` y reescribe `X-Forwarded-For`, `-Host`, `-Proto` y `-Port`, comprobado sobre la configuración efectiva del contenedor |
+| Cookies de producción | Registro y login por el proxy | Sí | Sí | `moica_sesion` llega con `HttpOnly`, `Secure` y `SameSite=Lax` |
+| CSRF | Mutaciones con y sin cabecera | Sí | Sí | `POST /api/usuarios` sin `X-XSRF-TOKEN` devuelve 403 y con el token 201. `DELETE /api/auth/sesion` sin CSRF devuelve 403 |
+| Cierre de sesión y revocación | Reutilización del JWT tras el logout | Sí | Sí | El logout responde 204 y la misma cookie de sesión pasa a devolver 401 aunque el JWT no hubiera vencido |
+| Persistencia tras reinicio | `docker restart backend` | Sí | Sí | El usuario creado sigue en PostgreSQL, la sesión continúa siendo válida y el historial de Flyway no cambia: no se recrea la base |
+| Pruebas del backend | `./mvnw -B -ntp verify` | Sí | Sí | 170 unitarias y 584 de integración en verde. Se suman 2 casos: los de `SaludPublicaEnProduccionIT` |
+| Pruebas del frontend | `vitest run --maxWorkers=2` | Sí | Sí | 392 en verde, 44 archivos. No se suman casos |
+| Análisis estático del backend | `spotbugs:check` | Sí | Sí | Sin hallazgos. Se corrigió `CT_CONSTRUCTOR_THROW` en `ConfiguracionDeProduccion`: la clase pasa a ser `final` y sin proxy de `@Bean`, como ya ocurría con el record `PropiedadesDeSoporte`. No se usó ninguna supresión |
+| Despliegue en Railway | Conector y HTTPS real | | | `victorious-embrace` / `production`: frontend, backend y Postgres en SUCCESS; solo frontend público. Smoke posterior a R2: 38 comprobaciones, 0 fallos. Evidencia detallada en [DespliegueProduccion.md](DespliegueProduccion.md#evidencia-publica-en-railway--5-de-septiembre-de-2026) |
+| Integración con R2 | Carga real contra los dos buckets mediante Moica | | | Imagen `r2.dev` 200, bytes idénticos y renderizado en la aplicación; expediente privado 201, anónimo 401, usuario ordinario 403, administrador con TOTP 302 y URL temporal 200. Acceso sin firma: 400 `InvalidArgument`, sin archivo. Detalle en la evidencia pública enlazada |
+| Persistencia en Railway | Cuenta consultada antes y después de redeploy exclusivo de backend | | | Misma sesión y datos conservados; nuevo login correcto. Flyway valida 15 migraciones, versión 90, sin migraciones pendientes. Sin consulta SQL productiva individual |
+| Recursos y plan Railway | Métricas del conector y dashboard | | | CPU/RAM observados y registrados en la evidencia pública. **Pendiente:** acreditar suscripción Free/Trial y crédito en dashboard; los límites efectivos del conector no prueban el plan |
+| Capturas a tres tamaños | Chrome a 375x812, 768x1024 y 1280x800 | **No** | | **No aplican todavía.** P11-A no cambia interfaz; corresponden a P11-B |
+
+El smoke local conserva su alcance HTTP de loopback. La continuación del #40
+agrega el smoke HTTPS real, login en navegador, imagen R2 visible y capturas
+externas. Se conserva el resultado anterior de Claude (38/0), separado de la
+validación posterior a R2 (38/0). Toda la evidencia productiva y el pendiente
+de plan se registran en
+[DespliegueProduccion.md](DespliegueProduccion.md#evidencia-publica-en-railway--5-de-septiembre-de-2026).
+
+`npm audit` informa `fast-uri` con severidad alta. Llega por
+`@hookform/resolvers` → `ajv` → `fast-uri`, como dependencia indirecta de
+producción, pero no alcanza al artefacto: el código solo importa
+`@hookform/resolvers/zod`, así que `ajv` no entra en el empaquetado y ni él ni
+`fast-uri` aparecen en `dist/`. La imagen final tampoco ejecuta Node. Queda como
+deuda para P11-B/C, que sí puede mover el lockfile.
+
 ## Unificación de UX/UI, navegación y optimización táctil mobile-first
 
 Auditoría completa del frontend (23 rutas registradas) y estandarización visual:
@@ -1818,6 +1878,98 @@ Auditoría completa del frontend (23 rutas registradas) y estandarización visua
   - TypeScript: 0 errores (`tsc -b --noEmit`).
   - ESLint: 0 advertencias / errores.
   - Prettier: 100% de archivos formateados según las reglas del proyecto.
-  - Vite build: compilación de producción limpia sin errores.
+- Vite build: compilación de producción limpia sin errores.
 
+## Validación integral de P11-B
 
+Recorridos extremo a extremo, seguridad, PWA y accesibilidad de
+`feature/preparar-entrega-mvp` y de su Pull Request #40, que sigue en borrador
+porque P11-C es cierre documental. Recoge lo comprobado el 5 de septiembre de
+2026 sobre Windows 11 con Docker 29.7.2, Node 22.23.2 y Playwright 1.63.0.
+
+El comando es `npm run test:e2e` desde `frontend/`. Envuelve
+`scripts/e2e-local.mjs`, que construye las imágenes de `compose.smoke.yml` en un
+proyecto Docker propio y desechable, espera al healthcheck y al catálogo público,
+ejecuta Playwright contra esa aplicación y apaga el entorno con `down --volumes`
+al terminar, también cuando una prueba falla. PostgreSQL, Flyway, Spring Boot,
+Nginx y React son los reales: no hay ningún mock de API. El wrapper solo cambia
+dos cosas frente al smoke de producción —`MOICA_COOKIE_SEGURA=false` y un perfil
+distinto de `prod`— porque el entorno se publica en `http://127.0.0.1` y
+`ConfiguracionDeProduccion` exige cookies `Secure`.
+
+El trabajo `E2E (MVP, seguridad, PWA y accesibilidad)` del CI ejecuta esta misma
+batería con `npm run test:e2e` y sube las capturas y mediciones como artefacto.
+Su primera ejecución fue sobre el merge `b829137`, en verde junto con los otros
+cinco checks. La única casilla de CI que sigue vacía es la limpieza del entorno:
+el runner la ejecuta también allí, pero nadie inspecciona `docker ps` después, así
+que solo se afirma en local.
+
+Una casilla vacía significa que ahí no aplica o que todavía no se ejecutó, no que
+fallara.
+
+| Control | Cómo se comprueba | Local | CI | Evidencia |
+|---|---|---|---|---|
+| Recorrido principal del MVP | `marketplace.spec.ts` | Sí | Sí | Registro por formulario, inicio de sesión, búsqueda en `/explorar`, detalle, solicitud, aceptación por el prestador, revelación de contactos, chat, cierre como completada, calificación de 5 estrellas por teclado y reporte que abre el caso. Un solo recorrido, sin mocks |
+| Escritura offline sin cola | `marketplace.spec.ts` | Sí | Sí | Con el contexto sin red, enviar un mensaje muestra la alerta «Revisa tu conexión» y conserva el texto en el campo. Al volver la conexión, `GET /api/solicitudes/{id}/mensajes` **no** contiene el mensaje: React Query no lo reenvía. Solo el reintento explícito lo publica. `mutations: { networkMode: 'always', retry: false }` es lo que lo garantiza |
+| Segundo factor administrativo | `seguridad.spec.ts` | Sí | Sí | Activación real por pantalla con la clave manual y un TOTP calculado; `/admin` pasa de «Verificación adicional requerida» a «Área administrativa» y `GET /api/admin/resumen` de 403 a 200. En un inicio de sesión posterior, la sesión provisional recibe 403 hasta verificar el código |
+| `/admin` cerrado a una cuenta ordinaria | `sesiones.spec.ts` | Sí | Sí | 403 en `GET /api/admin/resumen` y pantalla «Esta zona requiere otros permisos». La barrera es del backend, no del enrutador |
+| Expiración de sesión | `sesiones.spec.ts` | Sí | Sí | Con `fecha_expiracion` vencida en la fila de `sesion` de esa única cuenta, la cookie deja de valer: 401 y vuelta a iniciar sesión, aunque el JWT siguiera firmado |
+| Revocación de sesión | `sesiones.spec.ts` | Sí | Sí | Cambiar la contraseña en un navegador deja la otra sesión en 401 con su cookie intacta |
+| Medida administrativa y suspensión | `administracion.spec.ts` | Sí | Sí | Aplicar la medida deja la sesión de la persona afectada en 401 y su nuevo inicio de sesión muestra el aviso de cuenta suspendida |
+| Moderación, apelación y reapertura | `administracion.spec.ts` | Sí | Sí | Asignación, revisión, cierre «Procedente», registro de la apelación externa, aceptación que **no** levanta sola la medida, revocación manual y reapertura del caso; después, la cuenta vuelve a 200 |
+| Verificación documental | `administracion.spec.ts` | Sí | Sí | Cola, expediente, toma y aprobación por pantalla; el servicio del prestador aprobado pasa a ser público (200) |
+| PWA instalable | `pwa.spec.ts` | Sí | Sí | `Page.getInstallabilityErrors` devuelve una lista vacía; el manifiesto declara nombre, `standalone`, `start_url`, `scope` y `theme_color`, y los iconos miden 192x192 y 512x512 de verdad |
+| Rutas SPA sin conexión | `pwa.spec.ts` | Sí | Sí | Sin red, `/registro` se sirve desde el service worker; `/explorar` se pinta y avisa del fallo de red en lugar de quedarse en blanco |
+| Caché sin datos privados | `pwa.spec.ts` y `calidad.spec.ts` | Sí | Sí | Todas las entradas de `caches` encajan en `index.html`, `registerSW.js`, `manifest.webmanifest`, los dos iconos y `assets/*.js|css`, antes y **después** de navegar autenticado por `/solicitudes` y `/seguridad`. `sw.js` no contiene ninguna ruta de `/api`, y Workbox lleva `navigateFallbackDenylist` para `/api` y `/actuator` |
+| Accesibilidad automática | `calidad.spec.ts` con `@axe-core/playwright` | Sí | Sí | Cero violaciones en `/`, `/registro`, `/401`, `/403`, `/403-2fa`, `/iniciar-sesion` y `/explorar`, y en `/iniciar-sesion`, `/solicitudes/:id` y `/admin` a los tres tamaños |
+| Teclado y foco visible | `calidad.spec.ts` y `Entrada.test.tsx` | Sí | Sí | El primer `Tab` deja un elemento con `:focus-visible`. «Mostrar contraseña» entra en el orden de tabulación —tenía `tabIndex={-1}`— y responde a `Enter` y a espacio; el botón mide 2,75 rem y declara `aria-controls` |
+| Contraste | `calidad.spec.ts` | Sí | Sí | Tres correcciones reales: `--color-error-500` a `#c62828` (el mensaje de error daba 4,22:1), `--color-primary-500` a `#b45309` y las insignias de `/admin` y `InsigniaVerificado` pasan de `--color-secondary-500` a `--color-secondary-700` (daban 3,72:1 sobre `--color-secondary-50`). El token oscuro ya se usaba así en `verificacion.module.css` |
+| Sin desbordamiento horizontal | `calidad.spec.ts` | Sí | Sí | `scrollWidth == clientWidth` en `/iniciar-sesion`, `/solicitudes/:id` y `/admin` a 375x812, 768x1024 y 1280x800, en `/403-2fa` a los tres tamaños y en `/registro` a 320 px, equivalente al reflow del 400 % sobre 1280 |
+| Evidencia responsiva | `calidad.spec.ts` | Sí | Sí | Nueve capturas de página completa y tres `evidencia-medidas-*.json` en `frontend/test-results/`. No se versionan: se adjuntan al PR y el CI las sube como artefacto |
+| Limpieza del entorno E2E | `scripts/e2e-local.mjs` | Sí | | `down --volumes --remove-orphans` en el `finally` y en `SIGINT`/`SIGTERM`; el proyecto Compose lleva un UUID, así que dos ejecuciones no se pisan. Tras la ejecución con una prueba en rojo y tras la ejecución completa en verde, `docker ps -a` y `docker volume ls` no dejan ni un contenedor ni un volumen del proyecto: solo queda el entorno de desarrollo (`moica_db`) |
+| Smoke de producción intacto | `node scripts/smoke-produccion.mjs` | Sí | Sí | El wrapper E2E no puede ablandar el smoke. La primera versión interpolaba `${MOICA_COOKIE_SEGURA:-true}`, y como `--env-file .env.example` alimenta la interpolación con `MOICA_COOKIE_SEGURA=false`, el backend del smoke arrancaba con cookies no `Secure` y `ConfiguracionDeProduccion` lo tumbaba: «El perfil prod exige MOICA_COOKIE_SEGURA=true». Se detectó ejecutando el smoke, no leyendo el diff. Las dos palancas pasan a `MOICA_SMOKE_PERFIL` y `MOICA_SMOKE_COOKIE_SEGURA`, nombres que `.env.example` no define y que `smoke-produccion.mjs` filtra, así que el smoke siempre obtiene `prod` y `true` |
+
+Batería completa sobre el estado final del incremento, una detrás de otra:
+`./mvnw -B -ntp verify` con BUILD SUCCESS en 7:33 —170 pruebas unitarias en 28
+clases y 584 de integración en 50 clases, sin fallos, errores ni omitidas, y
+SpotBugs con `BugInstance size is 0`—; en el frontend `format:check`, `lint`,
+`typecheck` (que ahora incluye el proyecto de E2E), `vitest run --maxWorkers=2`
+con **405 pruebas en 45 archivos** y `build`; y en la raíz `git diff --check`,
+`docker compose --env-file .env.example config -q` y la batería E2E completa,
+8 recorridos en verde.
+
+`npm audit` informa **0 vulnerabilidades**. Queda cerrada la deuda que dejó
+P11-A: el aviso alto de `fast-uri` llegaba por `@hookform/resolvers` → `ajv`
+→ `fast-uri` 3.1.5 y desaparece al fijar 3.1.7 en el lockfile. No se cambió
+ninguna dependencia de producción del código; las tres altas —`@playwright/test`,
+`@axe-core/playwright` y `otpauth`— son de desarrollo y no entran en `dist/` ni
+en la imagen.
+
+Las dos pruebas añadidas a Vitest en este incremento —el recorrido de teclado del
+conmutador de contraseña en `Entrada.test.tsx` y la obtención inicial del token
+CSRF en `comun/api.test.ts`— cubren en unidad lo mismo que los recorridos
+comprueban en integración. `capacidades/auth/api.test.ts` se ajusta al tramite
+nuevo de CSRF. Antes: 403 pruebas en 45 archivos.
+
+### Revalidación tras integrar `develop`
+
+`origin/develop` avanzó con el PR #44 —README reescrito y más conciso— y con un
+ajuste de la tabla de moderación en móvil. Se integró por **merge**, sin rebase,
+en `b829137`. El único conflicto fue `README.md`: se tomó la versión de `develop`
+como base y se descartaron las secciones largas del README anterior de P11,
+porque su contenido ya vive en `Docs/Dev/`. Solo se reincorporó lo que P11 aporta
+y esa versión no cubría, en su mismo estilo: Playwright y axe en la tabla de
+dependencias, `npm run test:e2e` en «Compilación y pruebas», las dos filas reales
+de la tabla de scripts y el enlace a la guía de entorno. Frente a `develop` el
+README solo cambia en ocho líneas. De paso se corrigió la referencia a
+`scripts/ejecutar_capturas.sh`, que no existe en el árbol. Esta matriz se integró
+sin conflicto: conserva la fila 1 actualizada por `develop` y las tres secciones
+de P11.
+
+La batería completa se repitió sobre el merge: `./mvnw -B -ntp verify` con BUILD
+SUCCESS en 8:43 y los mismos 170 y 584 casos sin fallos ni omitidos, con SpotBugs
+en cero; `format:check`, `lint`, `typecheck`, **405 pruebas de Vitest en 45
+archivos**, `build` y `npm audit` con 0 vulnerabilidades; los **ocho recorridos
+E2E en verde** en 53 s; y `node scripts/smoke-produccion.mjs` con sus tres bloques
+en PASS. En CI, los seis checks de `b829137` terminaron en verde, incluido el
+trabajo E2E nuevo.

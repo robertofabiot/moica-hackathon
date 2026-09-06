@@ -152,6 +152,33 @@ describe('tiempos de espera de la red compartida', () => {
   });
 });
 
+describe('obtención inicial de CSRF', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    document.cookie = 'XSRF-TOKEN=; Max-Age=0';
+  });
+
+  it('obtiene el token del catálogo cuando la sesión anónima devuelve 401 sin cookie', async () => {
+    document.cookie = 'XSRF-TOKEN=; Max-Age=0';
+    const fetchInicial = vi.fn(async (ruta: string, opciones?: RequestInit) => {
+      if (ruta === '/api/auth/sesion') return new Response(null, { status: 401 });
+      if (ruta === '/api/catalogos/categorias') {
+        document.cookie = 'XSRF-TOKEN=csrf-inicial';
+        return new Response('[]', { status: 200 });
+      }
+      expect(opciones?.headers).toMatchObject({ 'X-XSRF-TOKEN': 'csrf-inicial' });
+      return new Response(null, { status: 204 });
+    });
+    vi.stubGlobal('fetch', fetchInicial);
+    await enviar('POST', '/api/usuarios', {});
+    expect(fetchInicial.mock.calls.map(([ruta]) => ruta)).toEqual([
+      '/api/auth/sesion',
+      '/api/catalogos/categorias',
+      '/api/usuarios',
+    ]);
+  });
+});
+
 /** Deja ver si una promesa ya terminó sin obligar a esperarla. */
 function seguir(promesa: Promise<unknown>) {
   const estado = { asentada: false };

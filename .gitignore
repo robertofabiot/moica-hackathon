@@ -38,6 +38,8 @@ pom.xml.next
 # =========================================================================
 coverage/
 .nyc_output/
+frontend/test-results/
+frontend/playwright-report/
 *.lcov
 surefire-reports/
 failsafe-reports/

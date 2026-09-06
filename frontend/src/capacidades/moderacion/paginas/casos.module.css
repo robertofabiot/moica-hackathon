@@ -162,7 +162,7 @@
 
 .tabla {
   width: 100%;
-  min-width: 22rem;
+  min-width: 28rem;
   border-collapse: collapse;
   text-align: left;
 }
@@ -206,7 +206,8 @@
 
 /* Un motivo puede ser una sola palabra larga; ahí sí se parte. */
 .celdaDelCaso {
-  overflow-wrap: anywhere;
+  min-width: 12.5rem;
+  overflow-wrap: break-word;
   text-align: left;
 }
 

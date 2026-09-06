@@ -18,11 +18,15 @@ services:
     build: ./backend
     env_file: .env.example
     environment:
-      SPRING_PROFILES_ACTIVE: prod
+      # El smoke de produccion conserva `prod`; el wrapper E2E lo desactiva para
+      # poder servir cookies no Secure sobre HTTP en loopback. Los nombres son
+      # propios del wrapper a proposito: `.env.example` los alimentaria por
+      # `--env-file` si se llamaran igual que las variables de la aplicacion.
+      SPRING_PROFILES_ACTIVE: "${MOICA_SMOKE_PERFIL:-prod}"
       MOICA_DB_HOST: postgres
       MOICA_DB_PORT: 5432
       MOICA_BACKEND_PORT: 8080
-      MOICA_COOKIE_SEGURA: "true"
+      MOICA_COOKIE_SEGURA: "${MOICA_SMOKE_COOKIE_SEGURA:-true}"
       MOICA_SOPORTE_CANAL: demo@example.org
     depends_on:
       postgres:

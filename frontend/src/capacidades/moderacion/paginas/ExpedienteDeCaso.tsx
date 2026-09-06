@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router';
 
 import { ErrorDeApi } from '../../../comun/api';
+import { IconoChevronIzquierda } from '../../../comun/componentes/ui';
 import estilos from '../../../comun/estilos/formulario.module.css';
 import secciones from '../../../comun/estilos/secciones.module.css';
 import AccionesDelCaso from '../componentes/AccionesDelCaso';
@@ -12,6 +13,7 @@ import MensajesDelCaso from '../componentes/MensajesDelCaso';
 import { fechaLegible, nombreDelEstado, nombreDelResultado } from '../etiquetas';
 import { useExpedienteDeCaso } from '../hooks/useRevisionDeCasos';
 import { RUTA_ADMIN_CASOS } from '../rutas';
+import type { EstadoDeCaso } from '../tipos';
 import propios from './casos.module.css';
 
 /**
@@ -34,7 +36,9 @@ export default function ExpedienteDeCaso() {
             Ese caso no existe.
           </p>
           <p className={propios.pie}>
-            <Link to={RUTA_ADMIN_CASOS}>Volver a la bandeja</Link>
+            <Link className={propios.enlaceDePie} to={RUTA_ADMIN_CASOS}>
+              Volver a la bandeja
+            </Link>
           </p>
         </div>
       </main>
@@ -51,7 +55,10 @@ function Expediente({ idCaso }: { idCaso: number }) {
     <main className={propios.pantalla}>
       <div className={propios.contenido}>
         <p className={propios.migaDePan}>
-          <Link to={RUTA_ADMIN_CASOS}>Casos de moderación</Link>
+          <Link className={propios.enlaceVolver} to={RUTA_ADMIN_CASOS}>
+            <IconoChevronIzquierda />
+            Casos de moderación
+          </Link>
         </p>
 
         {expediente.isPending && (
@@ -84,7 +91,9 @@ function Expediente({ idCaso }: { idCaso: number }) {
                 {expediente.data.caso.nombreReportado} · Abierto el{' '}
                 {fechaLegible(expediente.data.caso.fechaApertura)}
               </p>
-              <p className={propios.estadoDestacado}>
+              <p
+                className={`${propios.estadoDestacado} ${claseDeEstado(expediente.data.caso.estadoActual)}`}
+              >
                 {nombreDelEstado(expediente.data.caso.estadoActual)}
                 {expediente.data.caso.resultadoActual !== null &&
                   ` · ${nombreDelResultado(expediente.data.caso.resultadoActual)}`}
@@ -179,4 +188,17 @@ function SolicitudDelCaso({
       </ol>
     </section>
   );
+}
+
+function claseDeEstado(estado: EstadoDeCaso): string {
+  switch (estado) {
+    case 'ABIERTO':
+      return propios.pildoraAbierto ?? '';
+    case 'EN_REVISION':
+      return propios.pildoraEnRevision ?? '';
+    case 'REABIERTO':
+      return propios.pildoraReabierto ?? '';
+    case 'CERRADO':
+      return propios.pildoraCerrado ?? '';
+  }
 }

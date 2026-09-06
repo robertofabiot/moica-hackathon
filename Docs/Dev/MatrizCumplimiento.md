@@ -1899,33 +1899,35 @@ distinto de `prod`— porque el entorno se publica en `http://127.0.0.1` y
 
 El trabajo `E2E (MVP, seguridad, PWA y accesibilidad)` del CI ejecuta esta misma
 batería con `npm run test:e2e` y sube las capturas y mediciones como artefacto.
-La columna CI queda vacía a propósito: su primera ejecución llega con el push de
-este incremento y no se anota de memoria.
+Su primera ejecución fue sobre el merge `b829137`, en verde junto con los otros
+cinco checks. La única casilla de CI que sigue vacía es la limpieza del entorno:
+el runner la ejecuta también allí, pero nadie inspecciona `docker ps` después, así
+que solo se afirma en local.
 
 Una casilla vacía significa que ahí no aplica o que todavía no se ejecutó, no que
 fallara.
 
 | Control | Cómo se comprueba | Local | CI | Evidencia |
 |---|---|---|---|---|
-| Recorrido principal del MVP | `marketplace.spec.ts` | Sí | | Registro por formulario, inicio de sesión, búsqueda en `/explorar`, detalle, solicitud, aceptación por el prestador, revelación de contactos, chat, cierre como completada, calificación de 5 estrellas por teclado y reporte que abre el caso. Un solo recorrido, sin mocks |
-| Escritura offline sin cola | `marketplace.spec.ts` | Sí | | Con el contexto sin red, enviar un mensaje muestra la alerta «Revisa tu conexión» y conserva el texto en el campo. Al volver la conexión, `GET /api/solicitudes/{id}/mensajes` **no** contiene el mensaje: React Query no lo reenvía. Solo el reintento explícito lo publica. `mutations: { networkMode: 'always', retry: false }` es lo que lo garantiza |
-| Segundo factor administrativo | `seguridad.spec.ts` | Sí | | Activación real por pantalla con la clave manual y un TOTP calculado; `/admin` pasa de «Verificación adicional requerida» a «Área administrativa» y `GET /api/admin/resumen` de 403 a 200. En un inicio de sesión posterior, la sesión provisional recibe 403 hasta verificar el código |
-| `/admin` cerrado a una cuenta ordinaria | `sesiones.spec.ts` | Sí | | 403 en `GET /api/admin/resumen` y pantalla «Esta zona requiere otros permisos». La barrera es del backend, no del enrutador |
-| Expiración de sesión | `sesiones.spec.ts` | Sí | | Con `fecha_expiracion` vencida en la fila de `sesion` de esa única cuenta, la cookie deja de valer: 401 y vuelta a iniciar sesión, aunque el JWT siguiera firmado |
-| Revocación de sesión | `sesiones.spec.ts` | Sí | | Cambiar la contraseña en un navegador deja la otra sesión en 401 con su cookie intacta |
-| Medida administrativa y suspensión | `administracion.spec.ts` | Sí | | Aplicar la medida deja la sesión de la persona afectada en 401 y su nuevo inicio de sesión muestra el aviso de cuenta suspendida |
-| Moderación, apelación y reapertura | `administracion.spec.ts` | Sí | | Asignación, revisión, cierre «Procedente», registro de la apelación externa, aceptación que **no** levanta sola la medida, revocación manual y reapertura del caso; después, la cuenta vuelve a 200 |
-| Verificación documental | `administracion.spec.ts` | Sí | | Cola, expediente, toma y aprobación por pantalla; el servicio del prestador aprobado pasa a ser público (200) |
-| PWA instalable | `pwa.spec.ts` | Sí | | `Page.getInstallabilityErrors` devuelve una lista vacía; el manifiesto declara nombre, `standalone`, `start_url`, `scope` y `theme_color`, y los iconos miden 192x192 y 512x512 de verdad |
-| Rutas SPA sin conexión | `pwa.spec.ts` | Sí | | Sin red, `/registro` se sirve desde el service worker; `/explorar` se pinta y avisa del fallo de red en lugar de quedarse en blanco |
-| Caché sin datos privados | `pwa.spec.ts` y `calidad.spec.ts` | Sí | | Todas las entradas de `caches` encajan en `index.html`, `registerSW.js`, `manifest.webmanifest`, los dos iconos y `assets/*.js|css`, antes y **después** de navegar autenticado por `/solicitudes` y `/seguridad`. `sw.js` no contiene ninguna ruta de `/api`, y Workbox lleva `navigateFallbackDenylist` para `/api` y `/actuator` |
-| Accesibilidad automática | `calidad.spec.ts` con `@axe-core/playwright` | Sí | | Cero violaciones en `/`, `/registro`, `/401`, `/403`, `/403-2fa`, `/iniciar-sesion` y `/explorar`, y en `/iniciar-sesion`, `/solicitudes/:id` y `/admin` a los tres tamaños |
-| Teclado y foco visible | `calidad.spec.ts` y `Entrada.test.tsx` | Sí | | El primer `Tab` deja un elemento con `:focus-visible`. «Mostrar contraseña» entra en el orden de tabulación —tenía `tabIndex={-1}`— y responde a `Enter` y a espacio; el botón mide 2,75 rem y declara `aria-controls` |
-| Contraste | `calidad.spec.ts` | Sí | | Tres correcciones reales: `--color-error-500` a `#c62828` (el mensaje de error daba 4,22:1), `--color-primary-500` a `#b45309` y las insignias de `/admin` y `InsigniaVerificado` pasan de `--color-secondary-500` a `--color-secondary-700` (daban 3,72:1 sobre `--color-secondary-50`). El token oscuro ya se usaba así en `verificacion.module.css` |
-| Sin desbordamiento horizontal | `calidad.spec.ts` | Sí | | `scrollWidth == clientWidth` en `/iniciar-sesion`, `/solicitudes/:id` y `/admin` a 375x812, 768x1024 y 1280x800, en `/403-2fa` a los tres tamaños y en `/registro` a 320 px, equivalente al reflow del 400 % sobre 1280 |
-| Evidencia responsiva | `calidad.spec.ts` | Sí | | Nueve capturas de página completa y tres `evidencia-medidas-*.json` en `frontend/test-results/`. No se versionan: se adjuntan al PR y el CI las sube como artefacto |
+| Recorrido principal del MVP | `marketplace.spec.ts` | Sí | Sí | Registro por formulario, inicio de sesión, búsqueda en `/explorar`, detalle, solicitud, aceptación por el prestador, revelación de contactos, chat, cierre como completada, calificación de 5 estrellas por teclado y reporte que abre el caso. Un solo recorrido, sin mocks |
+| Escritura offline sin cola | `marketplace.spec.ts` | Sí | Sí | Con el contexto sin red, enviar un mensaje muestra la alerta «Revisa tu conexión» y conserva el texto en el campo. Al volver la conexión, `GET /api/solicitudes/{id}/mensajes` **no** contiene el mensaje: React Query no lo reenvía. Solo el reintento explícito lo publica. `mutations: { networkMode: 'always', retry: false }` es lo que lo garantiza |
+| Segundo factor administrativo | `seguridad.spec.ts` | Sí | Sí | Activación real por pantalla con la clave manual y un TOTP calculado; `/admin` pasa de «Verificación adicional requerida» a «Área administrativa» y `GET /api/admin/resumen` de 403 a 200. En un inicio de sesión posterior, la sesión provisional recibe 403 hasta verificar el código |
+| `/admin` cerrado a una cuenta ordinaria | `sesiones.spec.ts` | Sí | Sí | 403 en `GET /api/admin/resumen` y pantalla «Esta zona requiere otros permisos». La barrera es del backend, no del enrutador |
+| Expiración de sesión | `sesiones.spec.ts` | Sí | Sí | Con `fecha_expiracion` vencida en la fila de `sesion` de esa única cuenta, la cookie deja de valer: 401 y vuelta a iniciar sesión, aunque el JWT siguiera firmado |
+| Revocación de sesión | `sesiones.spec.ts` | Sí | Sí | Cambiar la contraseña en un navegador deja la otra sesión en 401 con su cookie intacta |
+| Medida administrativa y suspensión | `administracion.spec.ts` | Sí | Sí | Aplicar la medida deja la sesión de la persona afectada en 401 y su nuevo inicio de sesión muestra el aviso de cuenta suspendida |
+| Moderación, apelación y reapertura | `administracion.spec.ts` | Sí | Sí | Asignación, revisión, cierre «Procedente», registro de la apelación externa, aceptación que **no** levanta sola la medida, revocación manual y reapertura del caso; después, la cuenta vuelve a 200 |
+| Verificación documental | `administracion.spec.ts` | Sí | Sí | Cola, expediente, toma y aprobación por pantalla; el servicio del prestador aprobado pasa a ser público (200) |
+| PWA instalable | `pwa.spec.ts` | Sí | Sí | `Page.getInstallabilityErrors` devuelve una lista vacía; el manifiesto declara nombre, `standalone`, `start_url`, `scope` y `theme_color`, y los iconos miden 192x192 y 512x512 de verdad |
+| Rutas SPA sin conexión | `pwa.spec.ts` | Sí | Sí | Sin red, `/registro` se sirve desde el service worker; `/explorar` se pinta y avisa del fallo de red en lugar de quedarse en blanco |
+| Caché sin datos privados | `pwa.spec.ts` y `calidad.spec.ts` | Sí | Sí | Todas las entradas de `caches` encajan en `index.html`, `registerSW.js`, `manifest.webmanifest`, los dos iconos y `assets/*.js|css`, antes y **después** de navegar autenticado por `/solicitudes` y `/seguridad`. `sw.js` no contiene ninguna ruta de `/api`, y Workbox lleva `navigateFallbackDenylist` para `/api` y `/actuator` |
+| Accesibilidad automática | `calidad.spec.ts` con `@axe-core/playwright` | Sí | Sí | Cero violaciones en `/`, `/registro`, `/401`, `/403`, `/403-2fa`, `/iniciar-sesion` y `/explorar`, y en `/iniciar-sesion`, `/solicitudes/:id` y `/admin` a los tres tamaños |
+| Teclado y foco visible | `calidad.spec.ts` y `Entrada.test.tsx` | Sí | Sí | El primer `Tab` deja un elemento con `:focus-visible`. «Mostrar contraseña» entra en el orden de tabulación —tenía `tabIndex={-1}`— y responde a `Enter` y a espacio; el botón mide 2,75 rem y declara `aria-controls` |
+| Contraste | `calidad.spec.ts` | Sí | Sí | Tres correcciones reales: `--color-error-500` a `#c62828` (el mensaje de error daba 4,22:1), `--color-primary-500` a `#b45309` y las insignias de `/admin` y `InsigniaVerificado` pasan de `--color-secondary-500` a `--color-secondary-700` (daban 3,72:1 sobre `--color-secondary-50`). El token oscuro ya se usaba así en `verificacion.module.css` |
+| Sin desbordamiento horizontal | `calidad.spec.ts` | Sí | Sí | `scrollWidth == clientWidth` en `/iniciar-sesion`, `/solicitudes/:id` y `/admin` a 375x812, 768x1024 y 1280x800, en `/403-2fa` a los tres tamaños y en `/registro` a 320 px, equivalente al reflow del 400 % sobre 1280 |
+| Evidencia responsiva | `calidad.spec.ts` | Sí | Sí | Nueve capturas de página completa y tres `evidencia-medidas-*.json` en `frontend/test-results/`. No se versionan: se adjuntan al PR y el CI las sube como artefacto |
 | Limpieza del entorno E2E | `scripts/e2e-local.mjs` | Sí | | `down --volumes --remove-orphans` en el `finally` y en `SIGINT`/`SIGTERM`; el proyecto Compose lleva un UUID, así que dos ejecuciones no se pisan. Tras la ejecución con una prueba en rojo y tras la ejecución completa en verde, `docker ps -a` y `docker volume ls` no dejan ni un contenedor ni un volumen del proyecto: solo queda el entorno de desarrollo (`moica_db`) |
-| Smoke de producción intacto | `node scripts/smoke-produccion.mjs` | Sí | | El wrapper E2E no puede ablandar el smoke. La primera versión interpolaba `${MOICA_COOKIE_SEGURA:-true}`, y como `--env-file .env.example` alimenta la interpolación con `MOICA_COOKIE_SEGURA=false`, el backend del smoke arrancaba con cookies no `Secure` y `ConfiguracionDeProduccion` lo tumbaba: «El perfil prod exige MOICA_COOKIE_SEGURA=true». Se detectó ejecutando el smoke, no leyendo el diff. Las dos palancas pasan a `MOICA_SMOKE_PERFIL` y `MOICA_SMOKE_COOKIE_SEGURA`, nombres que `.env.example` no define y que `smoke-produccion.mjs` filtra, así que el smoke siempre obtiene `prod` y `true` |
+| Smoke de producción intacto | `node scripts/smoke-produccion.mjs` | Sí | Sí | El wrapper E2E no puede ablandar el smoke. La primera versión interpolaba `${MOICA_COOKIE_SEGURA:-true}`, y como `--env-file .env.example` alimenta la interpolación con `MOICA_COOKIE_SEGURA=false`, el backend del smoke arrancaba con cookies no `Secure` y `ConfiguracionDeProduccion` lo tumbaba: «El perfil prod exige MOICA_COOKIE_SEGURA=true». Se detectó ejecutando el smoke, no leyendo el diff. Las dos palancas pasan a `MOICA_SMOKE_PERFIL` y `MOICA_SMOKE_COOKIE_SEGURA`, nombres que `.env.example` no define y que `smoke-produccion.mjs` filtra, así que el smoke siempre obtiene `prod` y `true` |
 
 Batería completa sobre el estado final del incremento, una detrás de otra:
 `./mvnw -B -ntp verify` con BUILD SUCCESS en 7:33 —170 pruebas unitarias en 28
@@ -1948,3 +1950,26 @@ conmutador de contraseña en `Entrada.test.tsx` y la obtención inicial del toke
 CSRF en `comun/api.test.ts`— cubren en unidad lo mismo que los recorridos
 comprueban en integración. `capacidades/auth/api.test.ts` se ajusta al tramite
 nuevo de CSRF. Antes: 403 pruebas en 45 archivos.
+
+### Revalidación tras integrar `develop`
+
+`origin/develop` avanzó con el PR #44 —README reescrito y más conciso— y con un
+ajuste de la tabla de moderación en móvil. Se integró por **merge**, sin rebase,
+en `b829137`. El único conflicto fue `README.md`: se tomó la versión de `develop`
+como base y se descartaron las secciones largas del README anterior de P11,
+porque su contenido ya vive en `Docs/Dev/`. Solo se reincorporó lo que P11 aporta
+y esa versión no cubría, en su mismo estilo: Playwright y axe en la tabla de
+dependencias, `npm run test:e2e` en «Compilación y pruebas», las dos filas reales
+de la tabla de scripts y el enlace a la guía de entorno. Frente a `develop` el
+README solo cambia en ocho líneas. De paso se corrigió la referencia a
+`scripts/ejecutar_capturas.sh`, que no existe en el árbol. Esta matriz se integró
+sin conflicto: conserva la fila 1 actualizada por `develop` y las tres secciones
+de P11.
+
+La batería completa se repitió sobre el merge: `./mvnw -B -ntp verify` con BUILD
+SUCCESS en 8:43 y los mismos 170 y 584 casos sin fallos ni omitidos, con SpotBugs
+en cero; `format:check`, `lint`, `typecheck`, **405 pruebas de Vitest en 45
+archivos**, `build` y `npm audit` con 0 vulnerabilidades; los **ocho recorridos
+E2E en verde** en 53 s; y `node scripts/smoke-produccion.mjs` con sus tres bloques
+en PASS. En CI, los seis checks de `b829137` terminaron en verde, incluido el
+trabajo E2E nuevo.

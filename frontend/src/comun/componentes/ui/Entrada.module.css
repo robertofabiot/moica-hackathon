@@ -72,17 +72,19 @@
 
 .toggleDeContrasena {
   position: absolute;
-  right: var(--gap-sm);
+  right: 0.125rem;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
   padding: 0.25rem;
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: var(--color-neutral-400);
+  color: var(--color-neutral-600);
   cursor: pointer;
 }
 

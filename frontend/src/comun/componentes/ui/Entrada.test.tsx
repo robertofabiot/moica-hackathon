@@ -9,6 +9,26 @@ import { Entrada } from './Entrada';
 import estilos from './Entrada.module.css';
 
 describe('Entrada', () => {
+  it('permite mostrar y ocultar la contraseña solo con teclado', async () => {
+    const persona = userEvent.setup();
+    render(
+      <>
+        <label htmlFor="clave">Contraseña</label>
+        <Entrada id="clave" type="password" />
+      </>
+    );
+    await persona.tab();
+    expect(screen.getByLabelText('Contraseña', { exact: true })).toHaveFocus();
+    await persona.tab();
+    expect(screen.getByRole('button', { name: 'Mostrar contraseña' })).toHaveFocus();
+    await persona.keyboard('{Enter}');
+    expect(screen.getByLabelText('Contraseña', { exact: true })).toHaveAttribute('type', 'text');
+    await persona.keyboard(' ');
+    expect(screen.getByLabelText('Contraseña', { exact: true })).toHaveAttribute(
+      'type',
+      'password'
+    );
+  });
   it('anuncia el mensaje de error debajo del campo', () => {
     render(
       <>

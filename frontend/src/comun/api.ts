@@ -238,9 +238,10 @@ async function fetchConTiempoDeEspera(
 /**
  * Devuelve el token CSRF, pidiéndoselo al backend si el navegador todavía no lo tiene.
  *
- * El backend emite la cookie `XSRF-TOKEN` en cualquier respuesta, así que consultar la sesión
- * actual basta para conseguirla. Sin este paso, una operación mutable hecha nada más abrir la
- * aplicación se quedaría sin token.
+ * El backend emite la cookie `XSRF-TOKEN` al resolver una petición protegida por CSRF. La consulta
+ * de sesión puede terminar antes en 401 cuando todavía no hay usuario, así que se completa con un
+ * catálogo público que sí atraviesa la cadena normal. Sin este paso, una operación mutable hecha
+ * nada más abrir la aplicación se quedaría sin token.
  */
 async function asegurarTokenCsrf(): Promise<string | null> {
   const guardado = leerCookie(COOKIE_CSRF);
@@ -249,6 +250,12 @@ async function asegurarTokenCsrf(): Promise<string | null> {
   }
 
   await fetchConTiempoDeEspera(RUTA_SESION, { credentials: 'same-origin' });
+  const despuesDeSesion = leerCookie(COOKIE_CSRF);
+  if (despuesDeSesion !== null) {
+    return despuesDeSesion;
+  }
+
+  await fetchConTiempoDeEspera('/api/catalogos/categorias', { credentials: 'same-origin' });
   return leerCookie(COOKIE_CSRF);
 }
 

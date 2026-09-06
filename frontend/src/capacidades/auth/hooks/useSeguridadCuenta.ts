@@ -1,0 +1,117 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useNavigate } from 'react-router';
+
+import {
+  cambiarClave,
+  confirmarActivacionDeSegundoFactor,
+  desactivarSegundoFactor,
+  iniciarActivacionDeSegundoFactor,
+  obtenerSegundoFactor,
+  verificarSegundoFactorDeLaSesion,
+} from '../api';
+import { olvidarSesion } from '../cacheDeSesion';
+import { MOTIVO_CREDENCIALES_CAMBIADAS } from '../rutas';
+import { CLAVE_DE_SESION } from './useSesionActual';
+
+/**
+ * Las operaciones de la sección de seguridad de la cuenta.
+ *
+ * Dos de ellas —cambiar la contraseña y desactivar el segundo factor— revocan todas las sesiones
+ * en el servidor. Aquí eso se traduce en lo mismo que ya hace el cierre de sesión: olvidar el
+ * estado de acceso anotando por qué. Quien lleva a la pantalla de entrada con esa explicación es
+ * `useVigilanciaDeSesion`, que es el único sitio que navega cuando una sesión termina.
+ */
+
+/** Clave con la que React Query guarda el estado del segundo factor. */
+export const CLAVE_DE_SEGUNDO_FACTOR = ['auth', 'segundo-factor'] as const;
+
+/** Estado del segundo factor de la cuenta. Nunca contiene el secreto. */
+export function useSegundoFactor() {
+  return useQuery({
+    queryKey: CLAVE_DE_SEGUNDO_FACTOR,
+    queryFn: obtenerSegundoFactor,
+    retry: false,
+  });
+}
+
+/** Cambia la contraseña y devuelve al inicio de sesión, porque ya no queda ninguna vigente. */
+export function useCambioDeClave() {
+  const olvidarAccesoYVolverAEntrar = useSalidaTrasCambioDeCredenciales();
+
+  return useMutation({
+    mutationFn: cambiarClave,
+    onSuccess: olvidarAccesoYVolverAEntrar,
+  });
+}
+
+/**
+ * Empieza la activación del segundo factor.
+ *
+ * El resultado lleva el secreto dentro, así que no basta con no guardarlo en la caché de consultas:
+ * TanStack Query conserva el resultado de una mutación en su `MutationCache` durante cinco minutos
+ * después de que la pantalla deje de observarla. `gcTime: 0` lo retira en cuanto se desmonta, y
+ * quien lo muestra llama además a `reset()` al salir para no depender solo de la recolección.
+ */
+export function useActivacionDeSegundoFactor() {
+  return useMutation({ mutationFn: iniciarActivacionDeSegundoFactor, gcTime: 0 });
+}
+
+/** Confirma la activación con el primer código válido. */
+export function useConfirmacionDeSegundoFactor() {
+  const cliente = useQueryClient();
+
+  return useMutation({
+    mutationFn: confirmarActivacionDeSegundoFactor,
+    onSuccess: (segundoFactor) => {
+      cliente.setQueryData(CLAVE_DE_SEGUNDO_FACTOR, segundoFactor);
+      // Activarlo verifica también esta sesión: hay que releerla para que la
+      // interfaz deje de creer que está pendiente.
+      void cliente.invalidateQueries({ queryKey: CLAVE_DE_SESION });
+    },
+  });
+}
+
+/** Desactiva el segundo factor; el backend lo trata como un cambio de credenciales. */
+export function useDesactivacionDeSegundoFactor() {
+  const olvidarAccesoYVolverAEntrar = useSalidaTrasCambioDeCredenciales();
+
+  return useMutation({
+    mutationFn: desactivarSegundoFactor,
+    onSuccess: olvidarAccesoYVolverAEntrar,
+  });
+}
+
+/** Completa la sesión provisional presentando el código. */
+export function useVerificacionDeSesion() {
+  const cliente = useQueryClient();
+  const navegar = useNavigate();
+
+  return useMutation({
+    mutationFn: verificarSegundoFactorDeLaSesion,
+    onSuccess: (sesion) => {
+      cliente.setQueryData(CLAVE_DE_SESION, sesion);
+      navegar('/');
+    },
+    onError: (error) => {
+      // Si la sesión provisional muere mientras se verifica, no tiene sentido
+      // insistir con el código: hay que volver a entrar.
+      if (esSesionPerdida(error)) {
+        olvidarSesion(cliente);
+      }
+    },
+  });
+}
+
+/**
+ * Lo que ocurre después de cambiar unas credenciales: no queda ninguna sesión vigente, ni siquiera
+ * la actual, así que se olvida todo el estado de acceso dejando anotado por qué.
+ */
+function useSalidaTrasCambioDeCredenciales() {
+  const cliente = useQueryClient();
+
+  return () => olvidarSesion(cliente, MOTIVO_CREDENCIALES_CAMBIADAS);
+}
+
+function esSesionPerdida(error: unknown): boolean {
+  return error instanceof Error && 'estado' in error && error.estado === 401;
+}

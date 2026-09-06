@@ -1,0 +1,185 @@
+/*
+ * Estilos de las piezas del expediente: acciones, hilo, evidencias e historial.
+ *
+ * Reutiliza las variables de `src/estilos/global.css` y el lenguaje de
+ * `secciones.module.css`. Mobile-first, igual que el resto de la aplicación.
+ */
+
+.formularioDeAsignacion,
+.formularioDeCierre,
+.accion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin-top: var(--gap-md);
+}
+
+/*
+ * En el teléfono el desplegable y el botón se apilan; desde tableta comparten
+ * fila. Apilar es lo correcto abajo: un select y un botón lado a lado en 375 px
+ * dejan los dos demasiado estrechos para tocarlos con seguridad.
+ */
+.filaDeAsignacion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.grupoDeResultado {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  margin: 0;
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-neutral-0);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Toda la etiqueta es zona de toque, no solo el círculo del radio. */
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  min-height: 2.75rem;
+  padding: 0.25rem 0;
+  cursor: pointer;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-800);
+}
+
+/* --- Hilo de mensajes --------------------------------------------------- */
+
+.hilo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  margin: var(--gap-md) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mensaje {
+  padding: var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-xl);
+  background-color: var(--color-neutral-0);
+  box-shadow: var(--shadow-sm);
+}
+
+.remitente {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-xs);
+  justify-content: space-between;
+  margin: 0 0 0.25rem;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+.instante {
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+}
+
+.contenido {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  color: var(--color-neutral-800);
+}
+
+/* --- Evidencias --------------------------------------------------------- */
+
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9rem, 1fr));
+  gap: var(--gap-md);
+  margin: var(--gap-md) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evidencia {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-lg);
+}
+
+/* --- Historial ---------------------------------------------------------- */
+
+.versiones {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-md);
+  margin: var(--gap-md) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.version {
+  padding-left: var(--gap-md);
+  border-left: 2px solid var(--color-primary-200);
+}
+
+.versionTitulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--gap-xs);
+  margin: 0;
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-neutral-900);
+}
+
+/*
+ * La marca de versión vigente lleva texto además del recuadro: el color no
+ * puede ser lo único que distinga la fila que está en vigor.
+ */
+.insigniaVigente {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.375rem;
+  padding: 0.0625rem 0.5rem;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary-50);
+  color: var(--color-primary-700);
+  border: var(--border-width-xs) solid var(--color-primary-200);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+}
+
+.versionDetalle {
+  margin: 0.125rem 0 0;
+  color: var(--color-neutral-600);
+  font-size: var(--font-size-xs);
+  overflow-wrap: anywhere;
+}
+
+.versionCambio {
+  margin: 0.25rem 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-neutral-800);
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 48rem) {
+  .filaDeAsignacion {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .filaDeAsignacion select {
+    flex: 1;
+  }
+}

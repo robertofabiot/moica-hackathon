@@ -1,0 +1,253 @@
+/*
+ * Pantalla de acceso no autorizado (401 / 403). Solo tokens de
+ * `src/estilos/global.css`.
+ */
+
+.contenedor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100dvh;
+  padding-top: max(var(--gap-md), env(safe-area-inset-top));
+  padding-right: var(--gap-md);
+  padding-bottom: max(var(--gap-lg), env(safe-area-inset-bottom));
+  padding-left: var(--gap-md);
+  background-color: var(--color-neutral-50);
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--gap-md);
+  text-decoration: none;
+}
+
+.logoHorizontal {
+  display: block;
+  height: 2.75rem;
+  width: auto;
+  max-width: none;
+}
+
+.cuerpo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-md);
+  width: 100%;
+  max-width: 32rem;
+  text-align: center;
+}
+
+.escena {
+  position: relative;
+  width: min(100%, 20rem);
+  margin-bottom: var(--gap-xs);
+  padding-bottom: var(--gap-sm);
+  animation: entradaSuave 300ms ease-out both;
+}
+
+.ilustracion {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.sombra {
+  fill: var(--color-neutral-200);
+  opacity: 0.7;
+}
+
+.haloInicio {
+  stop-color: var(--color-secondary-100);
+  stop-opacity: 0.85;
+}
+
+.haloFin {
+  stop-color: var(--color-secondary-50);
+  stop-opacity: 0;
+}
+
+.senderoTeal {
+  fill: none;
+  stroke: var(--color-secondary-500);
+  stroke-width: 2.5;
+  stroke-dasharray: 4 6;
+  stroke-linecap: round;
+}
+
+.senderoNaranja {
+  fill: none;
+  stroke: var(--color-primary-500);
+  stroke-width: 2.5;
+  stroke-dasharray: 4 6;
+  stroke-linecap: round;
+}
+
+.destelloTeal {
+  fill: none;
+  stroke: var(--color-secondary-500);
+  stroke-width: 2.25;
+}
+
+.destelloNaranja {
+  fill: none;
+  stroke: var(--color-primary-500);
+  stroke-width: 2.25;
+}
+
+.puntoTeal {
+  fill: var(--color-secondary-100);
+}
+
+.puntoNaranja {
+  fill: var(--color-primary-100);
+}
+
+.medallonAro {
+  fill: none;
+  stroke: var(--color-secondary-100);
+  stroke-width: 2;
+  stroke-dasharray: 4 6;
+}
+
+.escudo {
+  fill: var(--color-secondary-50);
+  stroke: var(--color-secondary-500);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.aroDelCandado {
+  fill: none;
+  stroke: var(--color-primary-500);
+  stroke-width: 4;
+  stroke-linecap: round;
+}
+
+.cuerpoDelCandado {
+  fill: var(--color-primary-500);
+}
+
+.ojoDelCandado {
+  fill: var(--color-neutral-0);
+}
+
+.insignia {
+  position: absolute;
+  left: 50%;
+  bottom: var(--gap-xs);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  padding: var(--gap-xs) var(--gap-sm);
+  border: var(--border-width-xs) solid var(--color-secondary-100);
+  border-radius: var(--radius-full);
+  background-color: var(--color-secondary-50);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-secondary-700);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+
+.insignia svg {
+  display: block;
+  width: 0.875rem;
+  height: 0.875rem;
+  flex-shrink: 0;
+}
+
+.titulo {
+  margin: 0;
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--color-neutral-900);
+  animation: entradaSuave 300ms ease-out 80ms both;
+}
+
+.explicacion {
+  max-width: 42ch;
+  margin: 0;
+  color: var(--color-neutral-600);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.55;
+  animation: entradaSuave 300ms ease-out 120ms both;
+}
+
+.acciones {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--gap-md);
+  width: 100%;
+  margin-top: var(--gap-sm);
+  animation: entradaSuave 300ms ease-out 160ms both;
+}
+
+.accion {
+  width: 100%;
+}
+
+@keyframes entradaSuave {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .escena,
+  .titulo,
+  .explicacion,
+  .acciones {
+    animation: none;
+  }
+}
+
+@media (min-width: 48rem) {
+  .contenedor {
+    padding-top: max(var(--gap-2xl), env(safe-area-inset-top));
+    padding-right: var(--gap-lg);
+    padding-bottom: max(var(--gap-2xl), env(safe-area-inset-bottom));
+    padding-left: var(--gap-lg);
+  }
+
+  .logoHorizontal {
+    height: 3.25rem;
+  }
+
+  .titulo {
+    font-size: var(--font-size-3xl);
+  }
+
+  .explicacion {
+    font-size: var(--font-size-base);
+  }
+
+  .acciones {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .accion {
+    width: auto;
+  }
+}

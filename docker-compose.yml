@@ -1,32 +1,55 @@
-version: '3.8'
+# Entorno de datos para desarrollo local.
+#
+# Las credenciales no viven aqui: se leen del archivo `.env` de la raiz, que
+# esta ignorado por Git. Copia `.env.example` como `.env` antes de levantar
+# estos servicios.
+#
+#   docker compose up -d
+#   docker compose config     # valida la configuracion resultante
+#
+# Este archivo NO prepara produccion; esa parte corresponde al incremento P11.
 
 services:
-  # Base de datos principal de MOICA
+  # Base de datos principal de Moica
   postgres:
     image: postgres:15-alpine
     container_name: moica_db
     environment:
-      POSTGRES_USER: moica_user
-      POSTGRES_PASSWORD: moica_password
-      POSTGRES_DB: moica_db
+      POSTGRES_USER: ${MOICA_DB_USUARIO:?define MOICA_DB_USUARIO en .env}
+      POSTGRES_PASSWORD: ${MOICA_DB_CLAVE:?define MOICA_DB_CLAVE en .env}
+      POSTGRES_DB: ${MOICA_DB_NOMBRE:?define MOICA_DB_NOMBRE en .env}
     ports:
-      - "5432:5432"
+      - "${MOICA_DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      # Permite que otros servicios esperen a que la base acepte conexiones.
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     restart: unless-stopped
 
-  # PgAdmin para gestionar la BD visualmente (opcional pero muy útil)
+  # pgAdmin para inspeccionar la base de datos desde el navegador
   pgadmin:
-    image: dpage/pgadmin4
+    # Etiqueta fijada a la version mayor para que el entorno sea reproducible.
+    image: dpage/pgadmin4:9
     container_name: moica_pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@moica.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${MOICA_PGADMIN_EMAIL:?define MOICA_PGADMIN_EMAIL en .env}
+      PGADMIN_DEFAULT_PASSWORD: ${MOICA_PGADMIN_CLAVE:?define MOICA_PGADMIN_CLAVE en .env}
+      # Evita el asistente de contrasena maestra en un entorno local.
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     ports:
-      - "5050:80"
+      - "${MOICA_PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
   postgres_data:
+  pgadmin_data:

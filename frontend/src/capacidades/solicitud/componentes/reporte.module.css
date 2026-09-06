@@ -1,0 +1,99 @@
+/*
+ * Reporte de una solicitud y resumen del caso propio, dentro de su detalle.
+ *
+ * Reutiliza las tokens de `src/estilos/global.css`; no hay ningún color literal
+ * ni paleta paralela. La sección exterior, los títulos, los campos y los avisos
+ * siguen siendo los compartidos (`secciones.module.css` y
+ * `formulario.module.css`), igual que en el chat y en la calificación, para que
+ * se lea como una parte más de la pantalla.
+ *
+ * Mobile-first: la hoja base describe el teléfono y las media queries amplían a
+ * tableta y escritorio.
+ */
+
+.invitacion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--gap-sm);
+}
+
+.area {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.pie {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.contador {
+  font-size: var(--font-size-xs);
+  color: var(--color-neutral-600);
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+}
+
+.resumen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+/*
+ * El expediente es una lista de definiciones y no una tabla: son pares de
+ * etiqueta y valor, y así el lector de pantalla los anuncia emparejados sin
+ * necesidad de encabezados de fila y columna que aquí no existen.
+ */
+.expediente {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--gap-xs);
+  margin: 0;
+  padding: var(--gap-sm);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-50);
+}
+
+.termino {
+  margin: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-neutral-600);
+}
+
+.definicion {
+  margin: 0 0 var(--gap-xs);
+  color: var(--color-neutral-900);
+}
+
+/* La descripción llega tal como se escribió, con sus saltos de línea. */
+.textoLargo {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 48rem) {
+  .pie {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .expediente {
+    grid-template-columns: minmax(8rem, auto) 1fr;
+    column-gap: var(--gap-md);
+    align-items: baseline;
+  }
+
+  .definicion {
+    margin-bottom: 0;
+  }
+}

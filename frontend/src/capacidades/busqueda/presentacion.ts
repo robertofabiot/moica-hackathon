@@ -1,0 +1,130 @@
+/**
+ * Cómo se lee un precio, una reputación o un tipo de prestador en las pantallas
+ * públicas.
+ *
+ * «A convenir» es solo presentación: la API sigue enviando `precioReferencia: null`.
+ */
+
+import type { ReputacionPorRol } from './tipos';
+
+export function precioVisible(precioReferencia: number | null): string {
+  return precioReferencia === null ? 'A convenir' : `C$ ${precioReferencia.toFixed(2)}`;
+}
+
+/**
+ * Precio compacto de la tarjeta de exploración: «A convenir» o «Desde C$300».
+ *
+ * El detalle público sigue usando {@link precioVisible}; aquí el número va sin
+ * decimales para leerse de un vistazo.
+ */
+export function precioEnTarjeta(precioReferencia: number | null): {
+  prefijo: string | null;
+  valor: string;
+} {
+  if (precioReferencia === null) {
+    return { prefijo: null, valor: 'A convenir' };
+  }
+  return { prefijo: 'Desde', valor: `C$${Math.round(precioReferencia)}` };
+}
+
+/**
+ * Cómo se lee una reputación real.
+ *
+ * El backend envía `promedio: null` cuando la persona todavía no recibió
+ * calificaciones. Ese caso NO se presenta como `0.0`: una cuenta sin actividad
+ * no tiene una nota pésima, no tiene nota. Calificar es opcional y no hacerlo no
+ * penaliza a nadie.
+ */
+export const SIN_CALIFICACIONES = 'Sin calificaciones';
+
+/** «1 calificación» frente a «2 calificaciones». */
+export function conteoDeCalificaciones(cantidad: number): string {
+  return cantidad === 1 ? '1 calificación' : `${cantidad} calificaciones`;
+}
+
+/** La nota con un decimal, o `null` si todavía no hay ninguna calificación. */
+export function notaVisible(promedio: number | null): string | null {
+  return promedio === null ? null : promedio.toFixed(1);
+}
+
+/**
+ * Frase completa para lectores de pantalla, para no depender de las estrellas.
+ *
+ * Es el texto que va en `aria-label`: quien no ve el icono debe recibir la misma
+ * información que quien sí lo ve.
+ */
+export function etiquetaDeReputacion(reputacion: ReputacionPorRol): string {
+  const nota = notaVisible(reputacion.promedio);
+  if (nota === null) {
+    return `${SIN_CALIFICACIONES} todavía`;
+  }
+  return `Calificación ${nota} de 5, ${conteoDeCalificaciones(reputacion.cantidad)}`;
+}
+
+export function nombreDelTipoPrestador(tipo: 'INDEPENDIENTE' | 'EMPRENDIMIENTO' | 'PYME'): string {
+  switch (tipo) {
+    case 'INDEPENDIENTE':
+      return 'Independiente';
+    case 'EMPRENDIMIENTO':
+      return 'Emprendimiento';
+    case 'PYME':
+      return 'PyME';
+  }
+}
+
+export function nombreDeDisponibilidad(disponibilidad: 'DISPONIBLE' | 'NO_DISPONIBLE'): string {
+  return disponibilidad === 'DISPONIBLE' ? 'Disponible para contratar' : 'No disponible ahora';
+}
+
+/** Iniciales de un nombre público para el avatar de respaldo. */
+export function inicialesDeNombre(nombre: string): string {
+  const partes = nombre
+    .trim()
+    .split(/\s+/)
+    .filter((parte) => parte.length > 0);
+  if (partes.length === 0) {
+    return '';
+  }
+  if (partes.length === 1) {
+    const unica = partes[0] ?? '';
+    return unica.slice(0, Math.min(2, unica.length)).toUpperCase();
+  }
+  const primera = partes[0]?.[0] ?? '';
+  const ultima = partes[partes.length - 1]?.[0] ?? '';
+  return `${primera}${ultima}`.toUpperCase();
+}
+
+/**
+ * Oficio que se lee bajo el nombre: la subcategoría más reciente, o el tipo de
+ * prestador si todavía no publicó servicios.
+ */
+export function profesionVisible(
+  servicios: Array<{ nombreSubcategoria: string }>,
+  tipoPrestador: 'INDEPENDIENTE' | 'EMPRENDIMIENTO' | 'PYME'
+): string {
+  const primera = servicios[0]?.nombreSubcategoria;
+  if (primera !== undefined && primera !== '') {
+    return primera;
+  }
+  return nombreDelTipoPrestador(tipoPrestador);
+}
+
+/**
+ * Porcentaje de calificaciones de 4 o 5 estrellas. `null` cuando todavía no hay
+ * ninguna: no se presenta como 0 %.
+ */
+export function porcentajeDeSatisfaccion(reputacion: ReputacionPorRol): number | null {
+  if (reputacion.cantidad === 0) {
+    return null;
+  }
+  const favorables = reputacion.desglose
+    .filter((tramo) => tramo.estrellas >= 4)
+    .reduce((total, tramo) => total + tramo.cantidad, 0);
+  return Math.round((favorables / reputacion.cantidad) * 100);
+}
+
+/** Precio de una fila de servicios: «A convenir» o «Desde C$600». */
+export function precioEnFila(precioReferencia: number | null): string {
+  const precio = precioEnTarjeta(precioReferencia);
+  return precio.prefijo === null ? precio.valor : `${precio.prefijo} ${precio.valor}`;
+}

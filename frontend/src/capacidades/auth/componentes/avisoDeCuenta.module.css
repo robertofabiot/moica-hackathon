@@ -1,0 +1,51 @@
+/*
+ * El aviso de una cuenta restringida o suspendida.
+ *
+ * Acompaña a la persona por toda la aplicación, así que se sitúa arriba del todo y se lee antes que
+ * cualquier pantalla. Usa el acento de advertencia y no el de error: la cuenta no está rota, está
+ * limitada, y el aviso existe para explicarlo y ofrecer salida.
+ *
+ * Mobile-first, como el resto: el ancho lo limita `max-width` y los cortes solo amplían.
+ */
+
+.aviso {
+  width: 100%;
+  padding: var(--gap-md);
+  border-bottom: var(--border-width-xs) solid var(--color-primary-200);
+  background-color: var(--color-primary-50);
+  color: var(--color-neutral-900);
+}
+
+.titulo {
+  max-width: 72rem;
+  margin: 0 auto;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.5;
+}
+
+.detalle {
+  max-width: 72rem;
+  margin: var(--gap-xs) auto 0;
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.canal {
+  color: var(--color-primary-700);
+  font-weight: var(--font-weight-medium);
+  /* El correo puede no caber en un teléfono y no debe desbordar la pantalla. */
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 48rem) {
+  .aviso {
+    padding: var(--gap-md) var(--gap-lg);
+  }
+
+  .titulo,
+  .detalle {
+    font-size: var(--font-size-base);
+  }
+}

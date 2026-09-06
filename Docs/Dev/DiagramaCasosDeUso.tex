@@ -61,6 +61,10 @@
 \node[usecase] (UC_Exp) at (7, 24) {Explorar perfiles\\y servicios};
 \node[usecase] (UC_Con) at (7, 21.5) {Consultar portafolio\\y reputación};
 
+% --- Columna de la cuenta (acceso y credenciales) ---
+\node[usecase] (UC_CamCla) at (13, 24) {Cambiar contraseña};
+\node[usecase] (UC_Cerrar) at (13, 21.5) {Cerrar sesión};
+
 \node[usecase] (UC_Cha) at (7, 18.5) {Conversar por chat};
 \node[usecase] (UC_ConEx) at (7, 16) {Acceder a\\contactos externos};
 \node[usecase] (UC_Log) at (7, 13.5) {Registrarse /\\Iniciar Sesión};
@@ -113,6 +117,12 @@
 \draw[assoc] (C) -- (UC_Can);
 \draw[assoc] (C) -- (UC_CalP);
 \draw[assoc] (C) -- (UC_Rep);
+% Cuenta: ruta ortogonal por el hueco que queda entre «Explorar perfiles» y
+% «Consultar portafolio», para no atravesar ningún caso de uso.
+\coordinate (Cuenta1) at (3.2, 22.75);
+\coordinate (Cuenta2) at (10, 22.75);
+\draw[assoc, rounded corners=10pt] (C) -- (3.2, 11) -- (Cuenta1) -- (Cuenta2) -- (10, 24) -- (UC_CamCla.west);
+\draw[assoc, rounded corners=10pt] (Cuenta2) -- (10, 21.5) -- (UC_Cerrar.west);
 
 % Prestador
 \draw[assoc] (P) -- (UC_GP);
@@ -162,11 +172,6 @@
 \coordinate (V1) at ($(UC_Comp.east) + (1.1, 0)$);
 \coordinate (V2) at (V1 |- UC_CalP.east);
 \draw[extend, rounded corners] (UC_Comp.east) -- (V1) -- node[pos=0.8, fill=gray!3, font=\scriptsize\sffamily, text=purple!70!black, inner sep=2pt] {$\ll$\textsf{extends}$\gg$} (V2) -- (UC_CalP.east);
-
-% Carril 2: UC_Conf2FA extends UC_2FA
-\coordinate (V3) at ($(UC_Conf2FA.east) + (2.3, 0)$);
-\coordinate (V4) at (V3 |- UC_2FA.west);
-\draw[extend, rounded corners] (UC_Conf2FA.east) -- (V3) -- node[pos=0.5, fill=gray!3, font=\scriptsize\sffamily, text=purple!70!black, inner sep=2pt] {$\ll$\textsf{extends}$\gg$} (V4) -- (UC_2FA.west);
 
 % Carril 3: UC_AR includes UC_ConEx
 \coordinate (V5) at ($(UC_AR.east) + (3.5, 0)$);

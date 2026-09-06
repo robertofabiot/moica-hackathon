@@ -1,0 +1,49 @@
+# =========================================================================
+# POLITICA DE FINALES DE LINEA
+# =========================================================================
+# El indice de Git guarda siempre LF. En el disco, cada persona recibe el
+# final de linea que su herramienta necesita. Esto evita que un archivo
+# aparezca completo como modificado solo por trabajar desde Windows.
+* text=auto eol=lf
+
+# Scripts que Windows ejecuta directamente y exigen CRLF.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Scripts de shell y wrapper de Maven: siempre LF, incluso en Windows.
+*.sh text eol=lf
+mvnw text eol=lf
+
+# =========================================================================
+# ARCHIVOS BINARIOS
+# =========================================================================
+# Git nunca debe normalizarlos ni intentar mostrar un diff de texto.
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.xlsx binary
+*.xls binary
+*.docx binary
+*.pptx binary
+*.zip binary
+*.jar binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+
+# =========================================================================
+# ARCHIVOS DE TEXTO CON TRATAMIENTO EXPLICITO
+# =========================================================================
+*.svg text eol=lf
+*.mmd text eol=lf
+*.tex text eol=lf
+
+# El lockfile se genera solo: GitHub lo muestra plegado, pero su diff sigue
+# disponible porque un cambio de dependencia si debe poder revisarse.
+package-lock.json linguist-generated=true

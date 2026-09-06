@@ -1,0 +1,3 @@
+El texto vinculante de la licencia de Moica está en LICENSE en la raíz
+del repositorio (../LICENSE). Este archivo existe para que npm encuentre
+la declaración del paquete; no sustituye ni reliquencia ese texto.

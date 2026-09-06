@@ -1,0 +1,106 @@
+/*
+ * Campo de texto del sistema de diseño. El borde de error usa la token
+ * semántica; el resto, neutros y Helvetica Neue.
+ */
+
+.envoltorio {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+  width: 100%;
+}
+
+.fila {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+  width: 100%;
+}
+
+.icono {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--color-neutral-400);
+}
+
+.icono svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.entrada {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding: var(--gap-sm);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  color: var(--color-neutral-900);
+  font-family: var(--font-family-secondary);
+  /* 16px evita que el navegador de un teléfono acerque la pantalla al enfocar. */
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-regular);
+}
+
+.entrada:hover {
+  border-color: var(--color-neutral-600);
+}
+
+.fusionada {
+  border: none;
+  border-radius: 0;
+  background-color: transparent;
+  padding-block: var(--gap-sm);
+  padding-inline: 0;
+}
+
+.fusionada:hover {
+  border: none;
+}
+
+.entradaConError {
+  border-color: var(--color-error-500);
+}
+
+/* Deja espacio a la derecha para el botón de mostrar/ocultar contraseña. */
+.entradaConToggle {
+  padding-right: 2.75rem;
+}
+
+.toggleDeContrasena {
+  position: absolute;
+  right: 0.125rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  padding: 0.25rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-neutral-600);
+  cursor: pointer;
+}
+
+.toggleDeContrasena:hover {
+  color: var(--color-neutral-600);
+}
+
+.toggleDeContrasena svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.error {
+  margin: 0;
+  color: var(--color-error-500);
+  font-family: var(--font-family-secondary);
+  font-size: var(--font-size-sm);
+}

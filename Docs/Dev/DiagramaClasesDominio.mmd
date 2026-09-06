@@ -22,6 +22,8 @@ classDiagram
         +OffsetDateTime fechaFinEstadoCuenta
         +registrarse()
         +iniciarSesion() Sesion
+        +cerrarSesion(Sesion)
+        +cambiarClave(String actual, String nueva)
         +crearPerfilPrestador() PerfilPrestador
         +solicitarServicio(ServicioPublicado, Detalles) SolicitudServicio
     }
@@ -41,8 +43,11 @@ classDiagram
     class SegundoFactorUsuario {
         +String secretoTotp
         +EstadoSegundoFactor estado
-        +activar()
-        +desactivar()
+        +OffsetDateTime fechaActivacion
+        +OffsetDateTime fechaUltimaVerificacion
+        +iniciarActivacion() ClaveDeConfiguracion
+        +activar(String codigo)
+        +desactivar(String clave, String codigo)
         +verificar(String codigo) boolean
     }
 
@@ -54,6 +59,7 @@ classDiagram
         +MotivoRevocacionSesion motivoRevocacion
         +revocar(MotivoRevocacionSesion)
         +estaVigente() boolean
+        +estaPendienteDeSegundoFactor() boolean
         +verificarSegundoFactor()
     }
 

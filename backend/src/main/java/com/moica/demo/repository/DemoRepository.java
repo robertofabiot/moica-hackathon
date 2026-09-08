@@ -3,15 +3,15 @@ package com.moica.demo.repository;
 import com.moica.demo.DatosDeDemostracion.Prestador;
 import com.moica.demo.DatosDeDemostracion.Servicio;
 import java.util.List;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.stereotype.Repository;
 
 /** SQL exclusivo del bootstrap de demo; no modifica esquema ni repositorios del dominio. */
 @Repository
 public class DemoRepository {
-  private final JdbcTemplate jdbc;
+  private final JdbcOperations jdbc;
 
-  public DemoRepository(JdbcTemplate jdbc) {
+  public DemoRepository(JdbcOperations jdbc) {
     this.jdbc = jdbc;
   }
 

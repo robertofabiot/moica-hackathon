@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 /** Proyección controlada para demo, nunca un sustituto del flujo de verificación real. */
 @Service
 public class DemoService {
+  private final SecureRandom aleatorio = new SecureRandom();
   private final DemoRepository repositorio;
   private final PasswordEncoder codificador;
   private final PropiedadesDeDemo propiedades;
@@ -169,7 +170,7 @@ public class DemoService {
 
   private String hashAleatorio() {
     byte[] bytes = new byte[32];
-    new SecureRandom().nextBytes(bytes);
+    aleatorio.nextBytes(bytes);
     return codificador.encode(Base64.getUrlEncoder().withoutPadding().encodeToString(bytes));
   }
 

@@ -10,10 +10,11 @@ public record PropiedadesDeDemo(boolean enabled, Map<String, List<String>> image
     imagenes =
         imagenes == null
             ? Map.of()
-            : imagenes.entrySet().stream()
-                .collect(
-                    java.util.stream.Collectors.toUnmodifiableMap(
-                        Map.Entry::getKey, entrada -> List.copyOf(entrada.getValue())));
+            : Map.copyOf(
+                imagenes.entrySet().stream()
+                    .collect(
+                        java.util.stream.Collectors.toUnmodifiableMap(
+                            Map.Entry::getKey, entrada -> List.copyOf(entrada.getValue()))));
   }
 
   public List<String> clavesDe(String servicio) {

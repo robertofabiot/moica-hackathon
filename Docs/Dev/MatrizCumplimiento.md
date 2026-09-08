@@ -1973,3 +1973,24 @@ archivos**, `build` y `npm audit` con 0 vulnerabilidades; los **ocho recorridos
 E2E en verde** en 53 s; y `node scripts/smoke-produccion.mjs` con sus tres bloques
 en PASS. En CI, los seis checks de `b829137` terminaron en verde, incluido el
 trabajo E2E nuevo.
+
+## Seeder explícito de datos de demostración
+
+Rama `feature/seed-datos-demostracion`, basada en `origin/develop` actualizado
+(`84e4028`). Complemento de contenido público para la demo, sin ampliar el dominio
+ni modificar V21, V31 o V90. Procedimiento e inventario en
+[DatosDemostracion.md](DatosDemostracion.md).
+
+| Comprobación | Implementación / evidencia |
+|---|---|
+| Activación explícita, false por omisión | `BootstrapDeDemo`, `PropiedadesDeDemo`; pruebas del bootstrap con propiedad ausente, false, true y mapeos vacíos |
+| Seis prestadores y nueve subcategorías | `DatosDeDemostracion`: usuarios ACTIVA, perfiles DISPONIBLE, cuatro básicos y dos profesionales, nueve servicios ACTIVO, tres precios nulos |
+| Persistencia aislada e idempotente | `DemoService` transaccional y `DemoRepository`; claves naturales reservadas, bloqueo PostgreSQL para arranques simultáneos; sin migraciones, IDs fijos, borrados ni contraseñas conocidas |
+| Integración PostgreSQL | `DemoIT` y `ArranqueDeDemoIT`: creación, repetición, relaciones, visibilidad, filtros, recuperación parcial, preservación ajena, catálogo con IDs nuevos, rollback y concurrencia; ejecutadas por el job backend del PR con Testcontainers |
+| Imágenes R2 | Listado autorizado de seis objetos públicos e inspección visual; dos fotos reutilizadas en computadoras solo para la base comprobada; ocho subcategorías pendientes de material pertinente. No hubo subidas ni borrados |
+| Frontend sin cambios | Validación local: format:check, lint, typecheck, 405 pruebas en 45 archivos y build en verde; aviso existente de bundle mayor de 500 kB |
+| Entorno y despliegue | `docker compose --env-file .env.example config -q` en verde. Docker local estaba detenido; la validación integral PostgreSQL, E2E y smoke queda en los jobs del CI del PR, cuyo resultado es la evidencia definitiva |
+
+No se ejecutó el seeder en Railway durante esta implementación. La activación
+productiva posterior conserva la red privada y se documenta como
+`true → desplegar → verificar → false → redeploy`.

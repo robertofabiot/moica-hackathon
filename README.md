@@ -417,6 +417,20 @@ curl -X POST http://localhost:8080/api/solicitudes \
 
 ## Producción
 
+La carga pública ficticia se activa una sola vez con
+`MOICA_SEED_DEMO_ENABLED=true` en el backend y se vuelve a `false` después del
+despliegue. Está desactivada por omisión; crea/sincroniza seis prestadores y nueve
+servicios sin migraciones nuevas, credenciales conocidas ni duplicados.
+Las variables opcionales `MOICA_SEED_DEMO_IMAGENES_PLOMERIA`,
+`MOICA_SEED_DEMO_IMAGENES_ELECTRICIDAD`, `MOICA_SEED_DEMO_IMAGENES_CARPINTERIA`,
+`MOICA_SEED_DEMO_IMAGENES_MAQUILLAJE`, `MOICA_SEED_DEMO_IMAGENES_BARBERIA`,
+`MOICA_SEED_DEMO_IMAGENES_UNAS`, `MOICA_SEED_DEMO_IMAGENES_COMPUTADORAS`,
+`MOICA_SEED_DEMO_IMAGENES_DISENO` y `MOICA_SEED_DEMO_IMAGENES_SOPORTE` aceptan hasta
+tres object keys públicos existentes, separados por comas. El
+[procedimiento de datos de demostración](Docs/Dev/DatosDemostracion.md) detalla
+Railway, las dos imágenes recuperadas, el mapeo pendiente y las garantías.
+
+
 * **Proveedor de despliegue:** **Railway** (Proyecto `victorious-embrace`, entorno `production`).
 * **Arquitectura Docker:** Contenedor Nginx Alpine (sirviendo la PWA y actuando como *Reverse Proxy* de mismo origen) + Contenedor Spring Boot 4 (Java 21 JRE).
 * **PostgreSQL remoto:** Instancia administrada PostgreSQL 18 en red privada interna sin puertos expuestos públicamente.

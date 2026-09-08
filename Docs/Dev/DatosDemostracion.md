@@ -172,6 +172,9 @@ repetición con IDs/hashes/fechas iguales, recuperación parcial, filtros y cons
 pública, relaciones e imágenes, nueve subcategorías, BCrypt, preservación de datos
 ajenos, catálogo con IDs distintos, validación de claves, rollback y concurrencia.
 Sus object keys sintéticos son fixtures y nunca se consultan en R2.
+`ArranqueDeDemoIT` verifica además el bootstrap real de Spring y realiza GET
+anónimos a `/api/servicios`, sus filtros y detalles, y `/api/prestadores/{id}`:
+los nueve servicios y seis perfiles responden públicamente sin datos privados.
 `BootstrapDeDemoTest` comprueba activación por propiedad, valor ausente/false y
 restricción del mapeo recuperado al bucket comprobado.
 

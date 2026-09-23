@@ -163,6 +163,14 @@ version de PostgreSQL realmente provisionada y validar Flyway contra ella.
 
 ## Migraciones y salud
 
+Los usuarios, perfiles y servicios ficticios se cargan con el
+[bootstrap explícito de datos de demostración](DatosDemostracion.md), mediante
+`MOICA_SEED_DEMO_ENABLED=true` y posterior redeploy con `false`. V90 conserva
+únicamente la taxonomía: esta carga no introduce migraciones, accesos públicos a
+PostgreSQL ni endpoints administrativos. La guía enlazada documenta los mapeos
+R2, el resumen saneado de logs y la comprobación de permanencia e idempotencia.
+
+
 Flyway es el unico creador del esquema: `ddl-auto=validate`, sin `create` ni
 edicion de migraciones publicadas. La base limpia aplica 15 migraciones:
 V10, V11, V20–V23, V30, V31, V40–V42, V50–V52 y V90. La ultima version es V90,

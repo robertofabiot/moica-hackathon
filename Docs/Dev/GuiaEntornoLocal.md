@@ -190,6 +190,16 @@ docker compose down
 
 ## Backend
 
+Para poblar la exploración con contenido ficticio, definir temporalmente
+`MOICA_SEED_DEMO_ENABLED=true` en el entorno del backend o en `.env` y reiniciarlo.
+La propiedad es `false` por omisión. Al terminar, volver a `false`: los datos
+permanecen. Es independiente de los fixtures de `frontend/e2e/support.ts`.
+El catálogo, los mapeos opcionales `MOICA_SEED_DEMO_IMAGENES_*` y los límites se
+describen en [DatosDemostracion.md](DatosDemostracion.md). No hace falta R2 para
+crear perfiles y servicios; los objetos públicos conocidos se reutilizan solo
+cuando la base pública coincide con la comprobada.
+
+
 ```bash
 cd backend
 ./mvnw spring-boot:run

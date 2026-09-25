@@ -137,7 +137,9 @@ export default function CatalogoDeMedidas() {
           <FormularioDeMedida
             medida={null}
             enCurso={creacion.isPending}
-            alGuardar={(datos, codigo) => creacion.mutate({ ...datos, codigo: codigo ?? '' })}
+            alGuardar={(datos, codigo, alGuardarse) =>
+              creacion.mutate({ ...datos, codigo: codigo ?? '' }, { onSuccess: alGuardarse })
+            }
             alCancelar={null}
           />
         </section>
@@ -231,7 +233,8 @@ function FormularioDeMedida({
 }: {
   medida: MedidaAdministrativa | null;
   enCurso: boolean;
-  alGuardar: (datos: DatosDeMedida, codigo?: string) => void;
+  /** `alGuardarse` vacía el formulario nuevo: solo se llama si el servidor aceptó la medida. */
+  alGuardar: (datos: DatosDeMedida, codigo: string | undefined, alGuardarse: () => void) => void;
   alCancelar: (() => void) | null;
 }) {
   const esNueva = medida === null;
@@ -262,15 +265,15 @@ function FormularioDeMedida({
             estadoCuentaResultante: estado === '' ? null : (estado as EstadoDeCuenta),
             requiereFechaFin: temporal,
           },
-          esNueva ? codigo.trim().toUpperCase() : undefined
+          esNueva ? codigo.trim().toUpperCase() : undefined,
+          () => {
+            setCodigo('');
+            setNombre('');
+            setDescripcion('');
+            setSeveridad('1');
+            setEstado('');
+          }
         );
-        if (esNueva) {
-          setCodigo('');
-          setNombre('');
-          setDescripcion('');
-          setSeveridad('1');
-          setEstado('');
-        }
       }}
     >
       {esNueva && (

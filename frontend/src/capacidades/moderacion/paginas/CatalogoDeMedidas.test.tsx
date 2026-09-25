@@ -157,6 +157,8 @@ describe('catálogo de medidas administrativas', () => {
       estadoCuentaResultante: null,
       requiereFechaFin: false,
     });
+    // Aceptada la medida, el formulario queda listo para la siguiente.
+    await waitFor(() => expect(screen.getByLabelText('Código')).toHaveValue(''));
   });
 
   it('no envía nada mientras falten el código o el nombre', async () => {
@@ -195,6 +197,33 @@ describe('catálogo de medidas administrativas', () => {
     expect(
       await screen.findByText('Ya existe una medida con ese código o ese nombre.')
     ).toBeInTheDocument();
+    expect(screen.getByLabelText('Código')).toHaveValue('RESTRICCION_TEMPORAL');
+    expect(screen.getByLabelText('Nombre')).toHaveValue('Otra cosa');
+  });
+
+  it('dice qué campo rechazó el servidor y conserva lo escrito', async () => {
+    api.responder(RUTA_MEDIDAS, { estado: 200, cuerpo: [] });
+    api.responder(RUTA_CREAR, {
+      estado: 400,
+      cuerpo: cuerpoDeError(400, 'VALIDACION', 'Revisa los datos enviados.', [
+        { campo: 'codigo', mensaje: 'El código solo admite mayúsculas, dígitos y guion bajo.' },
+      ]),
+    });
+
+    renderizarConProveedores(<CatalogoDeMedidas />);
+    await screen.findByText(/Todavía no hay ninguna medida/);
+
+    await userEvent.type(screen.getByLabelText('Código'), 'RESTRICCION 7');
+    await userEvent.type(screen.getByLabelText('Nombre'), 'Restricción siete');
+    await userEvent.type(screen.getByLabelText('Descripción'), 'Una descripción larga');
+    await userEvent.click(screen.getByRole('button', { name: 'Añadir la medida' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Revisa los datos enviados. El código solo admite mayúsculas, dígitos y guion bajo.'
+    );
+    expect(screen.getByLabelText('Código')).toHaveValue('RESTRICCION 7');
+    expect(screen.getByLabelText('Nombre')).toHaveValue('Restricción siete');
+    expect(screen.getByLabelText('Descripción')).toHaveValue('Una descripción larga');
   });
 
   it('edita una medida sin ofrecer cambiar su código', async () => {

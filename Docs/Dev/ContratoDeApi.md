@@ -178,8 +178,9 @@ El rol no se solicita ni se concede desde la API: no hay registro publico de adm
 endpoint de promocion. Lo asigna el arranque a partir de `MOICA_ADMIN_CORREO`, sobre una cuenta
 ordinaria ya registrada (ver [la guia de entorno local](GuiaEntornoLocal.md#rol-administrativo)).
 
-La primera funcion del area es la cola de verificaciones documentales, descrita
-mas abajo. La moderacion de casos llega con su propio incremento.
+La primera funcion del area es la cola de verificaciones documentales; la
+revision de casos de moderacion, el catalogo de medidas y las apelaciones se
+describen en sus secciones propias mas abajo.
 
 ## Cuando es 401 y cuando es 403
 
@@ -454,8 +455,8 @@ estado incorrectos responden 409 `TRANSICION_NO_PERMITIDA`. Una cuenta
 restringida que intenta enviar, aceptar, rechazar o completar responde 403
 `CUENTA_RESTRINGIDA` y no escribe historial.
 
-Aceptar no revela correos ni contactos: solo deja el estado listo para el
-incremento del chat.
+Aceptar no revela correos ni contactos en este cuerpo: habilita el hilo y la
+revelacion de contactos, que viven en su propia superficie autorizada.
 
 ### Lectura
 
@@ -707,7 +708,8 @@ definicion 11.3, en el MVP cada medida la elige una persona administradora.
 Lo que ve el reportante es **su** expediente y solo el suyo. La bandeja
 administrativa, la asignacion de responsable, los cambios de estado y las
 resoluciones son otra superficie, la de P10A, descrita mas abajo. El catalogo de
-medidas y su aplicacion siguen siendo P10B y todavia no existen.
+medidas, su aplicacion y las apelaciones se describen en «Medidas
+administrativas» y «Apelaciones de un caso».
 
 ### Cuando se puede reportar
 

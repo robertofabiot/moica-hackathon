@@ -2,6 +2,7 @@ package com.moica.usuario.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.util.Locale;
 
@@ -16,11 +17,20 @@ import java.util.Locale;
  * escriba « Persona@Moica.NI » debe quedar registrado igual que quien escriba «persona@moica.ni», y
  * un correo con espacios exteriores no debe rechazarse por «formato inválido».
  *
+ * <p>Un correo del dominio de nivel superior {@code .invalid} se rechaza: la RFC 2606 lo reserva
+ * para direcciones que nunca reciben correo, así que ninguna persona lo usa. Los datos de
+ * demostración viven ahí ({@code demo.moica.invalid}) precisamente por eso, y el cargador
+ * identifica sus cuentas por ese correo: si el registro público lo aceptara, cualquiera podría
+ * crear antes una cuenta con ese correo y el cargador la adoptaría como propia, verificada.
+ *
  * <p>Los mensajes genéricos salen de {@code ValidationMessages.properties}.
  */
 public record SolicitudDeRegistro(
     @NotBlank @Size(max = 120) String nombreCompleto,
-    @NotBlank @Email @Size(max = 254) String correoElectronico,
+    @NotBlank @Email @Size(max = 254) @Pattern(
+            regexp = "^(?!.*\\.invalid$).*$",
+            message = "Escribe un correo electrónico válido.")
+        String correoElectronico,
     @NotBlank @ClaveSegura String clave) {
 
   public SolicitudDeRegistro {

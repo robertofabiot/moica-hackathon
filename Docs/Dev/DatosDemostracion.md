@@ -148,13 +148,19 @@ seeder no altera la política de borrado ni crea copias para evitarlo.
    con objetos ya verificados públicamente. No copiar credenciales al frontend.
 3. Aplicar los cambios y desplegar/reiniciar el backend. Esperar healthcheck sano.
    No habilitar dominio del backend, TCP Proxy de PostgreSQL ni endpoints temporales.
-4. En **Deployments → despliegue activo → Logs**, localizar únicamente
-   `Demo sincronizada: Resumen[...]`. En una base sin demo y con el bucket comprobado,
-   el resumen esperado es `usuariosCreados=6`, `perfilesCreados=6`,
-   `serviciosCreados=9`, `imagenesCreadas=2`, los cuatro contadores de existentes en
-   cero y `serviciosSinMapeo=8`. Con datos previos se reparten entre creados y
-   existentes. El mensaje se emite después del commit; nunca contiene correos,
-   hashes, credenciales, claves privadas ni firmas.
+4. En **Deployments → despliegue activo → Logs**, localizar únicamente los
+   mensajes `Demo sincronizada: Resumen[...]`. Cada réplica del backend ejecuta el
+   bootstrap y registra su propio resumen, así que con N réplicas aparecen N
+   mensajes; el bloqueo las serializa y solo la primera encuentra la base vacía.
+   En una base sin demo y con el bucket comprobado, la suma de creados de todos
+   los resúmenes debe ser `usuariosCreados=6`, `perfilesCreados=6`,
+   `serviciosCreados=9` e `imagenesCreadas=2`, con `serviciosSinMapeo=8` en cada
+   uno. Con una sola réplica, ese resumen trae los cuatro contadores de existentes
+   en cero. Con varias, uno muestra esos creados y los demás los mismos totales
+   como existentes (`6`, `6`, `9`, `2`) y los creados en cero: no es un fallo.
+   Con datos previos se reparten entre creados y existentes. Cada mensaje se
+   emite después del commit; nunca contiene correos, hashes, credenciales,
+   claves privadas ni firmas.
 5. Sin iniciar sesión, abrir `/explorar` en el dominio público del frontend.
    Comprobar las tres categorías, las nueve subcategorías y los municipios.
    Abrir plomería, computadoras y un servicio «A convenir». Abrir los perfiles de
@@ -162,9 +168,9 @@ seeder no altera la política de borrado ni crea copias para evitarlo.
    Comprobar las dos imágenes de computadoras y anotar los IDs públicos de algunos
    servicios; la instalación puede tener además publicaciones ajenas a la demo.
 6. En **backend → Variables**, volver a `MOICA_SEED_DEMO_ENABLED=false`.
-7. Aplicar el cambio y hacer redeploy del backend. Confirmar salud, ausencia de un
-   nuevo mensaje de sincronización y permanencia de los mismos servicios e IDs en
-   `/explorar`. Apagar el bootstrap no elimina datos.
+7. Aplicar el cambio y hacer redeploy del backend. Confirmar salud, que ninguna
+   réplica emite un nuevo mensaje de sincronización y que siguen los mismos
+   servicios e IDs en `/explorar`. Apagar el bootstrap no elimina datos.
 
 Para completar imágenes después: añadir los mapeos, repetir temporalmente
 `true → deploy → verificar → false → redeploy`. La segunda ejecución conserva las

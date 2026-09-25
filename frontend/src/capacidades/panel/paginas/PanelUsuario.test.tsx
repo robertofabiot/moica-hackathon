@@ -1,4 +1,5 @@
 import { screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import App from '../../../App';
@@ -253,5 +254,34 @@ describe('Panel de usuario', () => {
         name: 'Publica tu primer servicio para recibir clientes',
       })
     ).toHaveAttribute('href', '/prestador/servicios/nuevo');
+  });
+
+  it('avisa fuera del menú cuando el cierre de sesión falla', async () => {
+    const persona = userEvent.setup();
+    api.responder('GET /api/prestador/perfil', { estado: 200, cuerpo: perfilDeEjemplo() });
+    api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/prestadores/1', {
+      estado: 200,
+      cuerpo: perfilPublicoDeEjemplo(reputacionVaciaDeEjemplo()),
+    });
+    api.responder('DELETE /api/auth/sesion', {
+      estado: 500,
+      cuerpo: cuerpoDeError(
+        500,
+        'ERROR_INTERNO',
+        'Algo falló en Moica. Inténtalo de nuevo en unos minutos.'
+      ),
+    });
+
+    abrirComo();
+
+    await persona.click(await screen.findByRole('button', { name: 'Cuenta de Erving Miranda' }));
+    await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Algo falló en Moica. Inténtalo de nuevo en unos minutos.'
+    );
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: '¡Hola, Erving! 👋' })).toBeVisible();
   });
 });

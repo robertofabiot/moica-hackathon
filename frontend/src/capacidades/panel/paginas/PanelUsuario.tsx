@@ -4,7 +4,12 @@ import { Link, Navigate } from 'react-router';
 import logoHorizontal from '../../../assets/logos/moica-horizontal.png';
 import logoIcono from '../../../assets/logos/moica-icono.svg';
 import { RUTA_ADMIN } from '../../admin';
-import { RUTA_SEGURIDAD, useCierreSesion, useSesionActual } from '../../auth';
+import {
+  RUTA_SEGURIDAD,
+  mensajeDeCierreFallido,
+  useCierreSesion,
+  useSesionActual,
+} from '../../auth';
 import { RUTA_EXPLORAR } from '../../busqueda';
 import { usePrestadorPublico } from '../../busqueda/hooks/useBusquedaPublica';
 import { RUTA_PRESTADOR } from '../../prestador';
@@ -291,6 +296,7 @@ function MenuUsuarioAvatar({
 }) {
   const [abierto, setAbierto] = useState(false);
   const cierre = useCierreSesion();
+  const avisoDeCierre = mensajeDeCierreFallido(cierre.error);
   const contenedorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -401,6 +407,11 @@ function MenuUsuarioAvatar({
           </li>
         </ul>
       ) : null}
+      {avisoDeCierre !== null && (
+        <p className={estilos.avisoDeCierre} role="alert">
+          {avisoDeCierre}
+        </p>
+      )}
     </div>
   );
 }

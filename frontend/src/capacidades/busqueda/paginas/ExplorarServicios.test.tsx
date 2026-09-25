@@ -11,6 +11,7 @@ import {
   instalarApiFalsa,
   reputacionVaciaDeEjemplo,
   servicioPublicoDeEjemplo,
+  sesionDeEjemplo,
   type ApiFalsa,
 } from '../../../pruebas/apiFalsa';
 import { renderizarConProveedores } from '../../../pruebas/utilidades';
@@ -215,5 +216,30 @@ describe('Explorar servicios', () => {
     await screen.findByRole('heading', { name: 'Reparación de fugas' });
     expect(screen.queryByText('4.8')).not.toBeInTheDocument();
     expect(screen.queryByText('(102)')).not.toBeInTheDocument();
+  });
+
+  it('avisa fuera del menú cuando el cierre de sesión falla', async () => {
+    const persona = userEvent.setup();
+    api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesionDeEjemplo() });
+    api.responder('GET /api/servicios', { estado: 200, cuerpo: [] });
+    api.responder('DELETE /api/auth/sesion', {
+      estado: 403,
+      cuerpo: cuerpoDeError(
+        403,
+        'ACCESO_DENEGADO',
+        'No se pudo validar la petición. Recarga la página e inténtalo otra vez.'
+      ),
+    });
+
+    renderizarConProveedores(<App />, '/explorar');
+
+    await persona.click(await screen.findByRole('button', { name: 'Cuenta de Erving Miranda' }));
+    await persona.click(screen.getByRole('button', { name: 'Cerrar sesión' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'No se pudo validar la petición. Recarga la página e inténtalo otra vez.'
+    );
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Cuenta de Erving Miranda' })).toBeVisible();
   });
 });

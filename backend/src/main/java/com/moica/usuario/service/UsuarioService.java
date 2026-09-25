@@ -96,11 +96,6 @@ public class UsuarioService {
   }
 
   /**
-   * Recupera una cuenta por su identificador.
-   *
-   * @throws ErrorDeAplicacion si la cuenta no existe
-   */
-  /**
    * Una cuenta operativa puede aparecer en el descubrimiento público.
    *
    * <p>Hoy solo {@link EstadoCuenta#ACTIVA} lo es: una cuenta restringida no acepta contrataciones
@@ -114,6 +109,11 @@ public class UsuarioService {
         .orElse(false);
   }
 
+  /**
+   * Recupera una cuenta por su identificador.
+   *
+   * @throws ErrorDeAplicacion si la cuenta no existe
+   */
   @Transactional(readOnly = true)
   public DatosDeUsuario obtener(Long idUsuario) {
     return repositorio

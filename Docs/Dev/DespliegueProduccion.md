@@ -469,3 +469,36 @@ variables sin valores, y plan/credito/recursos. Adjuntarlas al #40, nunca a Git.
 P11-A permanece pendiente de acreditar el plan; P11-B/C y la fila historica 6
 no se modifican.
 
+### Restablecimiento del entorno — 24 de septiembre de 2026
+
+Estado encontrado: los tres servicios estaban `Offline` desde el 14 de septiembre,
+cuando sus despliegues quedaron `REMOVED`; el registro de Railway no dice por que.
+Los despliegues del 23 de septiembre (merge del PR #47 en `develop`) fallaron en
+un segundo, sin build ni logs. Su diagnostico en Railway nombra la causa: el plan
+Hobby solo despliega en una region, y `backend` y `frontend` tenian dos (`iad` y
+`us-west2`, una replica en cada una). Ademas, los dos servicios seguian `develop`.
+
+Cambios aplicados con autorizacion del propietario, primero preparados y revisados
+y despues confirmados:
+
+| Cambio | Antes | Despues |
+|---|---|---|
+| Rama de `backend` y `frontend` | `develop` | `main` |
+| Regiones de `backend` y `frontend` | `iad` + `us-west2` | solo `us-west2`, 1 replica |
+| PostgreSQL | sin despliegue activo | redespliegue del ultimo en `us-west2` |
+
+PostgreSQL arranco sobre su volumen existente: el log dice que el directorio ya
+contenia una base, omite la inicializacion y registra el apagado limpio del 14 de
+septiembre. No se recreo la base ni el volumen, y no se tocaron variables.
+`backend` y `frontend` desplegaron `875bfaf` (merge del PR #45, CI verde) y
+quedaron en `SUCCESS`.
+
+Comprobado despues sobre <https://frontend-production-90df.up.railway.app>, sin
+credenciales: `/healthz` 200, `/actuator/health` 200 con `{"status":"UP"}`,
+`/actuator` y `/actuator/env` 404, `/explorar` 200 con `index.html`,
+`/api/servicios` 200 JSON con `no-store`, cookie `XSRF-TOKEN` con `Secure` y
+`SameSite=Lax`, y `POST /api/auth/sesion` sin CSRF → 403.
+
+Queda pendiente **Wait for CI**: se preparo en los dos servicios, pero la API de
+Railway descarta ese campo (el cambio preparado quedo vacio y se desecho). Es la
+primera accion de [Entrega continua](#entrega-continua).

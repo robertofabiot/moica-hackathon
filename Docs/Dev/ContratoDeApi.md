@@ -80,11 +80,28 @@ Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy
 | `GET /api/solicitudes/{id}/reputacion-del-cliente` | Reputacion como cliente de quien contrato | Sesion plena; **solo el prestador** participante |
 | `GET /api/solicitudes/{id}/caso-moderacion` | A quien puede reportar la sesion y que caso abrio, si abrio uno | Sesion plena; solo los dos participantes |
 | `POST /api/solicitudes/{id}/caso-moderacion` | Abre el caso de moderacion sobre la contraparte | Sesion plena, tambien con cuenta `RESTRINGIDA_TEMPORAL`; solo los dos participantes y solo si la solicitud llego a `ACEPTADA` |
+| `GET /api/admin/administradores` | Administradores disponibles para asignar un caso | Rol administrativo con segundo factor verificado |
+| `GET /api/admin/casos` | Bandeja de casos, con filtros `estado` y `mios` | Rol administrativo con segundo factor verificado |
+| `GET /api/admin/casos/{id}` | Expediente completo de un caso | Rol administrativo con segundo factor verificado |
+| `GET /api/admin/casos/{id}/mensajes` | Hilo de la solicitud reportada, solo desde el caso | Rol administrativo con segundo factor verificado |
+| `POST /api/admin/casos/{id}/asignacion` | Asigna o reasigna el responsable del caso | Rol administrativo con segundo factor verificado |
+| `POST /api/admin/casos/{id}/revision` | Inicia la revision de un caso `ABIERTO` o `REABIERTO` | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/cierre` | Cierra el caso con resultado y resolucion | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/medida` | Aplica una medida desde un caso `CERRADO` y `PROCEDENTE` | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/medida/revocacion` | Revoca la medida que sostiene el caso | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/apelacion` | Registra una apelacion recibida por el canal externo | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/apelacion/resolucion` | Acepta o rechaza la apelacion pendiente | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/reapertura` | Reabre un caso cerrado con la apelacion aceptada | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `GET /api/admin/medidas` | Catalogo de medidas, incluidas las deshabilitadas | Rol administrativo con segundo factor verificado |
+| `POST /api/admin/medidas` | Anade una medida al catalogo | Rol administrativo con segundo factor verificado |
+| `PUT /api/admin/medidas/{id}` | Edita una medida; el codigo no cambia | Rol administrativo con segundo factor verificado |
+| `PUT /api/admin/medidas/{id}/habilitacion` | Deshabilita o vuelve a habilitar una medida | Rol administrativo con segundo factor verificado |
 | `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
 
 **Sesion plena** es la que no esta pendiente del segundo factor y pertenece a una cuenta que no esta
-suspendida. Es tambien lo que exige por omision cualquier ruta que no aparezca en esta tabla: la
-cadena de autorizacion cierra todo lo que no se declara.
+suspendida. Es tambien lo que exige por omision cualquier ruta no declarada fuera de `/api/admin/**`:
+la cadena de autorizacion cierra todo lo que no se declara. Todo `/api/admin/**` exige rol
+administrativo y segundo factor verificado en esa sesion.
 
 ## Como se autentica una peticion
 

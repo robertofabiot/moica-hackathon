@@ -4,8 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.moica.NavegadorDePrueba;
 import java.net.http.HttpResponse;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -209,6 +213,25 @@ class MedidasDeCasoIT extends EscenarioDeMedidas {
 
     // El JWT del navegador sigue sin expirar y aun así ya no sirve.
     assertThat(navegador.get(RUTA_SESION).statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+  }
+
+  @Test
+  @DisplayName("El aviso de suspensión da la fecha de fin en hora de Managua, no en UTC")
+  void elAvisoDeSuspensionUsaLaHoraDeManagua() {
+    long idCaso = casoProcedenteDe(admin, CORREO_ADMIN);
+    // Las 03:30 UTC son las 21:30 del día anterior en Managua.
+    OffsetDateTime finEnUtc =
+        LocalDate.now(ZoneOffset.UTC).plusDays(7).atTime(3, 30).atOffset(ZoneOffset.UTC);
+    assertThat(aplicarMedida(admin, idCaso, medidaDeSuspension(), finEnUtc).statusCode())
+        .isEqualTo(HttpStatus.OK.value());
+
+    String mensaje = json(iniciarSesion(abrirNavegador(), CORREO, CLAVE)).get("mensaje").asText();
+
+    DateTimeFormatter legible =
+        DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es"));
+    assertThat(mensaje)
+        .contains("hasta el " + finEnUtc.minusHours(6).format(legible) + ".")
+        .doesNotContain("hasta el " + finEnUtc.format(legible) + ".");
   }
 
   @Test

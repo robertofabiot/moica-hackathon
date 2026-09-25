@@ -40,6 +40,10 @@ import org.testcontainers.containers.PostgreSQLContainer;
       // Clave AES de pruebas para cifrar los secretos TOTP. Tampoco es la de
       // ningún entorno real: llega por MOICA_TOTP_CLAVE_CIFRADO y no se versiona.
       "MOICA_TOTP_CLAVE_CIFRADO=" + PruebaDeIntegracionConPostgres.CLAVE_DE_CIFRADO_TOTP,
+      // Un .env local con la carga de demostración encendida no debe sembrar la
+      // base compartida de la suite. Las pruebas del cargador lo encienden con
+      // su propio @TestPropertySource.
+      "MOICA_SEED_DEMO_ENABLED=false",
       // El detalle de salud está cerrado en producción; aquí se abre para poder
       // afirmar que el componente de base de datos es el que responde.
       "management.endpoint.health.show-details=always",

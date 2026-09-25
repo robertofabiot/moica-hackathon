@@ -164,13 +164,20 @@ class DemoIT extends PruebaDeIntegracionConPostgres {
       var detalle = descubrimiento.detallar(s.idServicioPublicado());
       assertThat(detalle.imagenes()).hasSize(2);
       assertThat(detalle.admiteContratacion()).isTrue();
+      // La base de la suite es compartida: otras clases dejan servicios reales
+      // en las mismas subcategorías y municipios. Lo que se afirma es que los
+      // filtros aíslan este servicio entre los de la demostración.
       assertThat(
-              descubrimiento.buscar(
-                  null,
-                  detalle.idCategoriaServicio(),
-                  detalle.idSubcategoriaServicio(),
-                  detalle.prestador().municipioPrincipal().idMunicipio()))
-          .hasSize(1);
+              descubrimiento
+                  .buscar(
+                      null,
+                      detalle.idCategoriaServicio(),
+                      detalle.idSubcategoriaServicio(),
+                      detalle.prestador().municipioPrincipal().idMunicipio())
+                  .stream()
+                  .filter(r -> r.descripcion().contains("ficticio para demostración"))
+                  .map(r -> r.idServicioPublicado()))
+          .containsExactly(s.idServicioPublicado());
       assertThat(descubrimiento.perfilPublico(detalle.prestador().idPrestador()).servicios())
           .isNotEmpty();
     }

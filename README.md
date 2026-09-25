@@ -189,6 +189,7 @@ moica-hackathon/
 │       │   ├── catalogo/          # Taxonomía de oficios y división territorial (Managua)
 │       │   ├── chat/              # Mensajería interna e historial por solicitud
 │       │   ├── comun/             # Filtros CSRF, seguridad y manejo uniforme de errores
+│       │   ├── demo/              # Seeder explícito de datos ficticios (MOICA_SEED_DEMO_ENABLED)
 │       │   ├── moderacion/        # Casos de disputa, medidas disciplinarias e historial SCD2
 │       │   ├── portafolio/        # Galería de trabajos anteriores del prestador
 │       │   ├── prestador/         # Perfil profesional, cobertura y disponibilidad
@@ -227,6 +228,9 @@ La configuración sigue el estándar de *12-Factor App*. Copie la plantilla base
 | `MOICA_DB_CLAVE` | Contraseña de PostgreSQL | Sí | `clave_local_de_desarrollo` |
 | `MOICA_DB_HOST` | Host de conexión para el backend | Sí | `localhost` |
 | `MOICA_DB_PORT` | Puerto de PostgreSQL (cambiar a `5433` si `5432` está en uso) | Sí | `5432` |
+| `MOICA_PGADMIN_EMAIL` | Correo de acceso a pgAdmin (lo exige `docker compose`) | Sí | `dev@moica.local` |
+| `MOICA_PGADMIN_CLAVE` | Contraseña de acceso a pgAdmin (lo exige `docker compose`) | Sí | `clave_local_de_pgadmin` |
+| `MOICA_PGADMIN_PORT` | Puerto local de pgAdmin | No | `5050` |
 | `MOICA_BACKEND_PORT` | Puerto HTTP del servidor Spring Boot | No | `8080` |
 | `MOICA_JWT_SECRETO` | Clave criptográfica para firma HMAC-SHA256 (mínimo 32 bytes) | Sí | `secreto_local_de_desarrollo_cambialo_en_produccion` |
 | `MOICA_SESION_DURACION`| Duración de la sesión en formato ISO-8601 | No | `P7D` |
@@ -237,10 +241,12 @@ La configuración sigue el estándar de *12-Factor App*. Copie la plantilla base
 | `MOICA_R2_SECRET_ACCESS_KEY`| Secret Access Key para bucket público | Cond.* | `secret_key_publica` |
 | `MOICA_R2_BUCKET_PUBLICO` | Nombre del bucket público de imágenes | Cond.* | `moica-publico-dev` |
 | `MOICA_R2_URL_PUBLICA_BASE` | Dominio HTTPS público del bucket de imágenes | Cond.* | `https://pub-ejemplo.r2.dev` |
+| `MOICA_IMAGEN_TAMANO_MAXIMO` | Tamaño máximo por imagen pública | No | `5MB` |
 | `MOICA_R2_PRIVADO_ID_CUENTA`| Account ID de Cloudflare para bucket privado | Cond.* | `id_cuenta_ejemplo` |
 | `MOICA_R2_PRIVADO_ACCESS_KEY_ID` | Access Key ID exclusivo del bucket privado | Cond.* | `access_key_privada` |
 | `MOICA_R2_PRIVADO_SECRET_ACCESS_KEY`| Secret Access Key del bucket privado | Cond.* | `secret_key_privada` |
 | `MOICA_R2_BUCKET_PRIVADO` | Nombre del bucket privado de expedientes | Cond.* | `moica-privado-dev` |
+| `MOICA_DOCUMENTO_TAMANO_MAXIMO` | Tamaño máximo por documento del expediente (solo puede bajarse de 5 MB) | No | `5MB` |
 | `MOICA_DOCUMENTO_URL_TEMPORAL_DURACION` | Expiración de enlaces prefirmados (máx 1 hora) | No | `PT5M` |
 | `MOICA_ADMIN_CORREO` | Correo de la cuenta a promover como administrador al arrancar | No | `admin@moica.ni` |
 | `MOICA_EXPIRACION_MEDIDAS_PERIODO` | Chequeo de vencimiento de sanciones temporales | No | `PT1M` |

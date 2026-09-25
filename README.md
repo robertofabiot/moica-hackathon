@@ -314,60 +314,106 @@ Documentación completa de endpoints, esquemas JSON y códigos de error:
 
 ### Ejemplos reales de interacción
 
+Los cuerpos reproducen los records que devuelve el backend, con sus nombres de campo exactos; los valores son ilustrativos.
+
 #### 1. Iniciar sesión (`POST /api/auth/sesion`)
-Genera la sesión registrada en PostgreSQL y entrega la cookie `moica_sesion` junto al token CSRF:
+Toda operación mutable exige el token CSRF, también el inicio de sesión. Primero se obtiene la cookie `XSRF-TOKEN` con una petición pública y después se devuelve en la cabecera `X-XSRF-TOKEN`:
 
 ```bash
+curl -s -c cookies.txt -o /dev/null http://localhost:8080/api/catalogos/categorias
+TOKEN=$(grep XSRF-TOKEN cookies.txt | awk '{print $7}')
+
 curl -i -X POST http://localhost:8080/api/auth/sesion \
+  -b cookies.txt -c cookies.txt \
   -H "Content-Type: application/json" \
-  -c cookies.txt \
+  -H "X-XSRF-TOKEN: $TOKEN" \
   -d '{"correoElectronico":"valeria@ejemplo.com","clave":"ContraseñaSegura123!"}'
 ```
 
+La respuesta crea la sesión registrada en PostgreSQL y entrega su JWT en la cookie `moica_sesion`:
+
 ```http
-HTTP/1.1 201 Created
-Set-Cookie: moica_sesion=eyJhbGciOiJIUzI1NiJ9...; Path=/; HttpOnly; SameSite=Lax
-Set-Cookie: XSRF-TOKEN=4a7c8b12-9e3f-42a1...; Path=/; SameSite=Lax
+HTTP/1.1 201
+Set-Cookie: moica_sesion=eyJhbGciOiJIUzI1NiJ9...; Path=/; Max-Age=604800; Expires=Sat, 12 Sep 2026 20:30:00 GMT; HttpOnly; SameSite=Lax
 Content-Type: application/json
 
 {
   "usuario": {
-    "id": 14,
+    "idUsuario": 14,
     "nombreCompleto": "Valeria Martínez",
     "correoElectronico": "valeria@ejemplo.com",
-    "rol": "USUARIO",
-    "estadoCuenta": "ACTIVA"
+    "estadoCuenta": "ACTIVA",
+    "fechaFinEstadoCuenta": null,
+    "esAdministrador": false,
+    "fechaRegistro": "2026-08-20T09:15:42.118-06:00"
   },
   "sesion": {
-    "fechaInicio": "2026-09-05T14:30:00-06:00",
-    "fechaExpiracion": "2026-09-12T14:30:00-06:00",
+    "fechaInicio": "2026-09-05T14:30:00.512-06:00",
+    "fechaExpiracion": "2026-09-12T14:30:00.512-06:00",
+    "segundoFactorRequerido": false,
+    "segundoFactorVerificado": false,
     "pendienteDeSegundoFactor": false
-  }
+  },
+  "avisoDeCuenta": null
 }
 ```
 
 #### 2. Búsqueda pública de servicios (`GET /api/servicios`)
 ```bash
-curl -X GET "http://localhost:8080/api/servicios?texto=refrigeracion&idMunicipio=1"
+curl -X GET "http://localhost:8080/api/servicios?texto=laptops&idMunicipio=3"
 ```
 
 ```json
 [
   {
-    "id": 3,
-    "nombre": "Mantenimiento preventivo de aire acondicionado",
-    "precioReferencia": 850.00,
-    "nombreSubcategoria": "Refrigeración y Climatización",
-    "nombrePrestador": "Servicios García",
-    "nivelVerificacion": "PROFESIONAL_VERIFICADO",
-    "admiteContratacion": true,
-    "reputacionPrestador": { "promedio": 4.85, "cantidadCalificaciones": 26 }
+    "idServicioPublicado": 7,
+    "nombre": "Diagnóstico y mantenimiento de laptops",
+    "descripcion": "Revisión de fallas, limpieza interna y mantenimiento preventivo desde C$800. Repuestos y recuperación de información requieren presupuesto previo. Servicio ficticio para demostración.",
+    "precioReferencia": 800.00,
+    "idCategoriaServicio": 3,
+    "nombreCategoria": "Tecnología y servicios digitales",
+    "idSubcategoriaServicio": 7,
+    "nombreSubcategoria": "Reparación de computadoras",
+    "imagenPrincipal": {
+      "idImagenServicioPublicado": 1,
+      "urlImagen": "https://pub-ejemplo.r2.dev/servicios/1ae971b72b92480d9a84822b145786cb.jpg",
+      "textoAlternativo": "Aplicación de pasta térmica sobre un procesador de laptop durante su mantenimiento",
+      "ordenVisualizacion": 0,
+      "fechaCreacion": "2026-09-05T10:02:11.904-06:00"
+    },
+    "prestador": {
+      "idPrestador": 5,
+      "nombrePublico": "Punto Técnico Managua",
+      "urlImagenPerfil": null,
+      "descripcion": "Mantenimiento de computadoras y asistencia para pequeñas oficinas. Presentamos un diagnóstico antes de cotizar repuestos. Perfil ficticio de demostración.",
+      "tipoPrestador": "PYME",
+      "municipioPrincipal": { "idMunicipio": 3, "nombreMunicipio": "Managua", "nombreDepartamento": "Managua" },
+      "descripcionCobertura": "Managua urbana y Ticuantepe. Diagnóstico a domicilio o recepción de equipos con cita.",
+      "disponibilidad": "DISPONIBLE",
+      "nivelVerificacion": "PROFESIONAL_VERIFICADO",
+      "significadoVerificacion": "Además de la identidad, una persona administradora revisó documentación profesional, técnica o comercial que respalda la actividad declarada.",
+      "advertenciaDeInsignia": "Una insignia confirma que Moica revisó la documentación presentada en un momento determinado. No garantiza la calidad futura del trabajo ni sustituye el criterio de quien contrata."
+    },
+    "reputacionPrestador": {
+      "rol": "PRESTADOR",
+      "promedio": 4.8,
+      "cantidad": 26,
+      "desglose": [
+        { "estrellas": 5, "cantidad": 21 },
+        { "estrellas": 4, "cantidad": 5 },
+        { "estrellas": 3, "cantidad": 0 },
+        { "estrellas": 2, "cantidad": 0 },
+        { "estrellas": 1, "cantidad": 0 }
+      ]
+    }
   }
 ]
 ```
 
+`promedio` es `null` mientras el prestador no tenga calificaciones; nunca se envía `0.0`.
+
 #### 3. Crear solicitud de servicio (`POST /api/solicitudes`)
-Operación mutable protegida por CSRF; requiere sesión activa:
+Operación mutable protegida por CSRF; requiere la sesión del paso 1 y una cuenta `ACTIVA`:
 
 ```bash
 TOKEN=$(grep XSRF-TOKEN cookies.txt | awk '{print $7}')
@@ -377,23 +423,44 @@ curl -X POST http://localhost:8080/api/solicitudes \
   -H "Content-Type: application/json" \
   -H "X-XSRF-TOKEN: $TOKEN" \
   -d '{
-    "idServicioPublicado": 3,
-    "descripcionNecesidad": "Mantenimiento de 2 unidades inverter.",
-    "idMunicipio": 1,
+    "idServicioPublicado": 7,
+    "descripcionNecesidad": "La laptop se apaga sola cuando se calienta.",
+    "idMunicipio": 3,
     "indicacionUbicacion": "Altamira, de la Vicky 2c al sur",
     "fechaPreferida": "2026-09-10"
   }'
 ```
 
+Responde `201 Created`:
+
 ```json
 {
-  "id": 42,
-  "idServicioPublicado": 3,
+  "idSolicitudServicio": 42,
+  "idServicioPublicado": 7,
+  "nombreServicio": "Diagnóstico y mantenimiento de laptops",
   "idCliente": 14,
-  "idPrestador": 7,
+  "nombreCliente": "Valeria Martínez",
+  "idPrestador": 5,
+  "nombrePublicoPrestador": "Punto Técnico Managua",
+  "idMunicipio": 3,
+  "nombreMunicipio": "Managua",
+  "nombreDepartamento": "Managua",
+  "descripcionNecesidad": "La laptop se apaga sola cuando se calienta.",
+  "indicacionUbicacion": "Altamira, de la Vicky 2c al sur",
+  "fechaPreferida": "2026-09-10",
   "estadoActual": "PENDIENTE",
+  "fechaCreacion": "2026-09-05T15:10:22.347-06:00",
+  "fechaActualizacion": "2026-09-05T15:10:22.347-06:00",
   "historial": [
-    { "id": 89, "estadoNuevo": "PENDIENTE", "actor": "CLIENTE", "instante": "2026-09-05T15:10:22-06:00" }
+    {
+      "idCambioEstadoSolicitud": 89,
+      "estadoAnterior": null,
+      "estadoNuevo": "PENDIENTE",
+      "idActor": 14,
+      "nombreActor": "Valeria Martínez",
+      "motivo": null,
+      "fechaCambio": "2026-09-05T15:10:22.347-06:00"
+    }
   ]
 }
 ```

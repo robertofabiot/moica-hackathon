@@ -11,7 +11,7 @@
 [![Java 21](https://img.shields.io/badge/Java-21%20LTS-ED8B00?logo=openjdk&logoColor=white)](backend/pom.xml)
 [![Spring Boot 4.0](https://img.shields.io/badge/Spring%20Boot-4.0.7-6DB33F?logo=springboot&logoColor=white)](backend/pom.xml)
 [![React 19](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=black)](frontend/package.json)
-[![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](frontend/package.json)
+[![TypeScript 6.0](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](frontend/package.json)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%20%7C%2018-4169E1?logo=postgresql&logoColor=white)](docker-compose.yml)
 [![Cloudflare R2](https://img.shields.io/badge/Cloudflare-R2%20(S3--API)-F38020?logo=cloudflare&logoColor=white)](Docs/Dev/Almacenamiento.md)
 [![Docker](https://img.shields.io/badge/Docker-Multi--stage-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
@@ -155,7 +155,7 @@ flowchart LR
 | | Spring Security · JJWT 0.13.0 · BCrypt | Cadena de filtros de seguridad, tokens HMAC-SHA256 y hashing de contraseñas. |
 | | java-otp 0.4.0 · commons-codec | Implementación nativa de RFC 6238 (TOTP) sobre `javax.crypto` y codificación Base32. |
 | | AWS SDK for Java v2 2.46.7 (`s3`, `apache5-client`) | Integración con Cloudflare R2 y generación de URLs firmadas (`S3Presigner`). |
-| **Frontend** | React 19.2 · TypeScript 5.8 · Vite 8.2 | SPA reactiva con tipado estático riguroso y empaquetado de alto rendimiento. |
+| **Frontend** | React 19.2 · TypeScript 6.0 · Vite 8.2 | SPA reactiva con tipado estático riguroso y empaquetado de alto rendimiento. |
 | | vite-plugin-pwa 1.3 (Workbox) | Soporte de Progressive Web App instalable y precarga de activos estáticos. |
 | | React Router 8.3 · TanStack Query 5.101 | Enrutamiento del cliente y sincronización asíncrona de estado del servidor. |
 | | React Hook Form 7.85 · Zod 4.4 · qrcode.react | Manejo accesible de formularios, validación de esquemas y generación de QR para 2FA. |
@@ -163,7 +163,7 @@ flowchart LR
 | | Vitest 4.1 · Testing Library 16.3 · JSDOM 30 | Pruebas unitarias y de componentes frontend orientadas a accesibilidad. |
 | | Playwright 1.63 · @axe-core/playwright 4.13 | Recorridos extremo a extremo y auditoría de accesibilidad contra la aplicación real. |
 | **Calidad** | SpotBugs 4.10 · Spotless 3.9 · ESLint 10 · Prettier | Análisis estático de defectos, Google Java Format y estandarización de estilo. |
-| **Infra** | Docker · Docker Compose · Nginx 1.27 Alpine | Contenedores de desarrollo y producción; reverse proxy de mismo origen. |
+| **Infra** | Docker · Docker Compose · Nginx 1.28 Alpine | Contenedores de desarrollo y producción; reverse proxy de mismo origen. |
 
 ---
 

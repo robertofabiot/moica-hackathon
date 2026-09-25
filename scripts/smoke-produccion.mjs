@@ -38,6 +38,12 @@ async function waitForBackend() {
   throw new Error('Backend no alcanzo UP en 240 segundos');
 }
 const sql = query => docker('exec', '-T', 'postgres', 'psql', '-U', 'moica_dev', '-d', 'moica_db', '-tAc', query).trim();
+const cabecerasDeSeguridad = { 'x-frame-options': 'DENY', 'x-content-type-options': 'nosniff', 'referrer-policy': 'strict-origin-when-cross-origin' };
+const conCabecerasDeSeguridad = (response, path) => {
+  for (const [nombre, valor] of Object.entries(cabecerasDeSeguridad)) {
+    check(response.headers.get(nombre) === valor, `${path} sin ${nombre}: ${valor}`);
+  }
+};
 
 try {
   docker('up', '-d', ...(process.argv.includes('--no-build') ? ['--no-build'] : ['--build']));
@@ -60,6 +66,7 @@ try {
   for (const path of ['/healthz', '/', '/explorar', '/iniciar-sesion', '/manifest.webmanifest', '/sw.js', '/icono-192.png', '/icono-512.png']) {
     const response = await request(path);
     check(response.status === 200, `No carga ${path}`);
+    if (path !== '/healthz') conCabecerasDeSeguridad(response, path);
     if (path.endsWith('.js')) check(response.headers.get('content-type')?.includes('javascript'), 'SW debe ser JavaScript');
   }
   const home = await (await request('/')).text();
@@ -68,6 +75,7 @@ try {
   for (const path of assetPaths) {
     const response = await request(path);
     check(response.status === 200 && response.headers.get('cache-control')?.includes('immutable'), 'Asset no cacheable/versionado');
+    conCabecerasDeSeguridad(response, path);
   }
   check(await (await request('/explorar')).text() === home, 'Falla fallback SPA');
   for (const path of ['/actuator/env', '/.env', '/assets/no-existe.js', '/no-existe.js']) {
@@ -83,6 +91,8 @@ try {
   check(search.status === 200 && search.headers.get('content-type')?.includes('json'), 'API no llega al backend');
   check(!search.headers.has('access-control-allow-origin'), 'No debe abrir CORS');
   check(search.headers.get('cache-control') === 'no-store', 'API no debe cachearse');
+  // Las de la API las pone Spring; Nginx no debe duplicarlas.
+  check(search.headers.get('x-frame-options') === 'DENY', 'API con X-Frame-Options ausente o duplicada');
   console.log('PASS Nginx, SPA directa, PWA/assets, API mismo origen, health y headers saneados');
 
   const credentials = { correoElectronico: `smoke-${randomUUID()}@example.org`, clave: `Moica!${randomUUID()}` };

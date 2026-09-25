@@ -12,6 +12,7 @@ server {
     set $backend http://${MOICA_BACKEND_UPSTREAM};
     set $moica_scheme ${MOICA_PUBLIC_SCHEME};
     set $moica_port ${MOICA_PUBLIC_PORT};
+    include /etc/nginx/security-headers.conf;
 
     location = /healthz {
         access_log off;
@@ -27,13 +28,16 @@ server {
     location ^~ /assets/ {
         try_files $uri =404;
         add_header Cache-Control "public, max-age=31536000, immutable";
+        include /etc/nginx/security-headers.conf;
     }
     location ~* \.(?:js|css|webmanifest|png|jpg|jpeg|svg|ico|woff2?)$ {
         try_files $uri =404;
         add_header Cache-Control "no-cache";
+        include /etc/nginx/security-headers.conf;
     }
     location / {
         try_files $uri $uri/ /index.html;
         add_header Cache-Control "no-cache";
+        include /etc/nginx/security-headers.conf;
     }
 }

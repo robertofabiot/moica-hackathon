@@ -10,7 +10,7 @@ const origin = `http://127.0.0.1:${process.env.MOICA_SMOKE_PORT || 18080}`;
 const docker = (...args) => execFileSync('docker', [...composeArgs, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith('MOICA_') || name === 'MOICA_SMOKE_PORT')) });
 const check = (condition, label) => { if (!condition) throw new Error(label); };
 const cookies = new Map();
-async function request(path, { method = 'GET', body, csrf = true, headers = {} } = {}) {
+async function request(path, { method = 'GET', body, rawBody, csrf = true, headers = {} } = {}) {
   const response = await fetch(origin + path, {
     method, redirect: 'manual', signal: AbortSignal.timeout(10000),
     headers: {
@@ -20,6 +20,7 @@ async function request(path, { method = 'GET', body, csrf = true, headers = {} }
       ...headers,
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
+    ...(rawBody ? { body: rawBody } : {}),
   });
   for (const cookie of response.headers.getSetCookie()) {
     const [name, ...value] = cookie.split(';')[0].split('=');
@@ -106,6 +107,22 @@ try {
   const savedSession = cookies.get('moica_sesion');
   check((await request('/api/auth/sesion')).status === 200, 'Sesion no valida');
   check((await request('/api/auth/sesion', { method: 'DELETE', csrf: false })).status === 403, 'Logout debe exigir CSRF');
+  // Algo por encima del tope multipart de Spring y por debajo del freno de
+  // Nginx: el rechazo debe ser el JSON del contrato, no la pagina HTML del proxy.
+  const frontera = 'moica-smoke';
+  const multipart = Buffer.concat([
+    Buffer.from(`--${frontera}
+Content-Disposition: form-data; name="archivo"; filename="grande.png"
+Content-Type: image/png
+
+`),
+    Buffer.alloc(26 * 1024 * 1024),
+    Buffer.from(`
+--${frontera}--
+`),
+  ]);
+  const grande = await request('/api/prestador/perfil/imagen', { method: 'PUT', headers: { 'Content-Type': `multipart/form-data; boundary=${frontera}` }, rawBody: multipart });
+  check(grande.status === 413 && (await grande.json()).codigo === 'CONTENIDO_DEMASIADO_GRANDE', 'El 413 multipart debe llegar como JSON del contrato');
 
   docker('restart', 'backend');
   await waitForBackend();
@@ -115,7 +132,7 @@ try {
   check((await request('/api/auth/sesion', { method: 'DELETE' })).status === 204, 'Logout falla');
   cookies.set('moica_sesion', savedSession);
   check((await request('/api/auth/sesion')).status === 401, 'JWT revocado debe rechazarse');
-  console.log('PASS registro/login, cookie HttpOnly/Secure/Lax, CSRF, persistencia tras reinicio y revocacion');
+  console.log('PASS registro/login, cookie HttpOnly/Secure/Lax, CSRF, 413 del contrato, persistencia tras reinicio y revocacion');
   console.log('NOTA: transporte local HTTP con proxy simulando terminacion HTTPS; TLS publico y R2 requieren Railway real.');
 } catch (error) {
   // No imprimir respuestas/cookies, entorno ni stdout/stderr de subprocessos.

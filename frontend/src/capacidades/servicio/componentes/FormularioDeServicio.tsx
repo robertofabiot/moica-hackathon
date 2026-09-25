@@ -68,6 +68,7 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
   const [arrastrando, setArrastrando] = useState(false);
   const [subiendoFotos, setSubiendoFotos] = useState(false);
   const [servicioCreado, setServicioCreado] = useState<ServicioPropio | null>(null);
+  const [fotosFallidas, setFotosFallidas] = useState(0);
   const entradaDeArchivoRef = useRef<HTMLInputElement>(null);
 
   const urlsPrevia = useMemo(() => fotos.map((f) => URL.createObjectURL(f)), [fotos]);
@@ -167,13 +168,16 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
         onSuccess: async (creado) => {
           if (fotos.length > 0) {
             setSubiendoFotos(true);
+            let fallidas = 0;
             for (const foto of fotos) {
               try {
                 await subirImagenDeServicio(creado.idServicioPublicado, foto, '');
               } catch {
-                // Continuar si alguna foto falla para no bloquear el flujo
+                // El servicio ya existe: una foto rechazada no lo bloquea, pero se avisa.
+                fallidas += 1;
               }
             }
+            setFotosFallidas(fallidas);
             setSubiendoFotos(false);
           }
           setServicioCreado(creado);
@@ -529,7 +533,7 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
               <IconoCheckCirculo className={propios.iconoExito} />
               <div>
                 <p className={propios.tituloExito}>
-                  {fotos.length > 0
+                  {fotos.length > 0 && fotosFallidas === 0
                     ? '¡Fotos subidas y servicio listo!'
                     : '¡Servicio listo para publicarse!'}
                 </p>
@@ -539,6 +543,14 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
                 </p>
               </div>
             </div>
+          )}
+
+          {servicioCreado !== null && fotosFallidas > 0 && (
+            <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+              {fotosFallidas === 1
+                ? 'Una foto no se pudo guardar: puedes subirla desde la edición del servicio.'
+                : `${fotosFallidas} fotos no se pudieron guardar: puedes subirlas desde la edición del servicio.`}
+            </p>
           )}
 
           <div className={propios.resumen}>

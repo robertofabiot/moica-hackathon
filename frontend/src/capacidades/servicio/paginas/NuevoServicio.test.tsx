@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from '../../../App';
 import {
   catalogoDeCategoriasDeEjemplo,
+  cuerpoDeError,
   instalarApiFalsa,
   sesionDeEjemplo,
   servicioPropioDeEjemplo,
@@ -136,6 +137,44 @@ describe('Asistente de nuevo servicio', () => {
     expect(
       screen.getByRole('switch', { name: 'Publicación de Reparación de fugas' })
     ).toBeVisible();
+  });
+
+  it('avisa de las fotos que no se guardaron en lugar de darlas por subidas', async () => {
+    const persona = userEvent.setup();
+    api.responder('POST /api/prestador/servicios', {
+      estado: 201,
+      cuerpo: servicioPropioDeEjemplo(),
+    });
+    api.responder('POST /api/prestador/servicios/10/imagenes', {
+      estado: 400,
+      cuerpo: cuerpoDeError(
+        400,
+        'VALIDACION',
+        'El contenido del archivo no corresponde con una imagen JPEG, PNG o WebP.'
+      ),
+    });
+
+    renderizarConProveedores(<App />, RUTA_NUEVO);
+
+    await completarInformacion(persona);
+    await persona.click(screen.getByRole('button', { name: 'Siguiente' }));
+    await persona.type(
+      await screen.findByLabelText('Descripción'),
+      'Reparo tuberías y fugas en el hogar.'
+    );
+    await persona.upload(
+      screen.getByLabelText(/Fotos del servicio/i),
+      new File(['no-es-imagen'], 'foto.jpg', { type: 'image/jpeg' })
+    );
+    await persona.click(screen.getByRole('button', { name: 'Siguiente' }));
+    await persona.click(await screen.findByRole('button', { name: 'Siguiente' }));
+    await persona.click(await screen.findByRole('button', { name: 'Publicar servicio' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Una foto no se pudo guardar: puedes subirla desde la edición del servicio.'
+    );
+    expect(screen.getByText('¡Servicio listo para publicarse!')).toBeVisible();
+    expect(screen.queryByText('¡Fotos subidas y servicio listo!')).not.toBeInTheDocument();
   });
 
   it('rechaza un precio inválido y acepta el vacío como A convenir', async () => {

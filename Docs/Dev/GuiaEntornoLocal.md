@@ -1,6 +1,6 @@
 # Guia de entorno local
 
-Detalle de configuracion para levantar MOICA en desarrollo. La version rapida esta en el [README](../../README.md#instalacion-rapida).
+Detalle de configuracion para levantar MOICA en desarrollo. La version rapida esta en el [README](../../README.md#ejecución-local).
 
 ## Variables de entorno
 
@@ -207,7 +207,7 @@ cd backend
 
 En Windows PowerShell se usa `.\mvnw.cmd` en lugar de `./mvnw`.
 
-La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`. Los rangos posteriores a `V23` —verificacion (`V30`), servicios y taxonomia (`V31`, `V90`) y solicitudes (`V40`)— se aplican en el mismo arranque. `spring.flyway.out-of-order=true` permite insertar una version intermedia, como `V40`, cuando `V90` ya esta aplicada en un entorno existente.
+La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`. Los rangos posteriores a `V23` —verificacion (`V30`), servicios (`V31`), solicitudes, mensajes y calificaciones (`V40`–`V42`), moderacion (`V50`–`V52`) y la taxonomia de demostracion (`V90`)— se aplican en el mismo arranque. `spring.flyway.out-of-order=true` permite insertar una version intermedia, como `V40`, cuando `V90` ya esta aplicada en un entorno existente.
 
 El arranque lo describe asi:
 
@@ -218,7 +218,16 @@ Migrating schema "public" to version "20 - crear departamento y municipio"
 Migrating schema "public" to version "21 - crear perfil prestador y contactos"
 Migrating schema "public" to version "22 - crear trabajos de portafolio"
 Migrating schema "public" to version "23 - cargar managua y sus municipios"
-Successfully applied 6 migrations to schema "public", now at version v23
+Migrating schema "public" to version "30 - crear solicitudes y documentos de verificacion"
+Migrating schema "public" to version "31 - crear categorias y servicios publicados"
+Migrating schema "public" to version "40 - crear solicitudes e historial de estados"
+Migrating schema "public" to version "41 - crear mensajes de solicitud"
+Migrating schema "public" to version "42 - crear calificaciones de usuario"
+Migrating schema "public" to version "50 - crear casos medidas e historial scd2"
+Migrating schema "public" to version "51 - proteger vigencias scd2 con exclusion temporal"
+Migrating schema "public" to version "52 - exigir una sola medida vigente por cuenta"
+Migrating schema "public" to version "90 - cargar taxonomia de demostracion"
+Successfully applied 15 migrations to schema "public", now at version v90
 ```
 
 Hibernate arranca con `ddl-auto=validate`: si el esquema y las entidades dejaran de coincidir, la aplicacion no arrancaria. El esquema lo crea Flyway y solo Flyway.

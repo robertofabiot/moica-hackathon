@@ -228,7 +228,7 @@ La configuración sigue el estándar de *12-Factor App*. Copie la plantilla base
 | `MOICA_DB_CLAVE` | Contraseña de PostgreSQL | Sí | `clave_local_de_desarrollo` |
 | `MOICA_DB_HOST` | Host de conexión para el backend | Sí | `localhost` |
 | `MOICA_DB_PORT` | Puerto de PostgreSQL (cambiar a `5433` si `5432` está en uso) | Sí | `5432` |
-| `MOICA_PGADMIN_EMAIL` | Correo de acceso a pgAdmin (lo exige `docker compose`) | Sí | `dev@moica.local` |
+| `MOICA_PGADMIN_EMAIL` | Correo de acceso a pgAdmin (lo exige `docker compose`; pgAdmin rechaza dominios reservados como `.local`) | Sí | `dev@moica.example.com` |
 | `MOICA_PGADMIN_CLAVE` | Contraseña de acceso a pgAdmin (lo exige `docker compose`) | Sí | `clave_local_de_pgadmin` |
 | `MOICA_PGADMIN_PORT` | Puerto local de pgAdmin | No | `5050` |
 | `MOICA_BACKEND_PORT` | Puerto HTTP del servidor Spring Boot | No | `8080` |

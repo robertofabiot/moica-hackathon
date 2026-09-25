@@ -286,4 +286,29 @@ describe('Portafolio', () => {
       });
     });
   });
+
+  it('explica por qué no se guardó la edición de un trabajo', async () => {
+    const persona = userEvent.setup();
+    api.responder(`GET ${RUTA_TRABAJOS}`, {
+      estado: 200,
+      cuerpo: [trabajoDeEjemplo({ idTrabajo: 5, titulo: 'Título original' })],
+    });
+    api.responder(`PUT ${RUTA_TRABAJOS}/5`, {
+      estado: 403,
+      cuerpo: cuerpoDeError(403, 'CUENTA_RESTRINGIDA', 'Tu cuenta no puede modificar su perfil.'),
+    });
+
+    renderizarConProveedores(<App />, '/prestador');
+
+    await persona.click(
+      await screen.findByRole('button', { name: 'Editar el trabajo Título original' })
+    );
+    await persona.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    expect(await screen.findByText('Tu cuenta no puede modificar su perfil.')).toHaveAttribute(
+      'role',
+      'alert'
+    );
+    expect(screen.getByRole('button', { name: 'Guardar' })).toBeVisible();
+  });
 });

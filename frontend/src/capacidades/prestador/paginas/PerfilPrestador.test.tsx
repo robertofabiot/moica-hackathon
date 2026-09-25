@@ -273,6 +273,38 @@ describe('Perfil de prestador', () => {
     });
   });
 
+  it('explica por qué no se guardó la edición de un contacto', async () => {
+    const persona = userEvent.setup();
+    conPerfil();
+    api.responder('GET /api/prestador/contactos', {
+      estado: 200,
+      cuerpo: [
+        {
+          idMedioContactoPrestador: 1,
+          contenido: 'WhatsApp 8888-8888',
+          ordenVisualizacion: 0,
+          fechaCreacion: '2026-08-25T10:00:00-06:00',
+        },
+      ],
+    });
+    api.responder('PUT /api/prestador/contactos/1', {
+      estado: 403,
+      cuerpo: cuerpoDeError(403, 'CUENTA_RESTRINGIDA', 'Tu cuenta no puede modificar su perfil.'),
+    });
+
+    renderizarConProveedores(<App />, '/prestador');
+
+    await persona.click(
+      await screen.findByRole('button', { name: 'Editar el contacto WhatsApp 8888-8888' })
+    );
+    await persona.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Tu cuenta no puede modificar su perfil.'
+    );
+    expect(screen.getByLabelText('Editar contacto')).toHaveValue('WhatsApp 8888-8888');
+  });
+
   it('explica el error cuando no se pueden cargar los contactos', async () => {
     conPerfil();
     api.responder('GET /api/prestador/contactos', {

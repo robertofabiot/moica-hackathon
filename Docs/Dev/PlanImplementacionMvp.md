@@ -507,7 +507,7 @@ Después, se abre un PR de `develop` hacia `main` con título `chore(release): p
 | Crear/editar perfil, contactos y portafolio | No | Sí | Solo propietario; cuenta `ACTIVA`; puede prepararse sin verificación. |
 | Activar servicios y aparecer en búsqueda | No | Sí | Solo propietario; cuenta `ACTIVA`, prestador disponible y al menos `VERIFICADO_BASICO`. |
 | Enviar expediente de verificación | No | Sí | Solo propietario de `PerfilPrestador`; una solicitud abierta por nivel; profesional exige básica vigente. |
-| Consultar solicitud y documentos propios | No | Sí | Solo propietario; archivos entregados mediante autorización temporal. |
+| Consultar solicitud y documentos propios | No | Sí | Solo propietario; solo metadatos. El archivo lo abre únicamente un administrador con TOTP verificado, mediante autorización temporal. |
 | Revisar verificaciones y documentos privados | No | No | Solo administrador con TOTP verificado; aprobación, rechazo o revocación manual. |
 | Enviar solicitud | No | Sí | Cuenta `ACTIVA`; servicio ajeno y activo; prestador disponible. |
 | Aceptar/rechazar/completar | No | Sí | Cuenta `ACTIVA`; solo prestador destinatario y transición válida. |

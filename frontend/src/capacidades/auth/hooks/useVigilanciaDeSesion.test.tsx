@@ -152,6 +152,31 @@ describe('vigilancia de la sesión', () => {
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
   });
 
+  it('no da por perdida una sesión abierta por equivocarse al volver al formulario', async () => {
+    const persona = userEvent.setup();
+    api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesionDeEjemplo() });
+    api.responder('POST /api/auth/sesion', {
+      estado: 401,
+      cuerpo: cuerpoDeError(
+        401,
+        'CREDENCIALES_INVALIDAS',
+        'El correo o la contraseña no son correctos.'
+      ),
+    });
+
+    const { cliente } = renderizarConProveedores(<App />, '/iniciar-sesion');
+
+    await persona.type(await screen.findByLabelText('Correo electrónico'), 'persona@moica.test');
+    await persona.type(screen.getByLabelText('Contraseña'), 'Moica2026$equivocada');
+    await persona.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'El correo o la contraseña no son correctos.'
+    );
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(cliente.getQueryData(['auth', 'sesion'])).not.toBeNull();
+  });
+
   it('olvida lo que vio la cuenta anterior cuando otra pestaña cambió de cuenta', async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true });
     api.responder('GET /api/auth/sesion', {

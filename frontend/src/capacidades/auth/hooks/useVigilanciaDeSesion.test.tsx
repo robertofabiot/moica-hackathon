@@ -6,6 +6,7 @@ import App from '../../../App';
 import {
   cuerpoDeError,
   instalarApiFalsa,
+  resumenDeSolicitudDeEjemplo,
   segundoFactorDeEjemplo,
   sesionDeEjemplo,
   type ApiFalsa,
@@ -149,5 +150,36 @@ describe('vigilancia de la sesión', () => {
       'El correo o la contraseña no son correctos.'
     );
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('olvida lo que vio la cuenta anterior cuando otra pestaña cambió de cuenta', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    api.responder('GET /api/auth/sesion', {
+      estado: 200,
+      cuerpo: sesionDeEjemplo({ idUsuario: 1 }),
+    });
+    api.responder('GET /api/solicitudes/enviadas', {
+      estado: 200,
+      cuerpo: [resumenDeSolicitudDeEjemplo({ nombreServicio: 'Servicio de la cuenta A' })],
+    });
+
+    renderizarConProveedores(<App />, '/solicitudes');
+    expect(await screen.findByText('Servicio de la cuenta A')).toBeVisible();
+
+    // En otra pestaña salió A y entró B: la cookie ya es de B, y esta pestaña
+    // se entera al recuperar el foco, sin pasar nunca por una sesión nula.
+    api.responder('GET /api/auth/sesion', {
+      estado: 200,
+      cuerpo: sesionDeEjemplo({ idUsuario: 2 }),
+    });
+    api.responder('GET /api/solicitudes/enviadas', {
+      estado: 200,
+      cuerpo: [resumenDeSolicitudDeEjemplo({ nombreServicio: 'Servicio de la cuenta B' })],
+    });
+    await vi.advanceTimersByTimeAsync(61_000);
+    window.dispatchEvent(new Event('visibilitychange'));
+
+    expect(await screen.findByText('Servicio de la cuenta B')).toBeVisible();
+    expect(screen.queryByText('Servicio de la cuenta A')).not.toBeInTheDocument();
   });
 });

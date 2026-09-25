@@ -472,13 +472,13 @@ Responde `201 Created`:
 1. **Sesiones registradas:** Cada login crea una fila en la tabla `sesion` de PostgreSQL identificada por UUID (`jti`). El estado y vigencia de la sesión residen en el servidor.
 2. **JWT en cookie `HttpOnly`:** El token firmado viaja exclusivamente en la cookie `moica_sesion` con flags `HttpOnly`, `SameSite=Lax` y `Secure` en producción. Cero almacenamiento en `localStorage` o `sessionStorage` (inmune a XSS).
 3. **Expiración determinista:** Duración configurada por defecto a 7 días (`P7D`). No se aplican extensiones silenciosas infinitas.
-4. **Revocación inmediata:** `DELETE /api/auth/sesion`, cambio de credenciales o sanción administrativa marca la sesión como revocada en base de datos al instante. Cualquier uso posterior responde `401 Unauthorized`.
+4. **Revocación inmediata:** `DELETE /api/auth/sesion`, el cambio de contraseña, la desactivación del segundo factor o una suspensión administrativa (`SUSPENDIDA_TEMPORAL` o `SUSPENDIDA_PERMANENTE`) revocan la sesión en base de datos al instante; una advertencia o una restricción la conservan. Cualquier uso posterior de una sesión revocada responde `401 NO_AUTENTICADO`.
 5. **Segundo factor TOTP (RFC 6238):** Obligatorio para rol administrativo. El secreto Base32 se guarda cifrado en reposo con **AES-GCM**. Tras el login, una cuenta con 2FA queda en sesión provisional (`pendienteDeSegundoFactor: true`) hasta validar el código.
 6. **Roles y autorización compuesta:** Rutas `/api/admin/**` exigen concurrentemente tener rol administrativo y sesión con TOTP verificado.
 7. **Propiedad estricta de recursos:** Los recursos ajenos (solicitudes, chats, expedientes) responden deliberadamente `404 RECURSO_NO_ENCONTRADO` para prevenir la divulgación de existencia de registros a terceros.
-8. **Estados de cuenta:** Cuentas `RESTRINGIDA_TEMPORAL` no pueden contratar ni aceptar trabajos; cuentas `SUSPENDIDA_*` sufren revocación inmediata de sesiones y respuesta `403 ACCESO_DENEGADO`.
+8. **Estados de cuenta:** Cuentas `RESTRINGIDA_TEMPORAL` conservan la sesión, pero no pueden contratar ni aceptar trabajos (`403 CUENTA_RESTRINGIDA`); en cuentas `SUSPENDIDA_*` las sesiones se revocan (la siguiente petición responde `401 NO_AUTENTICADO`) y un nuevo inicio de sesión responde `403 CUENTA_SUSPENDIDA` con el canal de soporte.
 9. **Protección CSRF activa:** Validación estricta de token `XSRF-TOKEN` / `X-XSRF-TOKEN` en todos los métodos HTTP mutables (`POST`, `PUT`, `DELETE`).
-10. **Documentos privados en Cloudflare R2:** Bucket privado sin acceso web público. La entrega de expedientes a administradores se efectúa exclusivamente mediante URLs firmadas temporales con expiración máxima de 5 minutos y directivas `no-store`.
+10. **Documentos privados en Cloudflare R2:** Bucket privado sin acceso web público. La entrega de expedientes a administradores se efectúa exclusivamente mediante URLs firmadas temporales (5 minutos por omisión, configurable hasta un máximo de 1 hora) y directivas `no-store`.
 
 ---
 

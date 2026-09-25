@@ -181,7 +181,9 @@ public class DescubrimientoDeServiciosService {
     if (normalizado.isEmpty()) {
       return null;
     }
-    return "%" + normalizado + "%";
+    // Lo que escribe la persona se busca tal cual: sus % y _ no son comodines.
+    String literal = normalizado.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    return "%" + literal + "%";
   }
 
   private ErrorDeAplicacion servicioNoEncontrado() {

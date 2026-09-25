@@ -45,8 +45,8 @@ public interface ServicioPublicadoRepository extends JpaRepository<ServicioPubli
             AND subcategoria.idCategoriaServicio = :idCategoria
         ))
         AND (:texto IS NULL
-          OR LOWER(servicio.nombre) LIKE :texto
-          OR LOWER(servicio.descripcion) LIKE :texto)
+          OR LOWER(servicio.nombre) LIKE :texto ESCAPE '\\'
+          OR LOWER(servicio.descripcion) LIKE :texto ESCAPE '\\')
       ORDER BY servicio.nombre ASC, servicio.idServicioPublicado ASC
       """)
   List<ServicioPublicado> buscarPublicos(

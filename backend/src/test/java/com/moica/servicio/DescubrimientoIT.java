@@ -222,6 +222,22 @@ class DescubrimientoIT extends EscenarioDeServicio {
   }
 
   @Test
+  void losComodinesDelTextoSeBuscanLiteralmente() {
+    NavegadorDePrueba admin = administradora(CORREO_ADMIN);
+    aprobarBasica(admin);
+    long garantizada = idDe(crearServicio("Pintura 100% garantizada"));
+    long destape = idDe(crearServicio("Destape urgente"));
+    assertThat(activar(garantizada).statusCode()).isEqualTo(HttpStatus.OK.value());
+    assertThat(activar(destape).statusCode()).isEqualTo(HttpStatus.OK.value());
+    NavegadorDePrueba visitante = abrirNavegador();
+
+    // Ningún nombre ni descripción lleva un guion bajo: como comodín, coincidiría con todo.
+    assertThat(json(visitante.get(RUTA_SERVICIOS_PUBLICOS + "?texto=_"))).isEmpty();
+    assertThat(nombresDe(json(visitante.get(RUTA_SERVICIOS_PUBLICOS + "?texto=100%25"))))
+        .containsExactly("Pintura 100% garantizada");
+  }
+
+  @Test
   void lasRutasPropiasSiguenExigiendoSesion() {
     HttpResponse<String> propia = abrirNavegador().get(RUTA_SERVICIOS_PROPIOS);
     HttpResponse<String> mutable =

@@ -263,8 +263,23 @@ class EnvioDeExpedienteIT extends EscenarioDeVerificacion {
     assertThat(documentos.cantidadDeObjetos())
         .as("la compensación retiró el objeto que sí llegó a subirse")
         .isZero();
-    assertThat(documentos.clavesEliminadas())
-        .containsExactlyElementsOf(documentos.clavesGuardadas());
+    // También se intenta retirar la clave cuya carga falló: desde fuera no se
+    // sabe si llegó al bucket, y borrar una clave inexistente es inocuo.
+    assertThat(documentos.clavesEliminadas()).hasSize(2).containsAll(documentos.clavesGuardadas());
+  }
+
+  @Test
+  void siSePierdeLaRespuestaDeUnaCargaTambienSeRetiraEseObjeto() {
+    documentos.perderLaRespuestaTrasGuardar();
+
+    HttpResponse<String> respuesta = enviarExpediente("BASICA", cedula());
+
+    assertThat(respuesta.statusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE.value());
+    assertThat(solicitudesGuardadas()).isZero();
+    assertThat(documentos.clavesGuardadas()).hasSize(1);
+    assertThat(documentos.cantidadDeObjetos())
+        .as("el documento de identidad que sí llegó al bucket no queda huérfano")
+        .isZero();
   }
 
   @Test

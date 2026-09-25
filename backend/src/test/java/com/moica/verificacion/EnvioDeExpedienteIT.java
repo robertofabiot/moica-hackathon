@@ -123,6 +123,7 @@ class EnvioDeExpedienteIT extends EscenarioDeVerificacion {
             List.of(new NavegadorDePrueba.CampoDeFormulario("nivelSolicitado", "BASICA")));
 
     assertThat(respuesta.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    assertThat(codigoDeError(respuesta)).isEqualTo("EXPEDIENTE_INCOMPLETO");
     assertThat(solicitudesGuardadas()).isZero();
   }
 

@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react';
 import { Navigate } from 'react-router';
 
+import { Boton } from '../../../comun/componentes/ui';
+import { ErrorDeApi } from '../api';
 import { useSesionActual } from '../hooks/useSesionActual';
 import { RUTA_VERIFICACION_SEGUNDO_FACTOR, rutaDeInicioSesion } from '../rutas';
 import estilos from '../../../comun/estilos/formulario.module.css';
@@ -21,7 +23,11 @@ export default function RutaProtegida({ children }: { children: ReactNode }) {
     return <Aviso texto="Comprobando tu sesión…" />;
   }
 
-  if (!sesion.data) {
+  if (sesion.data === undefined) {
+    return <FalloAlComprobar sesion={sesion} />;
+  }
+
+  if (sesion.data === null) {
     return desaparecio ? <Aviso texto="Cerrando tu sesión…" /> : <IrAIniciarSesion />;
   }
 
@@ -46,7 +52,11 @@ export function RutaDeVerificacion({ children }: { children: ReactNode }) {
     return <Aviso texto="Comprobando tu sesión…" />;
   }
 
-  if (!sesion.data) {
+  if (sesion.data === undefined) {
+    return <FalloAlComprobar sesion={sesion} />;
+  }
+
+  if (sesion.data === null) {
     return desaparecio ? <Aviso texto="Cerrando tu sesión…" /> : <IrAIniciarSesion />;
   }
 
@@ -95,6 +105,34 @@ function Aviso({ texto }: { texto: string }) {
       <p className={estilos.explicacion} role="status">
         {texto}
       </p>
+    </main>
+  );
+}
+
+/**
+ * La sesión no se pudo comprobar: sin red, tiempo agotado o un 5xx.
+ *
+ * No es lo mismo que no tener sesión —eso es un 401 y llega como `null`—, así que no se lleva a
+ * iniciar sesión: la cookie puede seguir vigente y volver a entrar crearía una segunda sesión.
+ */
+function FalloAlComprobar({ sesion }: { sesion: ReturnType<typeof useSesionActual> }) {
+  return (
+    <main className={estilos.pantalla}>
+      <div className={estilos.tarjeta}>
+        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+          {sesion.error instanceof ErrorDeApi
+            ? sesion.error.message
+            : 'No pudimos comprobar tu sesión.'}
+        </p>
+        <Boton
+          variante="secundario"
+          type="button"
+          disabled={sesion.isFetching}
+          onClick={() => void sesion.refetch()}
+        >
+          Reintentar
+        </Boton>
+      </div>
     </main>
   );
 }

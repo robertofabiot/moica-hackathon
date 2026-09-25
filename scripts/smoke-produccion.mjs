@@ -39,6 +39,13 @@ async function waitForBackend() {
   throw new Error('Backend no alcanzo UP en 240 segundos');
 }
 const sql = query => docker('exec', '-T', 'postgres', 'psql', '-U', 'moica_dev', '-d', 'moica_db', '-tAc', query).trim();
+// Un Ctrl+C no pasa por el finally: sin esto, los contenedores y el volumen del
+// proyecto seguirian vivos y la siguiente ejecucion chocaria por el puerto.
+for (const [senal, codigo] of [['SIGINT', 130], ['SIGTERM', 143]]) {
+  process.once(senal, () => {
+    try { docker('down', '-v', '--remove-orphans'); } finally { process.exit(codigo); }
+  });
+}
 const cabecerasDeSeguridad = { 'x-frame-options': 'DENY', 'x-content-type-options': 'nosniff', 'referrer-policy': 'strict-origin-when-cross-origin' };
 const conCabecerasDeSeguridad = (response, path) => {
   for (const [nombre, valor] of Object.entries(cabecerasDeSeguridad)) {
@@ -58,8 +65,8 @@ try {
   docker('exec', '-T', 'frontend', 'nginx', '-t');
   // Ningun X-Forwarded-* del navegador debe sobrevivir: Nginx los reescribe uno
   // a uno y vacia Forwarded. Se lee la configuracion efectiva del contenedor
-  // porque el efecto de X-Forwarded-For no se observa desde fuera; el de
-  // protocolo y host si se comprueba mas abajo con la respuesta de salud.
+  // porque el efecto de X-Forwarded-For y X-Forwarded-Host no se observa desde
+  // fuera; el de protocolo si se comprueba mas abajo con HSTS en la salud.
   const proxyHeaders = docker('exec', '-T', 'frontend', 'cat', '/etc/nginx/proxy-headers.conf');
   for (const directiva of ['Forwarded ""', 'X-Forwarded-For $remote_addr', 'X-Forwarded-Host $host', 'X-Forwarded-Proto $moica_scheme', 'X-Forwarded-Port $moica_port']) {
     check(proxyHeaders.includes(`proxy_set_header ${directiva}`), `Nginx no controla ${directiva.split(' ')[0]}`);

@@ -10,6 +10,7 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 /**
@@ -85,5 +86,29 @@ public abstract class PruebaDeIntegracionConPostgres {
 
   static {
     POSTGRES.start();
+  }
+
+  /**
+   * Espera a que alguna transacción quede detenida en un bloqueo de PostgreSQL.
+   *
+   * <p>Ordena una carrera sin sueños ni barreras: la prueba toma un bloqueo desde su propia
+   * conexión, lanza la operación y solo sigue cuando esta ya espera ese bloqueo.
+   */
+  protected static void esperarAQueAlguienEspereUnBloqueo(JdbcTemplate jdbc)
+      throws InterruptedException {
+    for (int intento = 0; intento < 300; intento++) {
+      Integer esperando =
+          jdbc.queryForObject(
+              """
+              SELECT count(*) FROM pg_stat_activity
+              WHERE wait_event_type = 'Lock' AND datname = current_database()
+              """,
+              Integer.class);
+      if (esperando != null && esperando > 0) {
+        return;
+      }
+      Thread.sleep(100);
+    }
+    throw new AssertionError("Ninguna transacción llegó a esperar el bloqueo");
   }
 }

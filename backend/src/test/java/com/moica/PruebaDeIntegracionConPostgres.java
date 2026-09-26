@@ -37,6 +37,9 @@ import org.testcontainers.containers.PostgreSQLContainer;
       // base compartida de la suite. Las pruebas del cargador lo encienden con
       // su propio @TestPropertySource.
       "MOICA_SEED_DEMO_ENABLED=false",
+      // Las pruebas invocan el barrido de expiración a mano. Programado cada
+      // minuto, podía colarse en una prueba y expirar antes una medida vencida.
+      "moica.moderacion.periodo-de-expiracion=PT24H",
       // El detalle de salud está cerrado en producción; aquí se abre para poder
       // afirmar que el componente de base de datos es el que responde.
       "management.endpoint.health.show-details=always",

@@ -89,6 +89,23 @@ describe('Asistente de nuevo servicio', () => {
     expect(api.ultima('POST /api/prestador/servicios')).toBeUndefined();
   });
 
+  it('la zona de fotos tiene una sola parada de teclado y visible', async () => {
+    const persona = userEvent.setup();
+    renderizarConProveedores(<App />, RUTA_NUEVO);
+
+    await completarInformacion(persona);
+    await persona.click(screen.getByRole('button', { name: 'Siguiente' }));
+    await persona.click(await screen.findByLabelText('Descripción'));
+    await persona.tab();
+
+    const explorar = screen.getByRole('button', { name: 'Explorar archivos' });
+    expect(explorar).toHaveFocus();
+    expect(screen.queryByRole('button', { name: /Subir fotos/ })).not.toBeInTheDocument();
+
+    await persona.tab();
+    expect(explorar.parentElement).not.toContainElement(document.activeElement as HTMLElement);
+  });
+
   it('permite adjuntar fotos en el paso de detalles y las sube al publicar', async () => {
     const persona = userEvent.setup();
     const creado = servicioPropioDeEjemplo();

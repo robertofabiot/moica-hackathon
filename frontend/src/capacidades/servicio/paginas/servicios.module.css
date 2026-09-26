@@ -603,12 +603,6 @@
   background-color: var(--color-neutral-100);
 }
 
-.zonaDeSubida:focus-visible {
-  border-color: var(--color-primary-500);
-  outline: 2px solid var(--color-primary-500);
-  outline-offset: 2px;
-}
-
 .zonaDeSubidaArrastrando {
   border-color: var(--color-primary-500);
   background-color: var(--color-primary-50);

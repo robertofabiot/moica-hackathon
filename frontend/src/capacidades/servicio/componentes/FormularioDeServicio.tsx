@@ -403,25 +403,19 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
               multiple
               accept="image/jpeg,image/png,image/webp"
               className={propios.entradaOculta}
+              tabIndex={-1}
               onChange={(evento) => {
                 agregarArchivos(evento.target.files);
                 evento.target.value = '';
               }}
             />
+            {/* La zona recibe el arrastre y el clic del ratón; el teclado usa solo «Explorar archivos». */}
             <div
               className={unirClases(
                 propios.zonaDeSubida,
                 arrastrando ? propios.zonaDeSubidaArrastrando : undefined
               )}
-              role="button"
-              tabIndex={0}
               onClick={() => entradaDeArchivoRef.current?.click()}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  entradaDeArchivoRef.current?.click();
-                }
-              }}
               onDragOver={(e) => {
                 e.preventDefault();
                 setArrastrando(true);
@@ -432,7 +426,6 @@ function AsistenteDeNuevoServicio({ alCrear }: { alCrear?: (creado: ServicioProp
                 setArrastrando(false);
                 agregarArchivos(e.dataTransfer.files);
               }}
-              aria-label="Subir fotos: Haz clic o arrastra imágenes aquí"
             >
               <IconoSubida className={propios.iconoDeZona} />
               <p className={propios.tituloDeZona}>

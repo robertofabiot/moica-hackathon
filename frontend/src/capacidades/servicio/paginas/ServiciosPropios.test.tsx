@@ -97,6 +97,23 @@ describe('Servicios propios', () => {
     expect(screen.getByRole('button', { name: 'Guardar cambios generales' })).toBeVisible();
   });
 
+  it('la zona de subida de la galería tiene una sola parada de teclado y visible', async () => {
+    const persona = userEvent.setup();
+    api.responder('GET /api/prestador/servicios/10', {
+      estado: 200,
+      cuerpo: servicioPropioDeEjemplo(),
+    });
+
+    renderizarConProveedores(<App />, '/prestador/servicios/10');
+
+    await persona.click(await screen.findByLabelText('Texto alternativo de la imagen nueva'));
+    await persona.tab();
+
+    const explorar = screen.getByRole('button', { name: 'Explorar archivos' });
+    expect(explorar).toHaveFocus();
+    expect(screen.queryByRole('button', { name: /Subir fotos/ })).not.toBeInTheDocument();
+  });
+
   it('sube una imagen con previsualización y texto alternativo', async () => {
     const persona = userEvent.setup();
     const servicio = servicioPropioDeEjemplo();

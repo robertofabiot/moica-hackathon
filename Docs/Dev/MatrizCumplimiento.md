@@ -1994,3 +1994,46 @@ ni modificar V21, V31 o V90. Procedimiento e inventario en
 No se ejecutó el seeder en Railway durante esta implementación. La activación
 productiva posterior conserva la red privada y se documenta como
 `true → desplegar → verificar → false → redeploy`.
+
+## Pasada de estabilización y auditoría — septiembre de 2026
+
+Auditoría de solo lectura sobre `develop` en `44b1fd6`, por zonas de riesgo:
+autenticación y sesiones, autorización transversal, R2 y archivos, dominio del
+marketplace, moderación, cargador de demostración, PostgreSQL y Flyway, sesión y
+caché del frontend, formularios y accesibilidad, deuda y dependencias, documentación
+y contrato de producción. Cada defecto corregido se demostró antes con una prueba o
+una lectura inequívoca. Los PR quedan abiertos para revisión cruzada: esta sección
+registra la evidencia, no su integración.
+
+| Rama y PR | Alcance | Evidencia |
+|---|---|---|
+| `feature/despliegue-continuo-main` · #48 | Cabeceras de seguridad y Nginx sin root, 413 en JSON del contrato, espera de 120 s en `/api`, Compose local solo en loopback, entrega continua documentada | `node scripts/smoke-produccion.mjs` con los tres bloques en PASS (cabeceras, 413 y persistencia incluidos); CI del PR con seis checks en verde |
+| `feature/corregir-hallazgos-backend` · #51 | Moderación: expediente e instante leídos después del bloqueo. Sesiones: verificación y cierre sin deshacer revocaciones. Cambio de contraseña que no deshace una suspensión. Bootstrap de administrador con varias réplicas. Aviso de suspensión en hora de Managua. Descubrimiento público. Compensación R2. `EXPEDIENTE_INCOMPLETO`. Registro sin dominio `.invalid` y cargador que no adopta cuentas ya usadas | `./mvnw -B -ntp verify`: 175 unitarias y 610 de integración en verde, SpotBugs 0. Las cinco pruebas nuevas de concurrencia fallan contra el código anterior. Revisión adversarial con dos lentes |
+| `feature/corregir-hallazgos-frontend` · #50 | Caché privada al cambiar de cuenta, 401 del login, error transitorio de sesión, cierre fallido visible, fallos mostrados como éxito o como datos vacíos, foco y control anidado en la subida de imágenes | `format:check`, `lint`, `typecheck`, 424 pruebas y `build` en verde; cada prueba nueva falla al retirar su arreglo |
+| `feature/alinear-documentacion` · #49 | README (ejemplos reales, seguridad, versiones y variables), contrato (moderación vigente y 16 rutas administrativas), guía local, migraciones, plan §8 y datos de demostración | Cada dato comprobado contra el código; esta misma sección |
+
+**Railway, 24 de septiembre de 2026.** Producción estaba caída desde el 14 de
+septiembre: el plan Hobby rechazaba los despliegues con dos regiones. Con autorización
+del propietario, los servicios pasaron a la rama `main`, una región y una réplica, y
+PostgreSQL se redesplegó sobre su volumen sin reinicializar la base. La verificación
+pública posterior está en
+[DespliegueProduccion.md](DespliegueProduccion.md#restablecimiento-del-entorno--24-de-septiembre-de-2026).
+
+**Pendientes que necesitan decisión del equipo.** Ninguno se implementó:
+
+- Exigir la contraseña al activar el segundo factor.
+- Límite de intentos de inicio de sesión.
+- Separación de funciones: que un administrador no resuelva su propia verificación ni un caso en el que es parte.
+- Una vía para traspasar un caso cerrado o una verificación tomada cuyo responsable ya no puede actuar.
+- Editar el estado resultante o el plazo de una medida en uso.
+- Conservar las imágenes de un servicio con un caso abierto.
+- CSP y HSTS sobre el HTML.
+- Unicidad sin distinguir mayúsculas del nombre de una medida.
+- Regla de cierre de `historial_caso`, que el diccionario atribuye a la base.
+- Anclas sin destino en el encabezado y el pie, y teléfono fijo en Seguridad de la cuenta.
+
+**Acciones manuales pendientes:**
+
+- Activar **Wait for CI** en Railway.
+- Exigir PR y checks en la regla de `main`.
+- Estado de la fila 7.

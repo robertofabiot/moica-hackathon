@@ -35,8 +35,9 @@ export default function CambioDeClave() {
         onError: (fallo) => {
           if (fallo instanceof ErrorDeApi) {
             fallo.errores.forEach((error) => {
-              if (error.campo === 'claveNueva') {
-                setError('claveNueva', { message: error.mensaje });
+              // El backend valida los dos campos; uno sin asociar ocultaría el fallo por completo.
+              if (error.campo === 'claveActual' || error.campo === 'claveNueva') {
+                setError(error.campo, { message: error.mensaje });
               }
             });
           }

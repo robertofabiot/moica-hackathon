@@ -35,6 +35,14 @@ describe('Detalle de servicio', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Cargando el servicio…');
   });
 
+  it('con un identificador que no es un número dice que no existe en vez de quedarse cargando', async () => {
+    renderizarConProveedores(<App />, '/explorar/servicios/abc');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Ese servicio no existe.');
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Volver a explorar' })).toBeVisible();
+  });
+
   it('muestra el error y permite reintentar', async () => {
     const persona = userEvent.setup();
     api.responder('GET /api/servicios/10', {

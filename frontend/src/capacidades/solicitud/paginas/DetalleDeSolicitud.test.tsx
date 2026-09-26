@@ -259,6 +259,15 @@ describe('Detalle de solicitud', () => {
     expect(await screen.findByRole('alert')).toBeVisible();
   });
 
+  it('con un identificador que no es un número dice que no existe en vez de quedarse cargando', async () => {
+    api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesionDeEjemplo() });
+
+    renderizarConProveedores(<App />, '/solicitudes/abc');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Esa solicitud no existe.');
+    expect(screen.getByRole('link', { name: 'Volver a mis solicitudes' })).toBeVisible();
+  });
+
   it('un prestador restringido no ve aceptar ni rechazar una pendiente', async () => {
     api.responder('GET /api/auth/sesion', {
       estado: 200,

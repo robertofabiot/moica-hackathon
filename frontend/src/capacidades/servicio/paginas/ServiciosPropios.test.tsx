@@ -74,6 +74,14 @@ describe('Servicios propios', () => {
     });
   });
 
+  it('con un identificador que no es un número dice que no existe en vez de quedarse cargando', async () => {
+    api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
+    renderizarConProveedores(<App />, '/prestador/servicios/x');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Ese servicio no existe.');
+    expect(screen.getByRole('link', { name: 'Volver al listado' })).toBeVisible();
+  });
+
   it('conserva la subcategoría al editar cuando el catálogo llega después', async () => {
     const servicio = servicioPropioDeEjemplo();
     api.responder('GET /api/prestador/servicios/10', { estado: 200, cuerpo: servicio });

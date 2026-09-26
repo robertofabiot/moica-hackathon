@@ -3,11 +3,17 @@ package com.moica.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.moica.NavegadorDePrueba;
+import com.moica.usuario.repository.UsuarioRepository;
+import com.moica.usuario.service.UsuarioService;
 import java.net.http.HttpResponse;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Cambio de contraseña de extremo a extremo.
@@ -18,6 +24,41 @@ import org.springframework.http.HttpStatus;
 class CambioDeClaveIT extends EscenarioDeSeguridad {
 
   private static final String CLAVE_NUEVA = "Moica2026$distinta";
+
+  @Autowired private UsuarioService usuarios;
+  @Autowired private UsuarioRepository repositorioDeUsuarios;
+  @Autowired private PlatformTransactionManager transacciones;
+
+  /**
+   * El cambio lee la cuenta, pasa dos veces por BCrypt y solo después escribe. Una suspensión
+   * confirmada en ese intervalo no puede desaparecer con esa escritura.
+   */
+  @Test
+  void cambiarLaContrasenaNoDeshaceUnaSuspensionSimultanea() {
+    Long idUsuario =
+        jdbc.queryForObject(
+            "SELECT id_usuario FROM usuario WHERE correo_electronico = ?", Long.class, CORREO);
+    TransactionTemplate suspension = new TransactionTemplate(transacciones);
+    suspension.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+    new TransactionTemplate(transacciones)
+        .executeWithoutResult(
+            cambio -> {
+              repositorioDeUsuarios.findById(idUsuario).orElseThrow();
+              suspension.executeWithoutResult(
+                  medida ->
+                      jdbc.update(
+                          "UPDATE usuario SET estado_cuenta = 'SUSPENDIDA_PERMANENTE'"
+                              + " WHERE id_usuario = ?",
+                          idUsuario));
+              usuarios.cambiarClave(idUsuario, CLAVE, CLAVE_NUEVA);
+            });
+
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT estado_cuenta FROM usuario WHERE id_usuario = ?", String.class, idUsuario))
+        .isEqualTo("SUSPENDIDA_PERMANENTE");
+  }
 
   @BeforeEach
   void iniciarSesionAntesDeCambiar() {

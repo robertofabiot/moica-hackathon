@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -277,8 +277,8 @@ describe('Panel de usuario', () => {
 
     abrirComo();
 
-    const avisos = await screen.findAllByRole('alert');
-    expect(avisos[0]).toHaveTextContent('Algo falló en Moica.');
+    const actividad = await screen.findByRole('region', { name: 'Actividad reciente' });
+    expect(await within(actividad).findByRole('alert')).toHaveTextContent('Algo falló en Moica.');
     expect(
       screen.getByText('No pudimos comprobar si tienes solicitudes pendientes.', { exact: false })
     ).toBeVisible();
@@ -293,7 +293,7 @@ describe('Panel de usuario', () => {
       estado: 200,
       cuerpo: [resumenDeSolicitudDeEjemplo({ idSolicitudServicio: 22, estadoActual: 'PENDIENTE' })],
     });
-    await persona.click(screen.getAllByRole('button', { name: 'Reintentar' })[0]);
+    await persona.click(within(actividad).getByRole('button', { name: 'Reintentar' }));
 
     expect(
       await screen.findByRole('link', { name: 'Tienes 1 solicitud pendiente de respuesta' })

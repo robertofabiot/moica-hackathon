@@ -92,6 +92,7 @@ describe('Perfil de prestador', () => {
       idMunicipioPrincipal: 8,
       descripcionCobertura: 'Distritos I y II.',
     });
+    expect(await screen.findByText('Tu perfil quedó creado.')).toBeVisible();
   });
 
   it('exige los campos obligatorios antes de llamar a la API', async () => {

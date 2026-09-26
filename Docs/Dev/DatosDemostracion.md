@@ -51,9 +51,10 @@ Coberturas y descripciones detallan sectores de Managua, citas y materiales.
   nombres identifica exclusivamente esta semilla. No renombrar estos correos. El
   registro público rechaza cualquier correo `.invalid`, así que nadie puede ocupar
   esas direcciones desde la aplicación. Una base anterior a esa regla podría
-  tenerlas: antes de la primera carga sobre una base con datos, comprobar que
-  `SELECT count(*) FROM usuario WHERE correo_electronico LIKE '%@demo.moica.invalid'`
-  devuelve `0`.
+  tenerlas, y por eso el cargador tampoco adopta una cuenta reservada que haya
+  abierto sesiones o configurado un segundo factor: las cuentas sembradas tienen
+  una contraseña aleatoria que nadie conoce. Ese caso aborta la carga como
+  cualquier otro conflicto de propiedad.
 - Perfil: la clave compartida del usuario encontrado.
 - Servicio: cuenta reservada y subcategoría resuelta. Cada cuenta demo publica
   uno por subcategoría. El título y la descripción sí pueden sincronizarse.

@@ -65,7 +65,9 @@ public class DemoService {
         nuevosUsuarios++;
       } else {
         id = unico(encontrados);
-        if (!repositorio.coincidePropietario(id, p)) {
+        // Una cuenta reservada con otro nombre, o que ya abrió sesiones, la creó
+        // otra persona: adoptarla la dejaría verificada y reactivada en cada carga.
+        if (!repositorio.coincidePropietario(id, p) || repositorio.tuvoActividad(id)) {
           throw new IllegalStateException(
               "Conflicto de propiedad en una cuenta reservada de demo.");
         }

@@ -64,6 +64,38 @@ class SesionProvisionalIT extends EscenarioDeSeguridad {
         .isTrue();
   }
 
+  /**
+   * Un cierre voluntario que leyó la sesión antes de que una medida la revocara no reescribe esa
+   * revocación: se conserva la primera, con su motivo, que es lo que deja rastro de la sanción.
+   */
+  @Test
+  void cerrarLaSesionConservaUnaRevocacionSimultaneaAnterior() {
+    iniciarSesion(navegador);
+    Long idSesion = jdbc.queryForObject("SELECT max(id_sesion) FROM sesion", Long.class);
+    Long idUsuario =
+        jdbc.queryForObject(
+            "SELECT id_usuario FROM sesion WHERE id_sesion = ?", Long.class, idSesion);
+
+    TransactionTemplate otraTransaccion = new TransactionTemplate(transacciones);
+    otraTransaccion.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+    new TransactionTemplate(transacciones)
+        .executeWithoutResult(
+            cierre -> {
+              repositorioDeSesiones.findById(idSesion).orElseThrow();
+              otraTransaccion.executeWithoutResult(
+                  medida ->
+                      sesiones.revocarTodasDe(
+                          idUsuario, MotivoRevocacionSesion.MEDIDA_ADMINISTRATIVA));
+              sesiones.revocar(idSesion, MotivoRevocacionSesion.CIERRE_VOLUNTARIO);
+            });
+
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT motivo_revocacion FROM sesion WHERE id_sesion = ?", String.class, idSesion))
+        .isEqualTo("MEDIDA_ADMINISTRATIVA");
+  }
+
   @Test
   void unaCuentaSinSegundoFactorUsaSuSesionConNormalidad() {
     HttpResponse<String> inicio = iniciarSesion(navegador);

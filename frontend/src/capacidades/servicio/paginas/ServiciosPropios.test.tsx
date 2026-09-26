@@ -137,5 +137,8 @@ describe('Servicios propios', () => {
       expect(enviada?.get('textoAlternativo')).toBe('Tubería reparada');
       expect(enviada?.get('archivo')).toBeInstanceOf(File);
     });
+    await waitFor(() => {
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:previsualizacion-de-prueba');
+    });
   });
 });

@@ -69,7 +69,8 @@ export default function ImagenesDelServicio({ servicio }: { servicio: ServicioPr
     }
 
     for (const archivo of validos) {
-      setPrevisualizacion(URL.createObjectURL(archivo));
+      const url = URL.createObjectURL(archivo);
+      setPrevisualizacion(url);
       try {
         await subida.mutateAsync({
           idServicio: servicio.idServicioPublicado,
@@ -78,6 +79,9 @@ export default function ImagenesDelServicio({ servicio }: { servicio: ServicioPr
         });
       } catch {
         break;
+      } finally {
+        // Cada vista previa retiene su archivo en memoria hasta revocarla; también si se desmonta.
+        URL.revokeObjectURL(url);
       }
     }
     setTextoAlternativo('');

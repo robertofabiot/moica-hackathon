@@ -39,6 +39,8 @@ import {
   IconoReloj,
   TarjetaMetrica,
 } from '../../../comun/componentes/ui';
+import { ErrorDeApi } from '../../../comun/api';
+import formulario from '../../../comun/estilos/formulario.module.css';
 import { actividadReciente, inicialDe, primerNombreDe, tareasProximas } from '../presentacion';
 import { RUTA_PANEL } from '../rutas';
 import estilos from './panel.module.css';
@@ -66,7 +68,9 @@ export default function PanelUsuario() {
   const publico = usePrestadorPublico(perfil.data?.idPrestador);
 
   const primerNombre = primerNombreDe(usuario?.nombreCompleto ?? '');
-  const solicitudesListas = !enviadas.isLoading && !recibidas.isLoading;
+  // Una consulta fallida no tiene datos: contarla como vacía diría «0» o «Vas al día» sin serlo.
+  const solicitudesFallaron = enviadas.isError || recibidas.isError;
+  const solicitudesListas = !enviadas.isLoading && !recibidas.isLoading && !solicitudesFallaron;
   const hilos = useMemo(
     () => conversacionesDeBandeja(enviadas.data, recibidas.data),
     [enviadas.data, recibidas.data]
@@ -76,9 +80,10 @@ export default function PanelUsuario() {
     [enviadas.data, recibidas.data, usuario?.idUsuario]
   );
 
-  const serviciosPublicados = servicios.isLoading
-    ? '—'
-    : (servicios.data ?? []).filter((servicio) => servicio.estado === 'ACTIVO').length;
+  const serviciosPublicados =
+    servicios.isLoading || servicios.isError
+      ? '—'
+      : (servicios.data ?? []).filter((servicio) => servicio.estado === 'ACTIVO').length;
 
   const cantidadMensajes = solicitudesListas ? hilos.length : '—';
   const cantidadContrataciones = solicitudesListas
@@ -126,6 +131,22 @@ export default function PanelUsuario() {
           <p className={estilos.estadoDeCarga} role="status">
             Cargando panel de prestador…
           </p>
+        </main>
+      </div>
+    );
+  }
+
+  if (perfil.isError) {
+    return (
+      <div className={estilos.pagina}>
+        <div className={estilos.barraLateral}>
+          <BarraLateral itemActivo="inicio" destinos={DESTINOS_DE_BARRA} />
+        </div>
+        <main className={estilos.principal}>
+          <AvisoDeFallo
+            mensaje={mensajeDeFallo(perfil.error, 'No pudimos cargar tu panel de prestador.')}
+            alReintentar={() => void perfil.refetch()}
+          />
         </main>
       </div>
     );
@@ -179,7 +200,18 @@ export default function PanelUsuario() {
             <h2 className={estilos.tituloDeTarjeta} id="titulo-actividad">
               Actividad reciente
             </h2>
-            {enviadas.isLoading || recibidas.isLoading ? (
+            {solicitudesFallaron ? (
+              <AvisoDeFallo
+                mensaje={mensajeDeFallo(
+                  enviadas.error ?? recibidas.error,
+                  'No pudimos cargar tus solicitudes.'
+                )}
+                alReintentar={() => {
+                  if (enviadas.isError) void enviadas.refetch();
+                  if (recibidas.isError) void recibidas.refetch();
+                }}
+              />
+            ) : enviadas.isLoading || recibidas.isLoading ? (
               <p className={estilos.estadoDeCarga} role="status">
                 Cargando actividad…
               </p>
@@ -223,8 +255,16 @@ export default function PanelUsuario() {
               <h2 className={estilos.tituloDeTarjeta} id="titulo-tareas">
                 Próximas tareas
               </h2>
+              {recibidas.isError ? (
+                <AvisoDeFallo
+                  mensaje="No pudimos comprobar si tienes solicitudes pendientes."
+                  alReintentar={() => void recibidas.refetch()}
+                />
+              ) : null}
               {tareas.length === 0 ? (
-                <p className={estilos.vacio}>No tienes tareas pendientes. Vas al día.</p>
+                recibidas.isError ? null : (
+                  <p className={estilos.vacio}>No tienes tareas pendientes. Vas al día.</p>
+                )
               ) : (
                 <ul className={estilos.listaTareas}>
                   {tareas.map((tarea) => (
@@ -251,6 +291,21 @@ export default function PanelUsuario() {
         </div>
       </main>
     </div>
+  );
+}
+
+function mensajeDeFallo(error: Error | null, respaldo: string) {
+  return error instanceof ErrorDeApi ? error.message : respaldo;
+}
+
+function AvisoDeFallo({ mensaje, alReintentar }: { mensaje: string; alReintentar: () => void }) {
+  return (
+    <p className={`${formulario.aviso} ${formulario.avisoDeError}`} role="alert">
+      {mensaje}{' '}
+      <button className={formulario.enlaceDeTexto} type="button" onClick={alReintentar}>
+        Reintentar
+      </button>
+    </p>
   );
 }
 

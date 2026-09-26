@@ -256,6 +256,78 @@ describe('Panel de usuario', () => {
     ).toHaveAttribute('href', '/prestador/servicios/nuevo');
   });
 
+  it('avisa del fallo de las solicitudes en vez de mostrar cero ni «Vas al día»', async () => {
+    const persona = userEvent.setup();
+    api.responder('GET /api/prestador/perfil', {
+      estado: 200,
+      cuerpo: perfilDeEjemplo({ nivelVerificacion: 'VERIFICADO_BASICO' }),
+    });
+    api.responder('GET /api/prestador/servicios', {
+      estado: 200,
+      cuerpo: [servicioPropioDeEjemplo({ estado: 'ACTIVO' })],
+    });
+    api.responder('GET /api/prestadores/1', {
+      estado: 200,
+      cuerpo: perfilPublicoDeEjemplo(reputacionVaciaDeEjemplo()),
+    });
+    api.responder('GET /api/solicitudes/recibidas', {
+      estado: 500,
+      cuerpo: cuerpoDeError(500, 'ERROR_INTERNO', 'Algo falló en Moica.'),
+    });
+
+    abrirComo();
+
+    const avisos = await screen.findAllByRole('alert');
+    expect(avisos[0]).toHaveTextContent('Algo falló en Moica.');
+    expect(
+      screen.getByText('No pudimos comprobar si tienes solicitudes pendientes.', { exact: false })
+    ).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Contrataciones —' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Mensajes —' })).toBeVisible();
+    expect(screen.queryByText('No tienes tareas pendientes. Vas al día.')).not.toBeInTheDocument();
+    expect(
+      screen.queryByText('Todavía no tienes solicitudes en tus servicios.', { exact: false })
+    ).not.toBeInTheDocument();
+
+    api.responder('GET /api/solicitudes/recibidas', {
+      estado: 200,
+      cuerpo: [resumenDeSolicitudDeEjemplo({ idSolicitudServicio: 22, estadoActual: 'PENDIENTE' })],
+    });
+    await persona.click(screen.getAllByRole('button', { name: 'Reintentar' })[0]);
+
+    expect(
+      await screen.findByRole('link', { name: 'Tienes 1 solicitud pendiente de respuesta' })
+    ).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Contrataciones 1' })).toBeVisible();
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
+  it('si falla el perfil avisa y permite reintentar en vez de pintar un panel vacío', async () => {
+    const persona = userEvent.setup();
+    api.responder('GET /api/prestador/perfil', {
+      estado: 500,
+      cuerpo: cuerpoDeError(500, 'ERROR_INTERNO', 'Algo falló en Moica.'),
+    });
+    api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
+    api.responder('GET /api/prestadores/1', {
+      estado: 200,
+      cuerpo: perfilPublicoDeEjemplo(reputacionVaciaDeEjemplo()),
+    });
+
+    abrirComo();
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Algo falló en Moica.');
+    expect(screen.queryByRole('region', { name: 'Métricas clave' })).not.toBeInTheDocument();
+
+    api.responder('GET /api/prestador/perfil', {
+      estado: 200,
+      cuerpo: perfilDeEjemplo({ nivelVerificacion: 'VERIFICADO_BASICO' }),
+    });
+    await persona.click(screen.getByRole('button', { name: 'Reintentar' }));
+
+    expect(await screen.findByRole('region', { name: 'Métricas clave' })).toBeVisible();
+  });
+
   it('avisa fuera del menú cuando el cierre de sesión falla', async () => {
     const persona = userEvent.setup();
     api.responder('GET /api/prestador/perfil', { estado: 200, cuerpo: perfilDeEjemplo() });

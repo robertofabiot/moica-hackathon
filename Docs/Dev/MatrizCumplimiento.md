@@ -2002,14 +2002,15 @@ autenticación y sesiones, autorización transversal, R2 y archivos, dominio del
 marketplace, moderación, cargador de demostración, PostgreSQL y Flyway, sesión y
 caché del frontend, formularios y accesibilidad, deuda y dependencias, documentación
 y contrato de producción. Cada defecto corregido se demostró antes con una prueba o
-una lectura inequívoca. Los PR quedan abiertos para revisión cruzada: esta sección
-registra la evidencia, no su integración.
+una lectura inequívoca. Cada PR pasa por revisión cruzada antes de integrarse: esta
+sección registra su evidencia, y la integración queda en el historial de `develop`.
 
 | Rama y PR | Alcance | Evidencia |
 |---|---|---|
 | `feature/despliegue-continuo-main` · #48 | Cabeceras de seguridad y Nginx sin root, 413 en JSON del contrato, espera de 120 s en `/api`, Compose local solo en loopback, entrega continua documentada | `node scripts/smoke-produccion.mjs` con los tres bloques en PASS (cabeceras, 413 y persistencia incluidos); CI del PR con seis checks en verde |
 | `feature/corregir-hallazgos-backend` · #51 | Moderación: expediente e instante leídos después del bloqueo. Sesiones: verificación y cierre sin deshacer revocaciones. Cambio de contraseña que no deshace una suspensión. Bootstrap de administrador con varias réplicas. Aviso de suspensión en hora de Managua. Descubrimiento público. Compensación R2. `EXPEDIENTE_INCOMPLETO`. Registro sin dominio `.invalid` y cargador que no adopta cuentas ya usadas | `./mvnw -B -ntp verify`: 175 unitarias y 610 de integración en verde, SpotBugs 0. Las cinco pruebas nuevas de concurrencia fallan contra el código anterior. Revisión adversarial con dos lentes |
-| `feature/corregir-hallazgos-frontend` · #50 | Caché privada al cambiar de cuenta, 401 del login, error transitorio de sesión, cierre fallido visible, fallos mostrados como éxito o como datos vacíos, foco y control anidado en la subida de imágenes | `format:check`, `lint`, `typecheck`, 424 pruebas y `build` en verde; cada prueba nueva falla al retirar su arreglo |
+| `feature/corregir-hallazgos-frontend` · #50 | Caché privada al cambiar de cuenta, 401 del login, error transitorio de sesión, cierre fallido visible, fallos mostrados como éxito o como datos vacíos, foco y control anidado en la subida de imágenes | `format:check`, `lint`, `typecheck`, 424 pruebas y `build` en verde; cada prueba nueva falla al retirar su arreglo. Capturas de seis estados en 375×812, 768×1024 y 1280×800, adjuntas al PR, sin desbordamiento horizontal; foco de teclado comprobado con la tecla Tab en los dos selectores de imagen |
+| `feature/actualizar-entorno-pruebas` · #52 | PostgreSQL 18 sobre Debian, como producción, en Testcontainers y en el Compose del smoke y del E2E (Alpine ordena el texto de otra manera); Vitest 4.1.11 por GHSA-82fw-gwwq-j7x9; retirada de `org.testcontainers:junit-jupiter`, declarado sin uso | `./mvnw -B -ntp verify` sobre la integración local de los cinco PR con `postgres:18`: 175 unitarias y 610 de integración en verde, SpotBugs 0. Frontend con Vitest 4.1.11: 405 pruebas sobre `develop` y 424 con #50; `npm audit` sin avisos |
 | `feature/alinear-documentacion` · #49 | README (ejemplos reales, seguridad, versiones y variables), contrato (moderación vigente y 16 rutas administrativas), guía local, migraciones, plan §8 y datos de demostración | Cada dato comprobado contra el código; esta misma sección |
 
 **Railway, 24 de septiembre de 2026.** Producción estaba caída desde el 14 de
@@ -2031,6 +2032,7 @@ pública posterior está en
 - Unicidad sin distinguir mayúsculas del nombre de una medida.
 - Regla de cierre de `historial_caso`, que el diccionario atribuye a la base.
 - Anclas sin destino en el encabezado y el pie, y teléfono fijo en Seguridad de la cuenta.
+- Pasar a PostgreSQL 18 el Compose de desarrollo, que obliga a recrear o migrar los volúmenes locales.
 
 **Acciones manuales pendientes:**
 

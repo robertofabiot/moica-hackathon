@@ -80,8 +80,10 @@ public abstract class PruebaDeIntegracionConPostgres {
   /** Clave AES-256 en Base64 con la que se cifran los secretos TOTP durante las pruebas. */
   public static final String CLAVE_DE_CIFRADO_TOTP = "Y2xhdmUtZGUtcHJ1ZWJhcy10b3RwLWRlLW1vaWNhISE=";
 
+  // PostgreSQL 18 sobre Debian, como la base de producción en Railway: la variante Alpine usa
+  // otra libc y ordena el texto (ORDER BY nombre) de otra manera.
   @ServiceConnection
-  static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:15-alpine");
+  static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:18");
 
   static {
     POSTGRES.start();

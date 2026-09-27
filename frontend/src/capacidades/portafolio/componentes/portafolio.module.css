@@ -234,6 +234,12 @@
   cursor: pointer;
 }
 
+.etiquetaDeSubida svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 .etiquetaDeSubida:hover {
   border-color: var(--color-primary-500);
   background-color: var(--color-primary-50);

@@ -76,10 +76,18 @@ identidad de la semilla: no editarlos manualmente para convertirla en datos real
 Usuarios ajenos a esos seis correos, incluso con nombres o servicios iguales,
 quedan intactos.
 
-La sincronización es aditiva: si se acorta o vacía una lista de imágenes, las
-asociaciones anteriores se conservan. El resumen `imagenesExistentes` cuenta las
-posiciones del mapeo procesado y `serviciosSinMapeo` las entradas sin mapeo
-efectivo; no representan un inventario total de imágenes conservadas.
+La sincronización es aditiva y por posición: cada clave de la lista crea o
+reescribe la imagen de su posición y las posiciones que la lista no alcanza se
+conservan. Por eso acortar una lista no retira las posiciones sobrantes y puede
+repetir un objeto: pasar de `A,B` a `B` deja `B` en las posiciones `0` y `1`.
+Una lista vacía no toca ninguna posición, con una excepción: en computadoras,
+con la base R2 comprobada, vacío equivale al mapeo recuperado y reescribe las
+posiciones `0` y `1` con las dos fotografías de la sección siguiente, aunque
+antes se hubieran sobrescrito con otras claves.
+
+El resumen `imagenesExistentes` cuenta las posiciones del mapeo procesado y
+`serviciosSinMapeo` las entradas sin mapeo efectivo; no representan un
+inventario total de imágenes conservadas.
 
 ## Imágenes públicas recuperadas
 
@@ -124,7 +132,7 @@ arranque: el operador debe comprobar previamente la lectura anónima del objeto.
 | `MOICA_SEED_DEMO_IMAGENES_MAQUILLAJE` | Falta al menos una clave pública de maquillaje social |
 | `MOICA_SEED_DEMO_IMAGENES_BARBERIA` | Falta al menos una clave pública de cortes de cabello o barba |
 | `MOICA_SEED_DEMO_IMAGENES_UNAS` | Falta al menos una clave pública de manicura |
-| `MOICA_SEED_DEMO_IMAGENES_COMPUTADORAS` | Dos claves recuperadas; opcional sobrescribir su lista |
+| `MOICA_SEED_DEMO_IMAGENES_COMPUTADORAS` | Dos claves recuperadas; opcional sobrescribir su lista. Vaciarla después restaura las recuperadas |
 | `MOICA_SEED_DEMO_IMAGENES_DISENO` | Falta al menos una clave pública de menús o piezas gráficas |
 | `MOICA_SEED_DEMO_IMAGENES_SOPORTE` | Falta al menos una clave pública de Wi-Fi, impresoras o equipos de oficina |
 
@@ -146,13 +154,19 @@ seeder no altera la política de borrado ni crea copias para evitarlo.
    con objetos ya verificados públicamente. No copiar credenciales al frontend.
 3. Aplicar los cambios y desplegar/reiniciar el backend. Esperar healthcheck sano.
    No habilitar dominio del backend, TCP Proxy de PostgreSQL ni endpoints temporales.
-4. En **Deployments → despliegue activo → Logs**, localizar únicamente
-   `Demo sincronizada: Resumen[...]`. En una base sin demo y con el bucket comprobado,
-   el resumen esperado es `usuariosCreados=6`, `perfilesCreados=6`,
-   `serviciosCreados=9`, `imagenesCreadas=2`, los cuatro contadores de existentes en
-   cero y `serviciosSinMapeo=8`. Con datos previos se reparten entre creados y
-   existentes. El mensaje se emite después del commit; nunca contiene correos,
-   hashes, credenciales, claves privadas ni firmas.
+4. En **Deployments → despliegue activo → Logs**, localizar únicamente los
+   mensajes `Demo sincronizada: Resumen[...]`. Cada réplica del backend ejecuta el
+   bootstrap y registra su propio resumen, así que con N réplicas aparecen N
+   mensajes; el bloqueo las serializa y solo la primera encuentra la base vacía.
+   En una base sin demo y con el bucket comprobado, la suma de creados de todos
+   los resúmenes debe ser `usuariosCreados=6`, `perfilesCreados=6`,
+   `serviciosCreados=9` e `imagenesCreadas=2`, con `serviciosSinMapeo=8` en cada
+   uno. Con una sola réplica, ese resumen trae los cuatro contadores de existentes
+   en cero. Con varias, uno muestra esos creados y los demás los mismos totales
+   como existentes (`6`, `6`, `9`, `2`) y los creados en cero: no es un fallo.
+   Con datos previos se reparten entre creados y existentes. Cada mensaje se
+   emite después del commit; nunca contiene correos, hashes, credenciales,
+   claves privadas ni firmas.
 5. Sin iniciar sesión, abrir `/explorar` en el dominio público del frontend.
    Comprobar las tres categorías, las nueve subcategorías y los municipios.
    Abrir plomería, computadoras y un servicio «A convenir». Abrir los perfiles de
@@ -160,9 +174,9 @@ seeder no altera la política de borrado ni crea copias para evitarlo.
    Comprobar las dos imágenes de computadoras y anotar los IDs públicos de algunos
    servicios; la instalación puede tener además publicaciones ajenas a la demo.
 6. En **backend → Variables**, volver a `MOICA_SEED_DEMO_ENABLED=false`.
-7. Aplicar el cambio y hacer redeploy del backend. Confirmar salud, ausencia de un
-   nuevo mensaje de sincronización y permanencia de los mismos servicios e IDs en
-   `/explorar`. Apagar el bootstrap no elimina datos.
+7. Aplicar el cambio y hacer redeploy del backend. Confirmar salud, que ninguna
+   réplica emite un nuevo mensaje de sincronización y que siguen los mismos
+   servicios e IDs en `/explorar`. Apagar el bootstrap no elimina datos.
 
 Para completar imágenes después: añadir los mapeos, repetir temporalmente
 `true → deploy → verificar → false → redeploy`. La segunda ejecución conserva las

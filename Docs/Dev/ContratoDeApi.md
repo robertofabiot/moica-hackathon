@@ -80,11 +80,28 @@ Todos los endpoints de negocio viven bajo `/api`, que es lo que reenvia el proxy
 | `GET /api/solicitudes/{id}/reputacion-del-cliente` | Reputacion como cliente de quien contrato | Sesion plena; **solo el prestador** participante |
 | `GET /api/solicitudes/{id}/caso-moderacion` | A quien puede reportar la sesion y que caso abrio, si abrio uno | Sesion plena; solo los dos participantes |
 | `POST /api/solicitudes/{id}/caso-moderacion` | Abre el caso de moderacion sobre la contraparte | Sesion plena, tambien con cuenta `RESTRINGIDA_TEMPORAL`; solo los dos participantes y solo si la solicitud llego a `ACEPTADA` |
+| `GET /api/admin/administradores` | Administradores disponibles para asignar un caso | Rol administrativo con segundo factor verificado |
+| `GET /api/admin/casos` | Bandeja de casos, con filtros `estado` y `mios` | Rol administrativo con segundo factor verificado |
+| `GET /api/admin/casos/{id}` | Expediente completo de un caso | Rol administrativo con segundo factor verificado |
+| `GET /api/admin/casos/{id}/mensajes` | Hilo de la solicitud reportada, solo desde el caso | Rol administrativo con segundo factor verificado |
+| `POST /api/admin/casos/{id}/asignacion` | Asigna o reasigna el responsable del caso | Rol administrativo con segundo factor verificado |
+| `POST /api/admin/casos/{id}/revision` | Inicia la revision de un caso `ABIERTO` o `REABIERTO` | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/cierre` | Cierra el caso con resultado y resolucion | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/medida` | Aplica una medida desde un caso `CERRADO` y `PROCEDENTE` | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/medida/revocacion` | Revoca la medida que sostiene el caso | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/apelacion` | Registra una apelacion recibida por el canal externo | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/apelacion/resolucion` | Acepta o rechaza la apelacion pendiente | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `POST /api/admin/casos/{id}/reapertura` | Reabre un caso cerrado con la apelacion aceptada | Rol administrativo con segundo factor verificado; solo el responsable asignado |
+| `GET /api/admin/medidas` | Catalogo de medidas, incluidas las deshabilitadas | Rol administrativo con segundo factor verificado |
+| `POST /api/admin/medidas` | Anade una medida al catalogo | Rol administrativo con segundo factor verificado |
+| `PUT /api/admin/medidas/{id}` | Edita una medida; el codigo no cambia | Rol administrativo con segundo factor verificado |
+| `PUT /api/admin/medidas/{id}/habilitacion` | Deshabilita o vuelve a habilitar una medida | Rol administrativo con segundo factor verificado |
 | `GET /actuator/health` | Estado de la aplicacion | Cualquiera |
 
 **Sesion plena** es la que no esta pendiente del segundo factor y pertenece a una cuenta que no esta
-suspendida. Es tambien lo que exige por omision cualquier ruta que no aparezca en esta tabla: la
-cadena de autorizacion cierra todo lo que no se declara.
+suspendida. Es tambien lo que exige por omision cualquier ruta no declarada fuera de `/api/admin/**`:
+la cadena de autorizacion cierra todo lo que no se declara. Todo `/api/admin/**` exige rol
+administrativo y segundo factor verificado en esa sesion.
 
 ## Como se autentica una peticion
 
@@ -178,8 +195,9 @@ El rol no se solicita ni se concede desde la API: no hay registro publico de adm
 endpoint de promocion. Lo asigna el arranque a partir de `MOICA_ADMIN_CORREO`, sobre una cuenta
 ordinaria ya registrada (ver [la guia de entorno local](GuiaEntornoLocal.md#rol-administrativo)).
 
-La primera funcion del area es la cola de verificaciones documentales, descrita
-mas abajo. La moderacion de casos llega con su propio incremento.
+La primera funcion del area es la cola de verificaciones documentales; la
+revision de casos de moderacion, el catalogo de medidas y las apelaciones se
+describen en sus secciones propias mas abajo.
 
 ## Cuando es 401 y cuando es 403
 
@@ -454,8 +472,8 @@ estado incorrectos responden 409 `TRANSICION_NO_PERMITIDA`. Una cuenta
 restringida que intenta enviar, aceptar, rechazar o completar responde 403
 `CUENTA_RESTRINGIDA` y no escribe historial.
 
-Aceptar no revela correos ni contactos: solo deja el estado listo para el
-incremento del chat.
+Aceptar no revela correos ni contactos en este cuerpo: habilita el hilo y la
+revelacion de contactos, que viven en su propia superficie autorizada.
 
 ### Lectura
 
@@ -707,7 +725,8 @@ definicion 11.3, en el MVP cada medida la elige una persona administradora.
 Lo que ve el reportante es **su** expediente y solo el suyo. La bandeja
 administrativa, la asignacion de responsable, los cambios de estado y las
 resoluciones son otra superficie, la de P10A, descrita mas abajo. El catalogo de
-medidas y su aplicacion siguen siendo P10B y todavia no existen.
+medidas, su aplicacion y las apelaciones se describen en «Medidas
+administrativas» y «Apelaciones de un caso».
 
 ### Cuando se puede reportar
 

@@ -11,7 +11,7 @@
 [![Java 21](https://img.shields.io/badge/Java-21%20LTS-ED8B00?logo=openjdk&logoColor=white)](backend/pom.xml)
 [![Spring Boot 4.0](https://img.shields.io/badge/Spring%20Boot-4.0.7-6DB33F?logo=springboot&logoColor=white)](backend/pom.xml)
 [![React 19](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=black)](frontend/package.json)
-[![TypeScript 5.8](https://img.shields.io/badge/TypeScript-5.8-3178C6?logo=typescript&logoColor=white)](frontend/package.json)
+[![TypeScript 6.0](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)](frontend/package.json)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15%20%7C%2018-4169E1?logo=postgresql&logoColor=white)](docker-compose.yml)
 [![Cloudflare R2](https://img.shields.io/badge/Cloudflare-R2%20(S3--API)-F38020?logo=cloudflare&logoColor=white)](Docs/Dev/Almacenamiento.md)
 [![Docker](https://img.shields.io/badge/Docker-Multi--stage-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
@@ -155,7 +155,7 @@ flowchart LR
 | | Spring Security · JJWT 0.13.0 · BCrypt | Cadena de filtros de seguridad, tokens HMAC-SHA256 y hashing de contraseñas. |
 | | java-otp 0.4.0 · commons-codec | Implementación nativa de RFC 6238 (TOTP) sobre `javax.crypto` y codificación Base32. |
 | | AWS SDK for Java v2 2.46.7 (`s3`, `apache5-client`) | Integración con Cloudflare R2 y generación de URLs firmadas (`S3Presigner`). |
-| **Frontend** | React 19.2 · TypeScript 5.8 · Vite 8.2 | SPA reactiva con tipado estático riguroso y empaquetado de alto rendimiento. |
+| **Frontend** | React 19.2 · TypeScript 6.0 · Vite 8.2 | SPA reactiva con tipado estático riguroso y empaquetado de alto rendimiento. |
 | | vite-plugin-pwa 1.3 (Workbox) | Soporte de Progressive Web App instalable y precarga de activos estáticos. |
 | | React Router 8.3 · TanStack Query 5.101 | Enrutamiento del cliente y sincronización asíncrona de estado del servidor. |
 | | React Hook Form 7.85 · Zod 4.4 · qrcode.react | Manejo accesible de formularios, validación de esquemas y generación de QR para 2FA. |
@@ -163,7 +163,7 @@ flowchart LR
 | | Vitest 4.1 · Testing Library 16.3 · JSDOM 30 | Pruebas unitarias y de componentes frontend orientadas a accesibilidad. |
 | | Playwright 1.63 · @axe-core/playwright 4.13 | Recorridos extremo a extremo y auditoría de accesibilidad contra la aplicación real. |
 | **Calidad** | SpotBugs 4.10 · Spotless 3.9 · ESLint 10 · Prettier | Análisis estático de defectos, Google Java Format y estandarización de estilo. |
-| **Infra** | Docker · Docker Compose · Nginx 1.27 Alpine | Contenedores de desarrollo y producción; reverse proxy de mismo origen. |
+| **Infra** | Docker · Docker Compose · Nginx 1.28 Alpine | Contenedores de desarrollo y producción; reverse proxy de mismo origen. |
 
 ---
 
@@ -189,6 +189,7 @@ moica-hackathon/
 │       │   ├── catalogo/          # Taxonomía de oficios y división territorial (Managua)
 │       │   ├── chat/              # Mensajería interna e historial por solicitud
 │       │   ├── comun/             # Filtros CSRF, seguridad y manejo uniforme de errores
+│       │   ├── demo/              # Seeder explícito de datos ficticios (MOICA_SEED_DEMO_ENABLED)
 │       │   ├── moderacion/        # Casos de disputa, medidas disciplinarias e historial SCD2
 │       │   ├── portafolio/        # Galería de trabajos anteriores del prestador
 │       │   ├── prestador/         # Perfil profesional, cobertura y disponibilidad
@@ -227,6 +228,9 @@ La configuración sigue el estándar de *12-Factor App*. Copie la plantilla base
 | `MOICA_DB_CLAVE` | Contraseña de PostgreSQL | Sí | `clave_local_de_desarrollo` |
 | `MOICA_DB_HOST` | Host de conexión para el backend | Sí | `localhost` |
 | `MOICA_DB_PORT` | Puerto de PostgreSQL (cambiar a `5433` si `5432` está en uso) | Sí | `5432` |
+| `MOICA_PGADMIN_EMAIL` | Correo de acceso a pgAdmin (lo exige `docker compose`; pgAdmin rechaza dominios reservados como `.local`) | Sí | `dev@moica.example.com` |
+| `MOICA_PGADMIN_CLAVE` | Contraseña de acceso a pgAdmin (lo exige `docker compose`) | Sí | `clave_local_de_pgadmin` |
+| `MOICA_PGADMIN_PORT` | Puerto local de pgAdmin | No | `5050` |
 | `MOICA_BACKEND_PORT` | Puerto HTTP del servidor Spring Boot | No | `8080` |
 | `MOICA_JWT_SECRETO` | Clave criptográfica para firma HMAC-SHA256 (mínimo 32 bytes) | Sí | `secreto_local_de_desarrollo_cambialo_en_produccion` |
 | `MOICA_SESION_DURACION`| Duración de la sesión en formato ISO-8601 | No | `P7D` |
@@ -237,10 +241,12 @@ La configuración sigue el estándar de *12-Factor App*. Copie la plantilla base
 | `MOICA_R2_SECRET_ACCESS_KEY`| Secret Access Key para bucket público | Cond.* | `secret_key_publica` |
 | `MOICA_R2_BUCKET_PUBLICO` | Nombre del bucket público de imágenes | Cond.* | `moica-publico-dev` |
 | `MOICA_R2_URL_PUBLICA_BASE` | Dominio HTTPS público del bucket de imágenes | Cond.* | `https://pub-ejemplo.r2.dev` |
+| `MOICA_IMAGEN_TAMANO_MAXIMO` | Tamaño máximo por imagen pública | No | `5MB` |
 | `MOICA_R2_PRIVADO_ID_CUENTA`| Account ID de Cloudflare para bucket privado | Cond.* | `id_cuenta_ejemplo` |
 | `MOICA_R2_PRIVADO_ACCESS_KEY_ID` | Access Key ID exclusivo del bucket privado | Cond.* | `access_key_privada` |
 | `MOICA_R2_PRIVADO_SECRET_ACCESS_KEY`| Secret Access Key del bucket privado | Cond.* | `secret_key_privada` |
 | `MOICA_R2_BUCKET_PRIVADO` | Nombre del bucket privado de expedientes | Cond.* | `moica-privado-dev` |
+| `MOICA_DOCUMENTO_TAMANO_MAXIMO` | Tamaño máximo por documento del expediente (solo puede bajarse de 5 MB) | No | `5MB` |
 | `MOICA_DOCUMENTO_URL_TEMPORAL_DURACION` | Expiración de enlaces prefirmados (máx 1 hora) | No | `PT5M` |
 | `MOICA_ADMIN_CORREO` | Correo de la cuenta a promover como administrador al arrancar | No | `admin@moica.ni` |
 | `MOICA_EXPIRACION_MEDIDAS_PERIODO` | Chequeo de vencimiento de sanciones temporales | No | `PT1M` |
@@ -314,60 +320,106 @@ Documentación completa de endpoints, esquemas JSON y códigos de error:
 
 ### Ejemplos reales de interacción
 
+Los cuerpos reproducen los records que devuelve el backend, con sus nombres de campo exactos; los valores son ilustrativos.
+
 #### 1. Iniciar sesión (`POST /api/auth/sesion`)
-Genera la sesión registrada en PostgreSQL y entrega la cookie `moica_sesion` junto al token CSRF:
+Toda operación mutable exige el token CSRF, también el inicio de sesión. Primero se obtiene la cookie `XSRF-TOKEN` con una petición pública y después se devuelve en la cabecera `X-XSRF-TOKEN`:
 
 ```bash
+curl -s -c cookies.txt -o /dev/null http://localhost:8080/api/catalogos/categorias
+TOKEN=$(grep XSRF-TOKEN cookies.txt | awk '{print $7}')
+
 curl -i -X POST http://localhost:8080/api/auth/sesion \
+  -b cookies.txt -c cookies.txt \
   -H "Content-Type: application/json" \
-  -c cookies.txt \
+  -H "X-XSRF-TOKEN: $TOKEN" \
   -d '{"correoElectronico":"valeria@ejemplo.com","clave":"ContraseñaSegura123!"}'
 ```
 
+La respuesta crea la sesión registrada en PostgreSQL y entrega su JWT en la cookie `moica_sesion`:
+
 ```http
-HTTP/1.1 201 Created
-Set-Cookie: moica_sesion=eyJhbGciOiJIUzI1NiJ9...; Path=/; HttpOnly; SameSite=Lax
-Set-Cookie: XSRF-TOKEN=4a7c8b12-9e3f-42a1...; Path=/; SameSite=Lax
+HTTP/1.1 201
+Set-Cookie: moica_sesion=eyJhbGciOiJIUzI1NiJ9...; Path=/; Max-Age=604800; Expires=Sat, 12 Sep 2026 20:30:00 GMT; HttpOnly; SameSite=Lax
 Content-Type: application/json
 
 {
   "usuario": {
-    "id": 14,
+    "idUsuario": 14,
     "nombreCompleto": "Valeria Martínez",
     "correoElectronico": "valeria@ejemplo.com",
-    "rol": "USUARIO",
-    "estadoCuenta": "ACTIVA"
+    "estadoCuenta": "ACTIVA",
+    "fechaFinEstadoCuenta": null,
+    "esAdministrador": false,
+    "fechaRegistro": "2026-08-20T09:15:42.118-06:00"
   },
   "sesion": {
-    "fechaInicio": "2026-09-05T14:30:00-06:00",
-    "fechaExpiracion": "2026-09-12T14:30:00-06:00",
+    "fechaInicio": "2026-09-05T14:30:00.512-06:00",
+    "fechaExpiracion": "2026-09-12T14:30:00.512-06:00",
+    "segundoFactorRequerido": false,
+    "segundoFactorVerificado": false,
     "pendienteDeSegundoFactor": false
-  }
+  },
+  "avisoDeCuenta": null
 }
 ```
 
 #### 2. Búsqueda pública de servicios (`GET /api/servicios`)
 ```bash
-curl -X GET "http://localhost:8080/api/servicios?texto=refrigeracion&idMunicipio=1"
+curl -X GET "http://localhost:8080/api/servicios?texto=laptops&idMunicipio=3"
 ```
 
 ```json
 [
   {
-    "id": 3,
-    "nombre": "Mantenimiento preventivo de aire acondicionado",
-    "precioReferencia": 850.00,
-    "nombreSubcategoria": "Refrigeración y Climatización",
-    "nombrePrestador": "Servicios García",
-    "nivelVerificacion": "PROFESIONAL_VERIFICADO",
-    "admiteContratacion": true,
-    "reputacionPrestador": { "promedio": 4.85, "cantidadCalificaciones": 26 }
+    "idServicioPublicado": 7,
+    "nombre": "Diagnóstico y mantenimiento de laptops",
+    "descripcion": "Revisión de fallas, limpieza interna y mantenimiento preventivo desde C$800. Repuestos y recuperación de información requieren presupuesto previo. Servicio ficticio para demostración.",
+    "precioReferencia": 800.00,
+    "idCategoriaServicio": 3,
+    "nombreCategoria": "Tecnología y servicios digitales",
+    "idSubcategoriaServicio": 7,
+    "nombreSubcategoria": "Reparación de computadoras",
+    "imagenPrincipal": {
+      "idImagenServicioPublicado": 1,
+      "urlImagen": "https://pub-ejemplo.r2.dev/servicios/1ae971b72b92480d9a84822b145786cb.jpg",
+      "textoAlternativo": "Aplicación de pasta térmica sobre un procesador de laptop durante su mantenimiento",
+      "ordenVisualizacion": 0,
+      "fechaCreacion": "2026-09-05T10:02:11.904-06:00"
+    },
+    "prestador": {
+      "idPrestador": 5,
+      "nombrePublico": "Punto Técnico Managua",
+      "urlImagenPerfil": null,
+      "descripcion": "Mantenimiento de computadoras y asistencia para pequeñas oficinas. Presentamos un diagnóstico antes de cotizar repuestos. Perfil ficticio de demostración.",
+      "tipoPrestador": "PYME",
+      "municipioPrincipal": { "idMunicipio": 3, "nombreMunicipio": "Managua", "nombreDepartamento": "Managua" },
+      "descripcionCobertura": "Managua urbana y Ticuantepe. Diagnóstico a domicilio o recepción de equipos con cita.",
+      "disponibilidad": "DISPONIBLE",
+      "nivelVerificacion": "PROFESIONAL_VERIFICADO",
+      "significadoVerificacion": "Además de la identidad, una persona administradora revisó documentación profesional, técnica o comercial que respalda la actividad declarada.",
+      "advertenciaDeInsignia": "Una insignia confirma que Moica revisó la documentación presentada en un momento determinado. No garantiza la calidad futura del trabajo ni sustituye el criterio de quien contrata."
+    },
+    "reputacionPrestador": {
+      "rol": "PRESTADOR",
+      "promedio": 4.8,
+      "cantidad": 26,
+      "desglose": [
+        { "estrellas": 5, "cantidad": 21 },
+        { "estrellas": 4, "cantidad": 5 },
+        { "estrellas": 3, "cantidad": 0 },
+        { "estrellas": 2, "cantidad": 0 },
+        { "estrellas": 1, "cantidad": 0 }
+      ]
+    }
   }
 ]
 ```
 
+`promedio` es `null` mientras el prestador no tenga calificaciones; nunca se envía `0.0`.
+
 #### 3. Crear solicitud de servicio (`POST /api/solicitudes`)
-Operación mutable protegida por CSRF; requiere sesión activa:
+Operación mutable protegida por CSRF; requiere la sesión del paso 1 y una cuenta `ACTIVA`:
 
 ```bash
 TOKEN=$(grep XSRF-TOKEN cookies.txt | awk '{print $7}')
@@ -377,23 +429,44 @@ curl -X POST http://localhost:8080/api/solicitudes \
   -H "Content-Type: application/json" \
   -H "X-XSRF-TOKEN: $TOKEN" \
   -d '{
-    "idServicioPublicado": 3,
-    "descripcionNecesidad": "Mantenimiento de 2 unidades inverter.",
-    "idMunicipio": 1,
+    "idServicioPublicado": 7,
+    "descripcionNecesidad": "La laptop se apaga sola cuando se calienta.",
+    "idMunicipio": 3,
     "indicacionUbicacion": "Altamira, de la Vicky 2c al sur",
     "fechaPreferida": "2026-09-10"
   }'
 ```
 
+Responde `201 Created`:
+
 ```json
 {
-  "id": 42,
-  "idServicioPublicado": 3,
+  "idSolicitudServicio": 42,
+  "idServicioPublicado": 7,
+  "nombreServicio": "Diagnóstico y mantenimiento de laptops",
   "idCliente": 14,
-  "idPrestador": 7,
+  "nombreCliente": "Valeria Martínez",
+  "idPrestador": 5,
+  "nombrePublicoPrestador": "Punto Técnico Managua",
+  "idMunicipio": 3,
+  "nombreMunicipio": "Managua",
+  "nombreDepartamento": "Managua",
+  "descripcionNecesidad": "La laptop se apaga sola cuando se calienta.",
+  "indicacionUbicacion": "Altamira, de la Vicky 2c al sur",
+  "fechaPreferida": "2026-09-10",
   "estadoActual": "PENDIENTE",
+  "fechaCreacion": "2026-09-05T15:10:22.347-06:00",
+  "fechaActualizacion": "2026-09-05T15:10:22.347-06:00",
   "historial": [
-    { "id": 89, "estadoNuevo": "PENDIENTE", "actor": "CLIENTE", "instante": "2026-09-05T15:10:22-06:00" }
+    {
+      "idCambioEstadoSolicitud": 89,
+      "estadoAnterior": null,
+      "estadoNuevo": "PENDIENTE",
+      "idActor": 14,
+      "nombreActor": "Valeria Martínez",
+      "motivo": null,
+      "fechaCambio": "2026-09-05T15:10:22.347-06:00"
+    }
   ]
 }
 ```
@@ -405,13 +478,13 @@ curl -X POST http://localhost:8080/api/solicitudes \
 1. **Sesiones registradas:** Cada login crea una fila en la tabla `sesion` de PostgreSQL identificada por UUID (`jti`). El estado y vigencia de la sesión residen en el servidor.
 2. **JWT en cookie `HttpOnly`:** El token firmado viaja exclusivamente en la cookie `moica_sesion` con flags `HttpOnly`, `SameSite=Lax` y `Secure` en producción. Cero almacenamiento en `localStorage` o `sessionStorage` (inmune a XSS).
 3. **Expiración determinista:** Duración configurada por defecto a 7 días (`P7D`). No se aplican extensiones silenciosas infinitas.
-4. **Revocación inmediata:** `DELETE /api/auth/sesion`, cambio de credenciales o sanción administrativa marca la sesión como revocada en base de datos al instante. Cualquier uso posterior responde `401 Unauthorized`.
+4. **Revocación inmediata:** `DELETE /api/auth/sesion`, el cambio de contraseña, la desactivación del segundo factor o una suspensión administrativa (`SUSPENDIDA_TEMPORAL` o `SUSPENDIDA_PERMANENTE`) revocan la sesión en base de datos al instante; una advertencia o una restricción la conservan. Cualquier uso posterior de una sesión revocada responde `401 NO_AUTENTICADO`.
 5. **Segundo factor TOTP (RFC 6238):** Obligatorio para rol administrativo. El secreto Base32 se guarda cifrado en reposo con **AES-GCM**. Tras el login, una cuenta con 2FA queda en sesión provisional (`pendienteDeSegundoFactor: true`) hasta validar el código.
 6. **Roles y autorización compuesta:** Rutas `/api/admin/**` exigen concurrentemente tener rol administrativo y sesión con TOTP verificado.
 7. **Propiedad estricta de recursos:** Los recursos ajenos (solicitudes, chats, expedientes) responden deliberadamente `404 RECURSO_NO_ENCONTRADO` para prevenir la divulgación de existencia de registros a terceros.
-8. **Estados de cuenta:** Cuentas `RESTRINGIDA_TEMPORAL` no pueden contratar ni aceptar trabajos; cuentas `SUSPENDIDA_*` sufren revocación inmediata de sesiones y respuesta `403 ACCESO_DENEGADO`.
+8. **Estados de cuenta:** Cuentas `RESTRINGIDA_TEMPORAL` conservan la sesión, pero no pueden contratar ni aceptar trabajos (`403 CUENTA_RESTRINGIDA`); en cuentas `SUSPENDIDA_*` las sesiones se revocan (la siguiente petición responde `401 NO_AUTENTICADO`) y un nuevo inicio de sesión responde `403 CUENTA_SUSPENDIDA` con el canal de soporte.
 9. **Protección CSRF activa:** Validación estricta de token `XSRF-TOKEN` / `X-XSRF-TOKEN` en todos los métodos HTTP mutables (`POST`, `PUT`, `DELETE`).
-10. **Documentos privados en Cloudflare R2:** Bucket privado sin acceso web público. La entrega de expedientes a administradores se efectúa exclusivamente mediante URLs firmadas temporales con expiración máxima de 5 minutos y directivas `no-store`.
+10. **Documentos privados en Cloudflare R2:** Bucket privado sin acceso web público. La entrega de expedientes a administradores se efectúa exclusivamente mediante URLs firmadas temporales (5 minutos por omisión, configurable hasta un máximo de 1 hora) y directivas `no-store`.
 
 ---
 

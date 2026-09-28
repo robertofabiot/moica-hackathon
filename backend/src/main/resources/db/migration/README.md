@@ -9,7 +9,7 @@ verificación documental con `V30`. P5 abre servicios y catálogos de oficio con
 `V31` y carga la taxonomía de demostración con `V90`. P6 abre el ciclo de
 solicitudes con `V40`, P7 suma sus mensajes con `V41` y P8 cierra el rango de
 contratación con las calificaciones en `V42`. P9 abre el de moderación con
-`V50` y `V51`.
+`V50` y `V51`, y P10B añade `V52`.
 
 ## Reglas
 
@@ -26,8 +26,11 @@ contratación con las calificaciones en `V42`. P9 abre el de moderación con
   ella.
 - Los dominios controlados se modelan como `VARCHAR` con restricción `CHECK`.
   Prohibido crear tipos enum nativos de PostgreSQL.
-- Identificadores en `BIGINT` y fechas en `TIMESTAMPTZ`, según
-  `Docs/Core/prompt.md`.
+- Identificadores en `BIGINT` para las entidades transaccionales y fechas en
+  `TIMESTAMPTZ`, según `Docs/Core/prompt.md`. Los catálogos usan el tipo que fija
+  el diccionario de datos, que tiene mayor precedencia: `SMALLINT` en
+  `departamento`, `categoria_servicio` y `medida_administrativa`, e `INTEGER` en
+  `municipio` y `subcategoria_servicio`.
 - La estructura debe corresponder con `Docs/Dev/Moica - Diccionario de Datos.xlsx`
   y `Docs/Dev/DiagramaLogico.mmd`, que son las fuentes de verdad del modelo.
 
@@ -65,4 +68,5 @@ adelantado un rango que todavía no hace falta.
 | `V42__crear_calificaciones_de_usuario.sql` | P8 | Tabla `calificacion_usuario`, con FK `RESTRICT` hacia `solicitud_servicio` y dos veces hacia `usuario`, las restricciones `uq_calificacion_usuario_solicitud_calificador` y `uq_calificacion_usuario_solicitud_calificado` —una calificación emitida y una recibida por participante y solicitud—, `ck_calificacion_usuario_participantes`, `ck_calificacion_usuario_puntuacion` (1 a 5), el dominio `CLIENTE`/`PRESTADOR` y el índice `ix_calificacion_usuario_calificado_rol` que resuelve la reputación por persona y rol. Sin tabla `reputacion` |
 | `V50__crear_casos_medidas_e_historial_scd2.sql` | P9 | Tablas `medida_administrativa`, `caso_moderacion` e `historial_caso`, todas con FK `RESTRICT`. El catálogo de medidas se crea vacío porque las otras dos lo referencian; gestionarlo y aplicarlo es P10B. Incluye `uq_caso_moderacion_solicitud_reportante` —un caso por participante y solicitud, y la que arbitra dos reportes simultáneos—, `ck_caso_moderacion_participantes`, `ck_caso_moderacion_cierre` —resultado, resolución y fecha van juntos—, `ck_caso_moderacion_fecha_fin_medida`, los dominios `EstadoCasoModeracion`, `ResultadoCasoModeracion`, `TipoActorHistorial`, `TipoEventoHistorial` y `EstadoCuenta` como `CHECK`, `uq_historial_caso_version`, `ck_historial_caso_numero_version`, `ck_historial_caso_vigencia`, `ck_historial_caso_actor`, `ck_historial_caso_detalle_cambio` y el índice único parcial `uq_historial_caso_version_actual` |
 | `V51__proteger_vigencias_scd2_con_exclusion_temporal.sql` | P9 | Extensión `btree_gist` idempotente y la restricción `ex_historial_caso_vigencia`, un `EXCLUDE USING GIST` sobre `id_caso_moderacion` y el intervalo semiabierto `[fecha_inicio_vigencia, fecha_fin_vigencia)`: dos versiones del mismo caso no pueden superponerse, y dos consecutivas sí pueden compartir el instante de transición |
+| `V52__exigir_una_sola_medida_vigente_por_cuenta.sql` | P10B | Índice único parcial `uq_caso_moderacion_medida_vigente_por_cuenta` sobre `caso_moderacion (id_reportado)` donde `id_medida_administrativa_actual` no es nulo: una sola medida vigente por cuenta (D-MOD-03). Sin tablas ni columnas nuevas |
 | `V90__cargar_taxonomia_de_demostracion.sql` | P5 | Tres categorías de demostración —hogar, belleza y tecnología— con tres subcategorías cada una. No es una taxonomía exhaustiva |

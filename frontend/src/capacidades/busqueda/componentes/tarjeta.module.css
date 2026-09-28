@@ -5,7 +5,7 @@
 
 .lista {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--gap-md);
   margin: 0;
   padding: 0;
@@ -73,22 +73,28 @@
 
 .nombre {
   flex: 1 1 8rem;
+  /* Las palabras saltan enteras; solo una cadena más ancha que la tarjeta se corta. */
+  max-width: 100%;
   font-family: var(--font-family-primary);
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   line-height: 1.25;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
+  hyphens: none;
 }
 
 .filaMeta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: var(--gap-sm);
 }
 
 .precio {
-  margin: 0;
+  /* Sigue a la derecha también cuando la tarjeta es estrecha y baja de línea. */
+  margin: 0 0 0 auto;
   color: var(--color-neutral-800);
   font-family: var(--font-family-secondary);
   font-size: var(--font-size-sm);

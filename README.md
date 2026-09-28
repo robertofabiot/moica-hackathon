@@ -501,7 +501,8 @@ Las variables opcionales `MOICA_SEED_DEMO_IMAGENES_PLOMERIA`,
 `MOICA_SEED_DEMO_IMAGENES_DISENO` y `MOICA_SEED_DEMO_IMAGENES_SOPORTE` aceptan hasta
 tres object keys públicos existentes, separados por comas. El
 [procedimiento de datos de demostración](Docs/Dev/DatosDemostracion.md) detalla
-Railway, las dos imágenes recuperadas, el mapeo pendiente y las garantías.
+Railway, las dos imágenes recuperadas, las claves de las ocho imágenes propias de la
+demo y las garantías.
 
 
 * **Proveedor de despliegue:** **Railway** (Proyecto `victorious-embrace`, entorno `production`).

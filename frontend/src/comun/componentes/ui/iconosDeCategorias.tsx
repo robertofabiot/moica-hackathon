@@ -62,11 +62,9 @@ export function IconoTecnologia() {
 export function IconoBelleza() {
   return (
     <Trazo>
-      <path d="M12 5a3 3 0 1 1 3 9h-6a3 3 0 1 1 3-9Z" />
-      <path d="M12 14v7" />
-      <path d="M8 18h8" />
-      <path d="m9 5 1-3" />
-      <path d="m15 5-1-3" />
+      <path d="M9 11V7.5a1 1 0 0 1 .4-.8l4-3A1 1 0 0 1 15 4.5V11" />
+      <rect width="10" height="10" x="7" y="11" rx="1" />
+      <path d="M7 15h10" />
     </Trazo>
   );
 }

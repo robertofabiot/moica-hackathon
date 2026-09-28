@@ -143,11 +143,14 @@ El 27 de septiembre de 2026 se subieron al bucket público —el que sirve la ba
 comprobada— ocho objetos nuevos, uno por cada servicio que no tenía imagen. Se
 incorporaron exclusivamente como material de esta demostración, para ilustrar
 servicios ficticios, y ninguna publicación real los usa. Ni los originales ni los
-WebP generados se versionan en el repositorio.
+WebP generados se versionan en el repositorio. El 28 de septiembre la fotografía
+de plomería se sustituyó por otra que se reconoce mejor como plomería, con una
+clave nueva; el objeto anterior no se sobrescribió ni se borró y la demo ya no lo
+usa.
 
 | Variable | Object key | Servicio |
 |---|---|---|
-| `MOICA_SEED_DEMO_IMAGENES_PLOMERIA` | `servicios/53a6d16acc4249d5a513195de528b9dd.webp` | Reparación de fugas y cambio de grifería |
+| `MOICA_SEED_DEMO_IMAGENES_PLOMERIA` | `servicios/ea714d17314649fc99ddd2a966f23d68.webp` | Reparación de fugas y cambio de grifería |
 | `MOICA_SEED_DEMO_IMAGENES_ELECTRICIDAD` | `servicios/a0c5fa09279f40bab847ba667cf95d4a.webp` | Instalación de luminarias y tomacorrientes |
 | `MOICA_SEED_DEMO_IMAGENES_CARPINTERIA` | `servicios/ced928be2fee42ee9784f4f66b98b93c.webp` | Muebles de madera a medida y reparaciones |
 | `MOICA_SEED_DEMO_IMAGENES_MAQUILLAJE` | `servicios/62d3baf2d4f94e3fbeb805675ff983ef.webp` | Maquillaje social para tus ocasiones especiales |
@@ -158,7 +161,7 @@ WebP generados se versionan en el repositorio.
 
 La URL pública de cada objeto es la base comprobada seguida de `/` y su clave; por
 ejemplo,
-<https://pub-a1129fb1410e4c84b7ac69e79d442ace.r2.dev/servicios/53a6d16acc4249d5a513195de528b9dd.webp>.
+<https://pub-a1129fb1410e4c84b7ac69e79d442ace.r2.dev/servicios/ea714d17314649fc99ddd2a966f23d68.webp>.
 El seeder no descarga ni sube imágenes: guarda en PostgreSQL la URL que construye
 con esa base y la clave. Ni el backend ni el navegador piden nada a Pexels en
 tiempo de ejecución. Estas ocho imágenes llevan el texto alternativo genérico del
@@ -182,7 +185,7 @@ autor se comprobaron en Pexels a partir de ese identificador.
 
 | Servicio | WebP | Fotografía en Pexels | Autor en Pexels |
 |---|---|---|---|
-| Plomería | 1067×1600, 22 KiB | [7220892](https://www.pexels.com/photo/a-person-holding-brown-doorknob-7220892/) | cottonbro studio |
+| Plomería | 1600×1067, 213 KiB | [14953886](https://www.pexels.com/photo/wrench-and-pipes-on-sketch-14953886/) | AS Photography |
 | Electricidad | 1068×1600, 82 KiB | [5691590](https://www.pexels.com/photo/an-electrician-using-pliers-to-repair-the-ac-power-plugs-and-sockets-5691590/) | Ksenia Chernaya |
 | Carpintería | 1600×1067, 124 KiB | [7483049](https://www.pexels.com/photo/carpenter-making-a-furniture-7483049/) | cottonbro studio |
 | Maquillaje | 1067×1600, 92 KiB | [8558242](https://www.pexels.com/photo/make-up-artist-applying-make-up-to-her-client-8558242/) | Nataliya Vaitkevich |
@@ -191,8 +194,9 @@ autor se comprobaron en Pexels a partir de ese identificador.
 | Diseño gráfico | 1067×1600, 47 KiB | [12903003](https://www.pexels.com/photo/graphic-designer-using-graphic-tablet-and-laptop-12903003/) | Mizuno K |
 | Soporte técnico | 900×1600, 75 KiB | [37492296](https://www.pexels.com/photo/technician-repairing-office-printer-in-workshop-37492296/) | Bulat843 |
 
-Los EXIF de plomería y carpintería nombran como autora a Dimenshtein Olga y el de
-soporte lleva el copyright de Bulat843; esos campos se conservan en los WebP.
+El EXIF de carpintería nombra como autora a Dimenshtein Olga y el de soporte lleva
+el copyright de Bulat843; esos campos se conservan en los WebP. La fotografía de
+plomería no trae datos de autoría en EXIF.
 
 ## Carga de una sola vez en Railway
 
@@ -238,8 +242,8 @@ Para completar imágenes después: añadir los mapeos, repetir temporalmente
 mismas cuentas, perfiles y publicaciones. En una base que ya tiene la demo sin las
 ocho imágenes, el resumen debe mostrar `imagenesCreadas=8`, `imagenesExistentes=2`
 y `serviciosSinMapeo=0`, sin usuarios, perfiles ni servicios creados: así resultó
-el ensayo local del 27 de septiembre de 2026 contra PostgreSQL 18 y la base
-comprobada. Si no se cambió el mapeo, no crea ninguna imagen adicional. No usar estas cuentas para representar prestadores reales ni
+el ensayo local contra PostgreSQL 18 y la base comprobada, repetido el 28 de
+septiembre de 2026 con las claves definitivas. Si no se cambió el mapeo, no crea ninguna imagen adicional. No usar estas cuentas para representar prestadores reales ni
 promoverlas a administración. Los recorridos autenticados siguen usando las
 cuentas de prueba del flujo E2E, separado de esta semilla pública.
 

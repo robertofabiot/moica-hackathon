@@ -2046,17 +2046,20 @@ pública posterior está en
 
 Rama `feature/imagenes-demo-icono-belleza`, basada en `develop` actualizado
 (`5e64ea8`). Completa las ocho imágenes que el
-[seeder explícito](#seeder-explícito-de-datos-de-demostración) dejó pendientes y
-cambia el dibujo del icono de Belleza. Sin cambios de backend, esquema, endpoints,
-dependencias ni variables nuevas: las ocho variables del mapeo ya existían.
+[seeder explícito](#seeder-explícito-de-datos-de-demostración) dejó pendientes,
+cambia el dibujo del icono de Belleza y evita que los títulos de las tarjetas de
+servicio partan palabras. Sin cambios de backend, esquema, endpoints, dependencias
+ni variables nuevas: las ocho variables del mapeo ya existían.
 
 | Comprobación | Implementación / evidencia |
 |---|---|
 | Icono de Belleza | `IconoBelleza` dibuja un labial con el mismo `Trazo` que los demás (24×24, `currentColor`, trazo 2, extremos y uniones redondeados, `aria-hidden`). Lo reutilizan sin cambios el chip de `FiltrosPublicos` y el respaldo de `IconoDeCategoria` en `TarjetaDeServicio` y `ServiciosPropios` |
-| Alineación y desbordamiento | `/explorar` por CDP a 375×812, 768×1024 y 1280×800: `scrollWidth` igual a `clientWidth`; los ocho chips miden 44 px con el icono de 20×20 centrado; los respaldos de tarjeta, 40×40 centrados; el labial ocupa x 7–17 e y 3,5–21 del `viewBox`. Capturas y medidas adjuntas al PR, no versionadas |
-| Ocho objetos nuevos en el bucket público | Claves aleatorias `servicios/<32 hex>.webp`; HEAD previo 404 y `PUT` con `If-None-Match: *`, sin sobrescribir ni borrar nada; comprobación firmada de tipo, tamaño y ETag, y GET anónimo 200 `image/webp` con el mismo SHA-256. Claves, procedencia y autoría en [DatosDemostracion.md](DatosDemostracion.md#imágenes-propias-de-la-demostración) |
-| Seeder con las ocho claves | Ensayo local contra PostgreSQL 18 desechable y la base comprobada. Primera carga sin mapeos: `imagenesCreadas=2`, `serviciosSinMapeo=8`. Segunda con las ocho variables: `imagenesCreadas=8`, `imagenesExistentes=2`, `serviciosSinMapeo=0`, sin cuentas, perfiles ni servicios nuevos. Las nueve tarjetas cargan su foto en los tres tamaños |
-| Frontend | `format:check`, `lint`, `typecheck`, 424 pruebas en 46 archivos y `build` en verde, con el aviso existente de bundle mayor de 500 kB |
+| Alineación y desbordamiento | `/explorar` por CDP a 375×812, 768×1024 y 1280×800: `scrollWidth` igual a `clientWidth`; los ocho chips miden 44 px con el icono de 20×20 centrado; los respaldos de tarjeta, 40×40 centrados; el labial ocupa x 7–17 e y 3,5–21 del `viewBox`. Capturas y medidas finales del 28 de septiembre adjuntas al PR, no versionadas |
+| Títulos de las tarjetas | `.nombre` pasa de `overflow-wrap: anywhere` a `break-word`, con `word-break: normal`, `hyphens: none` y `max-width: 100%`; la lista del teléfono usa `minmax(0, 1fr)`, como las de tableta y escritorio. Medición por palabra con `Range.getClientRects()` a los tres tamaños: antes se partían «mantenimiento», «tomacorrientes» y «semipermanente» en escritorio; ahora ninguna, con el mismo tamaño de letra. Una cadena de 98 caracteres sin espacios, inyectada en el DOM, se corta dentro de la tarjeta sin desbordar la página; con `break-word` sin el tope de ancho desbordaba hasta 1094 px en teléfono y 1421 en escritorio |
+| Precio en tableta | Ya se salía de la tarjeta a 768 px, donde miden 208 px. `.filaMeta` admite salto de línea y el precio conserva la alineación a la derecha con `margin-left: auto`: queda dentro en las nueve tarjetas, que crecen 18 px. Estrellas, insignia y precio siguen alineados en los tres tamaños; teléfono y escritorio conservan su altura |
+| Ocho objetos nuevos en el bucket público | Claves aleatorias `servicios/<32 hex>.webp`; HEAD previo 404 y `PUT` con `If-None-Match: *`, sin sobrescribir ni borrar nada; comprobación firmada de tipo, tamaño y ETag, y GET anónimo 200 `image/webp` con el mismo SHA-256. El 28 de septiembre la foto de plomería se sustituyó por un objeto nuevo con el mismo procedimiento; el anterior sigue intacto (GET 200, mismo SHA-256) y sin uso. Claves, procedencia y autoría en [DatosDemostracion.md](DatosDemostracion.md#imágenes-propias-de-la-demostración) |
+| Seeder con las ocho claves | Ensayo local contra PostgreSQL 18 desechable y la base comprobada, repetido el 28 de septiembre con las claves definitivas. Primera carga sin mapeos: `imagenesCreadas=2`, `serviciosSinMapeo=8`. Segunda con las ocho variables: `imagenesCreadas=8`, `imagenesExistentes=2`, `serviciosSinMapeo=0`, sin cuentas, perfiles ni servicios nuevos. Las nueve tarjetas cargan su foto en los tres tamaños |
+| Frontend | `format:check`, `lint`, `typecheck`, 424 pruebas en 46 archivos y `build` en verde, repetidos sobre el CSS final, con el aviso existente de bundle mayor de 500 kB |
 | Backend | Sin cambios de código; la batería completa corre en el job backend del CI del PR |
 
 No se modificó Railway ni se activó el seeder en producción: las ocho variables se

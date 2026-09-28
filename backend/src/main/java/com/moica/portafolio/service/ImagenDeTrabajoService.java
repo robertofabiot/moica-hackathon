@@ -56,13 +56,14 @@ public class ImagenDeTrabajoService {
     TipoDeImagen tipo = validacion.validar(contenido, archivo.getContentType());
 
     String clave = ClavesDeImagen.nueva(ClavesDeImagen.PREFIJO_TRABAJOS, tipo);
-    String url = almacenamiento.guardar(clave, contenido, tipo.tipoMime());
 
     try {
+      String url = almacenamiento.guardar(clave, contenido, tipo.tipoMime());
       return trabajos.registrarImagen(sujeto, idTrabajo, url, texto);
     } catch (RuntimeException fallo) {
-      // Compensación: la fila no llegó a existir, así que el objeto recién
-      // subido se retira para no dejarlo huérfano.
+      // Compensación: la fila no llegó a existir, así que el objeto que pudo
+      // subirse se retira para no dejarlo huérfano, también si el fallo fue un
+      // tiempo agotado después de que R2 lo guardara.
       eliminarSinPropagar(clave);
       throw fallo;
     }

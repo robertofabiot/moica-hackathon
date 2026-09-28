@@ -50,9 +50,10 @@ public class ImagenDeServicioService {
     TipoDeImagen tipo = validacion.validar(contenido, archivo.getContentType());
 
     String clave = ClavesDeImagen.nueva(ClavesDeImagen.PREFIJO_SERVICIOS, tipo);
-    String url = almacenamiento.guardar(clave, contenido, tipo.tipoMime());
 
     try {
+      // Dentro del bloque que compensa, igual que en el portafolio.
+      String url = almacenamiento.guardar(clave, contenido, tipo.tipoMime());
       return servicios.registrarImagen(sujeto, idServicio, url, texto);
     } catch (RuntimeException fallo) {
       eliminarSinPropagar(clave);

@@ -78,6 +78,22 @@ public interface CasoModeracionRepository extends JpaRepository<CasoModeracion, 
       Long idReportado);
 
   /**
+   * Qué expediente sostiene la medida vigente de una cuenta, sin cargarlo.
+   *
+   * <p>Es la variante de {@link #findByIdReportadoAndIdMedidaAdministrativaActualNotNull} para
+   * quien va a <b>modificar</b> ese expediente: devuelve solo el identificador por el mismo motivo
+   * que {@link #idReportadoDe}. Cargar la entidad antes de bloquearla haría que el bloqueo
+   * posterior devolviera esa copia sin releerla.
+   */
+  @Query(
+      """
+      SELECT caso.idCasoModeracion FROM CasoModeracion caso
+      WHERE caso.idReportado = :idReportado
+        AND caso.idMedidaAdministrativaActual IS NOT NULL
+      """)
+  Optional<Long> idDelCasoConMedidaVigenteDe(@Param("idReportado") Long idReportado);
+
+  /**
    * A quién sanciona un expediente, sin cargar el expediente.
    *
    * <p>Devuelve solo el identificador a propósito. Quien va a bloquear necesita saber <em>qué

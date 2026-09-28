@@ -164,13 +164,20 @@ class DemoIT extends PruebaDeIntegracionConPostgres {
       var detalle = descubrimiento.detallar(s.idServicioPublicado());
       assertThat(detalle.imagenes()).hasSize(2);
       assertThat(detalle.admiteContratacion()).isTrue();
+      // La base de la suite es compartida: otras clases dejan servicios reales
+      // en las mismas subcategorías y municipios. Lo que se afirma es que los
+      // filtros aíslan este servicio entre los de la demostración.
       assertThat(
-              descubrimiento.buscar(
-                  null,
-                  detalle.idCategoriaServicio(),
-                  detalle.idSubcategoriaServicio(),
-                  detalle.prestador().municipioPrincipal().idMunicipio()))
-          .hasSize(1);
+              descubrimiento
+                  .buscar(
+                      null,
+                      detalle.idCategoriaServicio(),
+                      detalle.idSubcategoriaServicio(),
+                      detalle.prestador().municipioPrincipal().idMunicipio())
+                  .stream()
+                  .filter(r -> r.descripcion().contains("ficticio para demostración"))
+                  .map(r -> r.idServicioPublicado()))
+          .containsExactly(s.idServicioPublicado());
       assertThat(descubrimiento.perfilPublico(detalle.prestador().idPrestador()).servicios())
           .isNotEmpty();
     }
@@ -354,6 +361,38 @@ class DemoIT extends PruebaDeIntegracionConPostgres {
             Long.class,
             p.correo(),
             codificador.encode(java.util.UUID.randomUUID().toString()));
+    try {
+      var antes = instantanea();
+      assertThatThrownBy(
+              () -> new TransactionTemplate(transacciones).execute(s -> demo.sincronizar()))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("Conflicto de propiedad");
+      assertThat(instantanea()).isEqualTo(antes);
+    } finally {
+      jdbc.update("DELETE FROM usuario WHERE id_usuario = ?", id);
+    }
+  }
+
+  /**
+   * Una cuenta con el correo y el nombre de la semilla que ya inició sesión no la creó el cargador:
+   * sus cuentas tienen una contraseña aleatoria que nadie conoce. Adoptarla dejaría verificada, y
+   * reactivada en cada arranque, una cuenta que controla otra persona.
+   */
+  @Test
+  @Transactional(propagation = Propagation.NOT_SUPPORTED)
+  void noAdoptaUnaCuentaReservadaQueYaInicioSesion() {
+    var p = DatosDeDemostracion.PRESTADORES.getLast();
+    Long id =
+        jdbc.queryForObject(
+            "INSERT INTO usuario(nombre_completo, correo_electronico, clave_hash) VALUES (?, ?, ?) RETURNING id_usuario",
+            Long.class,
+            p.nombre(),
+            p.correo(),
+            codificador.encode(java.util.UUID.randomUUID().toString()));
+    jdbc.update(
+        "INSERT INTO sesion(id_usuario, identificador_token, fecha_expiracion) VALUES (?, ?, now() + interval '1 day')",
+        id,
+        java.util.UUID.randomUUID().toString());
     try {
       var antes = instantanea();
       assertThatThrownBy(

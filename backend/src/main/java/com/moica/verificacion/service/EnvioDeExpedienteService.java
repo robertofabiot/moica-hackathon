@@ -91,10 +91,15 @@ public class EnvioDeExpedienteService {
 
     List<ArchivoValidado> validados = validarTodos(recibidos, tiposDeDocumento);
     List<DocumentoCargado> cargados = new ArrayList<>(validados.size());
+    List<String> intentadas = new ArrayList<>(validados.size());
 
     try {
       for (ArchivoValidado archivo : validados) {
         String clave = ClavesDeDocumento.nueva(archivo.formato());
+        // Se anota antes de subir: un tiempo de espera agotado puede llegar
+        // cuando R2 ya guardó el objeto, y retirar una clave que no existe es
+        // inocuo.
+        intentadas.add(clave);
         almacenamiento.guardar(clave, archivo.contenido(), archivo.formato().tipoMime());
         cargados.add(
             new DocumentoCargado(
@@ -107,9 +112,9 @@ public class EnvioDeExpedienteService {
       return verificacion.registrar(sujeto.idUsuario(), nivel, cargados);
     } catch (RuntimeException fallo) {
       // Compensación: nada de este intento quedó apuntado por una fila, así que
-      // todo lo que llegó a subirse se retira. Si además fallara la limpieza, el
-      // aviso queda registrado y el objeto se retira a mano.
-      compensar(cargados);
+      // todo lo que pudo llegar a subirse se retira. Si además fallara la
+      // limpieza, el aviso queda registrado y el objeto se retira a mano.
+      compensar(intentadas);
       throw fallo;
     }
   }
@@ -139,10 +144,10 @@ public class EnvioDeExpedienteService {
     return validados;
   }
 
-  private void compensar(List<DocumentoCargado> cargados) {
-    for (DocumentoCargado cargado : cargados) {
+  private void compensar(List<String> claves) {
+    for (String clave : claves) {
       try {
-        almacenamiento.eliminar(cargado.claveAlmacenamiento());
+        almacenamiento.eliminar(clave);
       } catch (RuntimeException fallo) {
         // Sin la clave: identifica un documento privado concreto y los
         // estándares prohíben registrarla. Quien opere el despliegue localiza

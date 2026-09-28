@@ -1468,6 +1468,10 @@ curl -s -b galletas.txt -X POST http://localhost:8080/api/usuarios   -H "Content
 
 Sin el paso 2 la respuesta es `403`.
 
+## Correo del registro
+
+El correo se guarda normalizado: sin espacios exteriores y en minusculas, igual que en el inicio de sesion. Un correo del dominio de nivel superior `.invalid` se rechaza con `400 VALIDACION` en `correoElectronico`: la RFC 2606 reserva ese dominio para direcciones que nunca reciben correo, y los datos de demostracion lo usan (`demo.moica.invalid`) justamente para que nadie pueda registrar esas cuentas antes que el cargador.
+
 ## Politica de contraseña
 
 De 8 a 72 caracteres, con al menos una mayuscula, una minuscula, un numero y un simbolo. No hace falta alternar tipos en cada caracter. El maximo lo impone BCrypt, que solo tiene en cuenta los primeros 72 bytes: una contraseña con acentos o emojis puede alcanzar ese limite antes de los 72 caracteres, y en ese caso se rechaza con una explicacion, no con un error del servidor.

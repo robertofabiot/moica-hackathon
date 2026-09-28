@@ -11,6 +11,7 @@ import com.moica.comun.error.ErrorDeAplicacion;
 import com.moica.usuario.dto.DatosDeUsuario;
 import com.moica.usuario.entity.EstadoCuenta;
 import com.moica.usuario.service.UsuarioService;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,8 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class AutenticacionService {
+
+  private static final ZoneId ZONA_DEL_MVP = ZoneId.of("America/Managua");
 
   private final UsuarioService usuarios;
   private final SesionService sesiones;
@@ -172,10 +175,17 @@ public class AutenticacionService {
         plazo + " Si crees que es un error, escribe a " + soporte.canal() + ".");
   }
 
-  /** La fecha de fin en la forma en que se lee, no en la que se almacena. */
+  /**
+   * La fecha de fin en la forma en que se lee, no en la que se almacena.
+   *
+   * <p>En la hora de Managua, la única zona que cubre el MVP ({@code V23}), y no en la del
+   * servidor: el contenedor corre en UTC, y un fin a las 20:00 de Managua ya es el día siguiente
+   * allí.
+   */
   private static String fechaLegible(DatosDeUsuario usuario) {
     return usuario
         .fechaFinEstadoCuenta()
-        .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", new Locale("es")));
+        .atZoneSameInstant(ZONA_DEL_MVP)
+        .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es")));
   }
 }

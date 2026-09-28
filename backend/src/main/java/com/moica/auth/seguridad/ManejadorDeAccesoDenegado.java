@@ -12,7 +12,11 @@ import org.springframework.stereotype.Component;
 /**
  * Responde 403 cuando la petición llega identificada pero no se le permite hacer lo que pide.
  *
- * <p>En P2 el caso real es una operación mutable sin el token CSRF que le corresponde.
+ * <p>Atiende todas las denegaciones de la cadena: una operación mutable sin su token CSRF, una
+ * sesión provisional o de una cuenta suspendida fuera de lo poco que se le permite, y {@code
+ * /api/admin/**} sin rol o sin el segundo factor verificado. El mensaje sugiere recargar porque el
+ * único caso que un recargo resuelve es el del CSRF, el más frecuente; los demás los distingue el
+ * frontend por el código y el estado de su sesión, no por este texto.
  */
 @Component
 public class ManejadorDeAccesoDenegado implements AccessDeniedHandler {

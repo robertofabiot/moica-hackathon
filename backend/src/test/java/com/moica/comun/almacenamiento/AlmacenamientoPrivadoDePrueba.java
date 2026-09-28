@@ -45,6 +45,7 @@ public class AlmacenamientoPrivadoDePrueba implements AlmacenamientoDeDocumentos
 
   private boolean simularNoDisponible;
   private int fallarDesdeLaPosicion = SIN_FALLO;
+  private boolean perderLaRespuesta;
 
   public AlmacenamientoPrivadoDePrueba(PropiedadesDeDocumentos propiedades, Clock reloj) {
     this.propiedades = propiedades;
@@ -72,6 +73,9 @@ public class AlmacenamientoPrivadoDePrueba implements AlmacenamientoDeDocumentos
     }
     objetos.put(clave, new ObjetoPrivado(contenido, tipoMime));
     clavesGuardadas.add(clave);
+    if (perderLaRespuesta) {
+      throw almacenamientoNoDisponible();
+    }
   }
 
   @Override
@@ -106,6 +110,7 @@ public class AlmacenamientoPrivadoDePrueba implements AlmacenamientoDeDocumentos
     clavesEliminadas.clear();
     simularNoDisponible = false;
     fallarDesdeLaPosicion = SIN_FALLO;
+    perderLaRespuesta = false;
   }
 
   /** A partir de ahora, todas las operaciones fallan como si el proveedor no respondiera. */
@@ -121,6 +126,16 @@ public class AlmacenamientoPrivadoDePrueba implements AlmacenamientoDeDocumentos
    */
   public synchronized void fallarAlGuardarDesdeLaPosicion(int posicion) {
     this.fallarDesdeLaPosicion = posicion;
+  }
+
+  /**
+   * A partir de ahora, cada objeto se guarda pero la llamada falla igual.
+   *
+   * <p>Es lo que ocurre cuando el tiempo de espera vence después de que el proveedor ya persistió
+   * el objeto: quien llama ve un error y no sabe que el archivo quedó en el bucket.
+   */
+  public synchronized void perderLaRespuestaTrasGuardar() {
+    this.perderLaRespuesta = true;
   }
 
   public synchronized boolean contiene(String clave) {

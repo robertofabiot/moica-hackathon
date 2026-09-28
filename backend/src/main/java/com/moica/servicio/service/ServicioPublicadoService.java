@@ -214,11 +214,6 @@ public class ServicioPublicadoService {
   }
 
   /**
-   * Identifica un servicio para otra capacidad, exista o no visible en el descubrimiento.
-   *
-   * <p>Devuelve vacío si no hay fila. Quien pregunta decide si eso es 404 o un rechazo de negocio.
-   */
-  /**
    * Las imágenes de un servicio, en su orden de visualización.
    *
    * <p>Existe para el expediente administrativo de un caso: el servicio contratado es la evidencia
@@ -236,6 +231,11 @@ public class ServicioPublicadoService {
     return imagenesDe(idServicioPublicado).stream().map(DatosDeImagenDeServicio::de).toList();
   }
 
+  /**
+   * Identifica un servicio para otra capacidad, exista o no visible en el descubrimiento.
+   *
+   * <p>Devuelve vacío si no hay fila. Quien pregunta decide si eso es 404 o un rechazo de negocio.
+   */
   @Transactional(readOnly = true)
   public Optional<ReferenciaDeServicio> referenciar(Long idServicioPublicado) {
     return servicios.findById(idServicioPublicado).map(ReferenciaDeServicio::de);

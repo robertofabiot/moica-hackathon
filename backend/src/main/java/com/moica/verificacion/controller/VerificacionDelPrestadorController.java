@@ -79,8 +79,11 @@ public class VerificacionDelPrestadorController {
   public ResponseEntity<DatosDeSolicitudVerificacion> enviarSolicitud(
       @AuthenticationPrincipal UsuarioAutenticado sujeto,
       @RequestParam("nivelSolicitado") String nivelSolicitado,
-      @RequestPart("archivo") List<MultipartFile> archivos,
-      @RequestParam("tipoDocumento") List<String> tiposDeDocumento) {
+      // Opcionales para que un expediente sin documentos llegue al servicio y
+      // responda EXPEDIENTE_INCOMPLETO, como fija el contrato, y no un 400
+      // genérico de Spring por la parte ausente.
+      @RequestPart(value = "archivo", required = false) List<MultipartFile> archivos,
+      @RequestParam(value = "tipoDocumento", required = false) List<String> tiposDeDocumento) {
 
     return ResponseEntity.status(HttpStatus.CREATED)
         .body(envios.enviar(sujeto, nivelSolicitado, archivos, tiposDeDocumento));

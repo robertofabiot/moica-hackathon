@@ -74,6 +74,14 @@ describe('Servicios propios', () => {
     });
   });
 
+  it('con un identificador que no es un número dice que no existe en vez de quedarse cargando', async () => {
+    api.responder('GET /api/prestador/servicios', { estado: 200, cuerpo: [] });
+    renderizarConProveedores(<App />, '/prestador/servicios/x');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Ese servicio no existe.');
+    expect(screen.getByRole('link', { name: 'Volver al listado' })).toBeVisible();
+  });
+
   it('conserva la subcategoría al editar cuando el catálogo llega después', async () => {
     const servicio = servicioPropioDeEjemplo();
     api.responder('GET /api/prestador/servicios/10', { estado: 200, cuerpo: servicio });
@@ -87,6 +95,23 @@ describe('Servicios propios', () => {
     expect(screen.getByRole('navigation', { name: 'Migas de pan' })).toBeVisible();
     expect(screen.getByRole('link', { name: 'Mis servicios' })).toBeVisible();
     expect(screen.getByRole('button', { name: 'Guardar cambios generales' })).toBeVisible();
+  });
+
+  it('la zona de subida de la galería tiene una sola parada de teclado y visible', async () => {
+    const persona = userEvent.setup();
+    api.responder('GET /api/prestador/servicios/10', {
+      estado: 200,
+      cuerpo: servicioPropioDeEjemplo(),
+    });
+
+    renderizarConProveedores(<App />, '/prestador/servicios/10');
+
+    await persona.click(await screen.findByLabelText('Texto alternativo de la imagen nueva'));
+    await persona.tab();
+
+    const explorar = screen.getByRole('button', { name: 'Explorar archivos' });
+    expect(explorar).toHaveFocus();
+    expect(screen.queryByRole('button', { name: /Subir fotos/ })).not.toBeInTheDocument();
   });
 
   it('sube una imagen con previsualización y texto alternativo', async () => {
@@ -111,6 +136,9 @@ describe('Servicios propios', () => {
       const enviada = api.ultima('POST /api/prestador/servicios/10/imagenes')?.formulario;
       expect(enviada?.get('textoAlternativo')).toBe('Tubería reparada');
       expect(enviada?.get('archivo')).toBeInstanceOf(File);
+    });
+    await waitFor(() => {
+      expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:previsualizacion-de-prueba');
     });
   });
 });

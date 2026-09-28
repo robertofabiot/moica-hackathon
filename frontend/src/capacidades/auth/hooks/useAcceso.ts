@@ -119,3 +119,16 @@ export function useCierreSesion() {
     error: errorSinConexion ?? mutacion.error,
   };
 }
+
+/**
+ * Lo que hay que decir cuando un cierre de sesión no llegó a revocarla.
+ *
+ * `null` si no hay nada que avisar: sin error, o con un 401, que ya se resuelve llevando a iniciar
+ * sesión con su propio motivo.
+ */
+export function mensajeDeCierreFallido(error: unknown): string | null {
+  if (error instanceof ErrorDeApi && error.estado === 401) {
+    return null;
+  }
+  return error instanceof Error ? error.message : null;
+}

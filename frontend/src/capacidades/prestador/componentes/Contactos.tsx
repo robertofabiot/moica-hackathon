@@ -190,6 +190,7 @@ function EdicionDeContacto({
   alTerminar: () => void;
 }) {
   const actualizacion = useActualizacionDeContacto();
+  const errorAlGuardar = mensajeDe(actualizacion.error);
 
   const {
     register,
@@ -223,6 +224,12 @@ function EdicionDeContacto({
           {...register('contenido')}
         />
       </div>
+      {errorAlGuardar !== null && (
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
+          {errorAlGuardar}
+        </p>
+      )}
+
       <div className={propios.accionesDeFila}>
         <Boton type="submit" variante="primario" disabled={actualizacion.isPending}>
           {actualizacion.isPending ? 'Guardando…' : 'Guardar'}

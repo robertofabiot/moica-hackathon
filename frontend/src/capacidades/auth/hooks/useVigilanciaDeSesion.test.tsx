@@ -6,6 +6,7 @@ import App from '../../../App';
 import {
   cuerpoDeError,
   instalarApiFalsa,
+  resumenDeSolicitudDeEjemplo,
   segundoFactorDeEjemplo,
   sesionDeEjemplo,
   type ApiFalsa,
@@ -149,5 +150,61 @@ describe('vigilancia de la sesión', () => {
       'El correo o la contraseña no son correctos.'
     );
     expect(screen.queryByRole('status')).not.toBeInTheDocument();
+  });
+
+  it('no da por perdida una sesión abierta por equivocarse al volver al formulario', async () => {
+    const persona = userEvent.setup();
+    api.responder('GET /api/auth/sesion', { estado: 200, cuerpo: sesionDeEjemplo() });
+    api.responder('POST /api/auth/sesion', {
+      estado: 401,
+      cuerpo: cuerpoDeError(
+        401,
+        'CREDENCIALES_INVALIDAS',
+        'El correo o la contraseña no son correctos.'
+      ),
+    });
+
+    const { cliente } = renderizarConProveedores(<App />, '/iniciar-sesion');
+
+    await persona.type(await screen.findByLabelText('Correo electrónico'), 'persona@moica.test');
+    await persona.type(screen.getByLabelText('Contraseña'), 'Moica2026$equivocada');
+    await persona.click(screen.getByRole('button', { name: 'Iniciar sesión' }));
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'El correo o la contraseña no son correctos.'
+    );
+    expect(screen.queryByRole('status')).not.toBeInTheDocument();
+    expect(cliente.getQueryData(['auth', 'sesion'])).not.toBeNull();
+  });
+
+  it('olvida lo que vio la cuenta anterior cuando otra pestaña cambió de cuenta', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    api.responder('GET /api/auth/sesion', {
+      estado: 200,
+      cuerpo: sesionDeEjemplo({ idUsuario: 1 }),
+    });
+    api.responder('GET /api/solicitudes/enviadas', {
+      estado: 200,
+      cuerpo: [resumenDeSolicitudDeEjemplo({ nombreServicio: 'Servicio de la cuenta A' })],
+    });
+
+    renderizarConProveedores(<App />, '/solicitudes');
+    expect(await screen.findByText('Servicio de la cuenta A')).toBeVisible();
+
+    // En otra pestaña salió A y entró B: la cookie ya es de B, y esta pestaña
+    // se entera al recuperar el foco, sin pasar nunca por una sesión nula.
+    api.responder('GET /api/auth/sesion', {
+      estado: 200,
+      cuerpo: sesionDeEjemplo({ idUsuario: 2 }),
+    });
+    api.responder('GET /api/solicitudes/enviadas', {
+      estado: 200,
+      cuerpo: [resumenDeSolicitudDeEjemplo({ nombreServicio: 'Servicio de la cuenta B' })],
+    });
+    await vi.advanceTimersByTimeAsync(61_000);
+    window.dispatchEvent(new Event('visibilitychange'));
+
+    expect(await screen.findByText('Servicio de la cuenta B')).toBeVisible();
+    expect(screen.queryByText('Servicio de la cuenta A')).not.toBeInTheDocument();
   });
 });

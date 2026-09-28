@@ -47,7 +47,22 @@ import estilos from './prestadorPublico.module.css';
 export default function PrestadorPublico() {
   const { idPrestador } = useParams();
   const identificador = Number(idPrestador);
-  const perfil = usePrestadorPublico(Number.isInteger(identificador) ? identificador : undefined);
+  const valido = Number.isInteger(identificador) && identificador > 0;
+  const perfil = usePrestadorPublico(valido ? identificador : undefined);
+
+  // Con un identificador inválido la consulta no llega a habilitarse y se quedaría en «Cargando».
+  if (!valido) {
+    return (
+      <MarcoDePagina>
+        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+          Ese perfil no existe.
+        </p>
+        <p className={estilos.pieDeEstado}>
+          <Link to={RUTA_EXPLORAR}>Volver a explorar</Link>
+        </p>
+      </MarcoDePagina>
+    );
+  }
 
   if (perfil.isPending) {
     return (

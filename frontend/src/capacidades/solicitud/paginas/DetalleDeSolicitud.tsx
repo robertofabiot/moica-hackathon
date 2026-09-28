@@ -22,8 +22,26 @@ import propios from './solicitudes.module.css';
 export default function DetalleDeSolicitud() {
   const { idSolicitud } = useParams();
   const identificador = Number(idSolicitud);
+  const valido = Number.isInteger(identificador) && identificador > 0;
   const sesion = useSesionActual();
-  const detalle = useSolicitud(Number.isInteger(identificador) ? identificador : undefined);
+  const detalle = useSolicitud(valido ? identificador : undefined);
+
+  // Con un identificador inválido la consulta no llega a habilitarse y se quedaría en «Cargando».
+  if (!valido) {
+    return (
+      <MarcoDeSolicitudes className={propios.contenidoDetalle}>
+        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+          Esa solicitud no existe.
+        </p>
+        <p className={propios.pie}>
+          <Link className={propios.enlaceVolver} to={RUTA_SOLICITUDES}>
+            <IconoChevronIzquierda />
+            Volver a mis solicitudes
+          </Link>
+        </p>
+      </MarcoDeSolicitudes>
+    );
+  }
 
   if (detalle.isPending) {
     return (

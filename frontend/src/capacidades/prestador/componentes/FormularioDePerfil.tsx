@@ -23,6 +23,13 @@ export default function FormularioDePerfil({ perfil }: { perfil: PerfilPrestador
   const creacion = useCreacionDePerfil();
   const actualizacion = useActualizacionDePerfil();
   const guardado = perfil === null ? creacion : actualizacion;
+  // Al crearse, el perfil deja de ser null y `guardado` pasa a la actualización, que sigue sin
+  // usar: por eso el aviso de éxito mira las dos mutaciones y no solo `guardado`.
+  const avisoDeExito = actualizacion.isSuccess
+    ? 'Guardamos tus cambios.'
+    : creacion.isSuccess && actualizacion.isIdle
+      ? 'Tu perfil quedó creado.'
+      : null;
 
   const {
     control,
@@ -76,9 +83,9 @@ export default function FormularioDePerfil({ perfil }: { perfil: PerfilPrestador
         </p>
       )}
 
-      {guardado.isSuccess && (
+      {avisoDeExito !== null && (
         <p className={`${propios.aviso} ${propios.avisoExito}`} role="status">
-          {perfil === null ? 'Tu perfil quedó creado.' : 'Guardamos tus cambios.'}
+          {avisoDeExito}
         </p>
       )}
 

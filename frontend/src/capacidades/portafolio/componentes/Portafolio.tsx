@@ -223,6 +223,7 @@ export default function Portafolio() {
 /** Edición en el sitio de un trabajo ya guardado. */
 function EdicionDeTrabajo({ trabajo, alTerminar }: { trabajo: Trabajo; alTerminar: () => void }) {
   const actualizacion = useActualizacionDeTrabajo();
+  const errorAlGuardar = mensajeDe(actualizacion.error);
 
   const {
     register,
@@ -287,6 +288,12 @@ function EdicionDeTrabajo({ trabajo, alTerminar }: { trabajo: Trabajo; alTermina
           {...register('fechaRealizacion')}
         />
       </div>
+
+      {errorAlGuardar !== null && (
+        <p className={`${propios.aviso} ${propios.avisoDeError}`} role="alert">
+          {errorAlGuardar}
+        </p>
+      )}
 
       <div className={propios.accionesDeFila}>
         <Boton type="submit" variante="primario" disabled={actualizacion.isPending}>

@@ -16,7 +16,23 @@ import propios from './servicios.module.css';
 export default function EditarServicio() {
   const { idServicio } = useParams();
   const identificador = Number(idServicio);
-  const servicio = useServicioPropio(Number.isInteger(identificador) ? identificador : undefined);
+  const valido = Number.isInteger(identificador) && identificador > 0;
+  const servicio = useServicioPropio(valido ? identificador : undefined);
+
+  // Con un identificador inválido la consulta no llega a habilitarse y se quedaría en «Cargando».
+  if (!valido) {
+    return (
+      <MarcoDeGestionDeServicios>
+        <MigasDeEdicion />
+        <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+          Ese servicio no existe.
+        </p>
+        <Boton className={propios.accionAlineada} variante="secundario" to={RUTA_SERVICIOS}>
+          Volver al listado
+        </Boton>
+      </MarcoDeGestionDeServicios>
+    );
+  }
 
   if (servicio.isPending) {
     return (

@@ -43,7 +43,25 @@ const GARANTIAS = [
 export default function DetalleDeServicio() {
   const { idServicio } = useParams();
   const identificador = Number(idServicio);
-  const detalle = useServicioPublico(Number.isInteger(identificador) ? identificador : undefined);
+  const valido = Number.isInteger(identificador) && identificador > 0;
+  const detalle = useServicioPublico(valido ? identificador : undefined);
+
+  // Con un identificador inválido la consulta no llega a habilitarse y se quedaría en «Cargando».
+  if (!valido) {
+    return (
+      <div className={estilos.pagina}>
+        <main className={estilos.principal}>
+          <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
+            Ese servicio no existe.
+          </p>
+          <p className={estilos.pieDeEstado}>
+            <Link to={RUTA_EXPLORAR}>Volver a explorar</Link>
+          </p>
+        </main>
+        <PieDePagina />
+      </div>
+    );
+  }
 
   if (detalle.isPending) {
     return (

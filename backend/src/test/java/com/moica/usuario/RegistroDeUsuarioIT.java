@@ -147,6 +147,30 @@ class RegistroDeUsuarioIT extends PruebaDeIntegracionConPostgres {
     assertThat(camposConError(respuesta)).contains("correoElectronico");
   }
 
+  /**
+   * El espacio de la demostración no se puede ocupar desde el registro público: el cargador de
+   * datos adoptaría esa cuenta como suya y la dejaría verificada con la contraseña de quien la
+   * registró.
+   */
+  @Test
+  void rechazaUnCorreoDelDominioReservadoQueNuncaRecibeCorreo() throws Exception {
+    HttpResponse<String> respuesta =
+        navegador.post(
+            RUTA,
+            cuerpo(
+                "Julio Mendoza · Soluciones del Hogar",
+                " Moica-Demo-V1-Julio@Demo.Moica.INVALID ",
+                CLAVE_VALIDA));
+
+    assertThat(respuesta.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
+    assertThat(camposConError(respuesta)).contains("correoElectronico");
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT count(*) FROM usuario WHERE correo_electronico LIKE '%.invalid'",
+                Integer.class))
+        .isZero();
+  }
+
   @Test
   void rechazaUnCuerpoSinLosDatosObligatorios() throws Exception {
     HttpResponse<String> respuesta = navegador.post(RUTA, Map.of());

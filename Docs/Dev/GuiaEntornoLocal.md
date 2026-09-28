@@ -1,6 +1,6 @@
 # Guia de entorno local
 
-Detalle de configuracion para levantar MOICA en desarrollo. La version rapida esta en el [README](../../README.md#instalacion-rapida).
+Detalle de configuracion para levantar MOICA en desarrollo. La version rapida esta en el [README](../../README.md#ejecución-local).
 
 ## Variables de entorno
 
@@ -137,13 +137,18 @@ La unica via es `MOICA_ADMIN_CORREO`, que se aplica al arrancar:
 2. Escribe su correo en `MOICA_ADMIN_CORREO` y reinicia el backend.
 3. Entra con esa cuenta, activa su segundo factor en `/seguridad` y ya puedes abrir `/admin`.
 
-Es idempotente: se ejecuta en cada arranque y, si la cuenta ya tiene el rol, no cambia nada. Si la
-variable esta vacia no se promueve a nadie, y si apunta a una cuenta que todavia no existe el
-arranque continua y deja este aviso:
+El orden importa: el registro es publico y no verifica el correo, asi que mientras la variable
+apunte a una cuenta inexistente, quien registre primero ese correo recibira el rol en el arranque
+siguiente. Por eso primero se registra la cuenta y despues se define la variable.
+
+Es idempotente: se ejecuta en cada arranque y, si la cuenta ya tiene el rol, no cambia nada, aunque
+varias replicas arranquen a la vez. Si la variable esta vacia no se promueve a nadie, y si apunta a
+una cuenta que todavia no existe el arranque continua y deja este aviso:
 
 ```text
-MOICA_ADMIN_CORREO apunta a una cuenta que todavia no existe. Registrala desde la aplicacion y
-vuelve a arrancar para asignarle el rol administrativo.
+MOICA_ADMIN_CORREO apunta a una cuenta que todavía no existe. Retira la variable, registra la
+cuenta desde la aplicación y solo entonces vuelve a definirla y a arrancar: mientras siga definida,
+quien registre primero ese correo recibirá el rol administrativo.
 ```
 
 El aviso no incluye el correo: es un dato personal y el arranque suele quedar registrado.
@@ -190,6 +195,16 @@ docker compose down
 
 ## Backend
 
+Para poblar la exploración con contenido ficticio, definir temporalmente
+`MOICA_SEED_DEMO_ENABLED=true` en el entorno del backend o en `.env` y reiniciarlo.
+La propiedad es `false` por omisión. Al terminar, volver a `false`: los datos
+permanecen. Es independiente de los fixtures de `frontend/e2e/support.ts`.
+El catálogo, los mapeos opcionales `MOICA_SEED_DEMO_IMAGENES_*` y los límites se
+describen en [DatosDemostracion.md](DatosDemostracion.md). No hace falta R2 para
+crear perfiles y servicios; los objetos públicos conocidos se reutilizan solo
+cuando la base pública coincide con la comprobada.
+
+
 ```bash
 cd backend
 ./mvnw spring-boot:run
@@ -197,7 +212,7 @@ cd backend
 
 En Windows PowerShell se usa `.\mvnw.cmd` en lugar de `./mvnw`.
 
-La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`. Los rangos posteriores a `V23` —verificacion (`V30`), servicios y taxonomia (`V31`, `V90`) y solicitudes (`V40`)— se aplican en el mismo arranque. `spring.flyway.out-of-order=true` permite insertar una version intermedia, como `V40`, cuando `V90` ya esta aplicada en un entorno existente.
+La API queda en `http://localhost:8080`. Flyway esta habilitado y aplica al arrancar las migraciones de `src/main/resources/db/migration`. Los rangos posteriores a `V23` —verificacion (`V30`), servicios (`V31`), solicitudes, mensajes y calificaciones (`V40`–`V42`), moderacion (`V50`–`V52`) y la taxonomia de demostracion (`V90`)— se aplican en el mismo arranque. `spring.flyway.out-of-order=true` permite insertar una version intermedia, como `V40`, cuando `V90` ya esta aplicada en un entorno existente.
 
 El arranque lo describe asi:
 
@@ -208,7 +223,16 @@ Migrating schema "public" to version "20 - crear departamento y municipio"
 Migrating schema "public" to version "21 - crear perfil prestador y contactos"
 Migrating schema "public" to version "22 - crear trabajos de portafolio"
 Migrating schema "public" to version "23 - cargar managua y sus municipios"
-Successfully applied 6 migrations to schema "public", now at version v23
+Migrating schema "public" to version "30 - crear solicitudes y documentos de verificacion"
+Migrating schema "public" to version "31 - crear categorias y servicios publicados"
+Migrating schema "public" to version "40 - crear solicitudes e historial de estados"
+Migrating schema "public" to version "41 - crear mensajes de solicitud"
+Migrating schema "public" to version "42 - crear calificaciones de usuario"
+Migrating schema "public" to version "50 - crear casos medidas e historial scd2"
+Migrating schema "public" to version "51 - proteger vigencias scd2 con exclusion temporal"
+Migrating schema "public" to version "52 - exigir una sola medida vigente por cuenta"
+Migrating schema "public" to version "90 - cargar taxonomia de demostracion"
+Successfully applied 15 migrations to schema "public", now at version v90
 ```
 
 Hibernate arranca con `ddl-auto=validate`: si el esquema y las entidades dejaran de coincidir, la aplicacion no arrancaria. El esquema lo crea Flyway y solo Flyway.

@@ -40,4 +40,44 @@ public interface SesionRepository extends JpaRepository<Sesion, Long> {
       @Param("idUsuario") Long idUsuario,
       @Param("instante") OffsetDateTime instante,
       @Param("motivo") MotivoRevocacionSesion motivo);
+
+  /**
+   * Marca el segundo factor como superado en una sesión que sigue sin revocar.
+   *
+   * <p>Es una actualización de una sola columna y condicionada a propósito. Cargar la entidad y
+   * dejar que Hibernate la vuelque reescribiría la fila entera con lo leído: si entre la lectura y
+   * el commit otra transacción la revocó (cambio de contraseña, suspensión, cierre de sesión), la
+   * revocación desaparecería y la sesión volvería a valer.
+   *
+   * @return 1 si se marcó, 0 si la sesión no existe o ya estaba revocada
+   */
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      UPDATE Sesion s
+      SET s.segundoFactorVerificado = true
+      WHERE s.idSesion = :idSesion AND s.fechaRevocacion IS NULL
+      """)
+  int marcarSegundoFactorVerificado(@Param("idSesion") Long idSesion);
+
+  /**
+   * Revoca una sesión concreta solo si nadie la revocó antes.
+   *
+   * <p>Condicionada por el mismo motivo que {@link #marcarSegundoFactorVerificado}: un cierre
+   * voluntario que leyó la fila antes de que una medida o un cambio de contraseña la revocaran no
+   * debe sustituir ese motivo, que es el rastro de lo que ocurrió.
+   *
+   * @return 1 si la revocó, 0 si no existe o ya estaba revocada
+   */
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query(
+      """
+      UPDATE Sesion s
+      SET s.fechaRevocacion = :instante, s.motivoRevocacion = :motivo
+      WHERE s.idSesion = :idSesion AND s.fechaRevocacion IS NULL
+      """)
+  int revocarSiSigueVigente(
+      @Param("idSesion") Long idSesion,
+      @Param("instante") OffsetDateTime instante,
+      @Param("motivo") MotivoRevocacionSesion motivo);
 }

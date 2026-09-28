@@ -8,6 +8,7 @@ import {
   RUTA_REGISTRO,
   RUTA_SEGURIDAD,
   RUTA_VERIFICACION_SEGUNDO_FACTOR,
+  mensajeDeCierreFallido,
   useCierreSesion,
   useSesionActual,
 } from '../capacidades/auth';
@@ -16,7 +17,6 @@ import { RUTA_PANEL } from '../capacidades/panel';
 import { RUTA_PRESTADOR } from '../capacidades/prestador';
 import { RUTA_SERVICIOS } from '../capacidades/servicio';
 import { RUTA_SOLICITUDES } from '../capacidades/solicitud';
-import { ErrorDeApi } from '../comun/api';
 import { Boton } from '../comun/componentes/ui';
 import estilos from './EncabezadoDeInicio.module.css';
 
@@ -206,11 +206,4 @@ function AccionesConSesion({
 
 function primerNombreDe(nombreCompleto: string): string {
   return nombreCompleto.trim().split(/\s+/)[0] || nombreCompleto;
-}
-
-function mensajeDeCierreFallido(error: unknown): string | null {
-  if (error instanceof ErrorDeApi && error.estado === 401) {
-    return null;
-  }
-  return error instanceof Error ? error.message : null;
 }

@@ -84,13 +84,17 @@ public class DescubrimientoDeServiciosService {
         reputaciones.reputacionesDePrestadores(
             encontrados.stream().map(ServicioPublicado::getIdPrestador).distinct().toList());
 
+    // Cada consulta ve su propia instantánea (READ COMMITTED): si una verificación
+    // se revoca entre la búsqueda y la carga del perfil, ese servicio ya no es
+    // público y se omite, en lugar de tumbar el listado entero.
     return encontrados.stream()
-        .map(
+        .flatMap(
             servicio ->
-                aResumen(
-                    servicio,
-                    prestadorPublico(servicio),
-                    porPrestador.get(servicio.getIdPrestador())))
+                perfiles.describirPerfilPublicable(servicio.getIdPrestador()).stream()
+                    .map(
+                        prestador ->
+                            aResumen(
+                                servicio, prestador, porPrestador.get(servicio.getIdPrestador()))))
         .toList();
   }
 
@@ -99,11 +103,15 @@ public class DescubrimientoDeServiciosService {
   public DetallePublicoDeServicio detallar(Long idServicio) {
     ServicioPublicado servicio =
         servicios.buscarPublicoPorId(idServicio).orElseThrow(this::servicioNoEncontrado);
+    DatosPublicosDePrestador prestador =
+        perfiles
+            .describirPerfilPublicable(servicio.getIdPrestador())
+            .orElseThrow(this::servicioNoEncontrado);
     return DetallePublicoDeServicio.de(
         servicio,
         clasificacionDe(servicio),
         imagenesDe(servicio),
-        prestadorPublico(servicio),
+        prestador,
         reputaciones.reputacionDe(servicio.getIdPrestador(), RolCalificado.PRESTADOR));
   }
 
@@ -145,17 +153,6 @@ public class DescubrimientoDeServiciosService {
         servicio, clasificacionDe(servicio), imagenesDe(servicio), prestador, reputacion);
   }
 
-  private DatosPublicosDePrestador prestadorPublico(ServicioPublicado servicio) {
-    return perfiles
-        .describirPerfilPublicable(servicio.getIdPrestador())
-        .orElseThrow(
-            () ->
-                new IllegalStateException(
-                    "El servicio "
-                        + servicio.getIdServicioPublicado()
-                        + " referencia un perfil que no es publicable"));
-  }
-
   private ClasificacionDeServicio clasificacionDe(ServicioPublicado servicio) {
     return catalogo
         .describirSubcategoria(servicio.getIdSubcategoriaServicio())
@@ -184,7 +181,9 @@ public class DescubrimientoDeServiciosService {
     if (normalizado.isEmpty()) {
       return null;
     }
-    return "%" + normalizado + "%";
+    // Lo que escribe la persona se busca tal cual: sus % y _ no son comodines.
+    String literal = normalizado.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+    return "%" + literal + "%";
   }
 
   private ErrorDeAplicacion servicioNoEncontrado() {

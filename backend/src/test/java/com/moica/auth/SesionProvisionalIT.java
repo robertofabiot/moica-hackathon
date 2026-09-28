@@ -3,10 +3,17 @@ package com.moica.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.moica.NavegadorDePrueba;
+import com.moica.auth.entity.MotivoRevocacionSesion;
+import com.moica.auth.repository.SesionRepository;
+import com.moica.auth.service.SesionService;
 import java.net.http.HttpResponse;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.JsonNode;
 
 /**
@@ -17,6 +24,77 @@ import tools.jackson.databind.JsonNode;
  * normalidad desde el primer momento.
  */
 class SesionProvisionalIT extends EscenarioDeSeguridad {
+
+  @Autowired private SesionService sesiones;
+  @Autowired private SesionRepository repositorioDeSesiones;
+  @Autowired private PlatformTransactionManager transacciones;
+
+  /**
+   * La verificación leyó la sesión antes de que otra transacción la revocara (un cambio de
+   * contraseña en otro dispositivo, una suspensión). Al confirmar no puede devolverle la validez.
+   */
+  @Test
+  void verificarElSegundoFactorNoDeshaceUnaRevocacionSimultanea() {
+    iniciarSesion(navegador);
+    Long idSesion = jdbc.queryForObject("SELECT max(id_sesion) FROM sesion", Long.class);
+    Long idUsuario =
+        jdbc.queryForObject(
+            "SELECT id_usuario FROM sesion WHERE id_sesion = ?", Long.class, idSesion);
+
+    TransactionTemplate otraTransaccion = new TransactionTemplate(transacciones);
+    otraTransaccion.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+    new TransactionTemplate(transacciones)
+        .executeWithoutResult(
+            verificacion -> {
+              repositorioDeSesiones.findById(idSesion).orElseThrow();
+              otraTransaccion.executeWithoutResult(
+                  revocacion ->
+                      sesiones.revocarTodasDe(
+                          idUsuario, MotivoRevocacionSesion.CAMBIO_CREDENCIALES));
+              sesiones.marcarSegundoFactorVerificado(idSesion);
+            });
+
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT fecha_revocacion IS NOT NULL FROM sesion WHERE id_sesion = ?",
+                Boolean.class,
+                idSesion))
+        .as("la revocación confirmada entre la lectura y el commit sigue en pie")
+        .isTrue();
+  }
+
+  /**
+   * Un cierre voluntario que leyó la sesión antes de que una medida la revocara no reescribe esa
+   * revocación: se conserva la primera, con su motivo, que es lo que deja rastro de la sanción.
+   */
+  @Test
+  void cerrarLaSesionConservaUnaRevocacionSimultaneaAnterior() {
+    iniciarSesion(navegador);
+    Long idSesion = jdbc.queryForObject("SELECT max(id_sesion) FROM sesion", Long.class);
+    Long idUsuario =
+        jdbc.queryForObject(
+            "SELECT id_usuario FROM sesion WHERE id_sesion = ?", Long.class, idSesion);
+
+    TransactionTemplate otraTransaccion = new TransactionTemplate(transacciones);
+    otraTransaccion.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+
+    new TransactionTemplate(transacciones)
+        .executeWithoutResult(
+            cierre -> {
+              repositorioDeSesiones.findById(idSesion).orElseThrow();
+              otraTransaccion.executeWithoutResult(
+                  medida ->
+                      sesiones.revocarTodasDe(
+                          idUsuario, MotivoRevocacionSesion.MEDIDA_ADMINISTRATIVA));
+              sesiones.revocar(idSesion, MotivoRevocacionSesion.CIERRE_VOLUNTARIO);
+            });
+
+    assertThat(
+            jdbc.queryForObject(
+                "SELECT motivo_revocacion FROM sesion WHERE id_sesion = ?", String.class, idSesion))
+        .isEqualTo("MEDIDA_ADMINISTRATIVA");
+  }
 
   @Test
   void unaCuentaSinSegundoFactorUsaSuSesionConNormalidad() {

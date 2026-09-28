@@ -80,13 +80,9 @@ public class AdministradorService {
       return ResultadoDeAsignacion.CUENTA_INEXISTENTE;
     }
 
-    Long idUsuario = cuenta.get().getIdUsuario();
-    if (administradores.existsById(idUsuario)) {
-      return ResultadoDeAsignacion.YA_LO_TENIA;
-    }
-
-    administradores.save(new Administrador(idUsuario));
-    return ResultadoDeAsignacion.ASIGNADO;
+    return administradores.concederSiFalta(cuenta.get().getIdUsuario()) == 1
+        ? ResultadoDeAsignacion.ASIGNADO
+        : ResultadoDeAsignacion.YA_LO_TENIA;
   }
 
   /** Lo que pudo pasar al intentar asignar el rol administrativo. */

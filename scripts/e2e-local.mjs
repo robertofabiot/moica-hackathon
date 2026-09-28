@@ -67,18 +67,20 @@ async function apagar() {
   }
 }
 
+// Antes de levantar nada: un Ctrl+C durante el build o la espera tambien debe
+// retirar el proyecto, o la siguiente ejecucion chocaria por el puerto fijo.
+process.on("SIGINT", async () => {
+  await apagar();
+  process.exit(130);
+});
+process.on("SIGTERM", async () => {
+  await apagar();
+  process.exit(143);
+});
+
 try {
   await docker("up", "--build", "--detach");
   await esperarAplicacion();
-
-  process.on("SIGINT", async () => {
-    await apagar();
-    process.exit(130);
-  });
-  process.on("SIGTERM", async () => {
-    await apagar();
-    process.exit(143);
-  });
 
   const child = spawn(process.execPath, [
     fileURLToPath(new URL('../frontend/node_modules/@playwright/test/cli.js', import.meta.url)),

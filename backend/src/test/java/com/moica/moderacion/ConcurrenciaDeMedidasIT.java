@@ -5,13 +5,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.moica.NavegadorDePrueba;
 import com.moica.moderacion.service.ExpiracionDeMedidas;
 import java.net.http.HttpResponse;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,6 +45,7 @@ import org.springframework.http.HttpStatus;
 class ConcurrenciaDeMedidasIT extends EscenarioDeMedidas {
 
   @Autowired private ExpiracionDeMedidas barrido;
+  @Autowired private DataSource origenDeDatos;
 
   private ExecutorService hilos;
   private NavegadorDePrueba admin;
@@ -268,6 +277,93 @@ class ConcurrenciaDeMedidasIT extends EscenarioDeMedidas {
     assertThat(estadoDeCuentaEnBase(CORREO)).isEqualTo("SUSPENDIDA_TEMPORAL");
     comprobarCadenaScd2(primero);
     comprobarCadenaScd2(segundo);
+  }
+
+  @Test
+  @Timeout(180)
+  @DisplayName("Un reemplazo no deshace lo que el expediente anterior cambió mientras esperaba")
+  void elReemplazoLeeElExpedienteAnteriorYaBloqueado() throws Exception {
+    long primero = casoProcedenteDe(admin, CORREO_ADMIN);
+    long segundo = otroCasoProcedenteDe(admin, CORREO_ADMIN);
+    short suspension = medidaDeSuspension();
+    assertThat(
+            aplicarMedida(admin, primero, medidaDeRestriccion(), dentroDeUnaSemana()).statusCode())
+        .isEqualTo(HttpStatus.OK.value());
+
+    // Otra operación sobre el expediente anterior —una reapertura, que solo
+    // bloquea esa fila— lo tiene tomado cuando llega el reemplazo, y confirma
+    // mientras el reemplazo espera. Sin barreras ni sueños: el orden es exacto.
+    Future<HttpResponse<String>> reemplazo;
+    try (Connection otra = origenDeDatos.getConnection()) {
+      otra.setAutoCommit(false);
+      ejecutar(
+          otra, "SELECT 1 FROM caso_moderacion WHERE id_caso_moderacion = ? FOR UPDATE", primero);
+
+      reemplazo =
+          hilos.submit(() -> aplicarMedida(admin, segundo, suspension, dentroDeUnaSemana(), true));
+      esperarAQueAlguienEspereUnBloqueo(jdbc);
+
+      ejecutar(
+          otra,
+          """
+          UPDATE caso_moderacion
+          SET estado_actual = 'REABIERTO', resultado_actual = NULL,
+              resolucion_actual = NULL, fecha_cierre_actual = NULL
+          WHERE id_caso_moderacion = ?
+          """,
+          primero);
+      otra.commit();
+    }
+
+    assertThat(reemplazo.get().statusCode()).isEqualTo(HttpStatus.OK.value());
+
+    // La reapertura sobrevive: el reemplazo leyó el expediente ya bloqueado y
+    // solo le retiró la medida.
+    assertThat(casoEnBase(primero).get("estado_actual")).isEqualTo("REABIERTO");
+    assertThat(casoEnBase(primero).get("id_medida_administrativa_actual")).isNull();
+    assertThat(medidasVigentesDe(CORREO)).isEqualTo(1);
+  }
+
+  @Test
+  @Timeout(180)
+  @DisplayName("El barrido fecha la expiración cuando ya tiene el caso, no cuando empezó")
+  void elBarridoFechaLaExpiracionTrasBloquearElCaso() throws Exception {
+    long idCaso = casoProcedenteDe(admin, CORREO_ADMIN);
+    assertThat(
+            aplicarMedida(admin, idCaso, medidaDeRestriccion(), dentroDeUnaSemana()).statusCode())
+        .isEqualTo(HttpStatus.OK.value());
+    vencerLaMedidaDe(idCaso);
+
+    // Mientras el barrido espera el caso, otra transacción podría versionarlo
+    // con un instante posterior al inicio de la pasada. Si la expiración usara
+    // ese inicio, su cierre quedaría antes de la versión que cierra.
+    Future<Integer> pasada;
+    Instant liberado;
+    try (Connection otra = origenDeDatos.getConnection()) {
+      otra.setAutoCommit(false);
+      ejecutar(
+          otra, "SELECT 1 FROM caso_moderacion WHERE id_caso_moderacion = ? FOR UPDATE", idCaso);
+
+      pasada = hilos.submit(barrido::expirarLasVencidas);
+      esperarAQueAlguienEspereUnBloqueo(jdbc);
+
+      liberado = Instant.now().truncatedTo(ChronoUnit.MICROS);
+      otra.commit();
+    }
+
+    assertThat(pasada.get()).isEqualTo(1);
+    Map<String, Object> version = versionActual(idCaso);
+    assertThat(version.get("tipo_evento")).isEqualTo("MEDIDA_EXPIRADA");
+    assertThat(((Timestamp) version.get("fecha_inicio_vigencia")).toInstant())
+        .isAfterOrEqualTo(liberado);
+    comprobarCadenaScd2(idCaso);
+  }
+
+  private static void ejecutar(Connection conexion, String sql, long idCaso) throws SQLException {
+    try (PreparedStatement sentencia = conexion.prepareStatement(sql)) {
+      sentencia.setLong(1, idCaso);
+      sentencia.execute();
+    }
   }
 
   /** Suelta las dos peticiones en el mismo instante, para que se crucen de verdad. */

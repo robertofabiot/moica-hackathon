@@ -1,8 +1,9 @@
 # Despliegue publico de demostracion — P11-A
 
-MOICA se prepara para la Hackathon en Railway Free/Trial, con dominio HTTPS del
-proveedor. Esto no certifica una infraestructura comercial definitiva. P11-B/C
-continuan en `feature/preparar-entrega-mvp`; no corresponde promover a `main`.
+MOICA se despliega en Railway, con dominio HTTPS del proveedor. Esto no certifica
+una infraestructura comercial definitiva. P11 quedo integrado en `develop` (PR #40)
+y promovido a `main` (PR #45). Railway despliega **`main`**: el flujo completo esta
+en [Entrega continua](#entrega-continua).
 
 ## Arquitectura
 
@@ -35,7 +36,8 @@ node scripts/smoke-produccion.mjs
 ```
 
 El backend usa Java 21 JDK para Maven Wrapper y una JRE 21 para ejecutar el JAR
-como UID 10001. El frontend usa Node 22, `npm ci`, `npm run build` y Nginx.
+como UID 10001. El frontend usa Node 22, `npm ci`, `npm run build` y Nginx, que
+tambien corre sin root (usuario `nginx` de la imagen).
 Cada contexto tiene una lista explicita de archivos permitidos en `.dockerignore`:
 no entra `.env`, configuracion local de asistentes, dependencias locales ni Git.
 El build de backend omite ejecutar tests dentro de la imagen; el job backend de
@@ -133,21 +135,25 @@ reemplazar las variables propias de Nginx. No se sirve la plantilla al navegador
 
 ## Railway desde cero
 
-1. El propietario inicia sesion y conecta GitHub si Railway lo solicita. Elegir
-   Free/Trial, sin activar Hobby, Pro ni addons pagados. Confirmar en el panel
-   que hay credito y acceso de red adecuado para R2.
+1. El propietario inicia sesion y conecta GitHub si Railway lo solicita. El
+   proyecto actual corre en el plan **Hobby**: una sola region por servicio y
+   hasta dos replicas. Confirmar en el panel el credito y el acceso de red a R2.
 2. Crear proyecto MOICA y agregar PostgreSQL desde **New → Database → PostgreSQL**.
    Mantener el volumen persistente y la red privada. No agregar pgAdmin.
-3. Crear `backend` desde `robertofabiot/moica-hackathon`, rama
-   `feature/preparar-entrega-mvp`, **Settings → Root Directory: `/backend`**.
-   Railway detecta `Dockerfile`. No poner comandos de build/start adicionales:
-   se usa el `ENTRYPOINT` de la imagen.
+3. Crear `backend` desde `robertofabiot/moica-hackathon`, rama **`main`**,
+   **Settings → Root Directory: `/backend`**. Railway detecta `Dockerfile`. No
+   poner comandos de build/start adicionales: se usa el `ENTRYPOINT` de la imagen.
+   En **Settings → Source** activar **Wait for CI**. En **Settings → Deploy**,
+   una sola region, la del volumen de PostgreSQL (hoy `us-west2`), y una replica:
+   el plan Hobby rechaza en un segundo, sin build ni logs, cualquier despliegue
+   con dos regiones.
 4. Configurar las variables del backend y R2 en **Variables**. Configurar
    **Healthcheck Path: `/actuator/health`**, timeout inicial 240 segundos.
    No asignar dominio publico. Desplegar y esperar salud correcta.
-5. Crear `frontend` desde el mismo repositorio/rama, **Root Directory: `/frontend`**,
-   Dockerfile detectado, sin override del comando de inicio. Configurar sus
-   variables, **Healthcheck Path: `/healthz`** y puerto `8080`.
+5. Crear `frontend` desde el mismo repositorio y la rama `main`, **Root Directory:
+   `/frontend`**, Dockerfile detectado, sin override del comando de inicio.
+   Configurar sus variables, **Healthcheck Path: `/healthz`**, puerto `8080`,
+   **Wait for CI** activado y la misma region unica.
 6. Solo en `frontend`, **Settings → Networking → Generate Domain**; usar el
    dominio HTTPS que genere Railway. No agregar dominio propio.
 7. Verificar que no exista acceso publico/TCP Proxy de PostgreSQL ni del backend.
@@ -162,6 +168,14 @@ que eso incluye SLA, backups o alta disponibilidad comerciales. Registrar la
 version de PostgreSQL realmente provisionada y validar Flyway contra ella.
 
 ## Migraciones y salud
+
+Los usuarios, perfiles y servicios ficticios se cargan con el
+[bootstrap explícito de datos de demostración](DatosDemostracion.md), mediante
+`MOICA_SEED_DEMO_ENABLED=true` y posterior redeploy con `false`. V90 conserva
+únicamente la taxonomía: esta carga no introduce migraciones, accesos públicos a
+PostgreSQL ni endpoints administrativos. La guía enlazada documenta los mapeos
+R2, el resumen saneado de logs y la comprobación de permanencia e idempotencia.
+
 
 Flyway es el unico creador del esquema: `ddl-auto=validate`, sin `create` ni
 edicion de migraciones publicadas. La base limpia aplica 15 migraciones:
@@ -207,9 +221,18 @@ equipo se ejecuten en esa red. No usar este perfil con backend expuesto directo.
 Railway termina TLS; Nginx no administra certificados.
 
 La API lleva `Cache-Control: no-store`; no se modifican cookies, metodo o cuerpo.
-Se permite multipart hasta 25 MB, igual al tope de transporte Spring. Assets
-versionados usan cache inmutable; HTML, manifest y SW se revalidan. Archivos
-inexistentes devuelven 404 y las rutas React reciben `index.html`.
+El tope de transporte multipart es el de Spring (25 MB) y lo rechaza el backend
+con el JSON `CONTENIDO_DEMASIADO_GRANDE` del contrato; Nginx admite hasta 30 MB
+solo como freno grueso. `/api` espera al backend hasta 120 s, por encima de los
+90 s que espera el cliente en una carga de archivos. Assets versionados usan cache
+inmutable; HTML, manifest y SW se revalidan. Archivos inexistentes devuelven 404 y
+las rutas React reciben `index.html`.
+
+Lo que sirve Nginx lleva `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`
+y `Referrer-Policy: strict-origin-when-cross-origin`
+(`frontend/nginx/security-headers.conf`); la API lleva las de Spring Security. La
+CSP y HSTS sobre el HTML quedan pendientes de decision: dependen del dominio de R2
+y del dominio definitivo.
 
 ## Procedimiento de verificacion publica
 
@@ -232,23 +255,89 @@ Registrar fecha, SHA y resultados, sin cookies ni credenciales:
 El smoke local envia cookies explicitamente sobre HTTP de loopback para examinar
 la configuracion productiva detras de un proxy que declara HTTPS. **No prueba TLS
 publico ni el comportamiento de cookies en un navegador real**: los pasos anteriores
-siguen siendo obligatorios. La auditoria PWA/Playwright profunda corresponde a P11-B.
+siguen siendo obligatorios. Los recorridos PWA, de seguridad y de accesibilidad
+son los de P11-B: `npm run test:e2e` (ver [GuiaEntornoLocal.md](GuiaEntornoLocal.md)).
 
-## Redeploy, rollback y limites demo
+## Entrega continua
 
-Redeploy reconstruye/arranca el servicio conservando el volumen de PostgreSQL.
+`main` representa lo desplegable. El recorrido completo es:
+
+```text
+feature/* --PR--> develop --CI + revision--> merge (estabilizacion)
+develop   --PR--> main    --CI + revision--> merge --CI del merge--> Railway despliega
+```
+
+**Que dispara un despliegue.** Solo un push a `main`, y en la practica solo el
+merge de un PR `develop` → `main`. Railway sigue la rama `main` con su integracion
+nativa de GitHub; un PR, una rama `feature/*` o un push a `develop` no despliegan
+nada. No existe un workflow de GitHub Actions de despliegue: no hace falta, y asi
+no se guarda ningun token de Railway en GitHub.
+
+**Que lo protege.**
+
+- El PR hacia `main` pasa el mismo CI que cualquier otro (`.github/workflows/ci.yml`:
+  backend `verify`, frontend, E2E, imagenes de produccion con smoke y Compose local)
+  y la revision cruzada de `GIT_WORKFLOW.md`.
+- El push del merge vuelve a ejecutar `ci.yml` sobre el commit exacto que se va a
+  desplegar. Con **Wait for CI** activo, Railway deja el despliegue en `WAITING`
+  hasta que ese workflow termine y lo **omite** si falla.
+- Railway solo pasa el trafico al despliegue nuevo cuando su healthcheck responde:
+  `/actuator/health` en el backend (incluye la conexion con PostgreSQL) y `/healthz`
+  en el frontend. Si no llega a estar sano, el anterior sigue sirviendo.
+- Flyway migra al arrancar el backend, con su bloqueo consultivo de PostgreSQL. No
+  se aplican migraciones a mano ni se recrea la base: el volumen de PostgreSQL no
+  depende de ningun despliegue de la aplicacion.
+
+**Que vive en Git y que en Railway.** En Git: los `Dockerfile`, Nginx, el perfil
+`prod`, las migraciones, el CI y esta guia. En Railway, y solo alli: la rama que se
+despliega, el directorio raiz, **Wait for CI**, region y replicas, healthchecks,
+dominio y todas las variables y secretos. No hay `railway.json` en el repositorio:
+si se cambia algo de lo anterior en el panel, se actualiza esta guia en un PR.
+
+**Despues de un despliegue.** Comprobar en el panel que los dos servicios quedaron
+en `SUCCESS` sobre el SHA del merge y repetir, sin credenciales, lo basico del
+[procedimiento de verificacion publica](#procedimiento-de-verificacion-publica):
+`/healthz` → 200 `ok`, `/actuator/health` → `{"status":"UP"}`, `/actuator/env` →
+404, `/explorar` → 200 y `GET /api/servicios` → 200 JSON con `no-store`.
+
+**Rollback.** Railway conserva los despliegues anteriores: en el servicio,
+**Deployments → despliegue correcto anterior → Rollback**, y despues la misma
+comprobacion. Volver codigo atras **no** deshace Flyway: antes de retroceder a una
+version anterior a una migracion nueva, confirmar que ese codigo tolera el esquema
+nuevo. La correccion definitiva entra por el camino normal: `git revert` en una
+rama, PR a `develop` y promocion a `main`. Nunca un push directo a `main`.
+
+**Acciones del propietario pendientes.** Requieren permisos que no tiene quien
+preparo esta guia:
+
+1. **Wait for CI.** Activarlo en backend y frontend (**Settings → Source**). La API
+   de Railway no lo aplica: si el interruptor no aparece, aceptar primero los
+   permisos nuevos de la GitHub App de Railway en la cuenta que la instalo
+   (<https://github.com/settings/installations>). Se comprueba en el panel o en la
+   configuracion del servicio (`checkSuites: true`); hasta entonces Railway
+   despliega cada push a `main` sin esperar al CI.
+2. **Regla de `main` en GitHub.** El conjunto de reglas actual solo impide borrar la
+   rama y el force-push. Falta exigir PR con una aprobacion y los checks de `ci.yml`
+   (`Backend (Java 21)`, `Frontend (Node 22)`, `E2E (MVP, seguridad, PWA y
+   accesibilidad)`, `Produccion (Docker y smoke)` y `Entorno local (docker compose)`)
+   antes de fusionar. Lo configura un administrador del repositorio en **Settings →
+   Rules → Rulesets → Protec main**. Conviene lo mismo en `develop`, que hoy solo
+   impide su borrado.
+
+## Redeploy, rollback y limites
+
+Redeploy reconstruye y arranca el servicio conservando el volumen de PostgreSQL.
 Si un despliegue falla, consultar estado y logs saneados; no reinicializar la base.
-Para rollback de aplicacion, usar el ultimo deployment correcto de cada servicio
-en Railway y repetir health/smoke. P11-A no agrega migraciones, pero volver codigo
-atras no deshace Flyway: confirmar compatibilidad antes de retroceder una version
-futura con cambios de esquema. Conservar claves JWT/TOTP; cambiar la clave TOTP
-deja ilegibles los secretos guardados.
+Conservar claves JWT/TOTP; cambiar la clave TOTP deja ilegibles los secretos
+guardados.
 
-Consultar credito, RAM, CPU, disco y reinicios en el panel antes de la demostracion.
-Si hay OOM o credito agotado, detenerse y registrar limite/consumo/error antes de
-solicitar otro plan. No activar Hobby automaticamente. Free/Trial no garantiza
-disponibilidad permanente ni conservacion indefinida de datos; preparar respaldo
-antes del vencimiento segun las opciones reales disponibles.
+Consultar credito, RAM, CPU, disco y reinicios en el panel antes de una
+demostracion. El plan Hobby incluye un credito mensual pequeno: si se agota o hay
+OOM, detenerse y registrar limite, consumo y error antes de cambiar de plan. Un
+despliegue que falla en un segundo sin logs de build suele ser un limite del plan,
+no del codigo, y el diagnostico del despliegue en Railway lo nombra. El plan no
+garantiza alta disponibilidad ni respaldos; preparar un respaldo de PostgreSQL
+antes de cualquier cambio de plan o de region.
 
 Fuentes oficiales consultadas el 5 de septiembre de 2026:
 [Trial](https://docs.railway.com/pricing/free-trial),
@@ -261,18 +350,10 @@ Fuentes oficiales consultadas el 5 de septiembre de 2026:
 
 ## Deuda y riesgos conocidos
 
-`npm audit` informa `fast-uri` como severidad alta (GHSA-5jgf-p345-68v8 y tres
-avisos mas de SSRF y confusion de host). Llega por `@hookform/resolvers` ->
-`ajv` -> `fast-uri`, es decir como dependencia indirecta de **produccion**, no
-de herramientas. Aun asi no alcanza al runtime, y esto es lo comprobado: el
-codigo solo importa `@hookform/resolvers/zod`, de modo que `ajv` no entra en el
-empaquetado; una busqueda sobre `dist/assets/*.js` no encuentra `ajv` ni
-`fast-uri`. La imagen final tampoco ejecuta Node: Nginx sirve archivos
-estaticos. Sin codigo de la biblioteca en el artefacto y sin Node en el runtime,
-no hay ruta explotable en produccion. Queda como deuda para P11-B/C, que si
-puede mover el lockfile; P11-A no lo toca para no cambiar dependencias mientras
-se estabiliza el despliegue. Si mas adelante se usara `ajvResolver`, deja de ser
-deuda y pasa a ser bloqueo.
+P11-A registro un aviso alto de `fast-uri` que llegaba por `@hookform/resolvers`
+→ `ajv`. P11-B lo cerro fijando `fast-uri` 3.1.7 en el lockfile, y `npm audit`
+informa 0 vulnerabilidades. Si mas adelante se usara `ajvResolver`, revisar de
+nuevo esa cadena.
 
 El smoke local conserva su limite de transporte HTTP. La evidencia publica
 posterior de esta misma guia agrega HTTPS y pruebas reales de ambos buckets R2.
@@ -387,3 +468,37 @@ Online/Success, dominio del frontend, raices/rama/healthchecks y nombres de
 variables sin valores, y plan/credito/recursos. Adjuntarlas al #40, nunca a Git.
 P11-A permanece pendiente de acreditar el plan; P11-B/C y la fila historica 6
 no se modifican.
+
+### Restablecimiento del entorno — 24 de septiembre de 2026
+
+Estado encontrado: los tres servicios estaban `Offline` desde el 14 de septiembre,
+cuando sus despliegues quedaron `REMOVED`; el registro de Railway no dice por que.
+Los despliegues del 23 de septiembre (merge del PR #47 en `develop`) fallaron en
+un segundo, sin build ni logs. Su diagnostico en Railway nombra la causa: el plan
+Hobby solo despliega en una region, y `backend` y `frontend` tenian dos (`iad` y
+`us-west2`, una replica en cada una). Ademas, los dos servicios seguian `develop`.
+
+Cambios aplicados con autorizacion del propietario, primero preparados y revisados
+y despues confirmados:
+
+| Cambio | Antes | Despues |
+|---|---|---|
+| Rama de `backend` y `frontend` | `develop` | `main` |
+| Regiones de `backend` y `frontend` | `iad` + `us-west2` | solo `us-west2`, 1 replica |
+| PostgreSQL | sin despliegue activo | redespliegue del ultimo en `us-west2` |
+
+PostgreSQL arranco sobre su volumen existente: el log dice que el directorio ya
+contenia una base, omite la inicializacion y registra el apagado limpio del 14 de
+septiembre. No se recreo la base ni el volumen, y no se tocaron variables.
+`backend` y `frontend` desplegaron `875bfaf` (merge del PR #45, CI verde) y
+quedaron en `SUCCESS`.
+
+Comprobado despues sobre <https://frontend-production-90df.up.railway.app>, sin
+credenciales: `/healthz` 200, `/actuator/health` 200 con `{"status":"UP"}`,
+`/actuator` y `/actuator/env` 404, `/explorar` 200 con `index.html`,
+`/api/servicios` 200 JSON con `no-store`, cookie `XSRF-TOKEN` con `Secure` y
+`SameSite=Lax`, y `POST /api/auth/sesion` sin CSRF → 403.
+
+Queda pendiente **Wait for CI**: se preparo en los dos servicios, pero la API de
+Railway descarta ese campo (el cambio preparado quedo vacio y se desecho). Es la
+primera accion de [Entrega continua](#entrega-continua).

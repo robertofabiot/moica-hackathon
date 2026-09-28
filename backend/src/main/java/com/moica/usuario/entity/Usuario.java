@@ -11,6 +11,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
+import org.hibernate.annotations.DynamicUpdate;
 
 /**
  * Cuenta registrada en Moica.
@@ -21,8 +22,14 @@ import java.time.OffsetDateTime;
  *
  * <p>El correo llega ya normalizado desde el servicio, de modo que dos cuentas no puedan
  * diferenciarse únicamente por mayúsculas o espacios exteriores.
+ *
+ * <p>{@code @DynamicUpdate} no es una optimización: cada escritura toca solo las columnas que
+ * cambió. Cambiar la contraseña lee la cuenta sin bloquearla y tarda lo que tarda BCrypt; si
+ * reescribiera la fila entera, una suspensión confirmada mientras tanto volvería a {@code ACTIVA}.
+ * El estado de la cuenta lo mueven las medidas, con la fila bloqueada.
  */
 @Entity
+@DynamicUpdate
 @Table(name = "usuario")
 public class Usuario {
 

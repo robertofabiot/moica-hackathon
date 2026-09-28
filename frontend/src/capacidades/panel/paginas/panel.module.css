@@ -160,6 +160,28 @@
   opacity: 0.7;
 }
 
+/*
+ * Aviso de un cierre de sesión que no llegó a revocarla. Vive fuera del menú,
+ * que ya se cerró, y queda debajo de él si se vuelve a abrir.
+ */
+.avisoDeCierre {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + var(--gap-xs));
+  right: 0;
+  width: max-content;
+  max-width: min(20rem, calc(100vw - var(--gap-md) * 2));
+  margin: 0;
+  padding: var(--gap-sm) var(--gap-md);
+  border: var(--border-width-xs) solid var(--color-neutral-200);
+  border-left: var(--border-width-sm) solid var(--color-error-500);
+  border-radius: var(--radius-md);
+  background-color: var(--color-neutral-0);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-neutral-800);
+  font-size: var(--font-size-sm);
+}
+
 .principal {
   display: flex;
   flex-direction: column;

@@ -19,7 +19,8 @@ services:
       POSTGRES_PASSWORD: ${MOICA_DB_CLAVE:?define MOICA_DB_CLAVE en .env}
       POSTGRES_DB: ${MOICA_DB_NOMBRE:?define MOICA_DB_NOMBRE en .env}
     ports:
-      - "${MOICA_DB_PORT:-5432}:5432"
+      # Solo en loopback: las credenciales de la plantilla son publicas.
+      - "127.0.0.1:${MOICA_DB_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -42,7 +43,7 @@ services:
       # Evita el asistente de contrasena maestra en un entorno local.
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
     ports:
-      - "${MOICA_PGADMIN_PORT:-5050}:80"
+      - "127.0.0.1:${MOICA_PGADMIN_PORT:-5050}:80"
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:

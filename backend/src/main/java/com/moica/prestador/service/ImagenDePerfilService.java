@@ -54,14 +54,16 @@ public class ImagenDePerfilService {
     TipoDeImagen tipo = validacion.validar(contenido, archivo.getContentType());
 
     String clave = ClavesDeImagen.nueva(ClavesDeImagen.PREFIJO_PERFILES, tipo);
-    String url = almacenamiento.guardar(clave, contenido, tipo.tipoMime());
 
     String urlAnterior;
     try {
+      String url = almacenamiento.guardar(clave, contenido, tipo.tipoMime());
       urlAnterior = perfiles.actualizarUrlImagen(sujeto.idUsuario(), url);
     } catch (RuntimeException fallo) {
       // Compensación: la base no llegó a apuntar al objeto nuevo, así que se
-      // retira para no dejarlo huérfano. Si tampoco se puede, queda registrado.
+      // retira para no dejarlo huérfano. También si falló la subida misma: el
+      // tiempo de espera puede vencer cuando R2 ya lo guardó, y retirar una
+      // clave inexistente es inocuo. Si tampoco se puede, queda registrado.
       eliminarSinPropagar(clave);
       throw fallo;
     }

@@ -155,6 +155,22 @@ describe('seguridad de la cuenta', () => {
       expect(await screen.findByText('La contraseña es demasiado larga.')).toBeVisible();
     });
 
+    it('coloca en la contraseña actual el detalle de validación que devuelve el backend', async () => {
+      const persona = userEvent.setup();
+      api.responder('PUT /api/auth/clave', {
+        estado: 400,
+        cuerpo: cuerpoDeError(400, 'VALIDACION', 'Revisa los datos enviados.', [
+          { campo: 'claveActual', mensaje: 'Escribe tu contraseña actual.' },
+        ]),
+      });
+      await abrirSeguridad();
+
+      await cambiarContrasena(persona);
+
+      expect(await screen.findByText('Escribe tu contraseña actual.')).toBeVisible();
+      expect(screen.getByLabelText('Contraseña actual')).toHaveAttribute('aria-invalid', 'true');
+    });
+
     it('no deja la interfaz colgada cuando falla la red', async () => {
       const persona = userEvent.setup();
       api.rechazar('PUT /api/auth/clave');

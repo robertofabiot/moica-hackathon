@@ -52,6 +52,14 @@ describe('Perfil público del prestador', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Cargando el perfil…');
   });
 
+  it('con un identificador decimal dice que no existe en vez de quedarse cargando', async () => {
+    renderizarConProveedores(<App />, '/explorar/prestadores/1.5');
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('Ese perfil no existe.');
+    expect(screen.queryByText('Cargando el perfil…')).not.toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Volver a explorar' })).toBeVisible();
+  });
+
   it('muestra el error y permite reintentar', async () => {
     const persona = userEvent.setup();
     api.responder(RUTA_PERFIL, {

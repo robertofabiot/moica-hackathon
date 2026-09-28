@@ -84,14 +84,12 @@ public class SesionService {
   /**
    * Revoca una sesión, dejando constancia del instante y del motivo.
    *
-   * <p>Revocar una sesión ya revocada no cambia nada: se conserva la primera revocación.
+   * <p>Revocar una sesión ya revocada no cambia nada: se conserva la primera revocación, también si
+   * otra transacción la revocó después de que esta leyera la fila.
    */
   @Transactional
   public void revocar(Long idSesion, MotivoRevocacionSesion motivo) {
-    repositorio
-        .findById(idSesion)
-        .filter(sesion -> sesion.getFechaRevocacion() == null)
-        .ifPresent(sesion -> sesion.revocar(OffsetDateTime.now(), motivo));
+    repositorio.revocarSiSigueVigente(idSesion, OffsetDateTime.now(), motivo);
   }
 
   /**
@@ -111,11 +109,11 @@ public class SesionService {
    * Da por superado el segundo factor en una sesión concreta.
    *
    * <p>La marca es de la sesión: verificar el código en un dispositivo no completa las demás
-   * sesiones abiertas de la misma cuenta.
+   * sesiones abiertas de la misma cuenta. Una sesión revocada mientras tanto sigue revocada.
    */
   @Transactional
   public void marcarSegundoFactorVerificado(Long idSesion) {
-    repositorio.findById(idSesion).ifPresent(Sesion::verificarSegundoFactor);
+    repositorio.marcarSegundoFactorVerificado(idSesion);
   }
 
   private static String generarIdentificadorDeToken() {

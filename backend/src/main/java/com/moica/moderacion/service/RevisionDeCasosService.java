@@ -48,8 +48,9 @@ import org.springframework.transaction.annotation.Transactional;
  *   EN_REVISION --cerrar--&gt;           CERRADO
  * </pre>
  *
- * <p>{@code CERRADO} a {@code REABIERTO} no está aquí: nace de aceptar una apelación y la ejecuta
- * {@code MedidasDeCasoService}. Cualquier otra combinación responde 409 y no deja nada a medias.
+ * <p>{@code CERRADO} a {@code REABIERTO} no está aquí: exige una apelación ya aceptada y la ejecuta
+ * {@code ApelacionesDeCasoService#reabrir}. Cualquier otra combinación responde 409 y no deja nada
+ * a medias.
  *
  * <p><b>Quién puede qué.</b> Asignar y reasignar las puede hacer cualquier administrador: repartir
  * trabajo es coordinación, y quien reasigna queda registrado en el historial. Iniciar la revisión y

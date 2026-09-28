@@ -48,7 +48,13 @@ Coberturas y descripciones detallan sectores de Managua, citas y materiales.
 
 - Usuario: correo reservado `moica-demo-v1-<clave>@demo.moica.invalid`, con claves
   `julio`, `maderas`, `camila`, `barberia`, `tecnica` y `lucia`. Ese espacio de
-  nombres identifica exclusivamente esta semilla. No renombrar estos correos.
+  nombres identifica exclusivamente esta semilla. No renombrar estos correos. El
+  registro público rechaza cualquier correo `.invalid`, así que nadie puede ocupar
+  esas direcciones desde la aplicación. Una base anterior a esa regla podría
+  tenerlas, y por eso el cargador tampoco adopta una cuenta reservada que haya
+  abierto sesiones o configurado un segundo factor: las cuentas sembradas tienen
+  una contraseña aleatoria que nadie conoce. Ese caso aborta la carga como
+  cualquier otro conflicto de propiedad.
 - Perfil: la clave compartida del usuario encontrado.
 - Servicio: cuenta reservada y subcategoría resuelta. Cada cuenta demo publica
   uno por subcategoría. El título y la descripción sí pueden sincronizarse.

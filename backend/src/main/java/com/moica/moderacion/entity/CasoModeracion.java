@@ -23,8 +23,9 @@ import java.time.OffsetDateTime;
  * <p>Lo que el reporte declara —la solicitud, quién reporta, a quién, el motivo y la descripción—
  * es inmutable: son {@code updatable = false}. En el MVP un reporte no se edita ni se borra. Los
  * campos administrativos —responsable, estado, resultado, resolución y sus fechas— nacen como los
- * deja la apertura y los mueve la revisión administrativa: P10A añade las tres mutaciones que
- * siguen. La medida y su fecha de fin siguen sin mutador porque aplicarlas es P10B.
+ * deja la apertura y los mueve la revisión administrativa con las tres mutaciones que siguen. La
+ * medida y su fecha de fin las mueven {@link #aplicarMedida}, {@link #retirarMedida} y la
+ * reapertura, cada una con su propio servicio.
  *
  * <p>Ninguna de las tres decide si puede ejecutarse: la autorización, la transición válida y el
  * cierre de la versión histórica anterior son responsabilidad del servicio, que las envuelve en una
@@ -233,7 +234,7 @@ public class CasoModeracion {
    * resolución ya registrada, no otra resolución.
    *
    * @param fechaFin cuándo termina la medida, o nulo si no termina sola. Cuando llega, {@code
-   *     MedidasDeCasoService} la expira; hasta entonces solo se levanta revocándola
+   *     ExpiracionDeMedidas} la expira; hasta entonces solo se levanta revocándola
    */
   public void aplicarMedida(
       Short idMedidaAdministrativa, OffsetDateTime fechaFin, OffsetDateTime instante) {

@@ -138,15 +138,25 @@ public class MedidasDeCasoService {
               + ".");
     }
 
+    Optional<Long> idAnterior = casos.idDelCasoConMedidaVigenteDe(caso.getIdReportado());
+
+    if (idAnterior.isPresent() && !pedido.confirmaReemplazo()) {
+      throw medidaVigenteExistente(idAnterior.get(), idCaso);
+    }
+
+    // El expediente anterior se lee por primera vez ya bloqueado. Los demás
+    // escritores de ese expediente (reabrir, revisar, cerrar) solo bloquean su
+    // fila, no la cuenta: una copia leída antes del bloqueo desharía sus cambios
+    // al guardarse. El orden cuenta -> este caso -> el anterior no abre abrazos,
+    // porque nadie que tenga el anterior espera después por la cuenta.
+    boolean reemplazaOtroExpediente = idAnterior.isPresent() && !idAnterior.get().equals(idCaso);
+    CasoModeracion anterior = reemplazaOtroExpediente ? bloquear(idAnterior.get()) : null;
+
+    // Después de todos los bloqueos: una versión que otra transacción dejó en el
+    // expediente anterior mientras se esperaba no puede empezar después de este
+    // instante, o su cierre violaría ck_historial_caso_vigencia.
     OffsetDateTime instante = OffsetDateTime.now(reloj);
     OffsetDateTime fechaFin = plazoValidado(medida, pedido.fechaFinMedida(), instante);
-
-    Optional<CasoModeracion> anterior =
-        casos.findByIdReportadoAndIdMedidaAdministrativaActualNotNull(caso.getIdReportado());
-
-    if (anterior.isPresent() && !pedido.confirmaReemplazo()) {
-      throw medidaVigenteExistente(anterior.get(), caso);
-    }
 
     // El estado resultante se calcula antes de escribir nada porque las dos
     // versiones que puede dejar esta operación —la revocación de la anterior y
@@ -157,11 +167,8 @@ public class MedidasDeCasoService {
 
     usuarios.proyectarEstadoDeCuenta(caso.getIdReportado(), estadoResultante, fechaFin);
 
-    boolean reemplazaOtroExpediente =
-        anterior.isPresent() && !anterior.get().getIdCasoModeracion().equals(idCaso);
-
     if (reemplazaOtroExpediente) {
-      revocarLaAnteriorDeOtroCaso(anterior.get(), sujeto, estadoResultante, instante);
+      revocarLaAnteriorDeOtroCaso(anterior, sujeto, estadoResultante, instante);
     }
 
     caso.aplicarMedida(medida.getIdMedidaAdministrativa(), fechaFin, instante);
@@ -184,7 +191,7 @@ public class MedidasDeCasoService {
         sujeto.idUsuario(),
         TipoEventoHistorial.MEDIDA_APLICADA,
         estadoResultante,
-        detalleDeAplicacion(medida, anterior.orElse(null), idCaso, pedido.justificacion()),
+        detalleDeAplicacion(medida, idAnterior.orElse(null), idCaso, pedido.justificacion()),
         instante);
 
     revocarSesionesSiElAccesoSeCierra(caso.getIdReportado(), estadoResultante);
@@ -251,14 +258,15 @@ public class MedidasDeCasoService {
    * <p>La escritura se vacía antes de que el caso nuevo tome la medida, para que el índice único
    * parcial encuentre el hueco libre. Es el mismo motivo por el que el versionado SCD2 vacía el
    * cierre antes de insertar la versión siguiente.
+   *
+   * @param bloqueado el expediente anterior, leído por primera vez con su bloqueo
    */
   private void revocarLaAnteriorDeOtroCaso(
-      CasoModeracion anterior,
+      CasoModeracion bloqueado,
       UsuarioAutenticado sujeto,
       EstadoCuenta estadoResultante,
       OffsetDateTime instante) {
 
-    CasoModeracion bloqueado = bloquear(anterior.getIdCasoModeracion());
     MedidaAdministrativa sustituida = catalogo.obtener(bloqueado.getIdMedidaAdministrativaActual());
 
     bloqueado.retirarMedida(instante);
@@ -364,12 +372,12 @@ public class MedidasDeCasoService {
   }
 
   private static String detalleDeAplicacion(
-      MedidaAdministrativa medida, CasoModeracion anterior, Long idCaso, String justificacion) {
+      MedidaAdministrativa medida, Long idAnterior, Long idCaso, String justificacion) {
 
-    if (anterior == null) {
+    if (idAnterior == null) {
       return "Se aplicó la medida «" + medida.getNombre() + "». " + justificacion;
     }
-    if (anterior.getIdCasoModeracion().equals(idCaso)) {
+    if (idAnterior.equals(idCaso)) {
       return "Se sustituyó la medida vigente de este caso por «"
           + medida.getNombre()
           + "». "
@@ -378,7 +386,7 @@ public class MedidasDeCasoService {
     return "Se aplicó la medida «"
         + medida.getNombre()
         + "» en sustitución de la que sostenía el caso "
-        + anterior.getIdCasoModeracion()
+        + idAnterior
         + ". "
         + justificacion;
   }
@@ -389,13 +397,9 @@ public class MedidasDeCasoService {
    * <p>Nombra el expediente y la situación vigentes porque quien decide necesita saber qué va a
    * sustituir antes de confirmarlo. Es información administrativa y no sale de {@code /api/admin}.
    */
-  private static ErrorDeAplicacion medidaVigenteExistente(
-      CasoModeracion anterior, CasoModeracion caso) {
+  private static ErrorDeAplicacion medidaVigenteExistente(Long idAnterior, Long idCaso) {
 
-    String donde =
-        anterior.getIdCasoModeracion().equals(caso.getIdCasoModeracion())
-            ? "por este mismo caso"
-            : "por el caso " + anterior.getIdCasoModeracion();
+    String donde = idAnterior.equals(idCaso) ? "por este mismo caso" : "por el caso " + idAnterior;
 
     return new ErrorDeAplicacion(
         HttpStatus.CONFLICT,

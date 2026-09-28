@@ -87,7 +87,7 @@ public class ExpiracionDeMedidas {
 
     int levantadas = 0;
     for (Long idCaso : vencidos) {
-      if (expirar(idCaso, instante)) {
+      if (expirar(idCaso)) {
         levantadas++;
       }
     }
@@ -102,9 +102,14 @@ public class ExpiracionDeMedidas {
    * barrido crearía una versión {@code MEDIDA_EXPIRADA} de una medida que ya no existía, o
    * devolvería a {@code ACTIVA} una cuenta que acababa de recibir una sanción nueva.
    *
+   * <p>El instante se toma con el caso ya bloqueado, no al empezar la pasada: mientras se esperaba
+   * el bloqueo, otra transacción pudo versionar el caso más tarde que ese inicio, y cerrar su
+   * versión con una fecha anterior violaría {@code ck_historial_caso_vigencia} y revertiría la
+   * pasada entera.
+   *
    * @return si de verdad se levantó una medida
    */
-  private boolean expirar(Long idCaso, OffsetDateTime instante) {
+  private boolean expirar(Long idCaso) {
     Long idReportado = casos.idReportadoDe(idCaso).orElse(null);
     if (idReportado == null) {
       return false;
@@ -114,6 +119,7 @@ public class ExpiracionDeMedidas {
     // decisiones administrativas. El caso se lee ya bloqueado, nunca antes.
     usuarios.bloquearCuenta(idReportado);
     CasoModeracion caso = casos.bloquearPorId(idCaso).orElse(null);
+    OffsetDateTime instante = OffsetDateTime.now(reloj);
 
     if (caso == null || !yaVencio(caso, instante)) {
       return false;

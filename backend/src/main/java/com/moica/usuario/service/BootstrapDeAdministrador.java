@@ -52,9 +52,10 @@ public class BootstrapDeAdministrador implements ApplicationRunner {
           LOG.debug("La cuenta indicada en MOICA_ADMIN_CORREO ya tenía el rol administrativo.");
       case CUENTA_INEXISTENTE ->
           LOG.warn(
-              "MOICA_ADMIN_CORREO apunta a una cuenta que todavía no existe."
-                  + " Regístrala desde la aplicación y vuelve a arrancar para asignarle el rol"
-                  + " administrativo.");
+              "MOICA_ADMIN_CORREO apunta a una cuenta que todavía no existe. Retira la variable,"
+                  + " registra la cuenta desde la aplicación y solo entonces vuelve a definirla y"
+                  + " a arrancar: mientras siga definida, quien registre primero ese correo"
+                  + " recibirá el rol administrativo.");
     }
   }
 }

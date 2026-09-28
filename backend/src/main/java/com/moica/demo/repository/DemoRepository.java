@@ -27,6 +27,20 @@ public class DemoRepository {
         prestador.correo());
   }
 
+  /**
+   * Si alguien llegó a usar la cuenta: una cuenta sembrada tiene una contraseña aleatoria que nadie
+   * conoce, así que nunca abre sesiones ni configura un segundo factor.
+   */
+  public boolean tuvoActividad(Long id) {
+    return Boolean.TRUE.equals(
+        jdbc.queryForObject(
+            "SELECT EXISTS (SELECT 1 FROM sesion WHERE id_usuario = ?)"
+                + " OR EXISTS (SELECT 1 FROM segundo_factor_usuario WHERE id_usuario = ?)",
+            Boolean.class,
+            id,
+            id));
+  }
+
   public boolean coincidePropietario(Long id, Prestador prestador) {
     return Boolean.TRUE.equals(
         jdbc.queryForObject(

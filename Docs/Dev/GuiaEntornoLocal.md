@@ -137,13 +137,18 @@ La unica via es `MOICA_ADMIN_CORREO`, que se aplica al arrancar:
 2. Escribe su correo en `MOICA_ADMIN_CORREO` y reinicia el backend.
 3. Entra con esa cuenta, activa su segundo factor en `/seguridad` y ya puedes abrir `/admin`.
 
-Es idempotente: se ejecuta en cada arranque y, si la cuenta ya tiene el rol, no cambia nada. Si la
-variable esta vacia no se promueve a nadie, y si apunta a una cuenta que todavia no existe el
-arranque continua y deja este aviso:
+El orden importa: el registro es publico y no verifica el correo, asi que mientras la variable
+apunte a una cuenta inexistente, quien registre primero ese correo recibira el rol en el arranque
+siguiente. Por eso primero se registra la cuenta y despues se define la variable.
+
+Es idempotente: se ejecuta en cada arranque y, si la cuenta ya tiene el rol, no cambia nada, aunque
+varias replicas arranquen a la vez. Si la variable esta vacia no se promueve a nadie, y si apunta a
+una cuenta que todavia no existe el arranque continua y deja este aviso:
 
 ```text
-MOICA_ADMIN_CORREO apunta a una cuenta que todavia no existe. Registrala desde la aplicacion y
-vuelve a arrancar para asignarle el rol administrativo.
+MOICA_ADMIN_CORREO apunta a una cuenta que todavía no existe. Retira la variable, registra la
+cuenta desde la aplicación y solo entonces vuelve a definirla y a arrancar: mientras siga definida,
+quien registre primero ese correo recibirá el rol administrativo.
 ```
 
 El aviso no incluye el correo: es un dato personal y el arranque suele quedar registrado.

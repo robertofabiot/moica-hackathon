@@ -8,9 +8,16 @@ import com.moica.usuario.service.AdministradorService;
 import com.moica.usuario.service.AdministradorService.ResultadoDeAsignacion;
 import com.moica.usuario.service.BootstrapDeAdministrador;
 import com.moica.usuario.service.PropiedadesDeAdministracion;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.time.OffsetDateTime;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -28,6 +35,7 @@ class BootstrapDeAdministradorIT extends PruebaDeIntegracionConPostgres {
 
   @Autowired private AdministradorService administradores;
   @Autowired private JdbcTemplate jdbc;
+  @Autowired private DataSource origenDeDatos;
 
   @BeforeEach
   void limpiarCuentas() {
@@ -98,6 +106,36 @@ class BootstrapDeAdministradorIT extends PruebaDeIntegracionConPostgres {
     ejecutarArranqueCon(CORREO);
 
     assertThat(administradores.esAdministrador(idUsuario)).isTrue();
+    assertThat(cantidadDeAdministradores()).isEqualTo(1);
+  }
+
+  /**
+   * Con dos réplicas, las dos ejecutan el arranque a la vez. La que llega segunda encuentra la fila
+   * de la otra todavía sin confirmar; al confirmarse, no puede abortar su propio arranque.
+   */
+  @Test
+  @Timeout(60)
+  void otraReplicaQueLoConcedeALaVezNoHaceFallarEsteArranque() throws Exception {
+    long idUsuario = registrarCuenta(CORREO);
+    ExecutorService hilo = Executors.newSingleThreadExecutor();
+
+    try (Connection otraReplica = origenDeDatos.getConnection()) {
+      otraReplica.setAutoCommit(false);
+      try (PreparedStatement insercion =
+          otraReplica.prepareStatement("INSERT INTO administrador (id_administrador) VALUES (?)")) {
+        insercion.setLong(1, idUsuario);
+        insercion.executeUpdate();
+      }
+
+      Future<ResultadoDeAsignacion> esteArranque =
+          hilo.submit(() -> administradores.asignarloA(CORREO));
+      esperarAQueAlguienEspereUnBloqueo(jdbc);
+      otraReplica.commit();
+
+      assertThat(esteArranque.get()).isEqualTo(ResultadoDeAsignacion.YA_LO_TENIA);
+    } finally {
+      hilo.shutdownNow();
+    }
     assertThat(cantidadDeAdministradores()).isEqualTo(1);
   }
 

@@ -2,7 +2,8 @@ import { ErrorDeApi } from '../../../comun/api';
 import estilos from '../../../comun/estilos/formulario.module.css';
 
 /**
- * El error que devolvió la API, tal cual: es quien conoce el estado real del caso.
+ * El error que devolvió la API, tal cual: es quien conoce el estado real del caso. Si rechazó
+ * campos concretos, su explicación va detrás del mensaje general, que por sí solo no dice cuál.
  *
  * Se coloca **fuera** de los bloques de acción de quien lo usa. Un conflicto cambia justo lo que
  * decide qué acciones caben: el refresco que sigue al fallo puede traer el caso cerrado, la medida
@@ -16,7 +17,9 @@ export default function AvisoDeAccion({ error }: { error: unknown }) {
 
   return (
     <p className={`${estilos.aviso} ${estilos.avisoDeError}`} role="alert">
-      {error instanceof ErrorDeApi ? error.message : 'No pudimos completar la acción.'}
+      {error instanceof ErrorDeApi
+        ? [error.message, ...error.errores.map((campo) => campo.mensaje)].join(' ')
+        : 'No pudimos completar la acción.'}
     </p>
   );
 }

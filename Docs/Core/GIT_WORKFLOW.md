@@ -125,6 +125,8 @@ Cuando un desarrollador inicie una nueva tarea, debe seguir este proceso exacto:
 3.  Describir todo lo que `main` todavía no contiene, no solo el último PR integrado.
 4.  Esperar la revisión y la aprobación cruzada, igual que en cualquier otro PR.
 
+**Qué ocurre al fusionar:** `main` es la rama que despliega producción. El merge del PR `develop` → `main` vuelve a ejecutar el CI sobre ese commit y, con el CI en verde, Railway lo despliega. Ni `develop` ni las ramas `feature/` despliegan nada. Los checks, la verificación posterior y el rollback están en [`Docs/Dev/DespliegueProduccion.md`](../Dev/DespliegueProduccion.md#entrega-continua).
+
 **Prohibiciones que no admiten excepción:**
 
 *   Nunca se hacen *commits* directos sobre `main`.

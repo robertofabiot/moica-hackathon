@@ -12,7 +12,12 @@ export { crearClienteDeConsultas } from './clienteDeConsultas';
 export { default as AvisoDeEstadoDeCuenta } from './componentes/AvisoDeEstadoDeCuenta';
 export { default as RutaProtegida, RutaDeVerificacion } from './componentes/RutaProtegida';
 export { useSesionActual } from './hooks/useSesionActual';
-export { useCierreSesion, useInicioSesion, useRegistro } from './hooks/useAcceso';
+export {
+  mensajeDeCierreFallido,
+  useCierreSesion,
+  useInicioSesion,
+  useRegistro,
+} from './hooks/useAcceso';
 export { useVigilanciaDeSesion } from './hooks/useVigilanciaDeSesion';
 export { default as InicioSesion } from './paginas/InicioSesion';
 export { default as Registro } from './paginas/Registro';

@@ -234,9 +234,21 @@
   cursor: pointer;
 }
 
+.etiquetaDeSubida svg {
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
 .etiquetaDeSubida:hover {
   border-color: var(--color-primary-500);
   background-color: var(--color-primary-50);
+}
+
+/* La entrada real está recortada: el foco del teclado se dibuja en la etiqueta que la representa. */
+.campo:has(.entradaOculta:focus-visible) .etiquetaDeSubida {
+  outline: var(--border-width-sm) solid var(--color-primary-500);
+  outline-offset: 2px;
 }
 
 .campo:has(input:disabled) .etiquetaDeSubida {

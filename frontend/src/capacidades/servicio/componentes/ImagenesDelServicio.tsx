@@ -69,7 +69,8 @@ export default function ImagenesDelServicio({ servicio }: { servicio: ServicioPr
     }
 
     for (const archivo of validos) {
-      setPrevisualizacion(URL.createObjectURL(archivo));
+      const url = URL.createObjectURL(archivo);
+      setPrevisualizacion(url);
       try {
         await subida.mutateAsync({
           idServicio: servicio.idServicioPublicado,
@@ -78,6 +79,9 @@ export default function ImagenesDelServicio({ servicio }: { servicio: ServicioPr
         });
       } catch {
         break;
+      } finally {
+        // Cada vista previa retiene su archivo en memoria hasta revocarla; también si se desmonta.
+        URL.revokeObjectURL(url);
       }
     }
     setTextoAlternativo('');
@@ -243,25 +247,19 @@ export default function ImagenesDelServicio({ servicio }: { servicio: ServicioPr
           multiple
           accept="image/jpeg,image/png,image/webp"
           className={zona.entradaOculta}
+          tabIndex={-1}
           onChange={(evento) => {
             void subirArchivos(evento.target.files);
           }}
           disabled={subida.isPending}
         />
+        {/* La zona recibe el arrastre y el clic del ratón; el teclado usa solo «Explorar archivos». */}
         <div
           className={unirClases(
             zona.zonaDeSubida,
             arrastrando ? zona.zonaDeSubidaArrastrando : undefined
           )}
-          role="button"
-          tabIndex={0}
           onClick={() => entradaDeArchivo.current?.click()}
-          onKeyDown={(evento) => {
-            if (evento.key === 'Enter' || evento.key === ' ') {
-              evento.preventDefault();
-              entradaDeArchivo.current?.click();
-            }
-          }}
           onDragOver={(evento) => {
             evento.preventDefault();
             setArrastrando(true);
@@ -272,7 +270,6 @@ export default function ImagenesDelServicio({ servicio }: { servicio: ServicioPr
             setArrastrando(false);
             void subirArchivos(evento.dataTransfer.files);
           }}
-          aria-label="Subir fotos: haz clic o arrastra imágenes aquí"
         >
           <IconoSubida className={zona.iconoDeZona} />
           <p className={zona.tituloDeZona}>Añadir fotos</p>

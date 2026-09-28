@@ -432,6 +432,7 @@ Railway, las dos imágenes recuperadas, el mapeo pendiente y las garantías.
 
 
 * **Proveedor de despliegue:** **Railway** (Proyecto `victorious-embrace`, entorno `production`).
+* **Despliegue continuo:** Railway despliega la rama `main` al fusionar un PR `develop` → `main`, después del CI de ese commit; `develop` y las ramas `feature/` no despliegan. Detalle, checks y rollback en [Entrega continua](Docs/Dev/DespliegueProduccion.md#entrega-continua).
 * **Arquitectura Docker:** Contenedor Nginx Alpine (sirviendo la PWA y actuando como *Reverse Proxy* de mismo origen) + Contenedor Spring Boot 4 (Java 21 JRE).
 * **PostgreSQL remoto:** Instancia administrada PostgreSQL 18 en red privada interna sin puertos expuestos públicamente.
 * **Cloudflare R2:** Buckets `moica-publico-dev` (imágenes públicas) y `moica-privado-dev` (expedientes protegidos con firma temporal).

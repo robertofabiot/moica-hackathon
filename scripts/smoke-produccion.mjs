@@ -10,7 +10,7 @@ const origin = `http://127.0.0.1:${process.env.MOICA_SMOKE_PORT || 18080}`;
 const docker = (...args) => execFileSync('docker', [...composeArgs, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: Object.fromEntries(Object.entries(process.env).filter(([name]) => !name.startsWith('MOICA_') || name === 'MOICA_SMOKE_PORT')) });
 const check = (condition, label) => { if (!condition) throw new Error(label); };
 const cookies = new Map();
-async function request(path, { method = 'GET', body, csrf = true, headers = {} } = {}) {
+async function request(path, { method = 'GET', body, rawBody, csrf = true, headers = {} } = {}) {
   const response = await fetch(origin + path, {
     method, redirect: 'manual', signal: AbortSignal.timeout(10000),
     headers: {
@@ -20,6 +20,7 @@ async function request(path, { method = 'GET', body, csrf = true, headers = {} }
       ...headers,
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
+    ...(rawBody ? { body: rawBody } : {}),
   });
   for (const cookie of response.headers.getSetCookie()) {
     const [name, ...value] = cookie.split(';')[0].split('=');
@@ -38,6 +39,19 @@ async function waitForBackend() {
   throw new Error('Backend no alcanzo UP en 240 segundos');
 }
 const sql = query => docker('exec', '-T', 'postgres', 'psql', '-U', 'moica_dev', '-d', 'moica_db', '-tAc', query).trim();
+// Un Ctrl+C no pasa por el finally: sin esto, los contenedores y el volumen del
+// proyecto seguirian vivos y la siguiente ejecucion chocaria por el puerto.
+for (const [senal, codigo] of [['SIGINT', 130], ['SIGTERM', 143]]) {
+  process.once(senal, () => {
+    try { docker('down', '-v', '--remove-orphans'); } finally { process.exit(codigo); }
+  });
+}
+const cabecerasDeSeguridad = { 'x-frame-options': 'DENY', 'x-content-type-options': 'nosniff', 'referrer-policy': 'strict-origin-when-cross-origin' };
+const conCabecerasDeSeguridad = (response, path) => {
+  for (const [nombre, valor] of Object.entries(cabecerasDeSeguridad)) {
+    check(response.headers.get(nombre) === valor, `${path} sin ${nombre}: ${valor}`);
+  }
+};
 
 try {
   docker('up', '-d', ...(process.argv.includes('--no-build') ? ['--no-build'] : ['--build']));
@@ -51,8 +65,8 @@ try {
   docker('exec', '-T', 'frontend', 'nginx', '-t');
   // Ningun X-Forwarded-* del navegador debe sobrevivir: Nginx los reescribe uno
   // a uno y vacia Forwarded. Se lee la configuracion efectiva del contenedor
-  // porque el efecto de X-Forwarded-For no se observa desde fuera; el de
-  // protocolo y host si se comprueba mas abajo con la respuesta de salud.
+  // porque el efecto de X-Forwarded-For y X-Forwarded-Host no se observa desde
+  // fuera; el de protocolo si se comprueba mas abajo con HSTS en la salud.
   const proxyHeaders = docker('exec', '-T', 'frontend', 'cat', '/etc/nginx/proxy-headers.conf');
   for (const directiva of ['Forwarded ""', 'X-Forwarded-For $remote_addr', 'X-Forwarded-Host $host', 'X-Forwarded-Proto $moica_scheme', 'X-Forwarded-Port $moica_port']) {
     check(proxyHeaders.includes(`proxy_set_header ${directiva}`), `Nginx no controla ${directiva.split(' ')[0]}`);
@@ -60,6 +74,7 @@ try {
   for (const path of ['/healthz', '/', '/explorar', '/iniciar-sesion', '/manifest.webmanifest', '/sw.js', '/icono-192.png', '/icono-512.png']) {
     const response = await request(path);
     check(response.status === 200, `No carga ${path}`);
+    if (path !== '/healthz') conCabecerasDeSeguridad(response, path);
     if (path.endsWith('.js')) check(response.headers.get('content-type')?.includes('javascript'), 'SW debe ser JavaScript');
   }
   const home = await (await request('/')).text();
@@ -68,6 +83,7 @@ try {
   for (const path of assetPaths) {
     const response = await request(path);
     check(response.status === 200 && response.headers.get('cache-control')?.includes('immutable'), 'Asset no cacheable/versionado');
+    conCabecerasDeSeguridad(response, path);
   }
   check(await (await request('/explorar')).text() === home, 'Falla fallback SPA');
   for (const path of ['/actuator/env', '/.env', '/assets/no-existe.js', '/no-existe.js']) {
@@ -83,6 +99,8 @@ try {
   check(search.status === 200 && search.headers.get('content-type')?.includes('json'), 'API no llega al backend');
   check(!search.headers.has('access-control-allow-origin'), 'No debe abrir CORS');
   check(search.headers.get('cache-control') === 'no-store', 'API no debe cachearse');
+  // Las de la API las pone Spring; Nginx no debe duplicarlas.
+  check(search.headers.get('x-frame-options') === 'DENY', 'API con X-Frame-Options ausente o duplicada');
   console.log('PASS Nginx, SPA directa, PWA/assets, API mismo origen, health y headers saneados');
 
   const credentials = { correoElectronico: `smoke-${randomUUID()}@example.org`, clave: `Moica!${randomUUID()}` };
@@ -96,6 +114,22 @@ try {
   const savedSession = cookies.get('moica_sesion');
   check((await request('/api/auth/sesion')).status === 200, 'Sesion no valida');
   check((await request('/api/auth/sesion', { method: 'DELETE', csrf: false })).status === 403, 'Logout debe exigir CSRF');
+  // Algo por encima del tope multipart de Spring y por debajo del freno de
+  // Nginx: el rechazo debe ser el JSON del contrato, no la pagina HTML del proxy.
+  const frontera = 'moica-smoke';
+  const multipart = Buffer.concat([
+    Buffer.from(`--${frontera}
+Content-Disposition: form-data; name="archivo"; filename="grande.png"
+Content-Type: image/png
+
+`),
+    Buffer.alloc(26 * 1024 * 1024),
+    Buffer.from(`
+--${frontera}--
+`),
+  ]);
+  const grande = await request('/api/prestador/perfil/imagen', { method: 'PUT', headers: { 'Content-Type': `multipart/form-data; boundary=${frontera}` }, rawBody: multipart });
+  check(grande.status === 413 && (await grande.json()).codigo === 'CONTENIDO_DEMASIADO_GRANDE', 'El 413 multipart debe llegar como JSON del contrato');
 
   docker('restart', 'backend');
   await waitForBackend();
@@ -105,7 +139,7 @@ try {
   check((await request('/api/auth/sesion', { method: 'DELETE' })).status === 204, 'Logout falla');
   cookies.set('moica_sesion', savedSession);
   check((await request('/api/auth/sesion')).status === 401, 'JWT revocado debe rechazarse');
-  console.log('PASS registro/login, cookie HttpOnly/Secure/Lax, CSRF, persistencia tras reinicio y revocacion');
+  console.log('PASS registro/login, cookie HttpOnly/Secure/Lax, CSRF, 413 del contrato, persistencia tras reinicio y revocacion');
   console.log('NOTA: transporte local HTTP con proxy simulando terminacion HTTPS; TLS publico y R2 requieren Railway real.');
 } catch (error) {
   // No imprimir respuestas/cookies, entorno ni stdout/stderr de subprocessos.
